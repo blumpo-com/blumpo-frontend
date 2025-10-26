@@ -11,13 +11,13 @@ export default function HomePage() {
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
             <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
               <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl">
-                Build Your SaaS
+                AI B2B SaaS ads that win
                 <span className="block text-orange-500">Faster Than Ever</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Launch your SaaS product in record time with our powerful,
-                ready-to-use template. Packed with modern technologies and
-                essential integrations.
+              Blumpo turns customer insights from 
+              Reddit, YT, and your website into +$500 worth ads.<br></br>
+              No credit card.
               </p>
               <UrlInputSection />  
             </div>
