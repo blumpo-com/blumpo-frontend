@@ -124,6 +124,7 @@ services:
       - "54322:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
   adminer:
     image: adminer
     container_name: postgres_adminer
@@ -173,6 +174,40 @@ async function getResendApiKey(): Promise<string> {
   return await question('Enter your Resend API Key: ');
 }
 
+async function getGoogleOAuthCredentials(): Promise<{
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+}> {
+  console.log('Step 3b: Getting Google OAuth credentials');
+  console.log(
+    'Create credentials at: https://console.cloud.google.com/apis/credentials'
+  );
+  const GOOGLE_CLIENT_ID = await question('Enter your GOOGLE_CLIENT_ID: ');
+  const GOOGLE_CLIENT_SECRET = await question(
+    'Enter your GOOGLE_CLIENT_SECRET: '
+  );
+  return { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET };
+}
+
+async function getNextAuthSecret(): Promise<string> {
+  console.log('Step 4: Generating NEXTAUTH_SECRET...');
+  // Prefer OpenSSL to match "openssl rand -base64 32", fall back to Node crypto
+  try {
+    const { stdout } = await execAsync('openssl rand -base64 32');
+    const secret = stdout.toString().trim();
+    if (secret) {
+      console.log('NEXTAUTH_SECRET generated using OpenSSL.');
+      return secret;
+    }
+    throw new Error('Empty OpenSSL output');
+  } catch (err) {
+    console.log(
+      'OpenSSL not available or failed. Falling back to Node crypto for NEXTAUTH_SECRET.'
+    );
+    return crypto.randomBytes(32).toString('base64');
+  }
+}
+
 async function createStripeWebhook(): Promise<string> {
   console.log('Step 4: Creating Stripe webhook...');
   try {
@@ -220,6 +255,9 @@ async function main() {
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
   const RESEND_API_KEY = await getResendApiKey();
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } =
+    await getGoogleOAuthCredentials();
+  const NEXTAUTH_SECRET = await getNextAuthSecret();
 
   await writeEnvFile({
     POSTGRES_URL,
@@ -228,6 +266,9 @@ async function main() {
     BASE_URL,
     AUTH_SECRET,
     RESEND_API_KEY,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    NEXTAUTH_SECRET,
   });
 
   console.log('🎉 Setup completed successfully!');
