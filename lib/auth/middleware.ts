@@ -52,3 +52,17 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
     return action(result.data, formData, user);
   };
 }
+
+// Simple user authentication wrapper for actions
+type UserActionFunction = (formData: FormData, user: User) => Promise<void>;
+
+export function withUser(action: UserActionFunction) {
+  return async (formData: FormData) => {
+    const user = await getUser();
+    if (!user) {
+      redirect('/sign-in');
+    }
+
+    return action(formData, user);
+  };
+}

@@ -13,7 +13,20 @@ export const tokenAccount = pgTable('token_account', {
   lastRefillAt: timestamp('last_refill_at', { withTimezone: true }),
   nextRefillAt: timestamp('next_refill_at', { withTimezone: true }),
   rolloverCap: bigint('rollover_cap', { mode: 'number' }),
-});
+  // Stripe-related columns
+  stripeCustomerId: text('stripe_customer_id'),
+  stripeSubscriptionId: text('stripe_subscription_id'),
+  stripeProductId: text('stripe_product_id'),
+  stripePriceId: text('stripe_price_id'),
+  subscriptionStatus: text('subscription_status'),
+}, (table) => ({
+  stripeCustomerIdx: uniqueIndex('uq_token_account_stripe_customer')
+    .on(table.stripeCustomerId)
+    .where(sql`stripe_customer_id IS NOT NULL`),
+  stripeSubscriptionIdx: uniqueIndex('uq_token_account_stripe_subscription')
+    .on(table.stripeSubscriptionId)
+    .where(sql`stripe_subscription_id IS NOT NULL`),
+}));
 
 // Token ledger table (auditing/accounting)
 export const tokenLedger = pgTable('token_ledger', {
@@ -28,6 +41,8 @@ export const tokenLedger = pgTable('token_ledger', {
   userTimeIdx: index('idx_token_ledger_user_time').on(table.userId, table.occurredAt.desc()),
   reasonRefIdx: uniqueIndex('uq_token_ledger_reason_ref').on(table.reason, table.referenceId).where(sql`reference_id IS NOT NULL`),
 }));
+
+// Note: Indexes are defined in the table callback above.
 
 // Relations
 export const tokenAccountRelations = relations(tokenAccount, ({ one }) => ({
