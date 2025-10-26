@@ -3,6 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { db } from '@/lib/db/drizzle';
 import { user as userTable, tokenAccount } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { setSession } from '@/lib/auth/session';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -12,11 +13,16 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: '/sign-in',
+  },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account, profile }) {
       if (!user.email) return false;
 
       try {
+        let dbUser;
+        
         // Check if user exists
         const existingUser = await db
           .select()
@@ -34,26 +40,38 @@ export const authOptions: NextAuthOptions = {
               displayName: user.name || user.email.split('@')[0],
               photoUrl: user.image || null,
               phoneNumber: null,
+              lastLoginAt: new Date(),
             })
             .returning();
 
-          // Create default token account (10,000 free tokens)
           if (newUser.length > 0) {
+            dbUser = newUser[0];
+            
+            // Create default token account (10,000 free tokens)
             await db.insert(tokenAccount).values({
-              userId: newUser[0].id,
+              userId: dbUser.id,
               balance: 10000,
               planCode: 'FREE',
             });
           }
         } else {
           // Update last login
-          await db
+          const updatedUser = await db
             .update(userTable)
             .set({
               lastLoginAt: new Date(),
               photoUrl: user.image || existingUser[0].photoUrl,
+              displayName: user.name || existingUser[0].displayName,
             })
-            .where(eq(userTable.id, existingUser[0].id));
+            .where(eq(userTable.id, existingUser[0].id))
+            .returning();
+          
+          dbUser = updatedUser[0] || existingUser[0];
+        }
+
+        // Set our custom session (same as OTP flow)
+        if (dbUser) {
+          await setSession(dbUser);
         }
 
         return true;
@@ -76,6 +94,38 @@ export const authOptions: NextAuthOptions = {
         }
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Handle redirect parameter from URL
+      try {
+        const urlObj = new URL(url);
+        const redirectParam = urlObj.searchParams.get('redirect');
+        const priceId = urlObj.searchParams.get('priceId');
+        
+        if (redirectParam === 'checkout' && priceId) {
+          return `${baseUrl}/pricing?priceId=${priceId}`;
+        }
+        
+        if (redirectParam === 'checkout') {
+          return `${baseUrl}/pricing`;
+        }
+
+        // If URL is relative, make it absolute
+        if (url.startsWith('/')) {
+          return `${baseUrl}${url}`;
+        }
+        
+        // If URL is already absolute and on same domain
+        if (url.startsWith(baseUrl)) {
+          return url;
+        }
+        
+        // Default redirect
+        return `${baseUrl}/dashboard`;
+      } catch (error) {
+        console.error('Error in redirect callback:', error);
+        return `${baseUrl}/dashboard`;
+      }
     },
   },
 };
