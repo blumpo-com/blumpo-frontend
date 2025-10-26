@@ -1,100 +1,196 @@
-{
-  "id": "261fd993-fb2c-43e7-89d6-cd58786c5f58",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "version": "7",
-  "dialect": "postgresql",
-  "tables": {
-    "public.activity_logs": {
-      "name": "activity_logs",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "team_id": {
-          "name": "team_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "action": {
-          "name": "action",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "ip_address": {
-          "name": "ip_address",
-          "type": "varchar(45)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "activity_logs_team_id_teams_id_fk": {
-          "name": "activity_logs_team_id_teams_id_fk",
-          "tableFrom": "activity_logs",
-          "tableTo": "teams",
-          "columnsFrom": [
-            "team_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "activity_logs_user_id_users_id_fk": {
-          "name": "activity_logs_user_id_users_id_fk",
-          "tableFrom": "activity_logs",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
-    },
-    "public.invitations": {
-      "name": "invitations",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "team_id": {
-          "name": "team_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
+{{
+
+  "id": "0000_fresh_token_schema",  "id": "261fd993-fb2c-43e7-89d6-cd58786c5f58",
+
+  "prevId": "",  "prevId": "00000000-0000-0000-0000-000000000000",
+
+  "version": "7",  "version": "7",
+
+  "dialect": "postgresql",  "dialect": "postgresql",
+
+  "tables": {  "tables": {
+
+    "public.user": {    "public.activity_logs": {
+
+      "name": "user",      "name": "activity_logs",
+
+      "schema": "",      "schema": "",
+
+      "columns": {      "columns": {
+
+        "id": {        "id": {
+
+          "name": "id",          "name": "id",
+
+          "type": "uuid",          "type": "serial",
+
+          "primaryKey": true,          "primaryKey": true,
+
+          "notNull": true          "notNull": true
+
+        },        },
+
+        "email": {        "team_id": {
+
+          "name": "email",          "name": "team_id",
+
+          "type": "citext",          "type": "integer",
+
+          "primaryKey": false,          "primaryKey": false,
+
+          "notNull": true          "notNull": true
+
+        },        },
+
+        "display_name": {        "user_id": {
+
+          "name": "display_name",          "name": "user_id",
+
+          "type": "text",          "type": "integer",
+
+          "primaryKey": false,          "primaryKey": false,
+
+          "notNull": true          "notNull": false
+
+        },        },
+
+        "photo_url": {        "action": {
+
+          "name": "photo_url",          "name": "action",
+
+          "type": "text",          "type": "text",
+
+          "primaryKey": false,          "primaryKey": false,
+
+          "notNull": false          "notNull": true
+
+        },        },
+
+        "phone_number": {        "timestamp": {
+
+          "name": "phone_number",          "name": "timestamp",
+
+          "type": "text",          "type": "timestamp",
+
+          "primaryKey": false,          "primaryKey": false,
+
+          "notNull": false          "notNull": true,
+
+        },          "default": "now()"
+
+        "created_at": {        },
+
+          "name": "created_at",        "ip_address": {
+
+          "type": "timestamp with time zone",          "name": "ip_address",
+
+          "primaryKey": false,          "type": "varchar(45)",
+
+          "notNull": true,          "primaryKey": false,
+
+          "default": "now()"          "notNull": false
+
+        },        }
+
+        "last_login_at": {      },
+
+          "name": "last_login_at",      "indexes": {},
+
+          "type": "timestamp with time zone",      "foreignKeys": {
+
+          "primaryKey": false,        "activity_logs_team_id_teams_id_fk": {
+
+          "notNull": false          "name": "activity_logs_team_id_teams_id_fk",
+
+        },          "tableFrom": "activity_logs",
+
+        "ban_flag": {          "tableTo": "teams",
+
+          "name": "ban_flag",          "columnsFrom": [
+
+          "type": "boolean",            "team_id"
+
+          "primaryKey": false,          ],
+
+          "notNull": true,          "columnsTo": [
+
+          "default": false            "id"
+
+        }          ],
+
+      },          "onDelete": "no action",
+
+      "indexes": {},          "onUpdate": "no action"
+
+      "foreignKeys": {},        },
+
+      "compositePrimaryKeys": {},        "activity_logs_user_id_users_id_fk": {
+
+      "uniqueConstraints": {          "name": "activity_logs_user_id_users_id_fk",
+
+        "user_email_unique": {          "tableFrom": "activity_logs",
+
+          "name": "user_email_unique",          "tableTo": "users",
+
+          "nullsNotDistinct": false,          "columnsFrom": [
+
+          "columns": ["email"]            "user_id"
+
+        }          ],
+
+      }          "columnsTo": [
+
+    }            "id"
+
+  },          ],
+
+  "enums": {          "onDelete": "no action",
+
+    "public.token_period": {          "onUpdate": "no action"
+
+      "name": "token_period",        }
+
+      "schema": "public",      },
+
+      "values": ["DAY", "WEEK", "MONTH"]      "compositePrimaryKeys": {},
+
+    },      "uniqueConstraints": {}
+
+    "public.job_status": {    },
+
+      "name": "job_status",     "public.invitations": {
+
+      "schema": "public",      "name": "invitations",
+
+      "values": ["QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELED"]      "schema": "",
+
+    },      "columns": {
+
+    "public.variant_kind": {        "id": {
+
+      "name": "variant_kind",          "name": "id",
+
+      "schema": "public",           "type": "serial",
+
+      "values": ["ORIGINAL", "THUMB", "WEB", "PRINT"]          "primaryKey": true,
+
+    }          "notNull": true
+
+  },        },
+
+  "schemas": {},        "team_id": {
+
+  "_meta": {          "name": "team_id",
+
+    "columns": {},          "type": "integer",
+
+    "schemas": {},          "primaryKey": false,
+
+    "tables": {}          "notNull": true
+
+  }        },
+
+}        "email": {
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
