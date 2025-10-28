@@ -2,17 +2,16 @@ import { pgTable, uuid, bigint, text, timestamp, bigserial, index, uniqueIndex }
 import { relations, sql } from 'drizzle-orm';
 import { tokenPeriodEnum } from './enums';
 import { user } from './user';
+import { subscriptionPlan } from './subscription';
 
 // Token account table (1:1 with user)
 export const tokenAccount = pgTable('token_account', {
   userId: uuid('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
   balance: bigint('balance', { mode: 'number' }).notNull().default(0),
-  planCode: text('plan_code').notNull().default('FREE'),
-  tokensPerPeriod: bigint('tokens_per_period', { mode: 'number' }).notNull().default(50),
+  planCode: text('plan_code').notNull().default('FREE').references(() => subscriptionPlan.planCode, { onUpdate: 'cascade', onDelete: 'restrict' }),
   period: tokenPeriodEnum('period').notNull().default('MONTH'),
   lastRefillAt: timestamp('last_refill_at', { withTimezone: true }),
   nextRefillAt: timestamp('next_refill_at', { withTimezone: true }),
-  rolloverCap: bigint('rollover_cap', { mode: 'number' }),
   // Stripe-related columns
   stripeCustomerId: text('stripe_customer_id'),
   stripeSubscriptionId: text('stripe_subscription_id'),
@@ -49,6 +48,10 @@ export const tokenAccountRelations = relations(tokenAccount, ({ one }) => ({
   user: one(user, {
     fields: [tokenAccount.userId],
     references: [user.id],
+  }),
+  subscriptionPlan: one(subscriptionPlan, {
+    fields: [tokenAccount.planCode],
+    references: [subscriptionPlan.planCode],
   }),
 }));
 
