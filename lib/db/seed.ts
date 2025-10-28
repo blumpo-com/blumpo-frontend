@@ -30,9 +30,6 @@ async function createTestUser() {
       userId: testUserId,
       balance: 100,
       planCode: 'FREE',
-      tokensPerPeriod: 50,
-      period: TokenPeriod.MONTH,
-      rolloverCap: 100,
     })
     .returning();
 
