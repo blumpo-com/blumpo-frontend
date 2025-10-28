@@ -115,7 +115,7 @@ async function setupLocalPostgres() {
 services:
   postgres:
     image: postgres:16.4-alpine
-    container_name: next_saas_starter_postgres
+    container_name: blumpo_postgres
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
@@ -124,6 +124,17 @@ services:
       - "54322:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    container_name: postgres_adminer
+    restart: always
+    ports:
+      - "18080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
@@ -153,6 +164,48 @@ async function getStripeSecretKey(): Promise<string> {
     'You can find your Stripe Secret Key at: https://dashboard.stripe.com/test/apikeys'
   );
   return await question('Enter your Stripe Secret Key: ');
+}
+
+async function getResendApiKey(): Promise<string> {
+  console.log('Step 3: Getting Resend API Key');
+  console.log(
+    'You can find your Resend API key at: https://resend.com/onboarding'
+  );
+  return await question('Enter your Resend API Key: ');
+}
+
+async function getGoogleOAuthCredentials(): Promise<{
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+}> {
+  console.log('Step 3b: Getting Google OAuth credentials');
+  console.log(
+    'Create credentials at: https://console.cloud.google.com/apis/credentials'
+  );
+  const GOOGLE_CLIENT_ID = await question('Enter your GOOGLE_CLIENT_ID: ');
+  const GOOGLE_CLIENT_SECRET = await question(
+    'Enter your GOOGLE_CLIENT_SECRET: '
+  );
+  return { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET };
+}
+
+async function getNextAuthSecret(): Promise<string> {
+  console.log('Step 4: Generating NEXTAUTH_SECRET...');
+  // Prefer OpenSSL to match "openssl rand -base64 32", fall back to Node crypto
+  try {
+    const { stdout } = await execAsync('openssl rand -base64 32');
+    const secret = stdout.toString().trim();
+    if (secret) {
+      console.log('NEXTAUTH_SECRET generated using OpenSSL.');
+      return secret;
+    }
+    throw new Error('Empty OpenSSL output');
+  } catch (err) {
+    console.log(
+      'OpenSSL not available or failed. Falling back to Node crypto for NEXTAUTH_SECRET.'
+    );
+    return crypto.randomBytes(32).toString('base64');
+  }
 }
 
 async function createStripeWebhook(): Promise<string> {
@@ -201,6 +254,10 @@ async function main() {
   const STRIPE_WEBHOOK_SECRET = await createStripeWebhook();
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
+  const RESEND_API_KEY = await getResendApiKey();
+  const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } =
+    await getGoogleOAuthCredentials();
+  const NEXTAUTH_SECRET = await getNextAuthSecret();
 
   await writeEnvFile({
     POSTGRES_URL,
@@ -208,6 +265,10 @@ async function main() {
     STRIPE_WEBHOOK_SECRET,
     BASE_URL,
     AUTH_SECRET,
+    RESEND_API_KEY,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    NEXTAUTH_SECRET,
   });
 
   console.log('🎉 Setup completed successfully!');
