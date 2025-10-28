@@ -12,7 +12,6 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { ActivityType } from '@/lib/db/schema';
-import { getActivityLogs } from '@/lib/db/queries';
 
 const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.SIGN_UP]: UserPlus,
@@ -69,7 +68,8 @@ function formatAction(action: ActivityType): string {
 }
 
 export default async function ActivityPage() {
-  const logs = await getActivityLogs();
+  // For now, return empty logs since we don't have activity logging implemented
+  const logs: any[] = [];
 
   return (
     <section className="flex-1 p-4 lg:p-8">
