@@ -28,7 +28,6 @@ export function UrlInputSection() {
 
 
     const handleSubmit = async () => {
-        // walidacja
         const valid = isValidUrl(url);
         setHasError(!valid);
         if (!valid) {
@@ -65,7 +64,7 @@ export function UrlInputSection() {
             const data = await res.json();
             let src = data?.imageBase64 as string | undefined;
             if (src && !src.startsWith('data:')) {
-              // if no data:image prefix
+              // if no `data:image` prefix
               src = `data:image/png;base64,${src}`;
             }
             if (!src) throw new Error('No image in response');
@@ -126,7 +125,6 @@ export function UrlInputSection() {
                 </div>
                 ) : imageUrl ? (
                 <div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={imageUrl} alt="Generated ad" className="rounded-xl w-full" />
                     <Button
                     onClick={() => setIsOpen(false)}

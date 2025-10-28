@@ -102,11 +102,29 @@ When you're ready to deploy your SaaS application to production, follow these st
 
 In your Vercel project settings (or during deployment), add all the necessary environment variables. Make sure to update the values for the production environment, including:
 
-1. `BASE_URL`: Set this to your production domain.
-2. `STRIPE_SECRET_KEY`: Use your Stripe secret key for the production environment.
-3. `STRIPE_WEBHOOK_SECRET`: Use the webhook secret from the production webhook you created in step 1.
-4. `POSTGRES_URL`: Set this to your production database URL.
-5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
+Update your `.env` file:
+
+```env
+# Existing variables (keep these)
+POSTGRES_URL=postgres://postgres:postgres@localhost:54322/postgres
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+BASE_URL=http://localhost:3000
+RESEND_API_KEY=re_...
+AUTH_SECRET=your_auth_secret_here
+
+# Google OAuth (add these)
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-your_client_secret
+
+# NextAuth (add these)
+NEXTAUTH_SECRET=your_nextauth_secret_here
+
+#N8N
+N8N_WEBHOOK_URL=https://automationforms.app.n8n.cloud/webhook/...
+N8N_WEBHOOK_KEY=superHardPassword
+```
+
 
 ## Other Templates
 

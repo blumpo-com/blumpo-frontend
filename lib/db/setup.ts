@@ -208,6 +208,19 @@ async function getNextAuthSecret(): Promise<string> {
   }
 }
 
+async function getN8NCredentials(): Promise<{
+  N8N_WEBHOOK_URL: string;
+  N8N_WEBHOOK_KEY: string;
+}> {
+    console.log('Step 4 Getting N8N Credentials');
+    console.log(
+      'You can find your N8N Credentials at: https://n8n.io/credentials (or text Kuba 🙂)'
+    );
+    const N8N_WEBHOOK_URL = await question('Enter your N8N Webhook URL: ');
+    const N8N_WEBHOOK_KEY = await question('Enter your N8N Webhook Key: ');
+    return { N8N_WEBHOOK_URL, N8N_WEBHOOK_KEY };
+}
+
 async function createStripeWebhook(): Promise<string> {
   console.log('Step 4: Creating Stripe webhook...');
   try {
@@ -246,6 +259,7 @@ async function writeEnvFile(envVars: Record<string, string>) {
   console.log('.env file created with the necessary variables.');
 }
 
+
 async function main() {
   await checkStripeCLI();
 
@@ -258,6 +272,7 @@ async function main() {
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } =
     await getGoogleOAuthCredentials();
   const NEXTAUTH_SECRET = await getNextAuthSecret();
+  const { N8N_WEBHOOK_URL, N8N_WEBHOOK_KEY } = await getN8NCredentials();
 
   await writeEnvFile({
     POSTGRES_URL,
@@ -269,6 +284,8 @@ async function main() {
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
     NEXTAUTH_SECRET,
+    N8N_WEBHOOK_URL,
+    N8N_WEBHOOK_KEY,
   });
 
   console.log('🎉 Setup completed successfully!');
