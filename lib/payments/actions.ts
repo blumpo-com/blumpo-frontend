@@ -9,6 +9,11 @@ export const checkoutAction = withUser(async (formData, user) => {
   await createCheckoutSession({ priceId });
 });
 
+export const topupCheckoutAction = withUser(async (formData, user) => {
+  const priceId = formData.get('priceId') as string;
+  await createCheckoutSession({ priceId, isTopup: true });
+});
+
 export const customerPortalAction = withUser(async (_, user) => {
   const portalSession = await createCustomerPortalSession(user.id);
   redirect(portalSession.url);
