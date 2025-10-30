@@ -25,8 +25,9 @@ They differ **only by the number of monthly tokens** — all other features are 
 | Plan Code | Monthly Tokens | Price / month | Description |
 |------------|----------------|----------------|--------------|
 | `FREE`     | 50 tokens       | **Free**       | Trial tier with limited usage. |
-| `STARTER`  | 300 tokens      | **$9 / month** | Ideal for occasional users generating a few ads per week. |
-| `PRO`      | 1,500 tokens    | **$29 / month** | For regular users and small teams running frequent campaigns. |
+| `STARTER`  | 300 tokens      | **$17 / month** | Ideal for occasional users generating a few ads per week. |
+| `GROWTH`      | 1,500 tokens    | **$39 / month** | For regular users and small teams running frequent campaigns. |
+| `TEAM`        | 5,000 tokens    | **$199 / month** | Best for agencies and larger teams with high-volume needs. |
 
 ### Renewal Behavior
 

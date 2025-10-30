@@ -152,11 +152,21 @@ async function seedSubscriptionPlans() {
       displayName: 'Pro',
       monthlyTokens: 1500,
       description: ['1,500 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding'],
-      stripeProductId: process.env.STRIPE_PRO_PRODUCT_ID || null,
+      stripeProductId: process.env.STRIPE_GROWTH_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
       sortOrder: 3,
     },
+    {
+      planCode: 'TEAM',
+      displayName: 'TEAM',
+      monthlyTokens: 5000,
+      description: ['5,000 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding', 'User management', 'Analytics dashboard'],
+      stripeProductId: process.env.STRIPE_TEAM_PRODUCT_ID || null,
+      isActive: true,
+      isDefault: false,
+      sortOrder: 4,
+    }
   ];
 
   for (const plan of plans) {

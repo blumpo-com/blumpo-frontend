@@ -72,7 +72,8 @@ INSERT INTO "public"."subscription_plan" (
 ) VALUES 
   ('FREE', 'Free Plan', 50, '["50 tokens per month", "Basic ad generation", "Email support"]'::jsonb, NULL, TRUE, TRUE, 1),
   ('STARTER', 'Starter Plan', 300, '["300 tokens per month", "All ad types", "Priority support", "Export options"]'::jsonb, 'prod_starter', TRUE, FALSE, 2),
-  ('PRO', 'Pro Plan', 1500, '["1,500 tokens per month", "All ad types", "24/7 support", "Advanced features", "Team collaboration", "Custom branding"]'::jsonb, 'prod_pro', TRUE, FALSE, 3)
+  ('GROWTH', 'Growth Plan', 1500, '["1,500 tokens per month", "All ad types", "24/7 support", "Advanced features", "Team collaboration", "Custom branding"]'::jsonb, 'prod_growth', TRUE, FALSE, 3),
+  ('TEAM', 'Team Plan', 5000, '["5,000 tokens per month", "All ad types", "24/7 support", "Advanced features", "Team collaboration", "Custom branding", "User management", "Analytics dashboard"]'::jsonb, 'prod_team', TRUE, FALSE, 4)
 ON CONFLICT ("plan_code") DO UPDATE SET
   "display_name" = EXCLUDED."display_name",
   "monthly_tokens" = EXCLUDED."monthly_tokens",
@@ -82,6 +83,19 @@ ON CONFLICT ("plan_code") DO UPDATE SET
   "is_default" = EXCLUDED."is_default",
   "sort_order" = EXCLUDED."sort_order",
   "updated_at" = now();
+
+-- Handle plan code rename: PRO -> GROWTH (idempotent)
+DO $$
+BEGIN
+  -- Check if PRO plan exists and rename it to GROWTH
+  IF EXISTS (SELECT 1 FROM "public"."subscription_plan" WHERE "plan_code" = 'PRO') THEN
+    -- First update any token_account records using PRO
+    UPDATE "public"."token_account" SET "plan_code" = 'GROWTH' WHERE "plan_code" = 'PRO';
+    
+    -- Then delete the PRO plan (it will be replaced by GROWTH from the INSERT above)
+    DELETE FROM "public"."subscription_plan" WHERE "plan_code" = 'PRO';
+  END IF;
+END $$;
 
 -- Data migration for existing token_account records before adding FK constraint
 DO $$
@@ -98,10 +112,16 @@ BEGIN
     SET "plan_code" = CASE 
       WHEN "tokens_per_period" = 50 THEN 'FREE'
       WHEN "tokens_per_period" = 300 THEN 'STARTER'
-      WHEN "tokens_per_period" = 1500 THEN 'PRO'
+      WHEN "tokens_per_period" = 1500 THEN 'GROWTH'
+      WHEN "tokens_per_period" = 5000 THEN 'TEAM'
       ELSE COALESCE("plan_code", 'FREE')
     END
-    WHERE "plan_code" IS NULL OR "plan_code" NOT IN ('FREE', 'STARTER', 'PRO');
+    WHERE "plan_code" IS NULL OR "plan_code" NOT IN ('FREE', 'STARTER', 'GROWTH', 'TEAM');
+    
+    -- Migrate existing PRO users to GROWTH
+    UPDATE "public"."token_account" 
+    SET "plan_code" = 'GROWTH' 
+    WHERE "plan_code" = 'PRO';
     
     -- Ensure all accounts have a valid plan_code
     UPDATE "public"."token_account" 
