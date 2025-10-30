@@ -1,6 +1,7 @@
 import { eq, sql, desc } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { user, tokenAccount, tokenLedger, subscriptionPlan, topupPlan } from '../schema/index';
+import { Timestamp } from 'next/dist/server/lib/cache-handlers/types';
 
 // Get all active subscription plans
 export async function getSubscriptionPlans() {
@@ -293,6 +294,8 @@ export async function updateUserSubscription(
     stripePriceId?: string | null;
     subscriptionStatus?: string | null;
     planCode?: string;
+    lastRefillAt?: Date | null;
+    nextRefillAt?: Date | null;
   }
 ) {
   // First ensure token account exists

@@ -308,3 +308,29 @@ export async function getStripeProducts() {
         : product.default_price?.id
   }));
 }
+
+export async function cancelUserSubscription(userId: string) {
+  const userWithAccount = await getUserWithTokenAccount(userId);
+  
+  if (!userWithAccount?.tokenAccount?.stripeSubscriptionId) {
+    throw new Error('No active subscription found');
+  }
+
+  const { tokenAccount } = userWithAccount;
+
+  // Cancel the subscription in Stripe
+  await stripe.subscriptions.cancel(tokenAccount.stripeSubscriptionId!);
+
+  // Update the user's subscription status in the database
+  await updateUserSubscription(userId, {
+    stripeSubscriptionId: null,
+    subscriptionStatus: 'cancelled',
+    planCode: 'FREE',
+    stripeProductId: null,
+    stripePriceId: null,
+    lastRefillAt: null,
+    nextRefillAt: null
+  });
+
+  console.log(`Cancelled subscription: ${tokenAccount.stripeSubscriptionId} for user: ${userId}`);
+}
