@@ -45,6 +45,7 @@ export default async function PricingPage() {
     
     return {
       ...plan,
+      description: Array.isArray(plan.description) ? plan.description : [],
       hasStripePrice,
       stripePrice
     };
@@ -115,98 +116,7 @@ export default async function PricingPage() {
         </div>
       </div>
 
-      {/* Debug Information for Development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="border-t pt-12 mt-12">
-          <details className="max-w-4xl mx-auto">
-            <summary className="cursor-pointer text-lg font-medium text-gray-700 mb-4">
-              Debug: Stripe Integration Status
-            </summary>
-            <div className="space-y-6">
-              {/* Subscription Plans Status */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Subscription Plans</h4>
-                <div className="space-y-2">
-                  {validatedSubscriptionPlans.map(plan => (
-                    <div key={plan.planCode} className="flex items-center justify-between text-sm">
-                      <span>{plan.displayName} ({plan.planCode})</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="text-right">
-                          <div className="text-gray-600">
-                            Product ID: {plan.stripeProductId || (plan.planCode === 'FREE' ? 'N/A (Free)' : 'Not set')}
-                          </div>
-                          <div className="text-gray-600">
-                            Price ID: {plan.stripePrice?.id || (plan.planCode === 'FREE' ? 'N/A (Free)' : 'Not found')}
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          plan.hasStripePrice 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {plan.planCode === 'FREE' ? 'Free Plan' : (plan.hasStripePrice ? 'Valid' : 'Invalid')}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Topup Plans Status */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Topup Plans</h4>
-                <div className="space-y-2">
-                  {validatedTopupPlans.map(topup => (
-                    <div key={topup.topupSku} className="flex items-center justify-between text-sm">
-                      <span>{topup.displayName} ({topup.topupSku})</span>
-                      <div className="flex items-center space-x-2">
-                        <div className="text-right">
-                          <div className="text-gray-600">
-                            Product ID: {topup.stripeProductId || 'Not set'}
-                          </div>
-                          <div className="text-gray-600">
-                            Price ID: {topup.stripePrice?.id || 'Not found'}
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          topup.hasStripePrice 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {topup.hasStripePrice ? 'Valid' : 'Invalid'}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Available Stripe Prices */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Available Stripe Subscription Prices</h4>
-                <div className="text-sm text-gray-600 space-y-1">
-                  {stripePrices.map(price => (
-                    <div key={price.id}>
-                      {price.id} - ${price.unitAmount ? price.unitAmount / 100 : 0}/{price.interval}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">Available Stripe One-time Prices</h4>
-                <div className="text-sm text-gray-600 space-y-1">
-                  {stripeTopupPrices.map(price => (
-                    <div key={price.id}>
-                      {price.id} - ${price.unitAmount ? price.unitAmount / 100 : 0}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </details>
-        </div>
-      )}
     </main>
   );
 }
@@ -219,6 +129,7 @@ function SubscriptionCard({
     planCode: string;
     displayName: string;
     monthlyTokens: number;
+    description: string[];
     stripeProductId: string | null;
     hasStripePrice: boolean;
     stripePrice: {
@@ -232,7 +143,7 @@ function SubscriptionCard({
   };
   isCurrentPlan: boolean;
 }) {
-  const features = getFeaturesByPlan(plan.planCode);
+  const features = plan.description;
   const stripePriceId = plan.stripePrice?.id || '';
 
   return (
@@ -245,11 +156,8 @@ function SubscriptionCard({
         </div>
       )}
       <h3 className="text-2xl font-medium text-gray-900 mb-2">{plan.displayName}</h3>
-      <p className="text-sm text-gray-600 mb-2">
+      <p className="text-sm text-gray-600 mb-6">
         {plan.monthlyTokens.toLocaleString()} tokens per month
-      </p>
-      <p className="text-sm text-gray-600 mb-4">
-        with 14 day free trial
       </p>
       <p className="text-4xl font-medium text-gray-900 mb-6">
         {plan.planCode === 'FREE' ? (
@@ -377,34 +285,6 @@ function TopupCard({
   );
 }
 
-// Helper functions
-function getFeaturesByPlan(planCode: string): string[] {
-  switch (planCode) {
-    case 'FREE':
-      return [
-        '50 tokens per month',
-        'Basic ad generation',
-        'Email support',
-      ];
-    case 'STARTER':
-      return [
-        '300 tokens per month',
-        'All ad types',
-        'Priority support',
-        'Export options',
-      ];
-    case 'PRO':
-      return [
-        '1,500 tokens per month',
-        'All ad types',
-        '24/7 support',
-        'Advanced features',
-        'Team collaboration',
-        'Custom branding',
-      ];
-    default:
-      return [];
-  }
-}
+
 
 

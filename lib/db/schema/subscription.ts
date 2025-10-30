@@ -6,6 +6,7 @@ export const subscriptionPlan = pgTable('subscription_plan', {
   planCode: text('plan_code').primaryKey(),
   displayName: text('display_name').notNull(),
   monthlyTokens: bigint('monthly_tokens', { mode: 'number' }).notNull().$default(() => 0),
+  description: jsonb('description').notNull().$default(() => []),
   stripeProductId: text('stripe_product_id').unique(),
   isActive: boolean('is_active').notNull().default(true),
   isDefault: boolean('is_default').notNull().default(false),

@@ -21,28 +21,27 @@ CREATE TABLE "subscription_plan" (
 	"plan_code" text PRIMARY KEY NOT NULL,
 	"display_name" text NOT NULL,
 	"monthly_tokens" bigint NOT NULL,
-	"price_amount_minor" bigint NOT NULL,
-	"price_currency" text DEFAULT 'USD' NOT NULL,
+	"description" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"stripe_product_id" text,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"is_default" boolean DEFAULT false NOT NULL,
 	"sort_order" integer DEFAULT 100 NOT NULL,
 	"rollover_cap" bigint,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "subscription_plan_stripe_product_id_unique" UNIQUE("stripe_product_id")
 );
 --> statement-breakpoint
 CREATE TABLE "topup_plan" (
 	"topup_sku" text PRIMARY KEY NOT NULL,
 	"display_name" text NOT NULL,
 	"tokens_amount" bigint NOT NULL,
-	"price_amount_minor" bigint NOT NULL,
-	"price_currency" text DEFAULT 'USD' NOT NULL,
-	"stripe_price_id" text,
+	"stripe_product_id" text,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"sort_order" integer DEFAULT 100 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "topup_plan_stripe_price_id_unique" UNIQUE("stripe_price_id")
+	CONSTRAINT "topup_plan_stripe_product_id_unique" UNIQUE("stripe_product_id")
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX "uq_generation_pricing_single_active" ON "generation_pricing" USING btree ("is_active") WHERE is_active = true;--> statement-breakpoint
@@ -52,13 +51,14 @@ CREATE INDEX "idx_topup_plan_active_sort" ON "topup_plan" USING btree ("is_activ
 
 -- Add table comments for documentation
 COMMENT ON TABLE "public"."subscription_plan" IS 'Subscription plans with pricing and token allowances';
-COMMENT ON COLUMN "public"."subscription_plan"."price_amount_minor" IS 'Price in minor currency units (e.g., cents for USD)';
+COMMENT ON COLUMN "public"."subscription_plan"."stripe_product_id" IS 'Stripe product ID for this plan';
 COMMENT ON COLUMN "public"."subscription_plan"."monthly_tokens" IS 'Number of tokens granted per month';
+COMMENT ON COLUMN "public"."subscription_plan"."description" IS 'Feature list as JSON array of strings';
 COMMENT ON COLUMN "public"."subscription_plan"."rollover_cap" IS 'Maximum tokens that can roll over to next period';
 
 COMMENT ON TABLE "public"."topup_plan" IS 'One-time token top-up plans';
 COMMENT ON COLUMN "public"."topup_plan"."tokens_amount" IS 'Number of tokens granted by this top-up';
-COMMENT ON COLUMN "public"."topup_plan"."price_amount_minor" IS 'Price in minor currency units (e.g., cents for USD)';
+COMMENT ON COLUMN "public"."topup_plan"."stripe_product_id" IS 'Stripe product ID for this topup';
 
 COMMENT ON TABLE "public"."generation_pricing" IS 'Versioned generation cost configuration';
 COMMENT ON COLUMN "public"."generation_pricing"."strategy" IS 'Pricing strategy (STATIC, RULES, etc.)';
@@ -67,17 +67,17 @@ COMMENT ON COLUMN "public"."generation_pricing"."rules" IS 'Additional pricing r
 
 -- Insert subscription plans (idempotent) - MUST happen before adding FK constraint
 INSERT INTO "public"."subscription_plan" (
-  "plan_code", "display_name", "monthly_tokens", "price_amount_minor", 
-  "price_currency", "is_active", "is_default", "sort_order"
+  "plan_code", "display_name", "monthly_tokens", "description", "stripe_product_id", 
+  "is_active", "is_default", "sort_order"
 ) VALUES 
-  ('FREE', 'Free Plan', 50, 0, 'USD', TRUE, TRUE, 1),
-  ('STARTER', 'Starter Plan', 300, 900, 'USD', TRUE, FALSE, 2),
-  ('PRO', 'Pro Plan', 1500, 2900, 'USD', TRUE, FALSE, 3)
+  ('FREE', 'Free Plan', 50, '["50 tokens per month", "Basic ad generation", "Email support"]'::jsonb, NULL, TRUE, TRUE, 1),
+  ('STARTER', 'Starter Plan', 300, '["300 tokens per month", "All ad types", "Priority support", "Export options"]'::jsonb, 'prod_starter', TRUE, FALSE, 2),
+  ('PRO', 'Pro Plan', 1500, '["1,500 tokens per month", "All ad types", "24/7 support", "Advanced features", "Team collaboration", "Custom branding"]'::jsonb, 'prod_pro', TRUE, FALSE, 3)
 ON CONFLICT ("plan_code") DO UPDATE SET
   "display_name" = EXCLUDED."display_name",
   "monthly_tokens" = EXCLUDED."monthly_tokens",
-  "price_amount_minor" = EXCLUDED."price_amount_minor",
-  "price_currency" = EXCLUDED."price_currency",
+  "description" = EXCLUDED."description",
+  "stripe_product_id" = EXCLUDED."stripe_product_id",
   "is_active" = EXCLUDED."is_active",
   "is_default" = EXCLUDED."is_default",
   "sort_order" = EXCLUDED."sort_order",
@@ -117,18 +117,16 @@ ALTER TABLE "token_account" DROP COLUMN "rollover_cap";--> statement-breakpoint
 
 -- Insert topup plans (idempotent)
 INSERT INTO "public"."topup_plan" (
-  "topup_sku", "display_name", "tokens_amount", "price_amount_minor", 
-  "price_currency", "stripe_price_id", "is_active", "sort_order"
+  "topup_sku", "display_name", "tokens_amount", "stripe_product_id", 
+  "is_active", "sort_order"
 ) VALUES 
-  ('TOPUP_100', '100 Tokens', 100, 500, 'USD', 'price_topup_100', TRUE, 1),
-  ('TOPUP_500', '500 Tokens', 500, 1900, 'USD', 'price_topup_500', TRUE, 2),
-  ('TOPUP_2000', '2000 Tokens', 2000, 5900, 'USD', 'price_topup_2000', TRUE, 3)
+  ('TOPUP_100', '100 Tokens', 100, 'prod_topup_100', TRUE, 1),
+  ('TOPUP_500', '500 Tokens', 500, 'prod_topup_500', TRUE, 2),
+  ('TOPUP_2000', '2000 Tokens', 2000, 'prod_topup_2000', TRUE, 3)
 ON CONFLICT ("topup_sku") DO UPDATE SET
   "display_name" = EXCLUDED."display_name",
   "tokens_amount" = EXCLUDED."tokens_amount",
-  "price_amount_minor" = EXCLUDED."price_amount_minor",
-  "price_currency" = EXCLUDED."price_currency",
-  "stripe_price_id" = EXCLUDED."stripe_price_id",
+  "stripe_product_id" = EXCLUDED."stripe_product_id",
   "is_active" = EXCLUDED."is_active",
   "sort_order" = EXCLUDED."sort_order",
   "updated_at" = now();
@@ -139,3 +137,9 @@ INSERT INTO "public"."generation_pricing" (
 ) VALUES 
   ('URL-only static v1', 'STATIC', 20, '{}'::jsonb, TRUE, 1)
 ON CONFLICT DO NOTHING;
+
+-- Remove legacy price columns if they exist (from previous schema iterations)
+ALTER TABLE "subscription_plan" DROP COLUMN IF EXISTS "price_amount_minor";
+ALTER TABLE "subscription_plan" DROP COLUMN IF EXISTS "price_currency";
+ALTER TABLE "topup_plan" DROP COLUMN IF EXISTS "price_amount_minor";
+ALTER TABLE "topup_plan" DROP COLUMN IF EXISTS "price_currency";
