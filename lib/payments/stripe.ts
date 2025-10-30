@@ -272,6 +272,7 @@ export async function getStripePrices() {
     unitAmount: price.unit_amount,
     currency: price.currency,
     interval: price.recurring?.interval,
+    intervalCount: price.recurring?.interval_count,
     trialPeriodDays: price.recurring?.trial_period_days
   }));
 }
