@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser, reserveTokens, refundTokens } from "@/lib/db/queries";
+import { getUser, reserveTokens, refundTokens, hasEnoughTokens } from "@/lib/db/queries";
 import { randomUUID } from "crypto";
 
 const TOKENS_COST_PER_GENERATION = 20;
@@ -19,6 +19,16 @@ export async function POST(req: Request) {
 
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "Missing url" }, { status: 400 });
+    }
+
+    // Check if user has enough tokens before proceeding
+    const hasTokens = await hasEnoughTokens(user.id, TOKENS_COST_PER_GENERATION);
+    if (!hasTokens) {
+      return NextResponse.json({ 
+        error: "Insufficient tokens", 
+        error_code: "INSUFFICIENT_TOKENS",
+        tokens_required: TOKENS_COST_PER_GENERATION
+      }, { status: 402 }); // Payment Required
     }
 
     // Generate a unique job ID for this generation

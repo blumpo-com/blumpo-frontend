@@ -27,6 +27,12 @@ export async function getTokenBalance(userId: string) {
   return result.length > 0 ? result[0].balance : 0;
 }
 
+// Check if user has sufficient tokens for a generation
+export async function hasEnoughTokens(userId: string, requiredTokens: number): Promise<boolean> {
+  const balance = await getTokenBalance(userId);
+  return balance >= requiredTokens;
+}
+
 // Token ledger operations (with idempotency)
 export async function appendTokenLedgerEntry(
   userId: string,
