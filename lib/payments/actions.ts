@@ -25,3 +25,10 @@ export const unsubscribeAction = withUser(async (_, user) => {
   // Redirect to dashboard with success message
   redirect('/dashboard?unsubscribed=true');
 });
+
+export const reactivateAction = withUser(async (_, user) => {
+  const { reactivateUserSubscription } = await import('./stripe');
+  await reactivateUserSubscription(user.id);
+  // Redirect to dashboard with success message
+  redirect('/dashboard?reactivated=true');
+});

@@ -296,6 +296,7 @@ export async function updateUserSubscription(
     planCode?: string;
     lastRefillAt?: Date | null;
     nextRefillAt?: Date | null;
+    cancellationTime?: Date | null;
   }
 ) {
   // First ensure token account exists
@@ -330,6 +331,7 @@ export async function activateSubscription(
     stripePriceId?: string | null;
     subscriptionStatus?: string | null;
     planCode: string;
+    cancellationTime?: Date | null;
   },
   planTokens: number
 ) {
@@ -374,7 +376,7 @@ export async function activateSubscription(
 
     // Update token account with new balance and refill dates
     const now = new Date();
-    const nextRefill = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const nextRefill = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes() + 5, now.getSeconds());
 
     await tx
       .update(tokenAccount)

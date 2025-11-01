@@ -18,6 +18,8 @@ export const tokenAccount = pgTable('token_account', {
   stripeProductId: text('stripe_product_id'),
   stripePriceId: text('stripe_price_id'),
   subscriptionStatus: text('subscription_status'),
+  // When subscription is cancelled but user still has access until end of billing period
+  cancellationTime: timestamp('cancellation_time', { withTimezone: true }),
 }, (table) => ({
   stripeCustomerIdx: uniqueIndex('uq_token_account_stripe_customer')
     .on(table.stripeCustomerId)

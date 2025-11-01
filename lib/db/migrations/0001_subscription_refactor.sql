@@ -163,3 +163,6 @@ ALTER TABLE "subscription_plan" DROP COLUMN IF EXISTS "price_amount_minor";
 ALTER TABLE "subscription_plan" DROP COLUMN IF EXISTS "price_currency";
 ALTER TABLE "topup_plan" DROP COLUMN IF EXISTS "price_amount_minor";
 ALTER TABLE "topup_plan" DROP COLUMN IF EXISTS "price_currency";
+
+-- Add cancellation_time column to token_account table (idempotent)
+ALTER TABLE "token_account" ADD COLUMN IF NOT EXISTS "cancellation_time" timestamp with time zone;

@@ -10,7 +10,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
-import { customerPortalAction, unsubscribeAction } from '@/lib/payments/actions';
+import { customerPortalAction, unsubscribeAction, reactivateAction } from '@/lib/payments/actions';
 import { useActionState } from 'react';
 import { User, TokenAccount } from '@/lib/db/schema';
 import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
@@ -47,6 +47,7 @@ function ManageSubscription() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const [isUnsubscribing, setIsUnsubscribing] = useState(false);
+  const [isReactivating, setIsReactivating] = useState(false);
   const [unsubscribeState, unsubscribeActionHandler] = useActionState<ActionState, FormData>(
     async (prevState, formData) => {
       setIsUnsubscribing(true);
@@ -68,6 +69,26 @@ function ManageSubscription() {
     { error: '', success: '' }
   );
 
+  const [reactivateState, reactivateActionHandler] = useActionState<ActionState, FormData>(
+    async (prevState, formData) => {
+      setIsReactivating(true);
+      try {
+        await reactivateAction(formData);
+        setIsReactivating(false);
+        return { success: 'Successfully reactivated your subscription' };
+      } catch (error) {
+        setIsReactivating(false);
+        // Re-throw redirect errors so they can be handled by Next.js
+        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+          throw error;
+        }
+        console.error('Reactivate error:', error);
+        return { error: 'Failed to reactivate subscription. Please try again.' };
+      }
+    },
+    { error: '', success: '' }
+  );
+
   if (!user) {
     return (
       <Card className="mb-8">
@@ -84,6 +105,14 @@ function ManageSubscription() {
   const { tokenAccount } = user;
   const hasActiveSubscription = tokenAccount?.stripeSubscriptionId && tokenAccount?.subscriptionStatus === 'active';
   const planName = tokenAccount?.planCode || 'FREE';
+  
+  // Check if subscription is cancelled but still active until cancellation date
+  const isCancelledButActive = tokenAccount?.cancellationTime && 
+    new Date(tokenAccount.cancellationTime) > new Date() &&
+    tokenAccount?.stripeSubscriptionId &&
+    (tokenAccount.subscriptionStatus === 'cancel_at_period_end' || tokenAccount.subscriptionStatus === 'cancelled');
+  
+  const isEffectivelyActive = hasActiveSubscription || isCancelledButActive;
 
   return (
     <>
@@ -99,26 +128,48 @@ function ManageSubscription() {
                   Current Plan: {planName === 'FREE' ? 'Free' : planName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {hasActiveSubscription 
-                    ? `Status: ${tokenAccount.subscriptionStatus}`
-                    : 'No active subscription'
+                  {isCancelledButActive 
+                    ? `Active until ${new Date(tokenAccount.cancellationTime!).toLocaleDateString()}`
+                    : hasActiveSubscription 
+                      ? `Status: ${tokenAccount.subscriptionStatus}`
+                      : 'No active subscription'
                   }
                 </p>
               </div>
               <div className="flex gap-2">
-                {hasActiveSubscription ? (
+                {isEffectivelyActive ? (
                   <>
                     <Button variant="outline" asChild>
                       <Link href="/pricing">
                         Change Plan
                       </Link>
                     </Button>
-                    <Button 
-                      variant="destructive" 
-                      onClick={() => setShowUnsubscribeDialog(true)}
-                    >
-                      Unsubscribe
-                    </Button>
+                    {!isCancelledButActive && (
+                      <Button 
+                        variant="destructive" 
+                        onClick={() => setShowUnsubscribeDialog(true)}
+                      >
+                        Unsubscribe
+                      </Button>
+                    )}
+                    {isCancelledButActive && (
+                      <form action={reactivateActionHandler} className="inline">
+                        <Button 
+                          type="submit" 
+                          variant="outline"
+                          disabled={isReactivating}
+                        >
+                          {isReactivating ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Reactivating...
+                            </>
+                          ) : (
+                            'Reactivate'
+                          )}
+                        </Button>
+                      </form>
+                    )}
                   </>
                 ) : (
                   <Button variant="outline" asChild>
@@ -139,8 +190,8 @@ function ManageSubscription() {
             Are you sure you want to unsubscribe?
           </h3>
           <p className="text-gray-600">
-            You will lose access to your current plan features immediately. 
-            Your account will be downgraded to the free plan.
+            Your subscription will be cancelled at the end of your current billing period. 
+            You will keep access to your plan features until then.
           </p>
           {unsubscribeState.error && (
             <p className="text-red-600 text-sm">{unsubscribeState.error}</p>
@@ -303,12 +354,21 @@ function TokenBalance() {
 
 export default function SettingsPage() {
   const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Check for unsubscribe success message
+  // Check for success messages
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('unsubscribed') === 'true') {
+        setSuccessMessage('Successfully scheduled cancellation. Your subscription will remain active until the end of your billing period.');
+        setShowSuccess(true);
+        // Clean up URL
+        window.history.replaceState({}, '', '/dashboard');
+        // Hide success message after 5 seconds
+        setTimeout(() => setShowSuccess(false), 5000);
+      } else if (urlParams.get('reactivated') === 'true') {
+        setSuccessMessage('Successfully reactivated your subscription. Cancellation has been removed.');
         setShowSuccess(true);
         // Clean up URL
         window.history.replaceState({}, '', '/dashboard');
@@ -325,7 +385,7 @@ export default function SettingsPage() {
       {showSuccess && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-green-800 text-sm">
-            ✓ Successfully unsubscribed from your plan. Your account has been downgraded to the free plan.
+            ✓ {successMessage}
           </p>
         </div>
       )}

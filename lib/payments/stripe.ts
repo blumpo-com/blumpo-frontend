@@ -151,14 +151,14 @@ export async function handleSubscriptionChange(
     const plan = subscription.items.data[0]?.price;
     const stripePriceId = plan?.id!;
     const stripeProductId = plan?.product as string;
-    
+
     // Find matching subscription plan by Stripe product ID
     const matchingPlan = await getSubscriptionPlanByStripeProductId(stripeProductId);
     const planCode = matchingPlan?.planCode || 'FREE';
 
-    // Cancel old subscription if user is changing plans
-    if (currentTokenAccount?.stripeSubscriptionId && 
-        currentTokenAccount.stripeSubscriptionId !== subscriptionId) {
+    // Cancel old subscription if user is changing plans 
+    if (currentTokenAccount?.stripeSubscriptionId &&
+      currentTokenAccount.stripeSubscriptionId !== subscriptionId) {
       try {
         await stripe.subscriptions.cancel(currentTokenAccount.stripeSubscriptionId);
         console.log(`Cancelled old subscription: ${currentTokenAccount.stripeSubscriptionId}`);
@@ -173,7 +173,9 @@ export async function handleSubscriptionChange(
       stripeProductId: stripeProductId,
       stripePriceId: stripePriceId,
       subscriptionStatus: status,
-      planCode: planCode
+      planCode: planCode,
+      // If subscription is active/trialing, ensure any scheduled cancellation is cleared
+      cancellationTime: null
     };
 
     // Use activation function for active subscriptions to ensure proper token allocation
@@ -189,7 +191,8 @@ export async function handleSubscriptionChange(
       stripeProductId: null,
       stripePriceId: null,
       subscriptionStatus: status,
-      planCode: 'FREE' // Reset to free plan
+      planCode: 'FREE', // Reset to free plan
+      cancellationTime: null
     });
   }
 }
@@ -199,11 +202,11 @@ export async function handlePaymentSuccess(
 ) {
   const customerId = session.customer as string;
   const sessionId = session.id;
-  
+
   // Check if this is a one-time payment (topup)
   if (session.mode === 'payment') {
     const userWithAccount = await getTokenAccountByStripeCustomerId(customerId);
-    
+
     if (!userWithAccount) {
       console.error('User not found for Stripe customer:', customerId);
       return;
@@ -211,16 +214,16 @@ export async function handlePaymentSuccess(
 
     const userId = userWithAccount.user.id;
     const priceId = session.line_items?.data[0]?.price?.id;
-    
+
     if (priceId) {
       // Get the product ID from the price
       const price = await stripe.prices.retrieve(priceId);
       const productId = typeof price.product === 'string' ? price.product : price.product.id;
-      
+
       // Find matching topup plan by product ID
       const topupPlans = await getTopupPlans();
       const matchingTopup = topupPlans.find(t => t.stripeProductId === productId);
-      
+
       if (matchingTopup) {
         await addTopupTokens(userId, matchingTopup.tokensAmount, sessionId, matchingTopup.topupSku);
       }
@@ -231,6 +234,7 @@ export async function handlePaymentSuccess(
 export async function handleInvoicePaymentSucceeded(
   invoice: Stripe.Invoice
 ) {
+  console.log('Handling invoice payment succeeded event');
   const customerId = invoice.customer as string;
   const subscriptionId = invoice.lines?.data?.[0]?.subscription as string;
 
@@ -248,7 +252,7 @@ export async function handleInvoicePaymentSucceeded(
 
   // Get subscription plan
   const subscriptionPlan = await getSubscriptionPlan(tokenAccount.planCode);
-  
+
   if (subscriptionPlan) {
     // Refill tokens for monthly billing cycle
     // The refillSubscriptionTokens function now handles the logic of only adding
@@ -312,26 +316,58 @@ export async function getStripeProducts() {
 
 export async function cancelUserSubscription(userId: string) {
   const userWithAccount = await getUserWithTokenAccount(userId);
-  
+
   if (!userWithAccount?.tokenAccount?.stripeSubscriptionId) {
     throw new Error('No active subscription found');
   }
 
   const { tokenAccount } = userWithAccount;
 
-  // Cancel the subscription in Stripe
-  await stripe.subscriptions.cancel(tokenAccount.stripeSubscriptionId!);
+  // Schedule cancellation at period end (keep access until then)
+  const sub = await stripe.subscriptions.update(tokenAccount.stripeSubscriptionId!, {
+    cancel_at_period_end: true,
+  });
+  
+  const cancellationTime = sub.cancel_at ? new Date(sub.cancel_at * 1000) : new Date();
 
-  // Update the user's subscription status in the database
+  // Keep all Stripe data for potential reactivation, just set cancellation_time and status
   await updateUserSubscription(userId, {
-    stripeSubscriptionId: null,
-    subscriptionStatus: 'cancelled',
-    planCode: 'FREE',
-    stripeProductId: null,
-    stripePriceId: null,
-    lastRefillAt: null,
-    nextRefillAt: null
+    cancellationTime,
+    subscriptionStatus: 'cancel_at_period_end'
   });
 
-  console.log(`Cancelled subscription: ${tokenAccount.stripeSubscriptionId} for user: ${userId}`);
+  console.log(`Scheduled cancellation at period end for subscription: ${tokenAccount.stripeSubscriptionId} for user: ${userId}. Access until ${cancellationTime.toISOString()}`);
+}
+
+export async function reactivateUserSubscription(userId: string) {
+  const userWithAccount = await getUserWithTokenAccount(userId);
+
+  if (!userWithAccount?.tokenAccount?.stripeSubscriptionId) {
+    throw new Error('No subscription found to reactivate');
+  }
+
+  const { tokenAccount } = userWithAccount;
+
+  // Check if subscription is scheduled for cancellation
+  if (!tokenAccount.cancellationTime) {
+    throw new Error('Subscription is not scheduled for cancellation');
+  }
+
+  // Check if cancellation time has already passed
+  if (new Date(tokenAccount.cancellationTime) <= new Date()) {
+    throw new Error('Cannot reactivate subscription - cancellation period has expired');
+  }
+
+  // Remove the scheduled cancellation in Stripe
+  const sub = await stripe.subscriptions.update(tokenAccount.stripeSubscriptionId!, {
+    cancel_at_period_end: false,
+  });
+
+  // Clear cancellation_time and restore active status
+  await updateUserSubscription(userId, {
+    cancellationTime: null,
+    subscriptionStatus: sub.status
+  });
+
+  console.log(`Reactivated subscription: ${tokenAccount.stripeSubscriptionId} for user: ${userId}`);
 }
