@@ -248,15 +248,10 @@ export async function refillSubscriptionTokens(userId: string, tokensPerPeriod: 
     let delta: number;
 
     // If user has fewer tokens than plan amount, add tokens to reach plan amount
-    // If user has more tokens, keep the current amount (don't subtract)
-    if (currentBalance < tokensPerPeriod) {
-      delta = tokensPerPeriod - currentBalance;
-      newBalance = tokensPerPeriod;
-    } else {
-      delta = 0; // No tokens added
-      newBalance = currentBalance; // Keep existing balance
-    }
+    // If user has more tokens, substruct them to match plan amount
 
+    delta = tokensPerPeriod - currentBalance;
+    newBalance = tokensPerPeriod;
     // Only create ledger entry if tokens were actually added
     if (delta > 0) {
       await tx.insert(tokenLedger).values({
@@ -338,7 +333,7 @@ export async function activateSubscription(
   return await db.transaction(async (tx) => {
     // Update subscription data
     await updateUserSubscription(userId, subscriptionData);
-    
+
     // Lock the token account for update
     const account = await tx
       .select()
@@ -360,7 +355,7 @@ export async function activateSubscription(
     if (currentBalance < planTokens && subscriptionData.planCode !== 'FREE') {
       delta = planTokens - currentBalance;
       newBalance = planTokens;
-      
+
       // Create ledger entry for subscription activation
       await tx.insert(tokenLedger).values({
         userId,

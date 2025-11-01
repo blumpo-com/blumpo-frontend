@@ -19,15 +19,15 @@ At the current stage, **each ad generation costs a fixed number of tokens (20)**
 
 ## 2. Subscription Plans
 
-Only **three subscription plans** are available.  
-They differ **only by the number of monthly tokens** — all other features are identical.
+Only **four subscription plans** are available.  
+They differ by the number of monthly tokens, features, and user limits.
 
-| Plan Code | Monthly Tokens | Price / month | Description |
-|------------|----------------|----------------|--------------|
-| `FREE`     | 50 tokens       | **Free**       | Trial tier with limited usage. |
-| `STARTER`  | 300 tokens      | **$17 / month** | Ideal for occasional users generating a few ads per week. |
-| `GROWTH`      | 1,500 tokens    | **$39 / month** | For regular users and small teams running frequent campaigns. |
-| `TEAM`        | 5,000 tokens    | **$199 / month** | Best for agencies and larger teams with high-volume needs. |
+| Plan Code | Monthly Tokens | Ads per Month | Price / month | Description |
+|------------|----------------|---------------|----------------|-------------|
+| `FREE`     | 50 tokens      | 2-3 ads       | **Free**       | Trial tier with limited usage. |
+| `STARTER`  | 1,000 tokens   | 50 ads        | **$17 / month** | For individual creators with occasional use. |
+| `GROWTH`   | 3,000 tokens   | 150 ads       | **$39 / month** | For small businesses and marketers. |
+| `TEAM`     | 40,000 tokens  | 2,000 ads     | **$199 / month** | For medium size agencies and marketing teams. |
 
 ### Renewal Behavior
 
@@ -120,16 +120,16 @@ No rollover — unused tokens are lost at the end of each month.
 
 ## 8. Example Balance Flow
 
-**User on `STARTER` plan (300 tokens/month):**
+**User on `STARTER` plan (1,000 tokens/month):**
 
-1. Subscription refill → +300 (balance = 300)
-2. Generate ad #1 → −20 → (balance = 280)
-3. Generate ad #2 → −20 → (balance = 260)
-4. One job fails → +20 refund → (balance = 280)
-5. Top-up purchase (500 tokens) → +500 → (balance = 780)
+1. Subscription refill → +1,000 (balance = 1,000)
+2. Generate ad #1 → −20 → (balance = 980)
+3. Generate ad #2 → −20 → (balance = 960)
+4. One job fails → +20 refund → (balance = 980)
+5. Top-up purchase (500 tokens) → +500 → (balance = 1,480)
 
 Next month:
-- Subscription refill → balance reset to 300 (no rollover).
+- Subscription refill → balance reset to 1,000 (no rollover).
 
 ---
 
