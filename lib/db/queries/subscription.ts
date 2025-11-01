@@ -183,6 +183,16 @@ export async function refundTokens(userId: string, tokensCost: number, jobId: st
 export async function addTopupTokens(userId: string, tokensAmount: number, checkoutSessionId: string, topupSku: string) {
   return await db.transaction(async (tx) => {
 
+    // Check if topup already processed (idempotency)
+    const existingTopup = await tx
+      .select()
+      .from(tokenLedger)
+      .where(sql`${tokenLedger.reason} = 'TOPUP_PURCHASE:${topupSku}' AND ${tokenLedger.referenceId} = ${checkoutSessionId}`)
+      .limit(1);
+    if (existingTopup.length > 0) {
+      return; // Already processed
+    }
+
     // Lock the token account for update
     const account = await tx
       .select()
