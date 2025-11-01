@@ -253,6 +253,21 @@ export async function handleInvoicePaymentSucceeded(
   // Get subscription plan
   const subscriptionPlan = await getSubscriptionPlan(tokenAccount.planCode);
 
+  // Check if subscription is already refilled for this period
+  const RefillDate = tokenAccount.nextRefillAt; // Date
+
+  // If already refilled for this period, skip
+  // Add 3 days buffer to avoid timezone issues
+  const now = new Date();
+  now.setDate(now.getDate() + 3);
+
+  // Directly compare Date objects
+  if (RefillDate && new Date(RefillDate) >= now) {
+    console.log(`Subscription tokens already refilled for user ${userId} for period up to ${RefillDate}. Skipping refill.`);
+    return;
+  }
+
+
   if (subscriptionPlan) {
     // Refill tokens for monthly billing cycle
     // The refillSubscriptionTokens function now handles the logic of only adding
