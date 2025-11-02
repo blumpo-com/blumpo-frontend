@@ -262,8 +262,8 @@ export async function refillSubscriptionTokens(userId: string, tokensPerPeriod: 
 
     delta = tokensPerPeriod - currentBalance;
     newBalance = tokensPerPeriod;
-    // Only create ledger entry if tokens were actually added
-    if (delta > 0) {
+    // Always create ledger entry if tokens were actually changed (added or removed)
+    if (delta !== 0) {
       await tx.insert(tokenLedger).values({
         userId,
         delta: delta,
