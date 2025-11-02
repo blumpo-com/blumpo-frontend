@@ -258,7 +258,7 @@ export async function refillSubscriptionTokens(userId: string, tokensPerPeriod: 
     let delta: number;
 
     // If user has fewer tokens than plan amount, add tokens to reach plan amount
-    // If user has more tokens, substruct them to match plan amount
+    // If user has more tokens, subtract them to match plan amount
 
     delta = tokensPerPeriod - currentBalance;
     newBalance = tokensPerPeriod;
