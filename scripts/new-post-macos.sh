@@ -46,7 +46,7 @@ echo ""
 
 # Detect repository root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT=$(node "$SCRIPT_DIR/blog-utils.mjs" detect-root 2>/dev/null) || error "Not in a git repository"
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || error "Not in a git repository"
 success "Repository root: $REPO_ROOT"
 
 # Get post title
@@ -179,6 +179,66 @@ else
   warn "Invalid choice. Skipping images..."
 fi
 
+# Cover image selection
+echo ""
+info "🎨 Cover Image Selection"
+echo "The cover image appears in the blog index/listing page."
+echo ""
+echo "Options:"
+echo "  1) Use first image in post directory (auto-detected)"
+echo "  2) Specify a custom image path"
+echo "  3) Skip (leave cover empty)"
+read -p "Enter choice (1, 2, or 3): " COVER_MODE
+
+COVER_IMAGE=""
+if [ "$COVER_MODE" = "1" ]; then
+  # Find first image
+  FIRST_IMAGE=$(find "$IMAGES_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" -o -iname "*.svg" \) | head -n 1)
+  if [ -n "$FIRST_IMAGE" ]; then
+    IMAGE_FILENAME=$(basename "$FIRST_IMAGE")
+    # Copy to public directory
+    PUBLIC_DIR="$REPO_ROOT/public/blog/$SLUG"
+    mkdir -p "$PUBLIC_DIR"
+    cp "$FIRST_IMAGE" "$PUBLIC_DIR/"
+    COVER_IMAGE="/blog/$SLUG/$IMAGE_FILENAME"
+    success "Cover set: $COVER_IMAGE"
+  else
+    warn "No images found in post directory"
+  fi
+elif [ "$COVER_MODE" = "2" ]; then
+  read -p "Enter path to cover image (drag & drop): " COVER_PATH
+  # Remove quotes from drag & drop
+  COVER_PATH=$(echo "$COVER_PATH" | sed "s/^['\"]//;s/['\"]$//")
+  if [ -f "$COVER_PATH" ]; then
+    IMAGE_FILENAME=$(basename "$COVER_PATH")
+    # Copy to public directory
+    PUBLIC_DIR="$REPO_ROOT/public/blog/$SLUG"
+    mkdir -p "$PUBLIC_DIR"
+    cp "$COVER_PATH" "$PUBLIC_DIR/"
+    COVER_IMAGE="/blog/$SLUG/$IMAGE_FILENAME"
+    success "Cover set: $COVER_IMAGE"
+  else
+    warn "File not found: $COVER_PATH. Skipping cover..."
+  fi
+elif [ "$COVER_MODE" = "3" ]; then
+  info "Skipping cover image"
+else
+  warn "Invalid choice. Skipping cover image..."
+fi
+
+# Update MDX file with cover image if set
+if [ -n "$COVER_IMAGE" ]; then
+  # Update the cover field in frontmatter
+  if [ "$(uname)" = "Darwin" ]; then
+    # macOS sed syntax
+    sed -i '' "s|^cover: ''$|cover: $COVER_IMAGE|" "$MDX_PATH"
+  else
+    # Linux sed syntax
+    sed -i "s|^cover: ''$|cover: $COVER_IMAGE|" "$MDX_PATH"
+  fi
+  info "Updated frontmatter with cover image"
+fi
+
 # Git operations
 echo ""
 info "🔀 Git Operations"
@@ -200,6 +260,15 @@ fi
 
 # Add files
 git add "$MDX_PATH" "$IMAGES_DIR" || error "Failed to add files"
+
+# Add public directory if cover image was set
+if [ -n "$COVER_IMAGE" ]; then
+  PUBLIC_DIR="$REPO_ROOT/public/blog/$SLUG"
+  if [ -d "$PUBLIC_DIR" ]; then
+    git add "$PUBLIC_DIR" || warn "Could not add public directory"
+  fi
+fi
+
 success "Files staged"
 
 # Commit

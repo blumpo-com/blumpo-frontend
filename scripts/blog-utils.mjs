@@ -254,8 +254,24 @@ export function parseAndFixMarkdown({ mdx, slug, imagesDir, contentRoot }) {
       );
       fixedMdx = fixedMdx.replace(img.full, newFull);
     }
-    // For markdown images, keep as-is with relative paths
-    else if (img.type === 'markdown') {
+    // Convert markdown images to Next.js Image components with static imports
+    else if (img.type === 'markdown' && normalized.startsWith('./')) {
+      const varName = pathToVarName(normalized);
+      
+      // Only add import once per unique image
+      if (!imageVarMap.has(normalized)) {
+        imageVarMap.set(normalized, varName);
+        imports.push(`import ${varName} from '${normalized}'`);
+      }
+      
+      const usedVarName = imageVarMap.get(normalized);
+      // Convert ![alt](path) to <Image src={varName} alt="alt" />
+      const altText = img.alt || '';
+      const newFull = `<Image src={${usedVarName}} alt="${altText}" />`;
+      fixedMdx = fixedMdx.replace(img.full, newFull);
+    }
+    // For markdown images with external URLs, keep as-is
+    else if (img.type === 'markdown' && !normalized.startsWith('./')) {
       if (normalized !== img.path) {
         const newPath = img.original.replace(img.path, normalized);
         const newFull = `![${img.alt}](${newPath})`;
@@ -418,29 +434,10 @@ export function ensureFrontmatter({ mdx, title, slug, imagesDir, today, inputFro
     data.excerpt = generateExcerpt(content);
   }
   
-  // Setup cover image: Copy first image to public folder for blog index
-  if (!data.cover || data.cover.trim() === '' || data.cover.startsWith('./')) {
-    const firstImage = findFirstImage(imagesDir);
-    if (firstImage) {
-      // Copy to public folder for blog index compatibility
-      const publicBlogDir = path.join(path.dirname(path.dirname(imagesDir)), '..', 'public', 'blog', slug);
-      if (!fs.existsSync(publicBlogDir)) {
-        fs.mkdirSync(publicBlogDir, { recursive: true });
-      }
-      
-      const imageFileName = path.basename(firstImage.replace(/^\.\/[^/]+\//, ''));
-      const sourceImagePath = path.join(imagesDir, imageFileName);
-      const publicImagePath = path.join(publicBlogDir, imageFileName);
-      
-      if (fs.existsSync(sourceImagePath)) {
-        fs.copyFileSync(sourceImagePath, publicImagePath);
-        data.cover = `/blog/${slug}/${imageFileName}`;
-      } else {
-        data.cover = '';
-      }
-    } else {
-      data.cover = '';
-    }
+  // Setup cover image: Only use if explicitly provided in input frontmatter
+  // The workflow script will handle cover image selection interactively
+  if (!data.cover || data.cover.trim() === '') {
+    data.cover = '';
   }
   
   if (!data.ogImage) data.ogImage = '';
