@@ -1,0 +1,240 @@
+#!/bin/bash
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Helper functions
+error() {
+  echo -e "${RED}✗ Error: $1${NC}" >&2
+  exit 1
+}
+
+success() {
+  echo -e "${GREEN}✓ $1${NC}"
+}
+
+info() {
+  echo -e "${BLUE}ℹ $1${NC}"
+}
+
+warn() {
+  echo -e "${YELLOW}⚠ $1${NC}"
+}
+
+# Check prerequisites
+command -v node >/dev/null 2>&1 || error "node is required but not installed"
+command -v git >/dev/null 2>&1 || error "git is required but not installed"
+command -v gh >/dev/null 2>&1 || error "gh (GitHub CLI) is required but not installed. Install: https://cli.github.com/"
+
+# Check gh authentication
+if ! gh auth status >/dev/null 2>&1; then
+  error "GitHub CLI not authenticated. Run: gh auth login"
+fi
+
+echo ""
+echo "╔════════════════════════════════════════╗"
+echo "║   📝 Blog Post Submission Workflow     ║"
+echo "╚════════════════════════════════════════╝"
+echo ""
+
+# Detect repository root
+REPO_ROOT=$(node "$(dirname "$0")/blog-utils.mjs" detect-root 2>/dev/null) || error "Not in a git repository"
+success "Repository root: $REPO_ROOT"
+
+# Get post title
+echo ""
+read -p "Enter post title: " POST_TITLE
+if [ -z "$POST_TITLE" ]; then
+  error "Post title cannot be empty"
+fi
+
+# Generate slug
+SLUG=$(node "$(dirname "$0")/blog-utils.mjs" slugify "$POST_TITLE")
+success "Generated slug: $SLUG"
+
+# Choose input mode
+echo ""
+info "How would you like to provide the content?"
+echo "  1) Path to existing .md/.mdx file"
+echo "  2) Paste Markdown content interactively"
+read -p "Enter choice (1 or 2): " INPUT_MODE
+
+MARKDOWN_CONTENT=""
+SOURCE_MODE=""
+
+if [ "$INPUT_MODE" = "1" ]; then
+  read -p "Enter path to markdown file: " FILE_PATH
+  if [ ! -f "$FILE_PATH" ]; then
+    error "File not found: $FILE_PATH"
+  fi
+  SOURCE_MODE="file"
+  MARKDOWN_CONTENT="$FILE_PATH"
+  success "File loaded: $FILE_PATH"
+elif [ "$INPUT_MODE" = "2" ]; then
+  echo ""
+  info "Paste your Markdown content below."
+  info "When finished, type 'EOF' on a new line and press Enter."
+  echo ""
+  
+  TEMP_CONTENT=""
+  while IFS= read -r line; do
+    if [ "$line" = "EOF" ]; then
+      break
+    fi
+    TEMP_CONTENT="${TEMP_CONTENT}${line}"$'\n'
+  done
+  
+  SOURCE_MODE="stdin"
+  MARKDOWN_CONTENT="$TEMP_CONTENT"
+  success "Content received ($(echo "$MARKDOWN_CONTENT" | wc -l) lines)"
+else
+  error "Invalid choice. Please enter 1 or 2."
+fi
+
+# Process the post
+echo ""
+info "Processing post..."
+
+if [ "$SOURCE_MODE" = "file" ]; then
+  RESULT=$(node "$(dirname "$0")/blog-utils.mjs" process "$REPO_ROOT" "$POST_TITLE" "$SLUG" "file" "$MARKDOWN_CONTENT" 2>&1)
+else
+  # For stdin mode, write content to a temp file to avoid command-line parsing issues
+  TEMP_FILE=$(mktemp /tmp/blog-post-XXXXXX.md)
+  echo "$MARKDOWN_CONTENT" > "$TEMP_FILE"
+  
+  RESULT=$(node "$(dirname "$0")/blog-utils.mjs" process "$REPO_ROOT" "$POST_TITLE" "$SLUG" "file" "$TEMP_FILE" 2>&1)
+  EXIT_CODE=$?
+  
+  # Clean up temp file
+  rm -f "$TEMP_FILE"
+  
+  if [ $EXIT_CODE -ne 0 ]; then
+    error "Failed to process post: $RESULT"
+  fi
+fi
+
+if [ $? -ne 0 ]; then
+  error "Failed to process post: $RESULT"
+fi
+
+MDX_PATH=$(echo "$RESULT" | grep -o '"mdxPath":"[^"]*"' | cut -d'"' -f4)
+IMAGES_DIR=$(echo "$RESULT" | grep -o '"imagesDir":"[^"]*"' | cut -d'"' -f4)
+IMPORTS_ADDED=$(echo "$RESULT" | grep -o '"importsAdded":[0-9]*' | cut -d':' -f2)
+IMAGES_COPIED=$(echo "$RESULT" | grep -o '"imagesCopied":[0-9]*' | cut -d':' -f2)
+
+success "Created: $MDX_PATH"
+success "Images directory: $IMAGES_DIR"
+
+if [ -n "$IMPORTS_ADDED" ] && [ "$IMPORTS_ADDED" -gt 0 ]; then
+  info "Added $IMPORTS_ADDED static image imports for Next.js optimization"
+fi
+
+if [ -n "$IMAGES_COPIED" ] && [ "$IMAGES_COPIED" -gt 0 ]; then
+  info "Copied $IMAGES_COPIED images to post directory"
+fi
+
+COVER_IMAGE=$(echo "$RESULT" | grep -o '"cover":"[^"]*"' | cut -d'"' -f4)
+if [ -n "$COVER_IMAGE" ] && [ "$COVER_IMAGE" != "" ]; then
+  info "Cover image set: $COVER_IMAGE"
+fi
+
+# Prompt for images
+echo ""
+info "📸 Image Management"
+echo "Options:"
+echo "  1) I'll copy images manually (press Enter when done)"
+echo "  2) Copy images from a directory"
+echo "  3) Skip (no images)"
+read -p "Enter choice (1, 2, or 3): " IMAGE_MODE
+
+if [ "$IMAGE_MODE" = "1" ]; then
+  echo ""
+  info "Copy your images to: $IMAGES_DIR"
+  read -p "Press Enter when you've added all images..."
+  success "Continuing..."
+elif [ "$IMAGE_MODE" = "2" ]; then
+  read -p "Enter path to images directory: " IMAGES_SOURCE
+  if [ ! -d "$IMAGES_SOURCE" ]; then
+    warn "Directory not found: $IMAGES_SOURCE. Skipping..."
+  else
+    cp "$IMAGES_SOURCE"/* "$IMAGES_DIR/" 2>/dev/null || warn "No images copied (or copy failed)"
+    success "Images copied from $IMAGES_SOURCE"
+  fi
+elif [ "$IMAGE_MODE" = "3" ]; then
+  info "Skipping images"
+else
+  warn "Invalid choice. Skipping images..."
+fi
+
+# Git operations
+echo ""
+info "🔀 Git Operations"
+
+BRANCH_NAME="chore/blog/$SLUG"
+
+# Ensure we're on a clean state
+cd "$REPO_ROOT"
+git fetch origin >/dev/null 2>&1 || warn "Could not fetch from origin"
+
+# Create and checkout branch
+if git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
+  warn "Branch $BRANCH_NAME already exists locally. Checking it out..."
+  git checkout "$BRANCH_NAME" || error "Failed to checkout branch"
+else
+  git checkout -b "$BRANCH_NAME" || error "Failed to create branch"
+  success "Created branch: $BRANCH_NAME"
+fi
+
+# Add files
+git add "$MDX_PATH" "$IMAGES_DIR" || error "Failed to add files"
+success "Files staged"
+
+# Commit
+COMMIT_MSG="feat(blog): add $SLUG"
+git commit -m "$COMMIT_MSG" || error "Failed to commit"
+success "Committed: $COMMIT_MSG"
+
+# Push
+git push -u origin "$BRANCH_NAME" || error "Failed to push branch"
+success "Pushed to origin/$BRANCH_NAME"
+
+# Create PR
+echo ""
+info "📬 Creating Pull Request..."
+
+PR_DATA=$(node "$(dirname "$0")/blog-utils.mjs" pr-summary "$MDX_PATH")
+PR_TITLE=$(echo "$PR_DATA" | grep -o '"prTitle":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
+PR_BODY=$(echo "$PR_DATA" | grep -o '"prBody":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
+
+# Handle reviewers
+REVIEWERS_FLAG=""
+if [ -n "$GH_DEFAULT_REVIEWERS" ]; then
+  REVIEWERS_FLAG="--reviewer $GH_DEFAULT_REVIEWERS"
+fi
+
+PR_URL=$(gh pr create \
+  --title "$PR_TITLE" \
+  --body "$PR_BODY" \
+  --base main \
+  $REVIEWERS_FLAG 2>&1)
+
+if [ $? -eq 0 ]; then
+  success "Pull Request created!"
+  echo ""
+  echo -e "${GREEN}═══════════════════════════════════════${NC}"
+  echo -e "${GREEN}✨ Success! Your blog post is ready.${NC}"
+  echo -e "${GREEN}═══════════════════════════════════════${NC}"
+  echo ""
+  echo "📝 Post: $POST_TITLE"
+  echo "🔗 PR: $PR_URL"
+  echo ""
+else
+  error "Failed to create PR: $PR_URL"
+fi
+

@@ -15,6 +15,7 @@ This is a starter template for building a SaaS application using **Next.js** wit
 - Global middleware to protect logged-in routes
 - Local middleware to protect Server Actions or validate Zod schemas
 - Activity logging system for any user events
+- **MDX Blog** with automated post submission workflow (`/blog`)
 
 ## Tech Stack
 
@@ -125,6 +126,47 @@ N8N_WEBHOOK_URL=https://automationforms.app.n8n.cloud/webhook/...
 N8N_WEBHOOK_KEY=superHardPassword
 ```
 
+
+## Blog Feature
+
+This template includes a full-featured MDX blog system with automated submission workflow.
+
+### Quick Start
+
+Create a new blog post:
+
+**Linux/macOS:**
+```bash
+bash scripts/new-post-linux.sh    # or new-post-macos.sh
+```
+
+**Windows:**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/new-post-windows.ps1
+```
+
+The workflow will:
+- Guide you through creating a post (paste content or provide a file path)
+- Auto-generate frontmatter with SEO fields
+- Normalize image paths and copy images to the post directory
+- Create a git branch and push
+- Open a GitHub Pull Request with a checklist
+
+### Manual Post Creation
+
+Alternatively, use the simple script:
+
+```bash
+pnpm new:post "Your Post Title"
+```
+
+This creates a basic post scaffold with draft mode enabled.
+
+### Documentation
+
+- **Blog Usage**: See `docs/blog-post-workflow.md` for complete workflow documentation
+- **Development**: Run `pnpm dev:webpack` for full MDX plugin support
+- **View Posts**: Visit `http://localhost:3000/blog`
 
 ## Other Templates
 
