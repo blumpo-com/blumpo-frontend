@@ -1,8 +1,8 @@
 # Blog Post Workflow - Complete Guide
 
-**Version:** 4.1 (Production Ready)  
+**Version:** 4.2 (Production Ready)  
 **Last Updated:** November 3, 2025  
-**Status:** ✅ Enhanced with markdown image conversion & interactive cover selection
+**Status:** ✅ Enhanced with markdown image conversion, interactive cover selection & improved git workflow
 
 ---
 
@@ -120,6 +120,11 @@ Choose your platform:
 ./scripts/new-post-macos.sh
 ```
 
+**The script will automatically:**
+- Switch to `main` branch if you're on a different branch
+- Pull the latest changes from `origin/main`
+- Ensure you're starting with a clean, up-to-date state
+
 ### Step 2: Enter Post Title
 
 ```
@@ -217,9 +222,11 @@ Enter choice (1, 2, or 3):
 ✓ Changes committed
 ✓ Pushed to remote
 ✓ PR opened: https://github.com/user/repo/pull/123
+✓ Returned to main branch
+✓ Pulled latest changes
 ```
 
-**Done!** Your post is ready for review.
+**Done!** Your post is ready for review, and you're back on the main branch with the latest changes.
 
 ---
 
@@ -320,10 +327,14 @@ public/blog/
 
 **Automatic:**
 
-1. ✅ Creates branch: `chore/blog/<slug>`
-2. ✅ Commits with message: `blog: add <title>`
-3. ✅ Pushes to remote
-4. ✅ Opens PR with checklist:
+1. ✅ Checks out `main` branch (if not already on it)
+2. ✅ Pulls latest changes from `origin/main`
+3. ✅ Creates branch: `chore/blog/<slug>`
+4. ✅ Commits with message: `blog: add <title>`
+5. ✅ Pushes to remote
+6. ✅ Opens PR with checklist
+7. ✅ Returns to `main` branch
+8. ✅ Pulls latest changes again
 
 ```markdown
 🎉 New article ready for review!
@@ -935,6 +946,7 @@ Ensure input frontmatter uses array syntax for tags.
 ✅ **No manual fixes needed** - Everything is automated  
 ✅ **Markdown to Next.js conversion** - All images become optimized `<Image>` components  
 ✅ **Interactive cover selection** - Choose your cover image workflow  
+✅ **Smart git workflow** - Auto-syncs with main before and after  
 ✅ **Prevents common errors** - Duplicate frontmatter, wrong paths  
 ✅ **Next.js optimized** - Static imports, build-time validation  
 ✅ **Production ready** - Used and tested  

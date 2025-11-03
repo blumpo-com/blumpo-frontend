@@ -47,6 +47,17 @@ echo ""
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || error "Not in a git repository"
 success "Repository root: $REPO_ROOT"
 
+# Ensure we're on main and up to date
+cd "$REPO_ROOT"
+CURRENT_BRANCH=$(git branch --show-current)
+if [ "$CURRENT_BRANCH" != "main" ]; then
+  info "Switching to main branch..."
+  git checkout main || error "Failed to checkout main"
+fi
+info "Pulling latest changes from main..."
+git pull origin main || warn "Could not pull from main (continuing anyway)"
+success "Ready to create new post"
+
 # Get post title
 echo ""
 read -p "Enter post title: " POST_TITLE
@@ -295,6 +306,12 @@ if [ $? -eq 0 ]; then
   echo "📝 Post: $POST_TITLE"
   echo "🔗 PR: $PR_URL"
   echo ""
+  
+  # Return to main branch
+  info "Returning to main branch..."
+  git checkout main || warn "Could not checkout main"
+  git pull origin main || warn "Could not pull from main"
+  success "Returned to main branch"
 else
   error "Failed to create PR: $PR_URL"
 fi
