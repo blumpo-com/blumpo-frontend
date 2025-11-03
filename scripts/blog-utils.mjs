@@ -393,7 +393,7 @@ function getTodayDate() {
 /**
  * Ensure frontmatter is present and complete
  */
-export function ensureFrontmatter({ mdx, title, slug, imagesDir, today, inputFrontmatter = {} }) {
+export function ensureFrontmatter({ mdx, title, slug, imagesDir, today, inputFrontmatter = {}, customExcerpt = null }) {
   // Content should already be clean (no frontmatter) at this point
   let content = mdx.trim();
   
@@ -429,10 +429,15 @@ export function ensureFrontmatter({ mdx, title, slug, imagesDir, today, inputFro
     data.tags = [];
   }
   
-  // Generate excerpt from actual content if missing
-  if (!data.excerpt || data.excerpt.trim() === '') {
+  // Handle excerpt with priority: custom excerpt > input frontmatter > auto-generated
+  if (customExcerpt && customExcerpt.trim() !== '') {
+    // Use custom excerpt provided by user
+    data.excerpt = customExcerpt.trim();
+  } else if (!data.excerpt || data.excerpt.trim() === '') {
+    // Generate excerpt from actual content if missing
     data.excerpt = generateExcerpt(content);
   }
+  // Otherwise keep the excerpt from input frontmatter
   
   // Setup cover image: Only use if explicitly provided in input frontmatter
   // The workflow script will handle cover image selection interactively
@@ -578,6 +583,34 @@ async function main() {
         const slug = path.basename(mdxPath, '.mdx');
         const summary = summarizeForPR({ frontmatter: parsed.data, slug });
         console.log(JSON.stringify(summary));
+        break;
+      }
+
+      case 'update-excerpt': {
+        // Usage: node blog-utils.mjs update-excerpt <mdxPath> <excerpt>
+        const mdxPath = args[1];
+        const newExcerpt = args.slice(2).join(' ');
+        
+        const content = fs.readFileSync(mdxPath, 'utf8');
+        const parsed = matter(content);
+        
+        // Update excerpt
+        parsed.data.excerpt = newExcerpt;
+        
+        // Rebuild file
+        const updated = matter.stringify(parsed.content, parsed.data);
+        fs.writeFileSync(mdxPath, updated, 'utf8');
+        
+        console.log(JSON.stringify({ success: true, excerpt: newExcerpt }));
+        break;
+      }
+
+      case 'get-excerpt': {
+        // Usage: node blog-utils.mjs get-excerpt <mdxPath>
+        const mdxPath = args[1];
+        const content = fs.readFileSync(mdxPath, 'utf8');
+        const parsed = matter(content);
+        console.log(parsed.data.excerpt || '');
         break;
       }
 
