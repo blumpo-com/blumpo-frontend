@@ -299,17 +299,11 @@ PR_DATA=$(node "$SCRIPT_DIR/blog-utils.mjs" pr-summary "$MDX_PATH")
 PR_TITLE=$(echo "$PR_DATA" | grep -o '"prTitle":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
 PR_BODY=$(echo "$PR_DATA" | grep -o '"prBody":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
 
-# Handle reviewers
-REVIEWERS_FLAG=""
-if [ -n "$GH_DEFAULT_REVIEWERS" ]; then
-  REVIEWERS_FLAG="--reviewer $GH_DEFAULT_REVIEWERS"
-fi
-
 PR_URL=$(gh pr create \
   --title "$PR_TITLE" \
   --body "$PR_BODY" \
   --base main \
-  $REVIEWERS_FLAG 2>&1)
+  2>&1)
 
 if [ $? -eq 0 ]; then
   success "Pull Request created!"
