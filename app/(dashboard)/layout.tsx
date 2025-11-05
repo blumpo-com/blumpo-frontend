@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { use, useState, Suspense } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut } from 'lucide-react';
+import { Home, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -80,16 +80,44 @@ function UserMenu() {
 
 function Header() {
   return (
-    <header className="border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+    <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent backdrop-blur-sm">
+      <div className="w-full max-w-7xl bg-white rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
         <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">blumpo.com</span>
+          <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">blumpo.com</span>
         </Link>
-        <div className="flex items-center space-x-4">
-          <Suspense fallback={<div className="h-9" />}>
-            <UserMenu />
-          </Suspense>
+        <nav className="hidden lg:flex items-center space-x-8">
+          <Link
+            href="/product"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Product
+          </Link>
+          <Link
+            href="/use-cases"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Use cases
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Blog
+          </Link>
+        </nav>
+        <div className="flex items-center">
+          <Button
+            asChild
+            variant="cta"
+          >
+            <Link href="/sign-up">Make your first free Ad</Link>
+          </Button>
         </div>
       </div>
     </header>

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CreditCard, Database } from 'lucide-react';
 import { Terminal } from './terminal';
 import { UrlInputSection } from './url-input-section';
+import { HeroPhotoWall } from '@/components/hero-photo-wall';
 
 export default function HomePage() {
   return (
@@ -11,8 +12,8 @@ export default function HomePage() {
           <div className="lg:grid lg:grid-cols-12 lg:gap-8">
             <div className="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
               <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl">
-                AI B2B SaaS ads that win
-                <span className="block text-orange-500">Faster Than Ever</span>
+                Create AI B2B SaaS
+                <span className="block gradient-secondary bg-clip-text text-transparent">ads that win</span>
               </h1>
               <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
               Blumpo turns customer insights from 
@@ -23,6 +24,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        <HeroPhotoWall />
       </section>
 
       <section className="py-16 bg-white w-full">
@@ -108,7 +110,9 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        
       </section>
+     
     </main>
   );
 }
