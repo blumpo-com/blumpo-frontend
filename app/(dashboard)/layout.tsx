@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Home, LogOut } from 'lucide-react';
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Home, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { signOut } from '@/app/(login)/actions';
-import { useRouter } from 'next/navigation';
-import { User } from '@/lib/db/schema';
-import useSWR, { mutate } from 'swr';
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { signOut } from "@/app/(login)/actions";
+import { useRouter } from "next/navigation";
+import { User } from "@/lib/db/schema";
+import useSWR, { mutate } from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 function UserMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { data: user } = useSWR<User>('/api/user', fetcher);
+  const { data: user } = useSWR<User>("/api/user", fetcher);
   const router = useRouter();
 
   async function handleSignOut() {
     await signOut();
-    mutate('/api/user');
-    router.push('/');
+    mutate("/api/user");
+    router.push("/");
   }
 
   if (!user) {
@@ -49,12 +49,12 @@ function UserMenu() {
     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger>
         <Avatar className="cursor-pointer size-9">
-          <AvatarImage alt={user.displayName || ''} />
+          <AvatarImage alt={user.displayName || ""} />
           <AvatarFallback>
             {user.displayName
-              .split(' ')
+              .split(" ")
               .map((n) => n[0])
-              .join('')}
+              .join("")}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -81,9 +81,11 @@ function UserMenu() {
 function Header() {
   return (
     <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent backdrop-blur-sm">
-      <div className="w-full max-w-7xl bg-white rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
+      <div className="w-full max-w-8xl bg-white rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
         <Link href="/" className="flex items-center">
-          <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">blumpo.com</span>
+          <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
+            blumpo.com
+          </span>
         </Link>
         <nav className="hidden lg:flex items-center space-x-8">
           <Link
@@ -112,10 +114,7 @@ function Header() {
           </Link>
         </nav>
         <div className="flex items-center">
-          <Button
-            asChild
-            variant="cta"
-          >
+          <Button asChild variant="cta">
             <Link href="/sign-up">Make your first free Ad</Link>
           </Button>
         </div>

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
+import Image from "next/image";
 
 interface WallImageProps {
   filename: string;
@@ -9,14 +9,14 @@ interface WallImageProps {
   height?: number;
 }
 
-export function WallImage({ 
-  filename, 
-  alt = 'Wall image', 
-  width = 200, 
-  height = 200 
+export function WallImage({
+  filename,
+  alt = "Wall image",
+  width = 260,
+  height = 260,
 }: WallImageProps) {
   return (
-    <Image 
+    <Image
       src={`/images/hero/${filename}`}
       alt={alt}
       width={width}
@@ -25,4 +25,3 @@ export function WallImage({
     />
   );
 }
-

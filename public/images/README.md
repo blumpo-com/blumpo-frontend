@@ -36,3 +36,4 @@ Images in the `public/` directory are accessible at the root path:
 - Keep names descriptive and meaningful
 - Use appropriate extensions: `.jpg`, `.png`, `.webp`, `.svg`
 
+
