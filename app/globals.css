@@ -202,16 +202,16 @@
     @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight sm:text-5xl md:text-6xl;
   }
   .gradient-blue {
-    @apply bg-gradient-to-b from-blue-600 via-blue-500 to-background;
+    @apply bg-gradient-to-b from-blue-200 via-blue-300 to-background;
   }
   .gradient-green {
-    @apply bg-gradient-to-b from-green-600 via-green-500 to-background;
+    @apply bg-gradient-to-b from-green-200 via-green-300 to-background;
   }
   .gradient-purple {
-    @apply bg-gradient-to-b from-purple-600 via-purple-500 to-background;
+    @apply bg-gradient-to-b from-purple-200 via-purple-300 to-background;
   }
   .gradient-orange {
-    @apply bg-gradient-to-b from-orange-600 via-orange-500 to-background;
+    @apply bg-gradient-to-b from-orange-200 via-orange-300 to-background;
   }
 }
 @keyframes fadeIn {

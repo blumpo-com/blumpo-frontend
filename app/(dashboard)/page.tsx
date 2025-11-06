@@ -31,7 +31,7 @@ export default function HomePage() {
       </section>
 
       <section className="py-16  w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
             You have probably seen our work.<br></br>
             You just didn't know it was AI.
