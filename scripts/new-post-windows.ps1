@@ -71,6 +71,23 @@ try {
     Write-Error-Custom "Not in a git repository"
 }
 
+# Ensure we're on main and up to date
+Set-Location $RepoRoot
+$CurrentBranch = git branch --show-current
+if ($CurrentBranch -ne "main") {
+    Write-Info "Switching to main branch..."
+    git checkout main 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error-Custom "Failed to checkout main"
+    }
+}
+Write-Info "Pulling latest changes from main..."
+git pull origin main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not pull from main (continuing anyway)"
+}
+Write-Success "Ready to create new post"
+
 # Get post title
 Write-Host ""
 $PostTitle = Read-Host "Enter post title"
@@ -204,11 +221,104 @@ if ($ImageMode -eq "1") {
     Write-Warn "Invalid choice. Skipping images..."
 }
 
+# Cover image selection
+Write-Host ""
+Write-Info "Cover Image Selection"
+Write-Host "The cover image appears in the blog index/listing page."
+Write-Host ""
+Write-Host "Options:"
+Write-Host "  1. Use first image in post directory (auto-detected)"
+Write-Host "  2. Specify a custom image path"
+Write-Host "  3. Skip (leave cover empty)"
+$CoverMode = Read-Host "Enter choice 1, 2, or 3"
+
+$CoverImage = ""
+if ($CoverMode -eq "1") {
+    # Find first image
+    $FirstImage = Get-ChildItem -Path $ImagesDir -File | Where-Object {
+        $_.Extension -match '\.(jpg|jpeg|png|gif|webp|svg)$'
+    } | Select-Object -First 1
+    
+    if ($FirstImage) {
+        $ImageFilename = $FirstImage.Name
+        # Copy to public directory
+        $PublicDir = Join-Path $RepoRoot "public\blog\$Slug"
+        New-Item -ItemType Directory -Path $PublicDir -Force | Out-Null
+        Copy-Item -Path $FirstImage.FullName -Destination $PublicDir -Force
+        $CoverImage = "/blog/$Slug/$ImageFilename"
+        Write-Success "Cover set: $CoverImage"
+    } else {
+        Write-Warn "No images found in post directory"
+    }
+} elseif ($CoverMode -eq "2") {
+    $CoverPath = Read-Host "Enter path to cover image"
+    if (Test-Path $CoverPath) {
+        $ImageFilename = Split-Path -Leaf $CoverPath
+        # Copy to public directory
+        $PublicDir = Join-Path $RepoRoot "public\blog\$Slug"
+        New-Item -ItemType Directory -Path $PublicDir -Force | Out-Null
+        Copy-Item -Path $CoverPath -Destination $PublicDir -Force
+        $CoverImage = "/blog/$Slug/$ImageFilename"
+        Write-Success "Cover set: $CoverImage"
+    } else {
+        Write-Warn "File not found: $CoverPath. Skipping cover..."
+    }
+} elseif ($CoverMode -eq "3") {
+    Write-Info "Skipping cover image"
+} else {
+    Write-Warn "Invalid choice. Skipping cover image..."
+}
+
+# Update MDX file with cover image if set
+if ($CoverImage -ne "") {
+    # Update the cover field in frontmatter
+    $MdxContent = Get-Content -Path $MdxPath -Raw
+    $MdxContent = $MdxContent -replace "^cover: ''$", "cover: $CoverImage"
+    Set-Content -Path $MdxPath -Value $MdxContent -NoNewline
+    Write-Info "Updated frontmatter with cover image"
+}
+
+# Excerpt selection
+Write-Host ""
+Write-Info "Excerpt Selection"
+Write-Host "The excerpt appears in the blog index and SEO metadata."
+Write-Host ""
+
+# Get current auto-generated excerpt
+$CurrentExcerpt = node $UtilsScript get-excerpt $MdxPath
+Write-Host "Current excerpt (auto-generated from first paragraph):"
+Write-Host "`"$CurrentExcerpt`""
+Write-Host ""
+
+Write-Host "Options:"
+Write-Host "  1. Keep auto-generated excerpt"
+Write-Host "  2. Write custom excerpt"
+$ExcerptMode = Read-Host "Enter choice 1 or 2"
+
+if ($ExcerptMode -eq "2") {
+    Write-Host ""
+    Write-Info "Enter your custom excerpt (press Enter when done):"
+    $CustomExcerpt = Read-Host ">"
+    
+    if ($CustomExcerpt) {
+        node $UtilsScript update-excerpt $MdxPath $CustomExcerpt | Out-Null
+        Write-Success "Custom excerpt set"
+    } else {
+        Write-Info "Keeping auto-generated excerpt"
+    }
+} elseif ($ExcerptMode -eq "1") {
+    Write-Info "Keeping auto-generated excerpt"
+} else {
+    Write-Warn "Invalid choice. Keeping auto-generated excerpt..."
+}
+
 # Git operations
 Write-Host ""
 Write-Info "Git Operations"
 
-$BranchName = "chore/blog/$Slug"
+# Add timestamp to branch name to allow multiple posts with same slug
+$Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$BranchName = "chore/blog/$Slug-$Timestamp"
 
 # Ensure we are on a clean state
 Set-Location $RepoRoot
@@ -244,6 +354,18 @@ git add $MdxPath $ImagesDir
 if ($LASTEXITCODE -ne 0) {
     Write-Error-Custom "Failed to add files"
 }
+
+# Add public directory if cover image was set
+if ($CoverImage -ne "") {
+    $PublicDir = Join-Path $RepoRoot "public\blog\$Slug"
+    if (Test-Path $PublicDir) {
+        git add $PublicDir
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warn "Could not add public directory"
+        }
+    }
+}
+
 Write-Success "Files staged"
 
 # Commit
@@ -261,39 +383,27 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Success "Pushed to origin/$BranchName"
 
-# Create PR
+# Success message
 Write-Host ""
-Write-Info "Creating Pull Request..."
+Write-Host "=======================================" -ForegroundColor Green
+Write-Host "Success! Your blog post is ready." -ForegroundColor Green
+Write-Host "=======================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "Post: $PostTitle"
+Write-Host "Branch: $BranchName"
+Write-Host "File: $MdxPath"
+Write-Host ""
+Write-Info "Create a PR manually when ready: gh pr create --base main"
 
-try {
-    $PrData = node $UtilsScript pr-summary $MdxPath | ConvertFrom-Json
-    $PrTitle = $PrData.prTitle
-    $PrBody = $PrData.prBody
-    
-    # Handle reviewers
-    $ReviewersFlag = @()
-    if ($env:GH_DEFAULT_REVIEWERS) {
-        $ReviewersFlag = @("--reviewer", $env:GH_DEFAULT_REVIEWERS)
-    }
-    
-    $PrUrl = gh pr create --title $PrTitle --body $PrBody --base main @ReviewersFlag 2>&1 | Out-String
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Success "Pull Request created!"
-        Write-Host ""
-        Write-Host "=======================================" -ForegroundColor Green
-        Write-Host "Success! Your blog post is ready." -ForegroundColor Green
-        Write-Host "=======================================" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Post: $PostTitle"
-        Write-Host "PR: $PrUrl"
-        Write-Host ""
-        
-        # Open PR in browser
-        Start-Process $PrUrl
-    } else {
-        Write-Error-Custom "Failed to create PR: $PrUrl"
-    }
-} catch {
-    Write-Error-Custom "Failed to create PR: $_"
+# Return to main branch
+Write-Host ""
+Write-Info "Returning to main branch..."
+git checkout main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not checkout main"
 }
+git pull origin main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not pull from main"
+}
+Write-Success "Returned to main branch"

@@ -235,11 +235,47 @@ if [ -n "$COVER_IMAGE" ]; then
   info "Updated frontmatter with cover image"
 fi
 
+# Excerpt selection
+echo ""
+info "📝 Excerpt Selection"
+echo "The excerpt appears in the blog index and SEO metadata."
+echo ""
+
+# Get current auto-generated excerpt
+CURRENT_EXCERPT=$(node "$(dirname "$0")/blog-utils.mjs" get-excerpt "$MDX_PATH")
+echo "Current excerpt (auto-generated from first paragraph):"
+echo "\"$CURRENT_EXCERPT\""
+echo ""
+
+echo "Options:"
+echo "  1) Keep auto-generated excerpt"
+echo "  2) Write custom excerpt"
+read -p "Enter choice (1 or 2): " EXCERPT_MODE
+
+if [ "$EXCERPT_MODE" = "2" ]; then
+  echo ""
+  info "Enter your custom excerpt (press Enter when done):"
+  read -p "> " CUSTOM_EXCERPT
+  
+  if [ -n "$CUSTOM_EXCERPT" ]; then
+    node "$(dirname "$0")/blog-utils.mjs" update-excerpt "$MDX_PATH" "$CUSTOM_EXCERPT" >/dev/null
+    success "Custom excerpt set"
+  else
+    info "Keeping auto-generated excerpt"
+  fi
+elif [ "$EXCERPT_MODE" = "1" ]; then
+  info "Keeping auto-generated excerpt"
+else
+  warn "Invalid choice. Keeping auto-generated excerpt..."
+fi
+
 # Git operations
 echo ""
 info "🔀 Git Operations"
 
-BRANCH_NAME="chore/blog/$SLUG"
+# Add timestamp to branch name to allow multiple posts with same slug
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BRANCH_NAME="chore/blog/$SLUG-$TIMESTAMP"
 
 # Ensure we're on a clean state
 cd "$REPO_ROOT"
@@ -276,37 +312,22 @@ success "Committed: $COMMIT_MSG"
 git push -u origin "$BRANCH_NAME" || error "Failed to push branch"
 success "Pushed to origin/$BRANCH_NAME"
 
-# Create PR
+# Success message
 echo ""
-info "📬 Creating Pull Request..."
+echo -e "${GREEN}═══════════════════════════════════════${NC}"
+echo -e "${GREEN}✨ Success! Your blog post is ready.${NC}"
+echo -e "${GREEN}═══════════════════════════════════════${NC}"
+echo ""
+echo "📝 Post: $POST_TITLE"
+echo "🌿 Branch: $BRANCH_NAME"
+echo "📂 File: $MDX_PATH"
+echo ""
+info "Create a PR manually when ready: gh pr create --base main"
 
-PR_DATA=$(node "$(dirname "$0")/blog-utils.mjs" pr-summary "$MDX_PATH")
-PR_TITLE=$(echo "$PR_DATA" | grep -o '"prTitle":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
-PR_BODY=$(echo "$PR_DATA" | grep -o '"prBody":"[^"]*"' | cut -d'"' -f4 | sed 's/\\n/\n/g')
-
-PR_URL=$(gh pr create \
-  --title "$PR_TITLE" \
-  --body "$PR_BODY" \
-  --base main \
-  2>&1)
-
-if [ $? -eq 0 ]; then
-  success "Pull Request created!"
-  echo ""
-  echo -e "${GREEN}═══════════════════════════════════════${NC}"
-  echo -e "${GREEN}✨ Success! Your blog post is ready.${NC}"
-  echo -e "${GREEN}═══════════════════════════════════════${NC}"
-  echo ""
-  echo "📝 Post: $POST_TITLE"
-  echo "🔗 PR: $PR_URL"
-  echo ""
-  
-  # Return to main branch
-  info "Returning to main branch..."
-  git checkout main || warn "Could not checkout main"
-  git pull origin main || warn "Could not pull from main"
-  success "Returned to main branch"
-else
-  error "Failed to create PR: $PR_URL"
-fi
+# Return to main branch
+echo ""
+info "Returning to main branch..."
+git checkout main || warn "Could not checkout main"
+git pull origin main || warn "Could not pull from main"
+success "Returned to main branch"
 
