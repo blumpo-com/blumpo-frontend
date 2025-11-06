@@ -34,11 +34,18 @@ export function ContentProofSection() {
         ))}
       </div>
 
-      <div
-        key={activeButton}
-        className={`mt-8 w-full h-100 md:h-146 rounded-2xl ${buttons[activeButton].gradient} animate-fade relative overflow-hidden flex items-center justify-center`}
-      >
-        {/* Obrazy z rotacją i animacją */}
+      <div className="mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden flex items-center justify-center transition-all duration-500 ease-in-out">
+        {/* Gradient backgrounds with opacity transition */}
+        {buttons.map((button, index) => (
+          <div
+            key={button.id}
+            className={`absolute inset-0 ${
+              button.gradient
+            } transition-opacity duration-500 ease-in-out ${
+              activeButton === index ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
         <Image
           src="/images/hero/1.png"
           alt="Content proof image"

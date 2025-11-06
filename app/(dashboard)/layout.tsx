@@ -80,8 +80,8 @@ function UserMenu() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent backdrop-blur-sm">
-      <div className="w-full max-w-8xl bg-white rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
+    <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent">
+      <div className="w-full max-w-8xl bg-white/80 backdrop-blur-sm rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
         <Link href="/" className="flex items-center">
           <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
             blumpo.com

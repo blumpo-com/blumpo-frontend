@@ -4,6 +4,7 @@ import { Terminal } from "./terminal";
 import { UrlInputSection } from "./url-input-section";
 import { HeroPhotoWall } from "@/components/hero-photo-wall";
 import { ContentProofSection } from "./content-proof-section";
+import { PricingSection } from "./pricing-section";
 
 export default function HomePage() {
   return (
@@ -30,13 +31,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-16  w-full">
+      <section className="py-16  w-full h-8xl">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
-            You have probably seen our work.<br></br>
+            You've probably seen our work.<br></br>
             You just didn't know it was AI.
           </h1>
           <ContentProofSection />
+        </div>
+      </section>
+
+      <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+            Pick a plan or start creating for free.
+          </h1>
+          <PricingSection />
         </div>
       </section>
 
@@ -49,7 +59,7 @@ export default function HomePage() {
               </h2>
               <p className="mt-3 max-w-3xl text-lg text-gray-500">
                 Our template provides everything you need to get your SaaS up
-                and running quickly. Don't waste time on boilerplate - focus on
+                and running quickly. Don't waste timeb on boilerplate - focus on
                 what makes your product unique.
               </p>
             </div>
