@@ -366,39 +366,27 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Success "Pushed to origin/$BranchName"
 
-# Create PR
+# Success message
 Write-Host ""
-Write-Info "Creating Pull Request..."
+Write-Host "=======================================" -ForegroundColor Green
+Write-Host "Success! Your blog post is ready." -ForegroundColor Green
+Write-Host "=======================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "Post: $PostTitle"
+Write-Host "Branch: $BranchName"
+Write-Host "File: $MdxPath"
+Write-Host ""
+Write-Info "Create a PR manually when ready: gh pr create --base main"
 
-try {
-    $PrData = node $UtilsScript pr-summary $MdxPath | ConvertFrom-Json
-    $PrTitle = $PrData.prTitle
-    $PrBody = $PrData.prBody
-    
-    # Handle reviewers
-    $ReviewersFlag = @()
-    if ($env:GH_DEFAULT_REVIEWERS) {
-        $ReviewersFlag = @("--reviewer", $env:GH_DEFAULT_REVIEWERS)
-    }
-    
-    $PrUrl = gh pr create --title $PrTitle --body $PrBody --base main @ReviewersFlag 2>&1 | Out-String
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Success "Pull Request created!"
-        Write-Host ""
-        Write-Host "=======================================" -ForegroundColor Green
-        Write-Host "Success! Your blog post is ready." -ForegroundColor Green
-        Write-Host "=======================================" -ForegroundColor Green
-        Write-Host ""
-        Write-Host "Post: $PostTitle"
-        Write-Host "PR: $PrUrl"
-        Write-Host ""
-        
-        # Open PR in browser
-        Start-Process $PrUrl
-    } else {
-        Write-Error-Custom "Failed to create PR: $PrUrl"
-    }
-} catch {
-    Write-Error-Custom "Failed to create PR: $_"
+# Return to main branch
+Write-Host ""
+Write-Info "Returning to main branch..."
+git checkout main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not checkout main"
 }
+git pull origin main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not pull from main"
+}
+Write-Success "Returned to main branch"
