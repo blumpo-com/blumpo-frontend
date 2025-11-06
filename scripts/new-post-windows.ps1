@@ -71,6 +71,23 @@ try {
     Write-Error-Custom "Not in a git repository"
 }
 
+# Ensure we're on main and up to date
+Set-Location $RepoRoot
+$CurrentBranch = git branch --show-current
+if ($CurrentBranch -ne "main") {
+    Write-Info "Switching to main branch..."
+    git checkout main 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error-Custom "Failed to checkout main"
+    }
+}
+Write-Info "Pulling latest changes from main..."
+git pull origin main 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "Could not pull from main (continuing anyway)"
+}
+Write-Success "Ready to create new post"
+
 # Get post title
 Write-Host ""
 $PostTitle = Read-Host "Enter post title"
