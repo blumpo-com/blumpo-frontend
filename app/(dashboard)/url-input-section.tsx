@@ -2,40 +2,18 @@
 
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { ArrowRight } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { UrlInput } from '@/components/url-input';
+import { useState } from 'react';
 
 
 export function UrlInputSection() {
-    const [url, setUrl] = useState('');
-    const [isInvalid, setIsInvalid] = useState(false);
-
-    const [hasError, setHasError] = useState(false);
-
     const [isOpen, setIsOpen] = useState(false);     // modal is open
     const [isLoading, setIsLoading] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    const isValidUrl = (value: string) => {
-        const v = value.trim();
-        if (!v) return false;
-        const pattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(?:[:#/?].*)?$/i;
-        const localhost = /^(https?:\/\/)?localhost(?:[:#/?].*)?$/i;
-        return pattern.test(v) || localhost.test(v);
-    };
 
-
-    const handleSubmit = async () => {
-        const valid = isValidUrl(url);
-        setHasError(!valid);
-        if (!valid) {
-            setIsInvalid(true);
-            return;
-        }
-        
-        setIsInvalid(false);
+    const handleSubmit = async (url: string) => {
         setIsOpen(true);
         setIsLoading(true);
         setErrorMsg(null);
@@ -81,41 +59,18 @@ export function UrlInputSection() {
 
     return (
         <section className="flex flex-col gap-4">
-             <p className="mt-5 text-base text-gray-500 sm:mt-10 sm:text-xl lg:text-lg xl:text-xl">
-                Start for free now! Drop your URL here.
+             <p className="mt-5 text-base font-bold sm:mt-10 sm:text-xl lg:text-lg xl:text-xl">
+                Start for free now and create ads in 30s.
               </p>
-            <div>
-                <Input
-                    type="text"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="example.com/my-webpage"
-                    aria-invalid={isInvalid}
-                    className="py-6"
-                />
-                {isInvalid && (
-                    <p className="mt-2 text-sm text-red-600">
-                        We'll need a valid URL, like "blumpo.com/home".
-                    </p>
-                )}
-            </div>
-            <p className="text-base text-gray-500 
+            <UrlInput
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                placeholder="https://example.com/my-webpage"
+            />
+            <p className="text-base font-bold
              sm:text-xl lg:text-lg xl:text-xl">
-                Yes, It is that simple.
+                Yes, it is that simple.
               </p>
-
-            <div className=" sm:max-w-lg sm:mx-auto sm:text-center lg:text-left lg:mx-0">
-                <Button
-                    size="lg"
-                    variant="default"
-                    className="text-lg rounded-full bg-orange-500 text-white cursor-pointer"
-                    disabled={isLoading}
-                    onClick={handleSubmit}
-                >
-                    Generate your ads
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-            </div>
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
                 {isLoading ? (
