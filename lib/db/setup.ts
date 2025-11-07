@@ -221,6 +221,11 @@ async function getN8NCredentials(): Promise<{
     return { N8N_WEBHOOK_URL, N8N_WEBHOOK_KEY };
 }
 
+function generateCronSecret(): string {
+  console.log('Step 5b: Generating CRON_SECRET...');
+  return crypto.randomBytes(32).toString('hex');
+}
+
 async function createStripeWebhook(): Promise<string> {
   console.log('Step 4: Creating Stripe webhook...');
   try {
@@ -268,6 +273,7 @@ async function main() {
   const STRIPE_WEBHOOK_SECRET = await createStripeWebhook();
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
+  const CRON_SECRET = generateCronSecret();
   const RESEND_API_KEY = await getResendApiKey();
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } =
     await getGoogleOAuthCredentials();
@@ -280,6 +286,7 @@ async function main() {
     STRIPE_WEBHOOK_SECRET,
     BASE_URL,
     AUTH_SECRET,
+  CRON_SECRET,
     RESEND_API_KEY,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
