@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { user, tokenAccount, tokenLedger, generationJob, assetImage } from './schema/index';
+import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan } from './schema/index';
 import { TokenPeriod, JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -30,9 +30,6 @@ async function createTestUser() {
       userId: testUserId,
       balance: 100,
       planCode: 'FREE',
-      tokensPerPeriod: 50,
-      period: TokenPeriod.MONTH,
-      rolloverCap: 100,
     })
     .returning();
 
@@ -126,9 +123,125 @@ async function createSampleGenerationJob(userId: string) {
   return job;
 }
 
+async function seedSubscriptionPlans() {
+  console.log('Creating subscription plans...');
+
+  const plans = [
+    {
+      planCode: 'FREE',
+      displayName: 'Free',
+      monthlyTokens: 50,
+      description: ['50 tokens per month', 'Basic ad generation', 'Email support'],
+      stripeProductId: null,
+      isActive: true,
+      isDefault: true,
+      sortOrder: 1,
+    },
+    {
+      planCode: 'STARTER',
+      displayName: 'Starter',
+      monthlyTokens: 300,
+      description: ['300 tokens per month', 'All ad types', 'Priority support', 'Export options'],
+      stripeProductId: process.env.STRIPE_STARTER_PRODUCT_ID || null,
+      isActive: true,
+      isDefault: false,
+      sortOrder: 2,
+    },
+    {
+      planCode: 'PRO',
+      displayName: 'Pro',
+      monthlyTokens: 1500,
+      description: ['1,500 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding'],
+      stripeProductId: process.env.STRIPE_GROWTH_PRODUCT_ID || null,
+      isActive: true,
+      isDefault: false,
+      sortOrder: 3,
+    },
+    {
+      planCode: 'TEAM',
+      displayName: 'TEAM',
+      monthlyTokens: 5000,
+      description: ['5,000 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding', 'User management', 'Analytics dashboard'],
+      stripeProductId: process.env.STRIPE_TEAM_PRODUCT_ID || null,
+      isActive: true,
+      isDefault: false,
+      sortOrder: 4,
+    }
+  ];
+
+  for (const plan of plans) {
+    await db.insert(subscriptionPlan).values(plan).onConflictDoUpdate({
+      target: subscriptionPlan.planCode,
+      set: {
+        displayName: plan.displayName,
+        monthlyTokens: plan.monthlyTokens,
+        description: plan.description,
+        stripeProductId: plan.stripeProductId,
+        isActive: plan.isActive,
+        isDefault: plan.isDefault,
+        sortOrder: plan.sortOrder,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  console.log('Subscription plans created/updated.');
+}
+
+async function seedTopupPlans() {
+  console.log('Creating topup plans...');
+
+  const topups = [
+    {
+      topupSku: 'TOPUP_100',
+      displayName: '100 Tokens',
+      tokensAmount: 100,
+      stripeProductId: process.env.STRIPE_TOPUP_100_PRODUCT_ID || null,
+      isActive: true,
+      sortOrder: 1,
+    },
+    {
+      topupSku: 'TOPUP_500',
+      displayName: '500 Tokens',
+      tokensAmount: 500,
+      stripeProductId: process.env.STRIPE_TOPUP_500_PRODUCT_ID || null,
+      isActive: true,
+      sortOrder: 2,
+    },
+    {
+      topupSku: 'TOPUP_2000',
+      displayName: '2000 Tokens',
+      tokensAmount: 2000,
+      stripeProductId: process.env.STRIPE_TOPUP_2000_PRODUCT_ID || null,
+      isActive: true,
+      sortOrder: 3,
+    },
+  ];
+
+  for (const topup of topups) {
+    await db.insert(topupPlan).values(topup).onConflictDoUpdate({
+      target: topupPlan.topupSku,
+      set: {
+        displayName: topup.displayName,
+        tokensAmount: topup.tokensAmount,
+        stripeProductId: topup.stripeProductId,
+        isActive: topup.isActive,
+        sortOrder: topup.sortOrder,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  console.log('Topup plans created/updated.');
+}
+
 async function seed() {
   try {
     console.log('🌱 Starting database seed...');
+
+    // Create subscription and topup plans first
+    await seedSubscriptionPlans();
+    await seedTopupPlans();
 
     // Create test user with token account
     const testUser = await createTestUser();
@@ -140,6 +253,7 @@ async function seed() {
     console.log('\nTest credentials:');
     console.log('Email: test@blumpo.com');
     console.log('Initial token balance: 90 tokens');
+    console.log('\nSubscription plans and topup plans have been created.');
     
   } catch (error) {
     console.error('❌ Seed process failed:', error);

@@ -1,6 +1,5 @@
-import { pgTable, uuid, timestamp, text, jsonb, bigint, integer, boolean, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, timestamp, text, jsonb, bigint, integer, boolean, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { variantKindEnum } from './enums';
 import { user } from './user';
 import { generationJob } from './generation';
 
@@ -30,27 +29,10 @@ export const assetImage = pgTable('asset_image', {
   jobIdx: index('idx_asset_image_job').on(table.jobId),
 }));
 
-// Asset image variant table (different sizes/formats of same image)
-export const assetImageVariant = pgTable('asset_image_variant', {
-  id: uuid('id').primaryKey(),
-  imageId: uuid('image_id').notNull().references(() => assetImage.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  
-  kind: variantKindEnum('kind').notNull(), // ORIGINAL, THUMB, WEB, PRINT
-  storageKey: text('storage_key').notNull(),
-  publicUrl: text('public_url'),
-  mimeType: text('mime_type').notNull(),
-  bytesSize: bigint('bytes_size', { mode: 'number' }).notNull(),
-  width: integer('width').notNull(),
-  height: integer('height').notNull(),
-  format: text('format').notNull(),
-  sha256: text('sha256'),
-}, (table) => ({
-  kindIdx: uniqueIndex('uq_asset_variant_per_kind').on(table.imageId, table.kind),
-}));
+
 
 // Relations
-export const assetImageRelations = relations(assetImage, ({ one, many }) => ({
+export const assetImageRelations = relations(assetImage, ({ one }) => ({
   user: one(user, {
     fields: [assetImage.userId],
     references: [user.id],
@@ -59,18 +41,8 @@ export const assetImageRelations = relations(assetImage, ({ one, many }) => ({
     fields: [assetImage.jobId],
     references: [generationJob.id],
   }),
-  variants: many(assetImageVariant),
-}));
-
-export const assetImageVariantRelations = relations(assetImageVariant, ({ one }) => ({
-  image: one(assetImage, {
-    fields: [assetImageVariant.imageId],
-    references: [assetImage.id],
-  }),
 }));
 
 // Types
 export type AssetImage = typeof assetImage.$inferSelect;
 export type NewAssetImage = typeof assetImage.$inferInsert;
-export type AssetImageVariant = typeof assetImageVariant.$inferSelect;
-export type NewAssetImageVariant = typeof assetImageVariant.$inferInsert;
