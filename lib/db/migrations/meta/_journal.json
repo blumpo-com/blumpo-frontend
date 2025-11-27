@@ -8,6 +8,13 @@
       "when": 1761511169972,
       "tag": "0000_spotty_dagger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1761675106346,
+      "tag": "0001_subscription_refactor",
+      "breakpoints": true
     }
   ]
 }
