@@ -3,6 +3,7 @@ import { relations } from 'drizzle-orm';
 import { jobStatusEnum } from './enums';
 import { user } from './user';
 import { tokenLedger } from './tokens';
+import { brand } from './brand';
 
 // Generation jobs table (links token usage to assets)
 export const generationJob = pgTable('generation_job', {
@@ -20,6 +21,13 @@ export const generationJob = pgTable('generation_job', {
   ledgerId: bigint('ledger_id', { mode: 'number' }).unique().references(() => tokenLedger.id, { onDelete: 'set null' }),
   errorCode: text('error_code'),
   errorMessage: text('error_message'),
+
+  // Brand and generation parameters
+  brandId: uuid('brand_id').references(() => brand.id, { onDelete: 'set null' }),
+  archetype: text('archetype'),
+  format: text('format'),
+  customPhotoId: uuid('custom_photo_id'), // Foreign key constraint defined in migration
+  archetypeInputs: jsonb('archetype_inputs').notNull().default({}),
 }, (table) => ({
   userTimeIdx: index('idx_generation_job_user_time').on(table.userId, table.createdAt.desc()),
   statusIdx: index('idx_generation_job_status').on(table.status),
@@ -35,7 +43,11 @@ export const generationJobRelations = relations(generationJob, ({ one, many }) =
     fields: [generationJob.ledgerId],
     references: [tokenLedger.id],
   }),
-  // assetImages relation will be defined in index.ts after all tables are created
+  brand: one(brand, {
+    fields: [generationJob.brandId],
+    references: [brand.id],
+  }),
+  // customPhoto and assetImages relations will be defined in index.ts after all tables are created
 }));
 
 // Types

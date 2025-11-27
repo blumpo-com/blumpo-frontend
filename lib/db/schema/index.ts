@@ -9,6 +9,8 @@ export { tokenAccount, tokenLedger } from './tokens';
 export { generationJob } from './generation';
 export { assetImage } from './assets';
 export { authOtp } from './auth';
+export { brand } from './brand';
+export { brandExtractionStatus } from './brandExtractionStatus';
 export { subscriptionPlan, topupPlan, generationPricing } from './subscription';
 
 // Export individual relations
@@ -16,6 +18,8 @@ export { tokenAccountRelations, tokenLedgerRelations } from './tokens';
 export { generationJobRelations } from './generation';
 export { assetImageRelations } from './assets';
 export { authOtpRelations } from './auth';
+export { brandRelations } from './brand';
+export { brandExtractionStatusRelations } from './brandExtractionStatus';
 
 // Import tables for cross-relations
 import { user } from './user';
@@ -23,6 +27,8 @@ import { tokenAccount, tokenLedger } from './tokens';
 import { generationJob } from './generation';
 import { assetImage } from './assets';
 import { authOtp } from './auth';
+import { brand } from './brand';
+import { brandExtractionStatus } from './brandExtractionStatus';
 import { subscriptionPlan, topupPlan, generationPricing } from './subscription';
 
 // Define user relations now that all tables are available
@@ -35,6 +41,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   generationJobs: many(generationJob),
   assetImages: many(assetImage),
   authOtps: many(authOtp),
+  brands: many(brand),
 }));
 
 // Complete generation job relations
@@ -46,6 +53,14 @@ export const generationJobCompleteRelations = relations(generationJob, ({ one, m
   ledgerEntry: one(tokenLedger, {
     fields: [generationJob.ledgerId],
     references: [tokenLedger.id],
+  }),
+  brand: one(brand, {
+    fields: [generationJob.brandId],
+    references: [brand.id],
+  }),
+  customPhoto: one(assetImage, {
+    fields: [generationJob.customPhotoId],
+    references: [assetImage.id],
   }),
   assetImages: many(assetImage),
 }));
@@ -68,3 +83,5 @@ export type { TokenAccount, NewTokenAccount, TokenLedger, NewTokenLedger } from 
 export type { GenerationJob, NewGenerationJob } from './generation';
 export type { AssetImage, NewAssetImage} from './assets';
 export type { AuthOtp, NewAuthOtp } from './auth';
+export type { Brand, NewBrand } from './brand';
+export type { BrandExtractionStatus, NewBrandExtractionStatus } from './brandExtractionStatus';

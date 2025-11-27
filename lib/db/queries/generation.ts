@@ -11,6 +11,11 @@ export async function createGenerationJob(
     prompt: string;
     params: any;
     tokensCost: number;
+    brandId: string; // Required field
+    archetype?: string;
+    format?: string;
+    customPhotoId?: string;
+    archetypeInputs?: any; // JSON object
   }
 ) {
   return await db.transaction(async (tx) => {
@@ -26,8 +31,16 @@ export async function createGenerationJob(
     const job = await tx
       .insert(generationJob)
       .values({
-        ...jobData,
+        id: jobData.id,
+        prompt: jobData.prompt,
+        params: jobData.params,
+        tokensCost: jobData.tokensCost,
         userId,
+        brandId: jobData.brandId,
+        archetype: jobData.archetype,
+        format: jobData.format,
+        customPhotoId: jobData.customPhotoId,
+        archetypeInputs: jobData.archetypeInputs || {},
         ledgerId: ledgerEntry.id,
       })
       .returning();

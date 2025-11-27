@@ -15,6 +15,13 @@
       "when": 1761675106346,
       "tag": "0001_subscription_refactor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764153358997,
+      "tag": "0002_brand_and_generation_updates",
+      "breakpoints": true
     }
   ]
 }

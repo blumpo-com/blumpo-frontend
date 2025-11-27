@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan } from './schema/index';
+import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan, brand } from './schema/index';
 import { TokenPeriod, JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -51,7 +51,48 @@ async function createTestUser() {
   return newUser;
 }
 
-async function createSampleGenerationJob(userId: string) {
+async function createSampleBrand(userId: string) {
+  console.log('Creating sample brand...');
+  
+  const brandId = crypto.randomUUID();
+  
+  const [newBrand] = await db
+    .insert(brand)
+    .values({
+      id: brandId,
+      userId,
+      name: 'Sample Brand',
+      websiteUrl: 'https://example.com',
+      language: 'en',
+      fonts: ['Arial', 'Helvetica'],
+      colors: ['#FF0000', '#00FF00'],
+      photos: [],
+      heroPhotos: [],
+      clientAdPreferences: {},
+      industry: 'Technology',
+      customerPainPoints: ['High costs', 'Complex setup'],
+      productDescription: 'A sample product for testing',
+      keyFeatures: ['Feature 1', 'Feature 2'],
+      brandVoice: 'Professional and friendly',
+      uniqueValueProp: 'The best solution for your needs',
+      expectedCustomer: 'Small businesses',
+      targetCustomer: 'Tech startups',
+      keyBenefits: ['Benefit 1', 'Benefit 2'],
+      competitors: ['Competitor A', 'Competitor B'],
+      insTriggerEvents: [],
+      insAspirations: [],
+      insInterestingQuotes: [],
+      insMarketingInsight: null,
+      insTrendOpportunity: null,
+      insRaw: [],
+    })
+    .returning();
+
+  console.log('Sample brand created:', newBrand.id);
+  return newBrand;
+}
+
+async function createSampleGenerationJob(userId: string, brandId: string) {
   console.log('Creating sample generation job...');
   
   const jobId = crypto.randomUUID();
@@ -63,6 +104,7 @@ async function createSampleGenerationJob(userId: string) {
     .values({
       id: jobId,
       userId,
+      brandId,
       status: JobStatus.SUCCEEDED,
       prompt: 'A beautiful landscape with mountains and a lake at sunset',
       params: {
@@ -75,6 +117,7 @@ async function createSampleGenerationJob(userId: string) {
       tokensCost: 10,
       startedAt: new Date(Date.now() - 30000), // 30 seconds ago
       completedAt: new Date(),
+      archetypeInputs: {},
     })
     .returning();
 
@@ -246,8 +289,11 @@ async function seed() {
     // Create test user with token account
     const testUser = await createTestUser();
 
+    // Create a sample brand
+    const sampleBrand = await createSampleBrand(testUser.id);
+
     // Create a sample generation job
-    await createSampleGenerationJob(testUser.id);
+    await createSampleGenerationJob(testUser.id, sampleBrand.id);
 
     console.log('✅ Database seed completed successfully!');
     console.log('\nTest credentials:');
