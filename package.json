@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "dev:webpack": "next dev",
+    "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "new:post": "npx tsx scripts/new-post.ts",

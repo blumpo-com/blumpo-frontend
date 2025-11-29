@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
             .values({
               id: crypto.randomUUID(),
               email: user.email,
-              displayName: user.name || user.email.split('@')[0],
+              displayName: user.name || null,
               photoUrl: user.image || null,
               phoneNumber: null,
               lastLoginAt: new Date(),
@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
             .set({
               lastLoginAt: new Date(),
               photoUrl: user.image || existingUser[0].photoUrl,
-              displayName: user.name || existingUser[0].displayName,
+              displayName: user.name || existingUser[0].displayName || null,
             })
             .where(eq(userTable.id, existingUser[0].id))
             .returning();
@@ -98,6 +98,17 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // Handle redirect parameter from URL
       try {
+        // Check if URL is relative first
+        if (url.startsWith('/')) {
+          // For relative URLs, check if it's the callback endpoint
+          if (url.startsWith('/api/auth/')) {
+            // For auth callbacks, redirect to dashboard
+            return `${baseUrl}/dashboard`;
+          }
+          return `${baseUrl}${url}`;
+        }
+        
+        // Only parse as URL if it's absolute
         const urlObj = new URL(url);
         const redirectParam = urlObj.searchParams.get('redirect');
         const priceId = urlObj.searchParams.get('priceId');
@@ -108,11 +119,6 @@ export const authOptions: NextAuthOptions = {
         
         if (redirectParam === 'checkout') {
           return `${baseUrl}/pricing`;
-        }
-
-        // If URL is relative, make it absolute
-        if (url.startsWith('/')) {
-          return `${baseUrl}${url}`;
         }
         
         // If URL is already absolute and on same domain

@@ -15,6 +15,13 @@
       "when": 1761675106346,
       "tag": "0001_subscription_refactor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762000000000,
+      "tag": "0002_simplify_auth",
+      "breakpoints": true
     }
   ]
 }

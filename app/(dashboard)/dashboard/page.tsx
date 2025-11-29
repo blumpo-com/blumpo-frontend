@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 import { customerPortalAction, unsubscribeAction, reactivateAction } from '@/lib/payments/actions';
+import { signOut } from '@/app/(login)/actions';
+import { LogOut } from 'lucide-react';
 import { useActionState } from 'react';
 import { User, TokenAccount } from '@/lib/db/schema';
 import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Suspense, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -48,6 +51,13 @@ function ManageSubscription() {
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const [isUnsubscribing, setIsUnsubscribing] = useState(false);
   const [isReactivating, setIsReactivating] = useState(false);
+  const [formattedCancellationDate, setFormattedCancellationDate] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.tokenAccount?.cancellationTime) {
+      setFormattedCancellationDate(new Date(user.tokenAccount.cancellationTime).toLocaleDateString());
+    }
+  }, [user?.tokenAccount?.cancellationTime]);
   const [unsubscribeState, unsubscribeActionHandler] = useActionState<ActionState, FormData>(
     async (prevState, formData) => {
       setIsUnsubscribing(true);
@@ -128,8 +138,8 @@ function ManageSubscription() {
                   Current Plan: {planName === 'FREE' ? 'Free' : planName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {isCancelledButActive 
-                    ? `Active until ${new Date(tokenAccount.cancellationTime!).toLocaleDateString()}`
+                  {isCancelledButActive && formattedCancellationDate
+                    ? `Active until ${formattedCancellationDate}`
                     : hasActiveSubscription 
                       ? `Status: ${tokenAccount.subscriptionStatus}`
                       : 'No active subscription'
@@ -250,6 +260,20 @@ function UserProfileSkeleton() {
 
 function UserProfile() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const [formattedLastLogin, setFormattedLastLogin] = useState<string>('');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.lastLoginAt) {
+      setFormattedLastLogin(new Date(user.lastLoginAt).toLocaleDateString());
+    }
+  }, [user?.lastLoginAt]);
+
+  async function handleSignOut() {
+    await signOut();
+    mutate('/api/user');
+    router.push('/');
+  }
 
   if (!user) {
     return (
@@ -272,25 +296,38 @@ function UserProfile() {
       <CardContent>
         <div className="flex items-center space-x-4">
           <Avatar>
-            <AvatarImage src={user.photoUrl || ''} alt={user.displayName} />
+            <AvatarImage src={user.photoUrl || ''} alt={user.displayName || user.email} />
             <AvatarFallback>
               {user.displayName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
+                ? user.displayName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                : user.email
+                    .split('@')[0]
+                    .slice(0, 2)
+                    .toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{user.displayName}</p>
+            <p className="font-medium">{user.displayName || user.email}</p>
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>
-        {user.lastLoginAt && (
+        {formattedLastLogin && (
           <p className="text-sm text-muted-foreground mt-4">
-            Last login: {new Date(user.lastLoginAt).toLocaleDateString()}
+            Last login: {formattedLastLogin}
           </p>
         )}
       </CardContent>
+      <CardFooter>
+        <form action={handleSignOut} className="w-full">
+          <Button type="submit" variant="outline" className="w-full">
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        </form>
+      </CardFooter>
     </Card>
   );
 }
@@ -307,6 +344,13 @@ function TokenBalanceSkeleton() {
 
 function TokenBalance() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const [formattedNextRefill, setFormattedNextRefill] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.tokenAccount?.nextRefillAt) {
+      setFormattedNextRefill(new Date(user.tokenAccount.nextRefillAt).toLocaleDateString());
+    }
+  }, [user?.tokenAccount?.nextRefillAt]);
 
   if (!user) {
     return (
@@ -342,8 +386,8 @@ function TokenBalance() {
           </div>
           <div className="text-sm text-muted-foreground">
             <p>Current plan: {planName === 'FREE' ? 'Free' : planName}</p>
-            {tokenAccount?.nextRefillAt && (
-              <p>Next refill: {new Date(tokenAccount.nextRefillAt).toLocaleDateString()}</p>
+            {formattedNextRefill && (
+              <p>Next refill: {formattedNextRefill}</p>
             )}
           </div>
         </div>

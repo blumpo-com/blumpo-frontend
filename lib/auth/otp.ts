@@ -44,7 +44,6 @@ export async function verifyOtpCode(code: string, codeHash: string): Promise<boo
 export async function generateAndSendOtp(
   email: string,
   purpose: string = 'LOGIN',
-  displayName?: string,
   userId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -65,7 +64,7 @@ export async function generateAndSendOtp(
       from: 'Blumpo <no-reply@blumpo.com>',
       to: email,
       subject: 'Your login code',
-      html: renderOtpEmailTemplate(code, displayName),
+      html: renderOtpEmailTemplate(code),
     });
     
     if (error) {

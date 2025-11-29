@@ -51,10 +51,10 @@ function UserMenu() {
         <Avatar className="cursor-pointer size-9">
           <AvatarImage alt={user.displayName || ""} />
           <AvatarFallback>
-            {user.displayName
-              .split(" ")
+            {user.displayName?.
+              split(" ")
               .map((n) => n[0])
-              .join("")}
+              .join("") || user.email?.split("@")[0]?.charAt(0)}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

@@ -14,26 +14,19 @@ import {
 } from '@/lib/auth/middleware';
 import { generateAndSendOtp, verifyAndConsumeOtp } from '@/lib/auth/otp';
 
-// Step 1: Request OTP code
-const signInSchema = z.object({
+// Unified authentication flow: Step 1 - Request OTP code
+const requestOtpSchema = z.object({
   email: z.string().email().min(3).max(255),
 });
 
-export const signIn = validatedAction(signInSchema, async (data, formData) => {
+export const requestOtp = validatedAction(requestOtpSchema, async (data, formData) => {
   const { email } = data;
 
-  // Check if user exists
+  // Generate and send OTP (works for both existing and new users)
   const existingUser = await getUserByEmail(email);
+  const userId = existingUser?.id;
 
-  if (!existingUser) {
-    return {
-      error: 'No account found with this email. Please sign up first.',
-      email
-    };
-  }
-
-  // Generate and send OTP
-  const result = await generateAndSendOtp(email, 'LOGIN', existingUser.displayName, existingUser.id);
+  const result = await generateAndSendOtp(email, 'LOGIN', userId);
 
   if (!result.success) {
     return {
@@ -49,13 +42,13 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
   };
 });
 
-// Step 2: Verify OTP and complete sign-in
-const verifySignInSchema = z.object({
+// Unified authentication flow: Step 2 - Verify OTP and sign in (or create user if new)
+const verifyOtpSchema = z.object({
   email: z.string().email(),
   code: z.string().length(6, 'Code must be 6 digits')
 });
 
-export const verifySignIn = validatedAction(verifySignInSchema, async (data, formData) => {
+export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData) => {
   const { email, code } = data;
 
   // Verify OTP
@@ -69,140 +62,55 @@ export const verifySignIn = validatedAction(verifySignInSchema, async (data, for
     };
   }
 
-  // Get user and create session
-  const foundUser = await getUserByEmail(email);
+  // Check if user exists
+  let foundUser = await getUserByEmail(email);
+
   if (!foundUser) {
-    return {
-      error: 'User not found.',
+    // User doesn't exist - create new user
+    const newUser: NewUser = {
+      id: crypto.randomUUID(),
       email,
-      code
+      phoneNumber: null,
     };
+
+    const [createdUser] = await db.insert(user).values(newUser).returning();
+
+    if (!createdUser) {
+      return {
+        error: 'Failed to create user. Please try again.',
+        email,
+        code
+      };
+    }
+
+    // Create default token account with free tier (10,000 tokens)
+    await db.insert(tokenAccount).values({
+      userId: createdUser.id,
+      balance: 10000,
+      planCode: 'FREE',
+    });
+
+    foundUser = createdUser;
+  } else {
+    // User exists - update last login timestamp
+    await db
+      .update(user)
+      .set({ lastLoginAt: new Date() })
+      .where(eq(user.id, foundUser.id));
   }
 
-  // Update last login timestamp
-  await db
-    .update(user)
-    .set({ lastLoginAt: new Date() })
-    .where(eq(user.id, foundUser.id));
-
+  // Set session for both new and existing users
   await setSession(foundUser);
 
   const redirectTo = formData.get('redirect') as string | null;
   redirect(redirectTo === 'checkout' ? '/pricing' : '/dashboard');
 });
 
-// Step 1: Request OTP for signup
-const signUpSchema = z.object({
-  email: z.string().email(),
-  displayName: z.string().min(1, 'Name is required').max(100),
-  phoneNumber: z.string().optional()
-});
-
-export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { email, displayName, phoneNumber } = data;
-
-  // Check if user already exists
-  const existingUser = await getUserByEmail(email);
-
-  if (existingUser) {
-    return {
-      error: 'An account with this email already exists. Please sign in instead.',
-      email,
-      displayName,
-      phoneNumber
-    };
-  }
-
-  // Generate and send OTP
-  const result = await generateAndSendOtp(email, 'SIGNUP', displayName);
-
-  if (!result.success) {
-    return {
-      error: result.error || 'Failed to send verification code. Please try again.',
-      email,
-      displayName,
-      phoneNumber
-    };
-  }
-
-  return {
-    success: 'Verification code sent! Please check your email.',
-    email,
-    displayName,
-    phoneNumber,
-    awaitingOtp: true
-  };
-});
-
-// Step 2: Verify OTP and complete signup
-const verifySignUpSchema = z.object({
-  email: z.string().email(),
-  displayName: z.string().min(1).max(100),
-  phoneNumber: z.string().optional(),
-  code: z.string().length(6, 'Code must be 6 digits')
-});
-
-export const verifySignUp = validatedAction(verifySignUpSchema, async (data, formData) => {
-  const { email, displayName, phoneNumber, code } = data;
-
-  // Verify OTP
-  const result = await verifyAndConsumeOtp(email, code, 'SIGNUP');
-
-  if (!result.success) {
-    return {
-      error: result.error || 'Invalid verification code.',
-      email,
-      displayName,
-      phoneNumber,
-      code
-    };
-  }
-
-  // Check again if user exists (race condition protection)
-  const existingUser = await getUserByEmail(email);
-  if (existingUser) {
-    return {
-      error: 'An account with this email already exists.',
-      email,
-      displayName,
-      phoneNumber,
-      code
-    };
-  }
-
-  // Create new user
-  const newUser: NewUser = {
-    id: crypto.randomUUID(),
-    email,
-    displayName,
-    phoneNumber: phoneNumber || null,
-  };
-
-  const [createdUser] = await db.insert(user).values(newUser).returning();
-
-  if (!createdUser) {
-    return {
-      error: 'Failed to create user. Please try again.',
-      email,
-      displayName,
-      phoneNumber,
-      code
-    };
-  }
-
-  // Create default token account with free tier (10,000 tokens)
-  await db.insert(tokenAccount).values({
-    userId: createdUser.id,
-    balance: 10000,
-    planCode: 'FREE',
-  });
-
-  // Set session
-  await setSession(createdUser);
-
-  const redirectTo = formData.get('redirect') as string | null;
-  redirect(redirectTo === 'checkout' ? '/pricing' : '/dashboard');
-});
+// Legacy exports for backward compatibility (will be removed after UI update)
+export const signIn = requestOtp;
+export const verifySignIn = verifyOtp;
+export const signUp = requestOtp;
+export const verifySignUp = verifyOtp;
 
 export async function signOut() {
   (await cookies()).delete('session');
