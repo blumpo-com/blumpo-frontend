@@ -256,7 +256,7 @@ export function Login() {
                     </div>
                   </div>
 
-                  {/* Email Input with gradient border on focus */}
+                  {/* Email Input with gradient border on hover */}
                   <div className={styles.emailInputGradientWrapper}>
                     <input
                       id="email"
@@ -266,7 +266,7 @@ export function Login() {
                       defaultValue={state.email}
                       required
                       maxLength={255}
-                      className="w-full h-[60px] px-[23px] py-[11px] rounded-[10px] border-[3px] border-[#00bfa6] text-[20px] text-[#040404] placeholder-gray-500 bg-white focus:outline-none focus:border-transparent transition-all"
+                      className={styles.emailInput}
                       placeholder="Email..."
                     />
                   </div>

@@ -8,7 +8,7 @@
 
 .wrapperVector3Wrapper {
   position: absolute;
-  top: calc(50% - 320px);
+  top: calc(50% - 310px);
   left: 51px;
   border-radius: 15px;
   background-color: #f9fafb;
@@ -58,35 +58,56 @@
 
 .emailInputGradientWrapper {
   position: relative;
-}
-
-.emailInputGradientWrapper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
   border-radius: 10px;
   padding: 3px;
-  background: linear-gradient(to right, #00bfa6, #0a0a0a);
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.2s;
-  pointer-events: none;
-  z-index: 1;
+  background: transparent;
+  transition: background 0.2s ease;
 }
 
-.emailInputGradientWrapper:focus-within::before {
-  opacity: 1;
+.emailInputGradientWrapper:hover,
+.emailInputGradientWrapper:focus-within {
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
 }
 
-.emailInputGradientWrapper input {
+.emailInput {
   position: relative;
-  z-index: 2;
+  width: 100%;
+  height: 60px;
+  padding: 8px 20px;
+  border-radius: 7px;
+  border: 3px solid #00bfa6;
+  background: white;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-family: 'Roboto', sans-serif;
+  text-align: left;
+  color: black;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.emailInput::placeholder {
+  color: black;
+}
+
+.emailInput:focus {
+  outline: none;
+}
+
+.emailInputGradientWrapper:hover .emailInput,
+.emailInputGradientWrapper:focus-within .emailInput {
+  border-color: transparent;
+  background: white;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  caret-color: white;
+}
+
+.emailInputGradientWrapper:hover .emailInput::placeholder,
+.emailInputGradientWrapper:focus-within .emailInput::placeholder {
+  color: white;
+  -webkit-text-fill-color: white;
 }
 
