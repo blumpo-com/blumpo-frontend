@@ -2,308 +2,296 @@
 
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CircleIcon, Loader2 } from 'lucide-react';
-import { signIn as otpSignIn, signUp, verifySignIn, verifySignUp } from './actions';
+import { Loader2 } from 'lucide-react';
+import { requestOtp, verifyOtp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
 import { signIn } from 'next-auth/react';
 
-export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
-  const router = useRouter();
+// Figma asset URLs (valid for 7 days - should be downloaded and hosted locally for production)
+const imgVector3 = "https://www.figma.com/api/mcp/asset/038af82d-ca64-473e-963d-312d288cfa04";
+const imgChatGptImage3Lis2025232050Photoroom1 = "https://www.figma.com/api/mcp/asset/cb53bad9-e39e-47c9-b19f-87985ca00d3f";
+const imgLogo = "https://www.figma.com/api/mcp/asset/25cb668c-6767-447a-99e6-bf76cd814dc0";
+const imgLine2 = "https://www.figma.com/api/mcp/asset/fc6cafab-ef74-4000-9715-989145be0e38";
+const imgLine4 = "https://www.figma.com/api/mcp/asset/b0f913ae-022a-429c-a446-e841933a0850";
+const imgVector1 = "https://www.figma.com/api/mcp/asset/7ec896d3-82df-4211-bc6b-85ce63be87d5";
+const imgVector2 = "https://www.figma.com/api/mcp/asset/72cd7bd8-0efb-4ea0-9ec6-dcf557143eb5";
+
+export function Login() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const [awaitingOtp, setAwaitingOtp] = useState(false);
-  
-  // For signup, we need to track the display name and phone
-  const [signupData, setSignupData] = useState({
-    displayName: '',
-    phoneNumber: ''
-  });
 
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
-    awaitingOtp 
-      ? (mode === 'signin' ? verifySignIn : verifySignUp)
-      : (mode === 'signin' ? otpSignIn : signUp),
+    awaitingOtp ? verifyOtp : requestOtp,
     { error: '' }
   );
 
   // Check if we received a success message indicating OTP was sent
   if (state.success && state.awaitingOtp && !awaitingOtp) {
     setAwaitingOtp(true);
-    if (mode === 'signup') {
-      setSignupData({
-        displayName: state.displayName || '',
-        phoneNumber: state.phoneNumber || ''
-      });
-    }
   }
 
-  return (
-    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <CircleIcon className="h-12 w-12 text-orange-500" />
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {awaitingOtp 
-            ? 'Enter verification code'
-            : mode === 'signin'
-            ? 'Sign in to your account'
-            : 'Create your account'}
-        </h2>
-        {awaitingOtp && (
+  // For OTP verification screen, use a simpler centered layout
+  if (awaitingOtp) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-2">
+            Enter verification code
+          </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             We've sent a 6-digit code to your email
           </p>
-        )}
-      </div>
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <form className="space-y-6" action={formAction}>
-          <input type="hidden" name="redirect" value={redirect || ''} />
-          <input type="hidden" name="priceId" value={priceId || ''} />
-          
-          {!awaitingOtp ? (
-            <>
-              <div>
-                <Label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    defaultValue={state.email}
-                    required
-                    maxLength={255}
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                    placeholder="Enter your email"
-                  />
-                </div>
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <form className="space-y-6" action={formAction}>
+            <input type="hidden" name="redirect" value={redirect || ''} />
+            <input type="hidden" name="priceId" value={priceId || ''} />
+            <input type="hidden" name="email" value={state.email} />
+            
+            <div>
+              <Label
+                htmlFor="code"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Verification Code
+              </Label>
+              <div className="mt-1">
+                <Input
+                  id="code"
+                  name="code"
+                  type="text"
+                  autoComplete="one-time-code"
+                  defaultValue={state.code}
+                  required
+                  maxLength={6}
+                  pattern="[0-9]{6}"
+                  className="appearance-none rounded-[10px] relative block w-full px-6 py-3 border-[3px] border-[#00bfa6] placeholder-gray-500 text-gray-900 text-center text-2xl font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-[#00bfa6] focus:ring-offset-2"
+                  placeholder="000000"
+                  autoFocus
+                />
               </div>
+              <p className="mt-2 text-xs text-gray-500 text-center">
+                Enter the 6-digit code from your email
+              </p>
+            </div>
 
-              {mode === 'signup' && (
-                <>
-                  <div>
-                    <Label
-                      htmlFor="displayName"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Display Name
-                    </Label>
-                    <div className="mt-1">
-                      <Input
-                        id="displayName"
-                        name="displayName"
-                        type="text"
-                        autoComplete="name"
-                        defaultValue={state.displayName}
-                        required
-                        maxLength={100}
-                        className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                        placeholder="Enter your name"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="phoneNumber"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Phone Number (optional)
-                    </Label>
-                    <div className="mt-1">
-                      <Input
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        type="tel"
-                        autoComplete="tel"
-                        defaultValue={state.phoneNumber}
-                        maxLength={20}
-                        className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                        placeholder="Enter your phone number"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <input type="hidden" name="email" value={state.email} />
-              {mode === 'signup' && (
-                <>
-                  <input type="hidden" name="displayName" value={signupData.displayName} />
-                  <input type="hidden" name="phoneNumber" value={signupData.phoneNumber} />
-                </>
-              )}
-              
-              <div>
-                <Label
-                  htmlFor="code"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Verification Code
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    id="code"
-                    name="code"
-                    type="text"
-                    autoComplete="one-time-code"
-                    defaultValue={state.code}
-                    required
-                    maxLength={6}
-                    pattern="[0-9]{6}"
-                    className="appearance-none rounded-full relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 text-center text-2xl font-bold letter-spacing-widest focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10"
-                    placeholder="000000"
-                    autoFocus
-                  />
-                </div>
-                <p className="mt-2 text-xs text-gray-500 text-center">
-                  Enter the 6-digit code from your email
-                </p>
+            {state?.error && (
+              <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
+                {state.error}
               </div>
-            </>
-          )}
+            )}
 
-          {state.success && !state.awaitingOtp && (
-            <div className="text-green-600 text-sm text-center bg-green-50 p-3 rounded-md">
-              {state.success}
+            <div>
+              <Button
+                type="submit"
+                className="w-full flex justify-center items-center h-[60px] rounded-[10px] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
+                disabled={pending}
+              >
+                {pending ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Loading...
+                  </>
+                ) : (
+                  'Verify Code'
+                )}
+              </Button>
             </div>
-          )}
 
-          {state?.error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
-              {state.error}
-            </div>
-          )}
-
-          <div>
-            <Button
-              type="submit"
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-              disabled={pending}
-            >
-              {pending ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                  Loading...
-                </>
-              ) : awaitingOtp ? (
-                'Verify Code'
-              ) : mode === 'signin' ? (
-                'Continue'
-              ) : (
-                'Sign up'
-              )}
-            </Button>
-          </div>
-
-          {awaitingOtp && (
             <div className="text-center">
               <button
                 type="button"
                 onClick={() => setAwaitingOtp(false)}
-                className="text-sm text-orange-600 hover:text-orange-500"
+                className="text-sm text-[#00bfa6] hover:text-[#00a693]"
               >
-                ← Back to {mode === 'signin' ? 'sign in' : 'sign up'}
+                ← Back
               </button>
             </div>
-          )}
-        </form>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
-        {!awaitingOtp && (
-          <>
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <Button
-                  onClick={() => {
-                    // Build callback URL with redirect parameters  
-                    const params = new URLSearchParams();
-                    if (redirect) params.set('redirect', redirect);
-                    if (priceId) params.set('priceId', priceId);
-                    
-                    const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
-                    signIn('google', { callbackUrl });
-                  }}
-                  type="button"
-                  variant="outline"
-                  className="w-full flex justify-center items-center gap-3 py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Continue with Google
-                  </Button>
+  // Main sign-in screen with split layout
+  return (
+    <div className="bg-gray-50 relative size-full min-h-[100dvh] flex">
+      {/* Left side - Decorative background */}
+      <div className="absolute h-full left-0 overflow-hidden top-0 w-full lg:w-[60%] hidden lg:block">
+        <div className="absolute bg-gray-50 h-[547px] left-[51px] overflow-hidden rounded-[15px] top-1/2 -translate-y-1/2 w-[790px]">
+          <div className="absolute flex h-[512.591px] items-center justify-center left-[49.85px] top-[99.13px] w-[569.723px]">
+            <div className="flex-none rotate-[151.388deg]">
+              <div className="h-[327.266px] relative w-[470.453px]">
+                <img 
+                  alt="" 
+                  className="block max-w-none size-full" 
+                  height={327.266} 
+                  src={imgVector3} 
+                  width={470.453} 
+                />
               </div>
             </div>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gray-50 text-gray-500">
-                    {mode === 'signin'
-                      ? 'New to our platform?'
-                      : 'Already have an account?'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <Link
-                  href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
-                    redirect ? `?redirect=${redirect}` : ''
-                  }${priceId ? `&priceId=${priceId}` : ''}`}
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                >
-                  {mode === 'signin'
-                    ? 'Create an account'
-                    : 'Sign in to existing account'}
-                </Link>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute contents left-[-25px] top-[500px]">
+          <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
+            <div className="flex-none rotate-[180deg] scale-y-[-100%]">
+              <div className="h-[50.878px] relative w-[27.447px]">
+                <img alt="" className="block max-w-none size-full" src={imgVector1} />
               </div>
             </div>
-          </>
-        )}
+          </div>
+          <div className="absolute flex h-[57.088px] items-center justify-center left-[28.92px] top-[32.37px] w-[43.193px]">
+            <div className="flex-none rotate-[159.059deg] scale-y-[-100%]">
+              <div className="h-[50.878px] relative w-[26.778px]">
+                <img alt="" className="block max-w-none size-full" src={imgVector2} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute h-[361.5px] left-[-25px] top-0 w-[241px]">
+            <img 
+              alt="" 
+              className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" 
+              src={imgChatGptImage3Lis2025232050Photoroom1} 
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Right side - Form */}
+      <div className="absolute bg-gray-50 border-[#040404] border-b-0 border-l-0 lg:border-l border-r-0 border-solid border-t-0 h-full left-0 lg:left-[60%] top-0 w-full lg:w-[40%] flex flex-col items-center justify-center px-4 sm:px-8 lg:px-[58px] py-12 sm:py-20 lg:py-[137px]">
+        <div className="w-full max-w-[505px] flex flex-col gap-12 lg:gap-[108px]">
+          {/* Title */}
+          <h1 className="font-bold leading-[29.788px] text-[#040404] text-[44px] text-center">
+            Ready to use Blumpo?
+          </h1>
+
+          {/* Form */}
+          <div className="w-full">
+            <form className="space-y-6" action={formAction}>
+              <input type="hidden" name="redirect" value={redirect || ''} />
+              <input type="hidden" name="priceId" value={priceId || ''} />
+
+              {/* Google Sign-in Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  const params = new URLSearchParams();
+                  if (redirect) params.set('redirect', redirect);
+                  if (priceId) params.set('priceId', priceId);
+                  
+                  const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
+                  signIn('google', { callbackUrl });
+                }}
+                className="bg-[#e6e6e6] box-border flex gap-[27px] h-[60px] items-center justify-center overflow-hidden px-[18px] py-[14px] rounded-[10px] w-full hover:bg-[#d9d9d9] transition-colors"
+              >
+                <div className="h-[20px] relative shrink-0 w-[20.175px]">
+                  <img alt="Google Logo" className="block max-w-none size-full" src={imgLogo} />
+                </div>
+                <span className="font-medium leading-[17px] text-[#040404] text-[20px] tracking-[0.25px]">
+                  Continue with Google
+                </span>
+              </button>
+
+              {/* OR Divider */}
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-center relative shrink-0">
+                  <div className="flex-none rotate-[180deg]">
+                    <div className="h-px relative w-[228px]">
+                      <div className="absolute bottom-[-50%] left-0 right-0 top-[-50%]">
+                        <img alt="" className="block max-w-none size-full" src={imgLine2} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="font-medium leading-[24.158px] relative shrink-0 text-[19.895px] text-black text-center tracking-[0.3553px]">
+                  OR
+                </p>
+                <div className="flex items-center justify-center relative shrink-0">
+                  <div className="flex-none rotate-[180deg]">
+                    <div className="h-px relative w-[228px]">
+                      <div className="absolute bottom-[-50%] left-0 right-0 top-[-50%]">
+                        <img alt="" className="block max-w-none size-full" src={imgLine2} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Input */}
+              <div>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  defaultValue={state.email}
+                  required
+                  maxLength={255}
+                  className="appearance-none rounded-[10px] relative block w-full px-[23px] py-[11px] border-[3px] border-[#00bfa6] placeholder-gray-500 text-gray-900 text-[20px] focus:outline-none focus:ring-2 focus:ring-[#00bfa6] focus:ring-offset-2"
+                  placeholder="Email..."
+                />
+              </div>
+
+              {/* Error Message */}
+              {state?.error && (
+                <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
+                  {state.error}
+                </div>
+              )}
+
+              {/* Continue Button */}
+              <Button
+                type="submit"
+                className="w-full flex justify-center items-center h-[60px] rounded-[10px] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
+                disabled={pending}
+              >
+                {pending ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                    Loading...
+                  </>
+                ) : (
+                  'Continue with email'
+                )}
+              </Button>
+            </form>
+          </div>
+
+          {/* Footer Links */}
+          <div className="flex items-center justify-center gap-2">
+            <Link 
+              href="/privacy-policy" 
+              className="font-normal leading-[8.937px] text-[#040404] text-[14.894px] hover:text-[#00bfa6] transition-colors"
+            >
+              Privacy policy
+            </Link>
+            <div className="flex h-[17px] items-center justify-center relative shrink-0 w-0">
+              <div className="flex-none rotate-[90deg]">
+                <div className="h-0 relative w-[17px]">
+                  <div className="absolute bottom-0 left-0 right-0 top-[-1px]">
+                    <img alt="" className="block max-w-none size-full" src={imgLine4} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Link 
+              href="/terms" 
+              className="font-normal leading-[8.937px] text-[#040404] text-[14.894px] hover:text-[#00bfa6] transition-colors"
+            >
+              Terms & conditions
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
