@@ -1,4 +1,4 @@
-.frameParent {
+.leftPanel {
   width: 60%;
   height: 100vh;
   position: relative;
@@ -6,7 +6,7 @@
   overflow: hidden;
 }
 
-.wrapperVector3Wrapper {
+.illustrationCard {
   position: absolute;
   top: calc(50% - 310px);
   left: 51px;
@@ -17,7 +17,7 @@
   overflow: hidden;
 }
 
-.wrapperVector3 {
+.vectorContainer {
   position: absolute;
   top: 99.13px;
   left: 49.85px;
@@ -30,7 +30,7 @@
   flex-shrink: 0;
 }
 
-.wrapperVector3Child {
+.vectorImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -40,7 +40,7 @@
   transform: scale(1);
 }
 
-.chatgptImage3Lis2025232 {
+.rabbitImage {
   width: 100%;
   position: relative;
   max-width: 100%;
@@ -49,14 +49,14 @@
   object-fit: cover;
 }
 
-.rabbitImageContainer {
+.rabbitContainer {
   position: absolute;
   bottom: 40px;
   width: 241px;
   height: 361.5px;
 }
 
-.emailInputGradientWrapper {
+.emailWrapper {
   position: relative;
   border-radius: 10px;
   padding: 3px;
@@ -64,8 +64,8 @@
   transition: background 0.2s ease;
 }
 
-.emailInputGradientWrapper:hover,
-.emailInputGradientWrapper:focus-within {
+.emailWrapper:hover,
+.emailWrapper:focus-within {
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
 }
 
@@ -95,8 +95,8 @@
   outline: none;
 }
 
-.emailInputGradientWrapper:hover .emailInput,
-.emailInputGradientWrapper:focus-within .emailInput {
+.emailWrapper:hover .emailInput,
+.emailWrapper:focus-within .emailInput {
   border-color: transparent;
   background: white;
   -webkit-background-clip: text;
@@ -105,13 +105,13 @@
   caret-color: white;
 }
 
-.emailInputGradientWrapper:hover .emailInput::placeholder,
-.emailInputGradientWrapper:focus-within .emailInput::placeholder {
+.emailWrapper:hover .emailInput::placeholder,
+.emailWrapper:focus-within .emailInput::placeholder {
   color: white;
   -webkit-text-fill-color: white;
 }
 
-.orLine {
+.orDivider {
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -125,21 +125,21 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.orLineChild {
+.orLine {
   height: 1px;
   width: 228px;
   position: relative;
   object-fit: contain;
 }
 
-.or {
+.orText {
   position: relative;
   letter-spacing: 0.36px;
   line-height: 24.16px;
   font-weight: 500;
 }
 
-.standrdOutlineCircle {
+.googleButton {
   width: 100%;
   height: 60px;
   position: relative;
@@ -159,18 +159,18 @@
   transition: background-color 0.2s ease;
 }
 
-.standrdOutlineCircle:hover {
+.googleButton:hover {
   background-color: #d9d9d9;
 }
 
-.logoIcon {
+.googleLogo {
   height: 20px;
   width: 20.2px;
   position: relative;
   z-index: 0;
 }
 
-.continueWithGoogle {
+.googleButtonText {
   height: 17px;
   width: 332px;
   position: absolute;

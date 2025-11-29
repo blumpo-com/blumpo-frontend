@@ -119,15 +119,15 @@ export function Login() {
 
   // Shared left panel component
   const LeftPanel = () => (
-    <div className={`${styles.frameParent} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
+    <div className={`${styles.leftPanel} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
       {/* White card with vector background */}
-      <div className={styles.wrapperVector3Wrapper}>
-        <div className={styles.wrapperVector3}>
+      <div className={styles.illustrationCard}>
+        <div className={styles.vectorContainer}>
           <div className="flex-none rotate-[151.388deg]">
             <div className="h-[327.266px] relative w-[470.453px]">
               <img 
                 alt="" 
-                className={styles.wrapperVector3Child}
+                className={styles.vectorImage}
                 height={327.266} 
                 src={imgVector3} 
                 width={470.453} 
@@ -138,7 +138,7 @@ export function Login() {
       </div>
 
       {/* Decorative elements and rabbit image */}
-      <div className={styles.rabbitImageContainer}>
+      <div className={styles.rabbitContainer}>
         {/* Vector decorations */}
         <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
           <div className="flex-none rotate-[180deg] scale-y-[-100%]">
@@ -158,7 +158,7 @@ export function Login() {
         <div className="absolute h-[361.5px] left-[-25px] top-0 w-[241px]">
           <img 
             alt="" 
-            className={styles.chatgptImage3Lis2025232}
+            className={styles.rabbitImage}
             src={imgChatGptImage3Lis2025232050Photoroom1} 
                       />
                     </div>
@@ -278,21 +278,21 @@ export function Login() {
                       const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
                       signIn('google', { callbackUrl });
                     }}
-                    className={styles.standrdOutlineCircle}
+                    className={styles.googleButton}
                   >
-                    <img alt="Google Logo" className={styles.logoIcon} src={imgLogo} />
-                    <div className={styles.continueWithGoogle}>Continue with Google</div>
+                    <img alt="Google Logo" className={styles.googleLogo} src={imgLogo} />
+                    <div className={styles.googleButtonText}>Continue with Google</div>
                   </button>
 
                   {/* OR Divider */}
-                  <div className={styles.orLine}>
-                    <img className={styles.orLineChild} alt="" src={imgLine2} />
-                    <div className={styles.or}>OR</div>
-                    <img className={styles.orLineChild} alt="" src={imgLine2} />
+                  <div className={styles.orDivider}>
+                    <img className={styles.orLine} alt="" src={imgLine2} />
+                    <div className={styles.orText}>OR</div>
+                    <img className={styles.orLine} alt="" src={imgLine2} />
                   </div>
 
                   {/* Email Input with gradient border on hover */}
-                  <div className={styles.emailInputGradientWrapper}>
+                  <div className={styles.emailWrapper}>
                     <input
                       id="email"
                       name="email"
