@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
             .values({
               id: crypto.randomUUID(),
               email: user.email,
-              displayName: user.name || user.email.split('@')[0],
+              displayName: user.name || null,
               photoUrl: user.image || null,
               phoneNumber: null,
               lastLoginAt: new Date(),
@@ -61,7 +61,7 @@ export const authOptions: NextAuthOptions = {
             .set({
               lastLoginAt: new Date(),
               photoUrl: user.image || existingUser[0].photoUrl,
-              displayName: user.name || existingUser[0].displayName,
+              displayName: user.name || existingUser[0].displayName || null,
             })
             .where(eq(userTable.id, existingUser[0].id))
             .returning();

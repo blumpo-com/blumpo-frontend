@@ -5,7 +5,7 @@ import { relations } from 'drizzle-orm';
 export const user = pgTable('user', {
   id: uuid('id').primaryKey(),
   email: text('email').notNull().unique(), // Using CITEXT in PostgreSQL
-  displayName: text('display_name').notNull(),
+  displayName: text('display_name'),
   photoUrl: text('photo_url'),
   phoneNumber: text('phone_number'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
