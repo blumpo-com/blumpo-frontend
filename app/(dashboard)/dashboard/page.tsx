@@ -272,16 +272,21 @@ function UserProfile() {
       <CardContent>
         <div className="flex items-center space-x-4">
           <Avatar>
-            <AvatarImage src={user.photoUrl || ''} alt={user.displayName} />
+            <AvatarImage src={user.photoUrl || ''} alt={user.displayName || user.email} />
             <AvatarFallback>
               {user.displayName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
+                ? user.displayName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                : user.email
+                    .split('@')[0]
+                    .slice(0, 2)
+                    .toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium">{user.displayName}</p>
+            <p className="font-medium">{user.displayName || user.email}</p>
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>
