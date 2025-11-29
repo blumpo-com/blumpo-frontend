@@ -1,0 +1,92 @@
+.frameParent {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  overflow: hidden;
+}
+
+.wrapperVector3Wrapper {
+  position: absolute;
+  top: calc(50% - 320px);
+  left: 51px;
+  border-radius: 15px;
+  background-color: #f9fafb;
+  width: 790px;
+  height: 547px;
+  overflow: hidden;
+}
+
+.wrapperVector3 {
+  position: absolute;
+  top: 99.13px;
+  left: 49.85px;
+  width: 569.723px;
+  height: 512.6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wrapperVector3Child {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  transform: scale(1);
+}
+
+.chatgptImage3Lis2025232 {
+  width: 100%;
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.rabbitImageContainer {
+  position: absolute;
+  bottom: 40px;
+  width: 241px;
+  height: 361.5px;
+}
+
+.emailInputGradientWrapper {
+  position: relative;
+}
+
+.emailInputGradientWrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  padding: 3px;
+  background: linear-gradient(to right, #00bfa6, #0a0a0a);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.emailInputGradientWrapper:focus-within::before {
+  opacity: 1;
+}
+
+.emailInputGradientWrapper input {
+  position: relative;
+  z-index: 2;
+}
+
