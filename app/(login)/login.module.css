@@ -1,5 +1,5 @@
 .frameParent {
-  width: 100%;
+  width: 60%;
   height: 100vh;
   position: relative;
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
@@ -109,5 +109,79 @@
 .emailInputGradientWrapper:focus-within .emailInput::placeholder {
   color: white;
   -webkit-text-fill-color: white;
+}
+
+.orLine {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 11px;
+  text-align: center;
+  font-size: 19.89px;
+  color: #000;
+  font-family: 'Roboto', sans-serif;
+}
+
+.orLineChild {
+  height: 1px;
+  width: 228px;
+  position: relative;
+  object-fit: contain;
+}
+
+.or {
+  position: relative;
+  letter-spacing: 0.36px;
+  line-height: 24.16px;
+  font-weight: 500;
+}
+
+.standrdOutlineCircle {
+  width: 100%;
+  height: 60px;
+  position: relative;
+  border-radius: 10px;
+  background-color: #e6e6e6;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  box-sizing: border-box;
+  isolation: isolate;
+  gap: 27px;
+  text-align: center;
+  font-size: 20px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.standrdOutlineCircle:hover {
+  background-color: #d9d9d9;
+}
+
+.logoIcon {
+  height: 20px;
+  width: 20.2px;
+  position: relative;
+  z-index: 0;
+}
+
+.continueWithGoogle {
+  height: 17px;
+  width: 332px;
+  position: absolute;
+  margin: 0 !important;
+  top: 21.5px;
+  left: calc(50% - 165.5px);
+  letter-spacing: 0.25px;
+  line-height: 17px;
+  font-weight: 500;
+  color: #0a0a0a;
+  display: inline-block;
+  z-index: 1;
 }
 

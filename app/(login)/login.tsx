@@ -270,47 +270,25 @@ export function Login() {
                   {/* Google Sign-in Button */}
                   <button
                     type="button"
-                  onClick={() => {
-                    const params = new URLSearchParams();
-                    if (redirect) params.set('redirect', redirect);
-                    if (priceId) params.set('priceId', priceId);
-                    
-                    const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
-                    signIn('google', { callbackUrl });
-                  }}
-                    className="bg-[#e6e6e6] box-border flex gap-[27px] h-[60px] items-center justify-center overflow-hidden px-[18px] py-[14px] rounded-[10px] w-full hover:bg-[#d9d9d9] transition-colors"
+                    onClick={() => {
+                      const params = new URLSearchParams();
+                      if (redirect) params.set('redirect', redirect);
+                      if (priceId) params.set('priceId', priceId);
+                      
+                      const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
+                      signIn('google', { callbackUrl });
+                    }}
+                    className={styles.standrdOutlineCircle}
                   >
-                    <div className="h-[20px] relative shrink-0 w-[20.175px]">
-                      <img alt="Google Logo" className="block max-w-none size-full" src={imgLogo} />
-                    </div>
-                    <span className="font-medium leading-[17px] text-[#040404] text-[20px] tracking-[0.25px]">
-                      Continue with Google
-                    </span>
+                    <img alt="Google Logo" className={styles.logoIcon} src={imgLogo} />
+                    <div className={styles.continueWithGoogle}>Continue with Google</div>
                   </button>
 
                   {/* OR Divider */}
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center justify-center relative shrink-0">
-                      <div className="flex-none rotate-[180deg]">
-                        <div className="h-px relative w-[228px]">
-                          <div className="absolute bottom-[-50%] left-0 right-0 top-[-50%]">
-                            <img alt="" className="block max-w-none size-full" src={imgLine2} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="font-medium leading-[24.158px] relative shrink-0 text-[19.895px] text-black text-center tracking-[0.3553px]">
-                      OR
-                    </p>
-                    <div className="flex items-center justify-center relative shrink-0">
-                      <div className="flex-none rotate-[180deg]">
-                        <div className="h-px relative w-[228px]">
-                          <div className="absolute bottom-[-50%] left-0 right-0 top-[-50%]">
-                            <img alt="" className="block max-w-none size-full" src={imgLine2} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div className={styles.orLine}>
+                    <img className={styles.orLineChild} alt="" src={imgLine2} />
+                    <div className={styles.or}>OR</div>
+                    <img className={styles.orLineChild} alt="" src={imgLine2} />
                   </div>
 
                   {/* Email Input with gradient border on hover */}
