@@ -73,6 +73,50 @@ export function Login() {
     }
   };
 
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').trim();
+    
+    // Extract only digits from pasted text
+    const digits = pastedData.replace(/\D/g, '').slice(0, 6);
+    
+    if (digits.length === 6) {
+      // Fill all 6 inputs with the pasted digits
+      const newCode = digits.split('');
+      setOtpCode(newCode);
+      
+      // Focus the last input
+      const lastInput = document.getElementById(`otp-5`);
+      lastInput?.focus();
+      
+      // Auto-submit the form
+      setTimeout(() => {
+        const form = document.getElementById('otp-form') as HTMLFormElement;
+        if (form) {
+          const codeInput = form.querySelector('[name="code"]') as HTMLInputElement;
+          if (codeInput) {
+            codeInput.value = newCode.join('');
+            form.requestSubmit();
+          }
+        }
+      }, 0);
+    } else if (digits.length > 0) {
+      // If less than 6 digits, fill what we have starting from the first input
+      const newCode = [...otpCode];
+      digits.split('').forEach((digit, i) => {
+        if (i < 6) {
+          newCode[i] = digit;
+        }
+      });
+      setOtpCode(newCode);
+      
+      // Focus the next empty input or the last filled one
+      const nextIndex = Math.min(digits.length, 5);
+      const nextInput = document.getElementById(`otp-${nextIndex}`);
+      nextInput?.focus();
+    }
+  };
+
   // Shared left panel component
   const LeftPanel = () => (
     <div className={`${styles.frameParent} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
@@ -164,6 +208,7 @@ export function Login() {
                         value={otpCode[index]}
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        onPaste={index === 0 ? handleOtpPaste : undefined}
                         className="w-[54.47px] h-[69px] rounded-[10px] border-[3px] border-[#00bfa6] text-center text-[32px] font-bold text-[#040404] focus:outline-none focus:border-[#00bfa6] focus:ring-2 focus:ring-[#00bfa6] focus:ring-offset-2"
                         autoFocus={index === 0}
                       />
