@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/card';
 import { Dialog } from '@/components/ui/dialog';
 import { customerPortalAction, unsubscribeAction, reactivateAction } from '@/lib/payments/actions';
+import { signOut } from '@/app/(login)/actions';
+import { LogOut } from 'lucide-react';
 import { useActionState } from 'react';
 import { User, TokenAccount } from '@/lib/db/schema';
 import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Suspense, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -258,12 +261,19 @@ function UserProfileSkeleton() {
 function UserProfile() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
   const [formattedLastLogin, setFormattedLastLogin] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
     if (user?.lastLoginAt) {
       setFormattedLastLogin(new Date(user.lastLoginAt).toLocaleDateString());
     }
   }, [user?.lastLoginAt]);
+
+  async function handleSignOut() {
+    await signOut();
+    mutate('/api/user');
+    router.push('/');
+  }
 
   if (!user) {
     return (
@@ -310,6 +320,14 @@ function UserProfile() {
           </p>
         )}
       </CardContent>
+      <CardFooter>
+        <form action={handleSignOut} className="w-full">
+          <Button type="submit" variant="outline" className="w-full">
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Button>
+        </form>
+      </CardFooter>
     </Card>
   );
 }
