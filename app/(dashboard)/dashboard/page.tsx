@@ -48,6 +48,13 @@ function ManageSubscription() {
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const [isUnsubscribing, setIsUnsubscribing] = useState(false);
   const [isReactivating, setIsReactivating] = useState(false);
+  const [formattedCancellationDate, setFormattedCancellationDate] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.tokenAccount?.cancellationTime) {
+      setFormattedCancellationDate(new Date(user.tokenAccount.cancellationTime).toLocaleDateString());
+    }
+  }, [user?.tokenAccount?.cancellationTime]);
   const [unsubscribeState, unsubscribeActionHandler] = useActionState<ActionState, FormData>(
     async (prevState, formData) => {
       setIsUnsubscribing(true);
@@ -128,8 +135,8 @@ function ManageSubscription() {
                   Current Plan: {planName === 'FREE' ? 'Free' : planName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {isCancelledButActive 
-                    ? `Active until ${new Date(tokenAccount.cancellationTime!).toLocaleDateString()}`
+                  {isCancelledButActive && formattedCancellationDate
+                    ? `Active until ${formattedCancellationDate}`
                     : hasActiveSubscription 
                       ? `Status: ${tokenAccount.subscriptionStatus}`
                       : 'No active subscription'
@@ -250,6 +257,13 @@ function UserProfileSkeleton() {
 
 function UserProfile() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const [formattedLastLogin, setFormattedLastLogin] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.lastLoginAt) {
+      setFormattedLastLogin(new Date(user.lastLoginAt).toLocaleDateString());
+    }
+  }, [user?.lastLoginAt]);
 
   if (!user) {
     return (
@@ -290,9 +304,9 @@ function UserProfile() {
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>
-        {user.lastLoginAt && (
+        {formattedLastLogin && (
           <p className="text-sm text-muted-foreground mt-4">
-            Last login: {new Date(user.lastLoginAt).toLocaleDateString()}
+            Last login: {formattedLastLogin}
           </p>
         )}
       </CardContent>
@@ -312,6 +326,13 @@ function TokenBalanceSkeleton() {
 
 function TokenBalance() {
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const [formattedNextRefill, setFormattedNextRefill] = useState<string>('');
+
+  useEffect(() => {
+    if (user?.tokenAccount?.nextRefillAt) {
+      setFormattedNextRefill(new Date(user.tokenAccount.nextRefillAt).toLocaleDateString());
+    }
+  }, [user?.tokenAccount?.nextRefillAt]);
 
   if (!user) {
     return (
@@ -347,8 +368,8 @@ function TokenBalance() {
           </div>
           <div className="text-sm text-muted-foreground">
             <p>Current plan: {planName === 'FREE' ? 'Free' : planName}</p>
-            {tokenAccount?.nextRefillAt && (
-              <p>Next refill: {new Date(tokenAccount.nextRefillAt).toLocaleDateString()}</p>
+            {formattedNextRefill && (
+              <p>Next refill: {formattedNextRefill}</p>
             )}
           </div>
         </div>
