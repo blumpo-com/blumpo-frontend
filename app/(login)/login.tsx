@@ -177,27 +177,29 @@ export function Login() {
           {awaitingOtp ? (
             <>
               {/* OTP Verification Content */}
-              <div className="w-full flex flex-col gap-8">
+              <div className="w-full flex flex-col gap-[41px] items-center">
                 <h1 className="font-bold leading-[29.788px] text-[#040404] text-[44px] text-center">
                   Ready to use Blumpo?
                 </h1>
                 
-                <h2 className="font-medium text-[#00bfa6] text-[24px] leading-[24px]">
+                <h2 className="font-bold leading-[23.064px] text-[#00bfa6] text-[27.873px] text-center">
                   Enter your verification code
                 </h2>
                 
-                <p className="text-gray-600 text-[14px] leading-[20px]">
-                  We sent a 6-digit code to <span className="text-[#00bfa6]">{state.email}</span>. It will expire soon. Please enter it below.
+                <p className="text-[20px] leading-[23.064px] text-[#888e98] text-center max-w-[505px]">
+                  <span className="font-normal">We sent a 6-digit code to </span>
+                  <span className="font-bold text-[#040404]">{state.email}</span>
+                  <span className="font-normal">. It will expire soon. Please enter it below.</span>
                 </p>
 
-                <form id="otp-form" className="space-y-6" action={formAction}>
+                <form id="otp-form" className="w-full flex flex-col gap-[36px] items-center" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
                   <input type="hidden" name="priceId" value={priceId || ''} />
                   <input type="hidden" name="email" value={state.email} />
                   <input type="hidden" name="code" value={otpCode.join('')} />
 
                   {/* OTP Input Fields */}
-                  <div className="flex gap-[35.63px] justify-center">
+                  <div className="flex items-center justify-between w-full">
                     {[0, 1, 2, 3, 4, 5].map((index) => (
                       <input
                         key={index}
@@ -209,37 +211,47 @@ export function Login() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-[54.47px] h-[69px] rounded-[10px] border-[3px] border-[#00bfa6] text-center text-[32px] font-bold text-[#040404] focus:outline-none focus:border-[#00bfa6] focus:ring-2 focus:ring-[#00bfa6] focus:ring-offset-2"
+                        className={`bg-white border-2 border-black rounded-[9.684px] h-[69px] w-[54.474px] text-center text-[27.999px] font-semibold text-[#040404] focus:outline-none transition-opacity ${
+                          !otpCode[index] ? 'opacity-40' : 'opacity-100'
+                        }`}
+                        style={{ fontFamily: "'Poppins', sans-serif" }}
                         autoFocus={index === 0}
                       />
                     ))}
-            </div>
+                  </div>
 
-          {state?.error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
-              {state.error}
-            </div>
-          )}
+                  {state?.error && (
+                    <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-md">
+                      {state.error}
+                    </div>
+                  )}
 
-            <Button
-              type="submit"
-                    className="w-full flex justify-center items-center h-[60px] rounded-[10px] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
-              disabled={pending}
-            >
-              {pending ? (
-                <>
+                  <Button
+                    type="submit"
+                    className="w-full max-w-[505px] flex justify-center items-center h-[60px] rounded-[10px] border-[3px] border-[#00bfa6] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
+                    disabled={pending}
+                  >
+                    {pending ? (
+                      <>
                         <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                  Loading...
-                </>
-              ) : (
+                        Loading...
+                      </>
+                    ) : (
                       'Continue with email'
-              )}
-            </Button>
+                    )}
+                  </Button>
 
-                  <p className="text-center text-[10px] text-gray-600">
-                    Didn't receive email? <button type="button" onClick={() => setAwaitingOtp(false)} className="text-[#00bfa6] hover:underline">Resend it now</button>
+                  <p className="text-[20px] leading-[9.795px] text-[#040404] text-center">
+                    <span className="font-normal">Didn't receive email? </span>
+                    <button 
+                      type="button" 
+                      onClick={() => setAwaitingOtp(false)} 
+                      className="text-[#00bfa6] hover:underline font-normal"
+                    >
+                      Resend it now
+                    </button>
                   </p>
-        </form>
+                </form>
               </div>
             </>
           ) : (
