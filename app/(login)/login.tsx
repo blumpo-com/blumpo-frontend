@@ -121,23 +121,25 @@ export function Login() {
   const LeftPanel = () => (
     <div className={`${styles.leftPanel} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
       {/* White card with vector background */}
-      <div className={styles.illustrationCard}>
-        <div className={styles.vectorContainer}>
-          <div className="flex-none rotate-[151.388deg]">
-            <div className="h-[327.266px] relative w-[470.453px]">
-              <img 
-                alt="" 
-                className={styles.vectorImage}
-                height={327.266} 
-                src={imgVector3} 
-                width={470.453} 
-              />
+      <div className={styles.illustrationWrapper}>
+        <div className={styles.illustrationCard}>
+          <div className={styles.vectorContainer}>
+            <div className="flex-none rotate-[151.388deg]">
+              <div className="h-[327.266px] relative w-[470.453px]">
+                <img 
+                  alt="" 
+                  className={styles.vectorImage}
+                  height={327.266} 
+                  src={imgVector3} 
+                  width={470.453} 
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Decorative elements and rabbit image */}
+      {/* Decorative elements and rabbit image - positioned relative to leftPanel */}
       <div className={styles.rabbitContainer}>
         {/* Vector decorations */}
         <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
@@ -160,10 +162,10 @@ export function Login() {
             alt="" 
             className={styles.rabbitImage}
             src={imgChatGptImage3Lis2025232050Photoroom1} 
-                      />
-                    </div>
-                  </div>
-    </div>
+          />
+        </div>
+      </div>
+      </div>
   );
 
   // Main sign-in screen with split layout
