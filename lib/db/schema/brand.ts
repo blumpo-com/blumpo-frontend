@@ -2,7 +2,7 @@ import { pgTable, uuid, timestamp, text, boolean, jsonb, index, uniqueIndex } fr
 import { relations } from 'drizzle-orm';
 import { user } from './user';
 
-// Brand table (merged brand + brand_insights)
+// Brand table (core stable data + assets)
 export const brand = pgTable('brand', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -22,34 +22,14 @@ export const brand = pgTable('brand', {
   heroPhotos: text('hero_photos').array().notNull(),
   logoUrl: text('logo_url'),
 
-  // Preferences
-  clientAdPreferences: jsonb('client_ad_preferences').notNull().default({}),
-
-  // Brand & customer insights
-  industry: text('industry'),
-  customerPainPoints: text('customer_pain_points').array(),
-  productDescription: text('product_description'),
-  keyFeatures: text('key_features').array(),
-  brandVoice: text('brand_voice'),
-  uniqueValueProp: text('unique_value_prop'),
-  expectedCustomer: text('expected_customer'),
-  targetCustomer: text('target_customer'),
-  keyBenefits: text('key_benefits').array(),
-  competitors: text('competitors').array(),
-
-  // Insights
-  insTriggerEvents: text('ins_trigger_events').array(),
-  insAspirations: text('ins_aspirations').array(),
-  insInterestingQuotes: text('ins_interesting_quotes').array(),
-  insMarketingInsight: text('ins_marketing_insight'),
-  insTrendOpportunity: text('ins_trend_opportunity'),
-  insRaw: jsonb('ins_raw').default([]),
+  // Link to stored website raw data (HTML / scraped bundle)
+  websiteDataUrl: text('website_data_url'),
 }, (table) => ({
   userIdx: index('idx_brand_user').on(table.userId),
   userWebsiteUnique: uniqueIndex('brand_user_website_unique').on(table.userId, table.websiteUrl),
 }));
 
-// Relations
+// Relations (insights relation defined in index.ts to avoid circular dependency)
 export const brandRelations = relations(brand, ({ one }) => ({
   user: one(user, {
     fields: [brand.userId],

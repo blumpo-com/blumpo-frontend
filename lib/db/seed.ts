@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan, brand } from './schema/index';
+import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan, brand, brandInsights } from './schema/index';
 import { TokenPeriod, JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -56,6 +56,7 @@ async function createSampleBrand(userId: string) {
   
   const brandId = crypto.randomUUID();
   
+  // Create brand (core data only)
   const [newBrand] = await db
     .insert(brand)
     .values({
@@ -68,6 +69,14 @@ async function createSampleBrand(userId: string) {
       colors: ['#FF0000', '#00FF00'],
       photos: [],
       heroPhotos: [],
+    })
+    .returning();
+
+  // Create brand insights (separate table)
+  await db
+    .insert(brandInsights)
+    .values({
+      brandId: brandId,
       clientAdPreferences: {},
       industry: 'Technology',
       customerPainPoints: ['High costs', 'Complex setup'],
@@ -85,8 +94,7 @@ async function createSampleBrand(userId: string) {
       insMarketingInsight: null,
       insTrendOpportunity: null,
       insRaw: [],
-    })
-    .returning();
+    });
 
   console.log('Sample brand created:', newBrand.id);
   return newBrand;

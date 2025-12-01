@@ -10,6 +10,7 @@ export { generationJob } from './generation';
 export { assetImage } from './assets';
 export { authOtp } from './auth';
 export { brand } from './brand';
+export { brandInsights } from './brandInsights';
 export { brandExtractionStatus } from './brandExtractionStatus';
 export { subscriptionPlan, topupPlan, generationPricing } from './subscription';
 
@@ -19,6 +20,7 @@ export { generationJobRelations } from './generation';
 export { assetImageRelations } from './assets';
 export { authOtpRelations } from './auth';
 export { brandRelations } from './brand';
+export { brandInsightsRelations } from './brandInsights';
 export { brandExtractionStatusRelations } from './brandExtractionStatus';
 
 // Import tables for cross-relations
@@ -28,6 +30,7 @@ import { generationJob } from './generation';
 import { assetImage } from './assets';
 import { authOtp } from './auth';
 import { brand } from './brand';
+import { brandInsights } from './brandInsights';
 import { brandExtractionStatus } from './brandExtractionStatus';
 import { subscriptionPlan, topupPlan, generationPricing } from './subscription';
 
@@ -77,6 +80,14 @@ export const tokenLedgerCompleteRelations = relations(tokenLedger, ({ one }) => 
   }),
 }));
 
+// Complete brand relations (add insights relation here to avoid circular dependency)
+export const brandCompleteRelations = relations(brand, ({ one }) => ({
+  insights: one(brandInsights, {
+    fields: [brand.id],
+    references: [brandInsights.brandId],
+  }),
+}));
+
 // Export all types
 export type { User, NewUser } from './user';
 export type { TokenAccount, NewTokenAccount, TokenLedger, NewTokenLedger } from './tokens';
@@ -84,4 +95,5 @@ export type { GenerationJob, NewGenerationJob } from './generation';
 export type { AssetImage, NewAssetImage} from './assets';
 export type { AuthOtp, NewAuthOtp } from './auth';
 export type { Brand, NewBrand } from './brand';
+export type { BrandInsights, NewBrandInsights } from './brandInsights';
 export type { BrandExtractionStatus, NewBrandExtractionStatus } from './brandExtractionStatus';
