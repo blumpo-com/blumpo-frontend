@@ -238,7 +238,7 @@ export function Login() {
 
                   <Button
                     type="submit"
-                    className="w-full max-w-[505px] flex justify-center items-center h-[60px] rounded-[10px] border-[3px] border-[#00bfa6] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    className={styles.continueButton}
                     disabled={pending}
                   >
                     {pending ? (
@@ -326,7 +326,7 @@ export function Login() {
                   {/* Continue Button */}
                   <Button
                     type="submit"
-                    className="w-full flex justify-center items-center h-[60px] rounded-[10px] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
+                    className={styles.continueButton}
                     disabled={pending}
                   >
                     {pending ? (

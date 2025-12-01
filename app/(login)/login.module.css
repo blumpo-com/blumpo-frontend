@@ -211,3 +211,33 @@
   z-index: 1;
 }
 
+.continueButton {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.continueButton:hover {
+  opacity: 0.9;
+}
+
+.continueButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #00bfa6, 0 0 0 4px rgba(0, 191, 166, 0.2);
+}
+
+.continueButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
