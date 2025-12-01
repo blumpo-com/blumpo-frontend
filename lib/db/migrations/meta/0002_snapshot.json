@@ -1,5 +1,5 @@
 {
-  "id": "091b7d69-c2c0-471d-97a1-1bf94bd1c759",
+  "id": "0a5a14a9-f6a3-42c2-bb2b-baa6eb174f5f",
   "prevId": "59f0823b-5bd2-4a35-a541-4d90a91a00d4",
   "version": "7",
   "dialect": "postgresql",
@@ -1259,77 +1259,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "client_ad_preferences": {
-          "name": "client_ad_preferences",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'::jsonb"
-        },
-        "industry": {
-          "name": "industry",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "customer_pain_points": {
-          "name": "customer_pain_points",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "product_description": {
-          "name": "product_description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "key_features": {
-          "name": "key_features",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "brand_voice": {
-          "name": "brand_voice",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "unique_value_prop": {
-          "name": "unique_value_prop",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expected_customer": {
-          "name": "expected_customer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "target_customer": {
-          "name": "target_customer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "key_benefits": {
-          "name": "key_benefits",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "competitors": {
-          "name": "competitors",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
         "hero_photos": {
           "name": "hero_photos",
           "type": "text[]",
@@ -1337,45 +1266,11 @@
           "notNull": true,
           "default": "'{}'::text[]"
         },
-        "ins_trigger_events": {
-          "name": "ins_trigger_events",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "ins_aspirations": {
-          "name": "ins_aspirations",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "ins_interesting_quotes": {
-          "name": "ins_interesting_quotes",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::text[]"
-        },
-        "ins_marketing_insight": {
-          "name": "ins_marketing_insight",
+        "website_data_url": {
+          "name": "website_data_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "ins_trend_opportunity": {
-          "name": "ins_trend_opportunity",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ins_raw": {
-          "name": "ins_raw",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'::jsonb"
         }
       },
       "indexes": {
@@ -1567,6 +1462,204 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.brand_insights": {
+      "name": "brand_insights",
+      "schema": "",
+      "columns": {
+        "brand_id": {
+          "name": "brand_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "client_ad_preferences": {
+          "name": "client_ad_preferences",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "industry": {
+          "name": "industry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_pain_points": {
+          "name": "customer_pain_points",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "product_description": {
+          "name": "product_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key_features": {
+          "name": "key_features",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "brand_voice": {
+          "name": "brand_voice",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unique_value_prop": {
+          "name": "unique_value_prop",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expected_customer": {
+          "name": "expected_customer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "target_customer": {
+          "name": "target_customer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key_benefits": {
+          "name": "key_benefits",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "competitors": {
+          "name": "competitors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "ins_trigger_events": {
+          "name": "ins_trigger_events",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "ins_aspirations": {
+          "name": "ins_aspirations",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "ins_interesting_quotes": {
+          "name": "ins_interesting_quotes",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::text[]"
+        },
+        "ins_marketing_insight": {
+          "name": "ins_marketing_insight",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ins_trend_opportunity": {
+          "name": "ins_trend_opportunity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ins_raw": {
+          "name": "ins_raw",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "marketing_brief": {
+          "name": "marketing_brief",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reddit_customer_desires": {
+          "name": "reddit_customer_desires",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
+        },
+        "reddit_customer_pain_points": {
+          "name": "reddit_customer_pain_points",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
+        },
+        "reddit_interesting_quotes": {
+          "name": "reddit_interesting_quotes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
+        },
+        "reddit_purchase_triggers": {
+          "name": "reddit_purchase_triggers",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::jsonb"
+        },
+        "reddit_marketing_brief": {
+          "name": "reddit_marketing_brief",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "brand_insights_brand_id_brand_id_fk": {
+          "name": "brand_insights_brand_id_brand_id_fk",
+          "tableFrom": "brand_insights",
+          "tableTo": "brand",
+          "columnsFrom": [
+            "brand_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

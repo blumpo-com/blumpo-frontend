@@ -26,6 +26,17 @@ if (dbName === 'postgres') {
   async function resetTables() {
     const sql = postgres(url!);
     try {
+      // Clear drizzle migrations table first
+      console.log('Clearing drizzle migrations...');
+      try {
+        await sql.unsafe(`TRUNCATE TABLE drizzle.__drizzle_migrations;`);
+      } catch (error: any) {
+        // Ignore if table doesn't exist yet
+        if (!error.message.includes('does not exist')) {
+          throw error;
+        }
+      }
+      
       // Drop all tables with CASCADE
       console.log('Dropping all tables...');
       await sql.unsafe(`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`);
@@ -63,6 +74,20 @@ if (dbName === 'postgres') {
       await adminSql.unsafe(`CREATE DATABASE "${dbName}";`);
       
       console.log('Database reset complete');
+      
+      // After creating the database, connect to it and clear migrations if they exist
+      const targetSql = postgres(url!);
+      try {
+        console.log('Clearing drizzle migrations...');
+        await targetSql.unsafe(`TRUNCATE TABLE IF EXISTS drizzle.__drizzle_migrations;`);
+      } catch (error: any) {
+        // Ignore if schema/table doesn't exist yet
+        if (!error.message.includes('does not exist')) {
+          console.warn('Warning: Could not clear migrations:', error.message);
+        }
+      } finally {
+        await targetSql.end();
+      }
     } catch (error) {
       console.error('Error resetting database:', error);
       process.exit(1);

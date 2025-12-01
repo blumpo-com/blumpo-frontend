@@ -1,8 +1,9 @@
--- Migration: Add brand table, update generation_job, and create brand_extraction_status
--- This migration adds:
--- 1. The brand table (merged brand + brand_insights)
--- 2. Updates generation_job with brand_id, archetype, format, custom_photo_id, and archetype_inputs
--- 3. Creates brand_extraction_status table for n8n workflow progress tracking
+-- Migration: Add brand table (core only), brand_insights, update generation_job, and create brand_extraction_status
+-- This migration:
+-- 1. Creates the brand table (core stable data + assets, NO insights)
+-- 2. Creates the brand_insights table (dynamic insights)
+-- 3. Updates generation_job with brand_id, archetype, format, custom_photo_id, and archetype_inputs
+-- 4. Creates brand_extraction_status table for n8n workflow progress tracking
 
 --> statement-breakpoint
 CREATE TABLE "public"."brand" (
@@ -11,36 +12,15 @@ CREATE TABLE "public"."brand" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"is_deleted" boolean DEFAULT false NOT NULL,
-	-- core brand data
 	"name" text NOT NULL,
 	"website_url" text NOT NULL,
-	-- brand assets
 	"language" text DEFAULT 'en' NOT NULL,
 	"fonts" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"colors" text[] DEFAULT '{}'::text[] NOT NULL,
 	"photos" text[] DEFAULT '{}'::text[] NOT NULL,
 	"hero_photos" text[] DEFAULT '{}'::text[] NOT NULL,
 	"logo_url" text,
-	-- preferences
-	"client_ad_preferences" jsonb DEFAULT '{}'::jsonb NOT NULL,
-	-- brand & customer insights
-	"industry" text,
-	"customer_pain_points" text[] DEFAULT '{}'::text[],
-	"product_description" text,
-	"key_features" text[] DEFAULT '{}'::text[],
-	"brand_voice" text,
-	"unique_value_prop" text,
-	"expected_customer" text,
-	"target_customer" text,
-	"key_benefits" text[] DEFAULT '{}'::text[],
-	"competitors" text[] DEFAULT '{}'::text[],
-	-- insights
-	"ins_trigger_events" text[] DEFAULT '{}'::text[],
-	"ins_aspirations" text[] DEFAULT '{}'::text[],
-	"ins_interesting_quotes" text[] DEFAULT '{}'::text[],
-	"ins_marketing_insight" text,
-	"ins_trend_opportunity" text,
-	"ins_raw" jsonb DEFAULT '[]'::jsonb
+	"website_data_url" text
 );
 --> statement-breakpoint
 CREATE INDEX "idx_brand_user" ON "public"."brand" ("user_id");
@@ -48,6 +28,39 @@ CREATE INDEX "idx_brand_user" ON "public"."brand" ("user_id");
 CREATE UNIQUE INDEX "brand_user_website_unique" ON "public"."brand" USING btree ("user_id", "website_url");
 --> statement-breakpoint
 ALTER TABLE "public"."brand" ADD CONSTRAINT "brand_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+--> statement-breakpoint
+CREATE TABLE "public"."brand_insights" (
+	"brand_id" uuid PRIMARY KEY NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"client_ad_preferences" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"industry" text,
+	"customer_pain_points" text[] DEFAULT '{}'::text[] NOT NULL,
+	"product_description" text,
+	"key_features" text[] DEFAULT '{}'::text[] NOT NULL,
+	"brand_voice" text,
+	"unique_value_prop" text,
+	"expected_customer" text,
+	"target_customer" text,
+	"key_benefits" text[] DEFAULT '{}'::text[] NOT NULL,
+	"competitors" text[] DEFAULT '{}'::text[] NOT NULL,
+	"ins_trigger_events" text[] DEFAULT '{}'::text[] NOT NULL,
+	"ins_aspirations" text[] DEFAULT '{}'::text[] NOT NULL,
+	"ins_interesting_quotes" text[] DEFAULT '{}'::text[] NOT NULL,
+	"ins_marketing_insight" text,
+	"ins_trend_opportunity" text,
+	"ins_raw" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"marketing_brief" text,
+	"reddit_customer_desires" jsonb DEFAULT '[]'::jsonb,
+	"reddit_customer_pain_points" jsonb DEFAULT '[]'::jsonb,
+	"reddit_interesting_quotes" jsonb DEFAULT '[]'::jsonb,
+	"reddit_purchase_triggers" jsonb DEFAULT '[]'::jsonb,
+	"reddit_marketing_brief" text
+);
+--> statement-breakpoint
+ALTER TABLE "public"."brand_insights"
+  ADD CONSTRAINT "brand_insights_brand_id_brand_id_fk"
+  FOREIGN KEY ("brand_id") REFERENCES "public"."brand"("id") ON DELETE cascade ON UPDATE no action;
 --> statement-breakpoint
 ALTER TABLE "public"."generation_job" ADD COLUMN "brand_id" uuid;
 --> statement-breakpoint
