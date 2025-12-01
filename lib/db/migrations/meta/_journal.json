@@ -22,6 +22,13 @@
       "when": 1764153358997,
       "tag": "0002_brand_and_generation_updates",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764610789000,
+      "tag": "0003_ads_data_model",
+      "breakpoints": true
     }
   ]
 }
