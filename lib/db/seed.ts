@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan, brand, brandInsights } from './schema/index';
+import { user, tokenAccount, tokenLedger, generationJob, adImage, subscriptionPlan, topupPlan, brand, brandInsights } from './schema/index';
 import { TokenPeriod, JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -148,28 +148,26 @@ async function createSampleGenerationJob(userId: string, brandId: string) {
     .set({ balance: 90 })
     .where(eq(tokenAccount.userId, userId));
 
-  // Create asset image
+  // Create ad image
   await db
-    .insert(assetImage)
+    .insert(adImage)
     .values({
       id: imageId,
       jobId,
       userId,
+      brandId: brandId,
       title: 'Beautiful Sunset Landscape',
-      description: 'A stunning mountain landscape at sunset',
       storageKey: `users/${userId}/jobs/${jobId}/${imageId}.webp`,
       publicUrl: `https://cdn.blumpo.com/images/${imageId}.webp`,
-      mimeType: 'image/webp',
       bytesSize: 524288, // 512KB
       width: 1024,
       height: 1024,
       format: 'WEBP',
-      sha256: 'abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234',
-      safetyFlags: [],
+      archetypes: [], // Empty array for seed data
       isDeleted: false,
     });
 
-  console.log('Sample asset created for job.');
+  console.log('Sample ad image created for job.');
 
   return job;
 }

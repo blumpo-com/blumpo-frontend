@@ -1,6 +1,6 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '../drizzle';
-import { generationJob, assetImage } from '../schema/index';
+import { generationJob, adImage } from '../schema/index';
 import { appendTokenLedgerEntry } from './tokens';
 
 // Generation job operations
@@ -8,13 +8,18 @@ export async function createGenerationJob(
   userId: string,
   jobData: {
     id: string;
-    prompt: string;
+    prompt?: string; // Now optional
     params: any;
     tokensCost: number;
-    brandId: string; // Required field
-    archetype?: string;
-    format?: string;
-    customPhotoId?: string;
+    brandId?: string; // Optional (can be null for some jobs)
+    productPhotoUrls?: string[]; // Array of product photo URLs
+    productPhotoMode?: 'brand' | 'custom' | 'mixed'; // Photo mode
+    archetypeCode?: string; // FK to ad_archetype
+    archetypeMode?: 'single' | 'random'; // 'single' or 'random'
+    formats?: string[]; // Array of formats
+    format?: string; // Legacy single format
+    selectedPainPoints?: string[]; // Array of selected pain points
+    insightSource?: 'auto' | 'manual' | 'mixed'; // Insight source
     archetypeInputs?: any; // JSON object
   }
 ) {
@@ -32,14 +37,19 @@ export async function createGenerationJob(
       .insert(generationJob)
       .values({
         id: jobData.id,
-        prompt: jobData.prompt,
+        prompt: jobData.prompt || null,
         params: jobData.params,
         tokensCost: jobData.tokensCost,
         userId,
-        brandId: jobData.brandId,
-        archetype: jobData.archetype,
-        format: jobData.format,
-        customPhotoId: jobData.customPhotoId,
+        brandId: jobData.brandId || null,
+        productPhotoUrls: jobData.productPhotoUrls || [],
+        productPhotoMode: jobData.productPhotoMode || 'brand',
+        archetypeCode: jobData.archetypeCode || null,
+        archetypeMode: jobData.archetypeMode || 'single',
+        formats: jobData.formats || [],
+        format: jobData.format || null,
+        selectedPainPoints: jobData.selectedPainPoints || [],
+        insightSource: jobData.insightSource || 'auto',
         archetypeInputs: jobData.archetypeInputs || {},
         ledgerId: ledgerEntry.id,
       })
@@ -49,14 +59,23 @@ export async function createGenerationJob(
   });
 }
 
+export async function getGenerationJobById(jobId: string) {
+  const result = await db
+    .select()
+    .from(generationJob)
+    .where(eq(generationJob.id, jobId))
+    .limit(1);
+  return result[0] || null;
+}
+
 export async function getGenerationJobsForUser(userId: string, limit = 20) {
   return await db
     .select({
       job: generationJob,
-      assetCount: sql<number>`count(${assetImage.id})::int`,
+      adImageCount: sql<number>`count(${adImage.id})::int`,
     })
     .from(generationJob)
-    .leftJoin(assetImage, eq(generationJob.id, assetImage.jobId))
+    .leftJoin(adImage, eq(generationJob.id, adImage.jobId))
     .where(eq(generationJob.userId, userId))
     .groupBy(generationJob.id)
     .orderBy(desc(generationJob.createdAt))
