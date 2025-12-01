@@ -68,12 +68,23 @@
   border-radius: 10px;
   padding: 3px;
   background: transparent;
-  transition: background 0.2s ease;
 }
 
-.emailWrapper:hover,
-.emailWrapper:focus-within {
+.emailWrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.emailWrapper:hover::before,
+.emailWrapper:focus-within::before {
+  opacity: 1;
 }
 
 .emailInput {
@@ -91,7 +102,8 @@
   font-family: 'Roboto', sans-serif;
   text-align: left;
   color: black;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  z-index: 1;
 }
 
 .emailInput::placeholder {
@@ -110,6 +122,11 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   caret-color: white;
+}
+
+.emailWrapper:focus-within .emailInput:focus {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
 }
 
 .emailWrapper:hover .emailInput::placeholder,
