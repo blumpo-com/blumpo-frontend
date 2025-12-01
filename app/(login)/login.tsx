@@ -120,8 +120,9 @@ export function Login() {
   // Shared left panel component
   const LeftPanel = () => (
     <div className={`${styles.leftPanel} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
-      {/* White card with vector background */}
-      <div className={styles.illustrationWrapper}>
+      {/* Container for illustration card and rabbit - maintains their relative positions */}
+      <div className={styles.illustrationContainer}>
+        {/* White card with vector background */}
         <div className={styles.illustrationCard}>
           <div className={styles.vectorContainer}>
             <div className="flex-none rotate-[151.388deg]">
@@ -137,10 +138,9 @@ export function Login() {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Decorative elements and rabbit image - positioned relative to leftPanel */}
-      <div className={styles.rabbitContainer}>
+        {/* Decorative elements and rabbit image - positioned relative to illustrationContainer */}
+        <div className={styles.rabbitContainer}>
         {/* Vector decorations */}
         <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
           <div className="flex-none rotate-[180deg] scale-y-[-100%]">
@@ -166,6 +166,7 @@ export function Login() {
         </div>
       </div>
       </div>
+    </div>
   );
 
   // Main sign-in screen with split layout

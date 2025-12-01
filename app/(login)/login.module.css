@@ -6,20 +6,22 @@
   overflow: hidden;
 }
 
-.illustrationWrapper {
+.illustrationContainer {
   position: absolute;
   top: calc(50% - 310px);
   left: 51px;
   width: 790px;
-  height: 547px;
+  height: calc(547px + 361.5px);
 }
 
 .illustrationCard {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   border-radius: 15px;
   background-color: #f9fafb;
-  width: 100%;
-  height: 100%;
+  width: 790px;
+  height: 547px;
   overflow: hidden;
 }
 
@@ -57,7 +59,7 @@
 
 .rabbitContainer {
   position: absolute;
-  bottom: 40px;
+  bottom: 240px;
   left: -25px;
   width: 241px;
   height: 361.5px;
