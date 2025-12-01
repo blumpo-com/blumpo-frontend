@@ -6,8 +6,10 @@ This document describes the full PostgreSQL schema for the application, includin
 * Token-based subscription system
 * Brand management
 * Brand insights & marketing intelligence
+* Ad archetypes & workflow management
 * Content & image generation pipelines
-* Job orchestration
+* Job orchestration with product photos, formats, and insights
+* Ad analytics & event tracking
 * File storage references (Vercel Blob)
 * Brand extraction workflow tracking
 
@@ -28,7 +30,15 @@ user ────┐
           │
           │ 1:N
           ▼
-  generation_job ─── 1:N ─── asset_image
+  generation_job ─── 1:N ─── ad_image
+         │
+         ├── N:1 ─── ad_archetype
+         │
+         └── N:1 ─── ad_workflow (via ad_image)
+
+ad_archetype ─── 1:N ─── ad_workflow
+ad_image ─── 1:N ─── ad_event
+generation_job ─── 1:N ─── ad_event
 
 token_ledger (audit trail for token_account)
 subscription_plan (static config)
@@ -357,27 +367,32 @@ Maintained by N8N workflows.
 # 📂 TABLE: `public.generation_job`
 
 **Purpose:**
-Main container for a whole generation request (campaign, batch of images, multi-archetype generation).
+Main container for a whole generation request (campaign, batch of images, multi-archetype generation). Supports the full logged-in ad creation flow with product photos, archetypes, formats, and insights.
 
-| Column           | Type                | Description                           |
-| ---------------- | ------------------- | ------------------------------------- |
-| id               | uuid PK             | Job ID                                |
-| user_id          | uuid FK → user(id)  | User who created the job              |
-| brand_id         | uuid FK → brand(id) | Brand used for generation (nullable)  |
-| created_at       | timestamptz         | Job creation timestamp                |
-| started_at       | timestamptz         | When job started processing           |
-| completed_at     | timestamptz         | When job finished                     |
-| status           | job_status enum     | QUEUED / RUNNING / SUCCEEDED / FAILED / CANCELED |
-| prompt           | text                | Generation prompt                     |
-| params           | jsonb               | Runtime params (width, height, steps, cfg, seed, etc.) |
-| tokens_cost      | bigint              | Tokens deducted for this job          |
-| ledger_id        | bigint FK → token_ledger(id) UNIQUE | Token ledger entry reference |
-| error_code       | text                | Error code if failed                  |
-| error_message    | text                | Error message if failed               |
-| archetype        | text                | User-selected archetype (optional)    |
-| format           | text                | Output format (optional)              |
-| custom_photo_id  | uuid FK → asset_image(id) | Custom photo reference (optional) |
-| archetype_inputs | jsonb               | Archetype-specific inputs             |
+| Column                | Type                | Description                           |
+| --------------------- | ------------------- | ------------------------------------- |
+| id                    | uuid PK             | Job ID                                |
+| user_id               | uuid FK → user(id)  | User who created the job              |
+| brand_id              | uuid FK → brand(id) | Brand used for generation (nullable)  |
+| created_at            | timestamptz         | Job creation timestamp                |
+| started_at            | timestamptz         | When job started processing           |
+| completed_at          | timestamptz         | When job finished                     |
+| status                | job_status enum     | QUEUED / RUNNING / SUCCEEDED / FAILED / CANCELED |
+| prompt                | text                | Generation prompt (nullable)          |
+| params                | jsonb               | Runtime params (width, height, steps, cfg, seed, etc.) |
+| tokens_cost           | bigint              | Tokens deducted for this job          |
+| ledger_id             | bigint FK → token_ledger(id) UNIQUE | Token ledger entry reference |
+| error_code            | text                | Error code if failed                  |
+| error_message         | text                | Error message if failed               |
+| product_photo_urls    | text[]              | Array of product photo URLs           |
+| product_photo_mode    | text                | Photo mode: 'brand' / 'custom' / 'mixed' (default: 'brand') |
+| archetype_code        | text FK → ad_archetype(code) | Selected archetype (nullable) |
+| archetype_mode        | text                | 'single' / 'random' (default: 'single') |
+| formats               | text[]              | Array of output formats (e.g., ['square', 'story']) |
+| format                | text                | Legacy single format (nullable)        |
+| selected_pain_points  | text[]              | Array of selected pain points from insights |
+| insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
+| archetype_inputs      | jsonb               | Archetype-specific inputs             |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's job history
@@ -391,7 +406,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "user_id": "4b0fd8af-638d-4158-92d3-444a90f26417",
   "brand_id": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
   "status": "RUNNING",
-  "prompt": "A beautiful landscape with mountains and a lake at sunset",
+  "prompt": null,
   "params": {
     "width": 1024,
     "height": 1024,
@@ -400,41 +415,113 @@ Main container for a whole generation request (campaign, batch of images, multi-
     "seed": 12345
   },
   "tokens_cost": 20,
-  "archetype": "founder_portrait",
-  "format": "WEBP",
+  "product_photo_urls": ["https://blob.vercel.com/.../photo1.jpg"],
+  "product_photo_mode": "brand",
+  "archetype_code": "problem_solution",
+  "archetype_mode": "single",
+  "formats": ["square", "story"],
+  "format": null,
+  "selected_pain_points": ["High costs", "Complex setup"],
+  "insight_source": "auto",
   "archetype_inputs": {}
 }
 ```
 
 ---
 
-# 📂 TABLE: `public.asset_image`
+# 📂 TABLE: `public.ad_archetype`
 
 **Purpose:**
-Stores generated images + metadata. Each belongs to a generation job.
+Defines ad archetypes (Problem-Solution, Testimonial, etc.) that can be used for ad generation.
 
-| Column          | Type                | Description             |
-| --------------- | ------------------- | ----------------------- |
-| id              | uuid PK             | Image ID                |
-| job_id          | uuid FK → generation_job(id) | Parent job |
-| user_id         | uuid FK → user(id)  | Owner                   |
-| created_at      | timestamptz         | Creation timestamp      |
-| title           | text                | Optional title          |
-| description     | text                | Optional description    |
-| storage_key     | text                | Storage key (e.g., "users/{uid}/jobs/{jobId}/{imageId}.webp") |
-| public_url      | text                | Public CDN URL (if available) |
-| mime_type       | text                | MIME type (e.g., "image/webp") |
-| bytes_size      | bigint              | File size in bytes      |
-| width           | integer             | Image width in pixels   |
-| height          | integer             | Image height in pixels  |
-| format          | text                | Format: WEBP / PNG / JPEG |
-| sha256          | text                | SHA-256 hash of file    |
-| safety_flags    | jsonb               | Safety/moderation flags |
-| is_deleted      | boolean             | Soft delete flag (default: false) |
+| Column        | Type        | Description                    |
+| ------------- | ----------- | ------------------------------ |
+| code          | text PK     | Unique archetype code (e.g., 'problem_solution') |
+| display_name  | text        | Human-readable name            |
+| description   | text        | Archetype description          |
+| created_at    | timestamptz | Creation timestamp             |
+| updated_at    | timestamptz | Last update timestamp          |
+
+**Example:**
+
+```json
+{
+  "code": "problem_solution",
+  "display_name": "Problem-Solution",
+  "description": "Show user's pain point and how your product resolves it",
+  "created_at": "2025-01-10T10:20:00Z",
+  "updated_at": "2025-01-10T10:20:00Z"
+}
+```
+
+---
+
+# 📂 TABLE: `public.ad_workflow`
+
+**Purpose:**
+Stores workflow implementations for each archetype. Multiple workflows can exist for one archetype (distinguished by variant_key).
+
+| Column         | Type                | Description                           |
+| -------------- | ------------------- | ------------------------------------- |
+| id             | uuid PK             | Workflow ID                           |
+| archetype_code | text FK → ad_archetype(code) | Associated archetype |
+| workflow_uid   | text                | External workflow ID (e.g., n8n)      |
+| variant_key    | text                | Variant identifier (e.g., 'v1', 'square') |
+| format         | text                | Output format (e.g., 'square', 'story', '16:9') |
+| is_active      | boolean             | Whether workflow is active (default: true) |
+| created_at     | timestamptz         | Creation timestamp                    |
+| updated_at     | timestamptz         | Last update timestamp                 |
+
+**Indexes:**
+- Unique index on `(archetype_code, variant_key)` ensures one workflow per archetype variant
+- Index on `archetype_code` for archetype lookups
+- Index on `workflow_uid` for external workflow references
+
+**Example:**
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "archetype_code": "problem_solution",
+  "workflow_uid": "n8n_workflow_123",
+  "variant_key": "square",
+  "format": "square",
+  "is_active": true,
+  "created_at": "2025-01-10T10:20:00Z",
+  "updated_at": "2025-01-10T10:20:00Z"
+}
+```
+
+---
+
+# 📂 TABLE: `public.ad_image`
+
+**Purpose:**
+Stores generated ad images + metadata. Replaces the old `asset_image` table. Each image belongs to a generation job and can be associated with one or more archetypes.
+
+| Column        | Type                | Description                           |
+| ------------- | ------------------- | ------------------------------------- |
+| id            | uuid PK             | Image ID                               |
+| job_id        | uuid FK → generation_job(id) | Parent job |
+| user_id       | uuid FK → user(id)  | Owner                                  |
+| brand_id      | uuid FK → brand(id) | Associated brand (nullable)           |
+| created_at    | timestamptz         | Creation timestamp                     |
+| title         | text                | Optional title                         |
+| storage_key   | text                | Storage key (e.g., "users/{uid}/jobs/{jobId}/{imageId}.webp") |
+| public_url    | text                | Public CDN URL (if available)          |
+| bytes_size    | bigint              | File size in bytes                     |
+| width         | integer             | Image width in pixels                  |
+| height        | integer             | Image height in pixels                 |
+| format        | text                | Format: WEBP / PNG / JPEG              |
+| archetypes    | text[]              | Array of archetype codes used (for "Random" mode can contain multiple) |
+| ban_flag      | boolean             | Whether image is banned (default: false) |
+| is_deleted    | boolean             | Soft delete flag (default: false)      |
+| delete_at     | timestamptz         | Scheduled deletion timestamp (nullable) |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's image history
 - Index on `job_id` for job's images queries
+- Index on `brand_id` for brand's images queries
 
 **Example:**
 
@@ -443,18 +530,64 @@ Stores generated images + metadata. Each belongs to a generation job.
   "id": "7e02acb2-bf92-4a2e-a153-83e0b1d362c3",
   "job_id": "0faee3e7-d80f-4cc6-a69a-9034a0af9a41",
   "user_id": "4b0fd8af-638d-4158-92d3-444a90f26417",
-  "title": "Beautiful Sunset Landscape",
-  "description": "A stunning mountain landscape at sunset",
+  "brand_id": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
+  "title": "Problem-Solution Ad",
   "storage_key": "users/4b0fd8af.../jobs/0faee3e7.../7e02acb2....webp",
   "public_url": "https://cdn.blumpo.com/images/7e02acb2-bf92-4a2e-a153-83e0b1d362c3.webp",
-  "mime_type": "image/webp",
   "bytes_size": 524288,
   "width": 1024,
   "height": 1024,
   "format": "WEBP",
-  "sha256": "abcd1234567890...",
-  "safety_flags": [],
-  "is_deleted": false
+  "archetypes": ["problem_solution"],
+  "ban_flag": false,
+  "is_deleted": false,
+  "delete_at": null
+}
+```
+
+---
+
+# 📂 TABLE: `public.ad_event`
+
+**Purpose:**
+Analytics and event logging for ad interactions. Tracks user actions (saved, deleted, downloaded, etc.) and provides insights into ad performance.
+
+| Column         | Type                | Description                           |
+| -------------- | ------------------- | ------------------------------------- |
+| id             | bigserial PK        | Event ID                               |
+| created_at     | timestamptz         | Event timestamp                        |
+| user_id        | uuid FK → user(id)  | User who triggered the event (nullable) |
+| brand_id       | uuid FK → brand(id) | Associated brand (nullable)            |
+| job_id         | uuid FK → generation_job(id) | Associated job (nullable) |
+| ad_image_id    | uuid FK → ad_image(id) | Associated ad image (nullable) |
+| archetype_code | text FK → ad_archetype(code) | Archetype used (nullable) |
+| workflow_id    | uuid FK → ad_workflow(id) | Workflow used (nullable) |
+| event_type     | text                | Event type: 'saved', 'deleted', 'restored', 'downloaded', 'shared', 'auto_delete' |
+| event_source   | text                | Source: 'ui', 'api', 'cron_cleanup', etc. |
+| metadata       | jsonb               | Additional event metadata              |
+
+**Indexes:**
+- Index on `ad_image_id` for image event queries
+- Index on `job_id` for job event queries
+- Index on `brand_id` for brand analytics
+- Index on `user_id` for user analytics
+- Index on `(event_type, created_at DESC)` for event type analysis
+
+**Example:**
+
+```json
+{
+  "id": 12345,
+  "created_at": "2025-01-15T10:30:00Z",
+  "user_id": "4b0fd8af-638d-4158-92d3-444a90f26417",
+  "brand_id": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
+  "job_id": "0faee3e7-d80f-4cc6-a69a-9034a0af9a41",
+  "ad_image_id": "7e02acb2-bf92-4a2e-a153-83e0b1d362c3",
+  "archetype_code": "problem_solution",
+  "workflow_id": null,
+  "event_type": "saved",
+  "event_source": "ui",
+  "metadata": {}
 }
 ```
 
@@ -540,7 +673,11 @@ This schema cleanly separates:
 
 ### ✔ Brand extraction workflow tracking (brand_extraction_status)
 
-### ✔ Generation orchestration (generation_job → asset_image)
+### ✔ Ad archetypes & workflows (ad_archetype, ad_workflow)
+
+### ✔ Generation orchestration (generation_job → ad_image)
+
+### ✔ Ad analytics & event tracking (ad_event)
 
 ### ✔ Image storage references
 
@@ -553,3 +690,5 @@ It is optimized for:
 * Multi-step AI workflows
 * Token-based billing and subscriptions
 * Audit trails for all token transactions
+* Flexible ad generation with multiple archetypes and formats
+* Comprehensive analytics for ad performance tracking
