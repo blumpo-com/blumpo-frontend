@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, memo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,64 @@ const imgLine2 = "https://www.figma.com/api/mcp/asset/fc6cafab-ef74-4000-9715-98
 const imgLine4 = "https://www.figma.com/api/mcp/asset/b0f913ae-022a-429c-a446-e841933a0850";
 const imgVector1 = "https://www.figma.com/api/mcp/asset/7ec896d3-82df-4211-bc6b-85ce63be87d5";
 const imgVector2 = "https://www.figma.com/api/mcp/asset/72cd7bd8-0efb-4ea0-9ec6-dcf557143eb5";
+
+// Memoized Left Panel component - prevents re-renders when form state changes
+const LeftPanel = memo(function LeftPanel() {
+  return (
+    <div className={`${styles.leftPanel} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
+      {/* Container for illustration card and rabbit - maintains their relative positions */}
+      <div className={styles.illustrationContainer}>
+        {/* White card with vector background */}
+        <div className={styles.illustrationCard}>
+          <div className={styles.vectorContainer}>
+            <div className="flex-none rotate-[151.388deg]">
+              <div className="h-[327.266px] relative w-[470.453px]">
+                <img 
+                  alt="" 
+                  className={styles.vectorImage}
+                  height={327.266} 
+                  src={imgVector3} 
+                  width={470.453}
+                  loading="eager"
+                  key="vector3"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative elements and rabbit image - positioned relative to illustrationContainer */}
+        <div className={styles.rabbitContainer}>
+        {/* Vector decorations */}
+        <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
+          <div className="flex-none rotate-[180deg] scale-y-[-100%]">
+            <div className="h-[50.878px] relative w-[27.447px]">
+              <img alt="" className="block max-w-none size-full" src={imgVector1} loading="eager" key="vector1" />
+            </div>
+                </div>
+              </div>
+        <div className="absolute flex h-[57.088px] items-center justify-center left-[28.92px] top-[32.37px] w-[43.193px]">
+          <div className="flex-none rotate-[159.059deg] scale-y-[-100%]">
+            <div className="h-[50.878px] relative w-[26.778px]">
+              <img alt="" className="block max-w-none size-full" src={imgVector2} loading="eager" key="vector2" />
+            </div>
+                    </div>
+                  </div>
+        {/* Rabbit with bottle image */}
+        <div className="absolute h-[361.5px] left-[-25px] top-0 w-[241px]">
+          <img 
+            alt="" 
+            className={styles.rabbitImage}
+            src={imgChatGptImage3Lis2025232050Photoroom1}
+            loading="eager"
+            key="rabbit"
+          />
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+});
 
 export function Login() {
   const searchParams = useSearchParams();
@@ -117,57 +175,6 @@ export function Login() {
     }
   };
 
-  // Shared left panel component
-  const LeftPanel = () => (
-    <div className={`${styles.leftPanel} absolute h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
-      {/* Container for illustration card and rabbit - maintains their relative positions */}
-      <div className={styles.illustrationContainer}>
-        {/* White card with vector background */}
-        <div className={styles.illustrationCard}>
-          <div className={styles.vectorContainer}>
-            <div className="flex-none rotate-[151.388deg]">
-              <div className="h-[327.266px] relative w-[470.453px]">
-                <img 
-                  alt="" 
-                  className={styles.vectorImage}
-                  height={327.266} 
-                  src={imgVector3} 
-                  width={470.453} 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative elements and rabbit image - positioned relative to illustrationContainer */}
-        <div className={styles.rabbitContainer}>
-        {/* Vector decorations */}
-        <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
-          <div className="flex-none rotate-[180deg] scale-y-[-100%]">
-            <div className="h-[50.878px] relative w-[27.447px]">
-              <img alt="" className="block max-w-none size-full" src={imgVector1} />
-            </div>
-                </div>
-              </div>
-        <div className="absolute flex h-[57.088px] items-center justify-center left-[28.92px] top-[32.37px] w-[43.193px]">
-          <div className="flex-none rotate-[159.059deg] scale-y-[-100%]">
-            <div className="h-[50.878px] relative w-[26.778px]">
-              <img alt="" className="block max-w-none size-full" src={imgVector2} />
-            </div>
-                    </div>
-                  </div>
-        {/* Rabbit with bottle image */}
-        <div className="absolute h-[361.5px] left-[-25px] top-0 w-[241px]">
-          <img 
-            alt="" 
-            className={styles.rabbitImage}
-            src={imgChatGptImage3Lis2025232050Photoroom1} 
-          />
-        </div>
-      </div>
-      </div>
-    </div>
-  );
 
   // Main sign-in screen with split layout
   return (
@@ -231,7 +238,7 @@ export function Login() {
 
                   <Button
                     type="submit"
-                    className="w-full max-w-[505px] flex justify-center items-center h-[60px] rounded-[10px] border-[3px] border-[#00bfa6] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00bfa6]"
+                    className="w-full max-w-[505px] flex justify-center items-center h-[60px] rounded-[10px] border-[3px] border-[#00bfa6] text-[20px] font-bold text-white gradient-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2"
                     disabled={pending}
                   >
                     {pending ? (
@@ -283,15 +290,15 @@ export function Login() {
                     }}
                     className={styles.googleButton}
                   >
-                    <img alt="Google Logo" className={styles.googleLogo} src={imgLogo} />
+                    <img alt="Google Logo" className={styles.googleLogo} src={imgLogo} loading="eager" key="logo" />
                     <div className={styles.googleButtonText}>Continue with Google</div>
                   </button>
 
                   {/* OR Divider */}
                   <div className={styles.orDivider}>
-                    <img className={styles.orLine} alt="" src={imgLine2} />
+                    <img className={styles.orLine} alt="" src={imgLine2} loading="eager" key="line2-1" />
                     <div className={styles.orText}>OR</div>
-                    <img className={styles.orLine} alt="" src={imgLine2} />
+                    <img className={styles.orLine} alt="" src={imgLine2} loading="eager" key="line2-2" />
                   </div>
 
                   {/* Email Input with gradient border on hover */}
@@ -348,7 +355,7 @@ export function Login() {
               <div className="flex-none rotate-[90deg]">
                 <div className="h-0 relative w-[17px]">
                   <div className="absolute bottom-0 left-0 right-0 top-[-1px]">
-                    <img alt="" className="block max-w-none size-full" src={imgLine4} />
+                    <img alt="" className="block max-w-none size-full" src={imgLine4} loading="eager" key="line4" />
                 </div>
                 </div>
               </div>
