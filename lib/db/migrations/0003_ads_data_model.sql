@@ -206,6 +206,10 @@ ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "selected_pain_po
 ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "insight_source" text DEFAULT 'auto' NOT NULL;
 
 --> statement-breakpoint
+-- Update generation_job: add expected_ads column
+ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "expected_ads" integer;
+
+--> statement-breakpoint
 -- Remove custom_photo_id column from generation_job
 -- First, drop the FK constraint if it exists
 DO $$
