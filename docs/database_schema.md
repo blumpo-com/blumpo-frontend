@@ -392,6 +392,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | format                | text                | Legacy single format (nullable)        |
 | selected_pain_points  | text[]              | Array of selected pain points from insights |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
+| expected_ads          | integer             | Expected number of ads to generate (nullable) |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
 
 **Indexes:**
@@ -423,6 +424,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "format": null,
   "selected_pain_points": ["High costs", "Complex setup"],
   "insight_source": "auto",
+  "expected_ads": 5,
   "archetype_inputs": {}
 }
 ```
