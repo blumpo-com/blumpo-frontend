@@ -30,6 +30,8 @@ interface FeatureCardProps {
   frontImageClass?: string;
   backImageClass?: string;
   onButtonClick?: () => void;
+  showCharacter?: boolean;
+  characterImage?: string;
 }
 
 function FeatureCard({ 
@@ -40,13 +42,71 @@ function FeatureCard({
   backImage,
   frontImageClass,
   backImageClass,
-  onButtonClick 
+  onButtonClick,
+  showCharacter = false,
+  characterImage
 }: FeatureCardProps) {
   const cardPositionClass = gradientClass === styles.cardImageGradient1 
     ? styles.cardFirst 
     : gradientClass === styles.cardImageGradient2 
     ? styles.cardSecond 
     : styles.cardThird;
+
+  if (showCharacter && characterImage) {
+    return (
+      <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
+        <div className={styles.cardCharacterIllustration}>
+          <img 
+            src={characterImage} 
+            alt="Character illustration" 
+            className={styles.cardCharacterImage}
+          />
+        </div>
+        <div className={`${styles.card} ${styles.cardInWrapper}`}>
+          <div className={styles.cardContent}>
+            <h3 className={styles.cardTitle}>{title}</h3>
+            <p className={styles.cardDescription}>{description}</p>
+            <button
+              onClick={onButtonClick}
+              className={styles.cardButton}
+            >
+              Create now
+            </button>
+          </div>
+          <div className={`${styles.cardImageSection} ${gradientClass} ${gradientClass === styles.cardImageGradient3 ? styles.cardImageSectionThird : ''}`.trim()}>
+            <div className={gradientClass === styles.cardImageGradient1 ? styles.imageContainer : styles.imageContainerSecond}>
+              {/* Swapped: frontImage now in back position */}
+              <div className={styles.imageBack}>
+                <div className={styles.imageTransform}>
+                  <div className={styles.imageCard}>
+                    <img 
+                      src={frontImage} 
+                      alt="" 
+                      className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Swapped: backImage now in front position */}
+              {backImage && (
+                <div className={`${styles.imageFront}`}>
+                  <div className={styles.imageTransform}>
+                    <div className={styles.imageCard}>
+                      <img 
+                        src={backImage} 
+                        alt="" 
+                        className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`${styles.card} ${cardPositionClass}`}>
@@ -109,14 +169,6 @@ export default function DashboardHomePage() {
         <h1 className={styles.greeting}>
           <span className={styles.greetingText}>{getGreeting()}, let's create something</span> 🔥
         </h1>
-        {/* Character illustration */}
-        <div className={styles.characterIllustration}>
-          <img 
-            src={imgCharacter} 
-            alt="Character illustration" 
-            className={styles.characterImage}
-          />
-        </div>
       </div>
 
       {/* Feature Cards */}
@@ -146,6 +198,8 @@ export default function DashboardHomePage() {
           frontImageClass={styles.imageCardThirdFront}
           backImageClass={styles.imageCardThirdBack}
           onButtonClick={() => console.log('Insights clicked')}
+          showCharacter={true}
+          characterImage={imgCharacter}
         />
       </div>
     </div>
