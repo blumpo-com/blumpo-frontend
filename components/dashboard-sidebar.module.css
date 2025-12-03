@@ -22,10 +22,17 @@
 }
 
 .logo {
-  font-size: 24px;
-  font-weight: 600;
-  color: #00bfa6;
+  display: flex;
+  align-items: center;
   text-decoration: none;
+  width: 100%;
+  height: 100%;
+}
+
+.logoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .navSection {
@@ -79,28 +86,34 @@
   width: 22px;
   height: 22px;
   flex-shrink: 0;
-  color: #00bfa6;
+  object-fit: contain;
 }
 
-/* Create new button - gradient outline */
+/* Create new button - regular state */
 .createNewButton {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  width: 100%;
   height: 44px;
-  padding: 10px 16px 10px 16px;
+  position: relative;
   border-radius: 10px;
   border: 2px solid #00bfa6;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 8px 20px 8px 14px;
+  gap: 20px;
+  text-align: left;
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
   background: transparent;
-  width: 100%;
   cursor: pointer;
   text-decoration: none;
-  transition: opacity 0.2s;
-  font-family: 'Roboto', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 20px;
-  color: #f9fafb;
+  transition: all 0.2s;
+}
+
+/* Create new button - active state */
+.createNewButtonActive {
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  border: 2px solid #00bfa6;
 }
 
 .createNewButton:hover {
@@ -112,9 +125,25 @@
 }
 
 .createNewButtonIcon {
-  width: 22px;
   height: 22px;
+  width: 22px;
+  position: relative;
   flex-shrink: 0;
+  object-fit: contain;
+}
+
+.createNewButtonText {
+  position: relative;
+  line-height: 20px;
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.createNewButtonTextActive {
+  position: relative;
+  line-height: 20px;
   color: #f9fafb;
 }
 
@@ -128,7 +157,6 @@
   border-radius: 10px;
   transition: all 0.2s;
   width: 100%;
-  cursor: pointer;
   border: none;
   background: transparent;
   font-family: 'Roboto', sans-serif;
@@ -138,19 +166,11 @@
   color: #040404;
 }
 
-.coinsButton:hover {
-  background: #f9fafb;
-}
-
-.coinsButton:active {
-  background: #f3f4f6;
-}
-
 .coinsButtonIcon {
   width: 22px;
   height: 22px;
   flex-shrink: 0;
-  color: #00bfa6;
+  object-fit: contain;
 }
 
 .coinsText {
@@ -174,6 +194,7 @@
   background: transparent;
   transition: opacity 0.2s;
   padding: 0;
+  outline: none;
 }
 
 .addButton:hover {
@@ -184,8 +205,67 @@
   opacity: 0.5;
 }
 
+.addButton:focus-visible {
+  outline: 2px solid #00bfa6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .addButtonIcon {
   width: 22px;
   height: 22px;
-  color: #00bfa6;
+  object-fit: contain;
+}
+
+/* Scrolly dropdown */
+.brandContainer {
+  position: relative;
+  width: 100%;
+}
+
+.brandDropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background: white;
+  border: 2px solid #00bfa6;
+  border-radius: 10px;
+  box-shadow: 0px 6px 20.4px 1px rgba(0, 0, 0, 0.22);
+  padding: 10px 22px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 221px;
+  z-index: 100;
+}
+
+.brandDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.brandDropdownItem:hover {
+  opacity: 0.7;
+}
+
+.brandDropdownIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.brandDropdownLabel {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #040404;
 }
