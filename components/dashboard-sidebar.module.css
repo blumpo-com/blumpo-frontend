@@ -1,0 +1,191 @@
+.sidebar {
+  width: 267px;
+  height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  gap: 52px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+}
+
+.logoContainer {
+  height: 61.033px;
+  width: 157px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 600;
+  color: #00bfa6;
+  text-decoration: none;
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 221px;
+}
+
+.bottomNavSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 221px;
+  margin-top: auto;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 44px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  width: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #040404;
+}
+
+.sidebarItem:hover {
+  background: #f9fafb;
+}
+
+.sidebarItem:active {
+  background: #f3f4f6;
+}
+
+.sidebarItemActive {
+  background: #f9fafb;
+}
+
+.sidebarItemIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #00bfa6;
+}
+
+/* Create new button - gradient outline */
+.createNewButton {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 44px;
+  padding: 10px 16px 10px 16px;
+  border-radius: 10px;
+  border: 2px solid #00bfa6;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #f9fafb;
+}
+
+.createNewButton:hover {
+  opacity: 0.9;
+}
+
+.createNewButton:active {
+  opacity: 0.8;
+}
+
+.createNewButtonIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #f9fafb;
+}
+
+/* Coins button */
+.coinsButton {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 44px;
+  padding: 8px 14px 8px 14px;
+  border-radius: 10px;
+  transition: all 0.2s;
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #040404;
+}
+
+.coinsButton:hover {
+  background: #f9fafb;
+}
+
+.coinsButton:active {
+  background: #f3f4f6;
+}
+
+.coinsButtonIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: #00bfa6;
+}
+
+.coinsText {
+  flex: 1;
+  text-align: left;
+}
+
+.coinsBold {
+  font-weight: 700;
+}
+
+.addButton {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: opacity 0.2s;
+  padding: 0;
+}
+
+.addButton:hover {
+  opacity: 0.7;
+}
+
+.addButton:active {
+  opacity: 0.5;
+}
+
+.addButtonIcon {
+  width: 22px;
+  height: 22px;
+  color: #00bfa6;
+}

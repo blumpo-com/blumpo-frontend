@@ -1,0 +1,271 @@
+.homePage {
+  min-height: 100vh;
+  background: #f9fafb;
+  padding: 91px 58px 209px 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 82px;
+  align-items: flex-start;
+}
+
+.greeting {
+  font-family: 'Roboto', sans-serif;
+  font-size: 34.99px;
+  font-weight: 600;
+  line-height: 23.688px;
+  text-align: center;
+  color: #040404;
+  width: 630px;
+  white-space: pre-wrap;
+}
+
+.cardsContainer {
+  width: 100%;
+  height: 573px;
+  position: relative;
+}
+
+.characterIllustration {
+  position: absolute;
+  left: 987px;
+  top: 68px;
+  width: 208px;
+  height: 208px;
+}
+
+.characterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* Card Styles */
+.card {
+  position: absolute;
+  background: white;
+  border: 2px solid #e7e9ed;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+  padding: 30px 37px 0 37px;
+  overflow: hidden;
+  width: 340px;
+  height: 573px;
+}
+
+.cardFirst {
+  left: 0;
+  top: 0;
+}
+
+.cardSecond {
+  left: 373.5px;
+  top: 0;
+}
+
+.cardThird {
+  left: 747px;
+  top: 0;
+}
+
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  height: 245px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cardTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 28.02px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: center;
+  color: #040404;
+  width: 266px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.cardDescription {
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: center;
+  color: #888e98;
+  width: 293px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.cardButton {
+  border: 2px solid #040404;
+  border-radius: 10px;
+  display: flex;
+  gap: 20px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px 10px 16px;
+  width: 266px;
+  cursor: pointer;
+  background: #0a0a0a;
+  transition: all 0.2s;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17.6px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #f9fafb;
+}
+
+.cardButton:hover {
+  opacity: 0.9;
+}
+
+.cardButton:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Card Image Sections */
+.cardImageSection {
+  height: 258px;
+  width: 339px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cardImageSectionThird {
+  height: 262px;
+}
+
+/* Gradient backgrounds for each card */
+.cardImageGradient1 {
+  background: linear-gradient(to bottom, #ffffff 0%, #046262 65.897%);
+}
+
+.cardImageGradient2 {
+  background: linear-gradient(to bottom, #ffffff 0%, #f8f1d2 65.897%);
+}
+
+.cardImageGradient3 {
+  background: linear-gradient(to bottom, #ffffff 0%, #fc8782 65.897%);
+}
+
+.imageContainer {
+  position: absolute;
+  left: 54px;
+  top: 30px;
+}
+
+.imageContainerSecond {
+  top: 31px;
+}
+
+.imageStack {
+  position: relative;
+  width: 231.177px;
+  height: 213.989px;
+}
+
+.imageBack {
+  position: absolute;
+  left: 54px;
+  top: 49px;
+  width: 166.177px;
+  height: 194.989px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageFront {
+  position: absolute;
+  left: 119px;
+  top: 30px;
+  width: 166.177px;
+  height: 194.989px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageFrontSecond {
+  top: 31px;
+}
+
+.imageTransform {
+  transform: rotate(8deg) skewX(7.923deg);
+}
+
+.imageCard {
+  background: linear-gradient(to right, #dedede, #dedede);
+  border: 2px solid #f9fafb;
+  border-radius: 20px;
+  height: 171.635px;
+  width: 167.81px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 4px -2px 5.848px 1.147px rgba(255, 255, 255, 0.31);
+}
+
+.imageCard img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  pointer-events: none;
+}
+
+.imageCardBack img {
+  width: 181px;
+  height: 100%;
+  left: -9px;
+  top: -2px;
+}
+
+.imageCardFront img {
+  width: 168.641px;
+  height: 100%;
+  left: -2px;
+  top: -2px;
+}
+
+.imageCardFrontOverlay {
+  position: absolute;
+  border: 2px solid #f9fafb;
+  border-radius: 20px;
+  width: 167.808px;
+  height: 167.808px;
+  left: -3.51px;
+  top: -1.79px;
+  overflow: hidden;
+}
+
+.imageCardFrontOverlay img {
+  border-radius: 20px;
+}
+
+/* Third card specific images */
+.imageCardThirdFront {
+  width: 265.251px;
+  height: 175.62px;
+  left: -30.78px;
+  top: -6.99px;
+}
+
+.imageCardThirdBack {
+  width: 251.085px;
+  height: 171.294px;
+  left: -13.61px;
+  top: -3.38px;
+}

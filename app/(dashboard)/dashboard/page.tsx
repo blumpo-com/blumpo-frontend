@@ -1,448 +1,198 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter
-} from '@/components/ui/card';
-import { Dialog } from '@/components/ui/dialog';
-import { customerPortalAction, unsubscribeAction, reactivateAction } from '@/lib/payments/actions';
-import { signOut } from '@/app/(login)/actions';
-import { LogOut } from 'lucide-react';
-import { useActionState } from 'react';
-import { User, TokenAccount } from '@/lib/db/schema';
-import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
-import useSWR, { mutate } from 'swr';
-import { Suspense, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Loader2, PlusCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useState } from 'react';
+import { Rocket } from 'lucide-react';
+import styles from './page.module.css';
 
-type ActionState = {
-  error?: string;
-  success?: string;
-};
+// Image URLs from Figma - these will expire in 7 days
+const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
+const imgImage5 = "https://www.figma.com/api/mcp/asset/41a1e504-a3d1-4e92-9d5f-bf72e45ef0de";
+const imgImage7 = "https://www.figma.com/api/mcp/asset/12be56dc-aa2b-497c-a5d7-866daeb52928";
+const imgImage20 = "https://www.figma.com/api/mcp/asset/1684968d-406d-4dbc-838c-722ac4e63ce3";
+const imgImage22 = "https://www.figma.com/api/mcp/asset/1831df1f-4459-4a4e-a85b-72cfb267706c";
+const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
+const imgCharacter = "https://www.figma.com/api/mcp/asset/14b3e895-0f7a-4d3d-bcfc-f1b5dc7e01f3";
 
-type UserWithTokenAccount = User & {
-  tokenAccount: TokenAccount | null;
-};
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-function SubscriptionSkeleton() {
-  return (
-    <Card className="mb-8 h-[140px]">
-      <CardHeader>
-        <CardTitle>Subscription</CardTitle>
-      </CardHeader>
-    </Card>
-  );
+interface FeatureCardProps {
+  title: string;
+  description: string;
+  gradientClass: string;
+  frontImage: string;
+  backImage?: string;
+  frontImageClass?: string;
+  backImageClass?: string;
+  onButtonClick?: () => void;
 }
 
-function ManageSubscription() {
-  const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
-  const [isUnsubscribing, setIsUnsubscribing] = useState(false);
-  const [isReactivating, setIsReactivating] = useState(false);
-  const [formattedCancellationDate, setFormattedCancellationDate] = useState<string>('');
-
-  useEffect(() => {
-    if (user?.tokenAccount?.cancellationTime) {
-      setFormattedCancellationDate(new Date(user.tokenAccount.cancellationTime).toLocaleDateString());
-    }
-  }, [user?.tokenAccount?.cancellationTime]);
-  const [unsubscribeState, unsubscribeActionHandler] = useActionState<ActionState, FormData>(
-    async (prevState, formData) => {
-      setIsUnsubscribing(true);
-      try {
-        await unsubscribeAction(formData);
-        setShowUnsubscribeDialog(false);
-        setIsUnsubscribing(false);
-        return { success: 'Successfully unsubscribed from your plan' };
-      } catch (error) {
-        setIsUnsubscribing(false);
-        // Re-throw redirect errors so they can be handled by Next.js
-        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-          throw error;
-        }
-        console.error('Unsubscribe error:', error);
-        return { error: 'Failed to unsubscribe. Please try again.' };
-      }
-    },
-    { error: '', success: '' }
-  );
-
-  const [reactivateState, reactivateActionHandler] = useActionState<ActionState, FormData>(
-    async (prevState, formData) => {
-      setIsReactivating(true);
-      try {
-        await reactivateAction(formData);
-        setIsReactivating(false);
-        return { success: 'Successfully reactivated your subscription' };
-      } catch (error) {
-        setIsReactivating(false);
-        // Re-throw redirect errors so they can be handled by Next.js
-        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-          throw error;
-        }
-        console.error('Reactivate error:', error);
-        return { error: 'Failed to reactivate subscription. Please try again.' };
-      }
-    },
-    { error: '', success: '' }
-  );
-
-  if (!user) {
-    return (
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Subscription</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Loading subscription...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const { tokenAccount } = user;
-  const hasActiveSubscription = tokenAccount?.stripeSubscriptionId && tokenAccount?.subscriptionStatus === 'active';
-  const planName = tokenAccount?.planCode || 'FREE';
-  
-  // Check if subscription is cancelled but still active until cancellation date
-  const isCancelledButActive = tokenAccount?.cancellationTime && 
-    new Date(tokenAccount.cancellationTime) > new Date() &&
-    tokenAccount?.stripeSubscriptionId &&
-    (tokenAccount.subscriptionStatus === 'cancel_at_period_end' || tokenAccount.subscriptionStatus === 'cancelled');
-  
-  const isEffectivelyActive = hasActiveSubscription || isCancelledButActive;
+function FeatureCard({ 
+  title, 
+  description, 
+  gradientClass,
+  frontImage,
+  backImage,
+  frontImageClass,
+  backImageClass,
+  onButtonClick 
+}: FeatureCardProps) {
+  const cardPositionClass = gradientClass === styles.cardImageGradient1 
+    ? styles.cardFirst 
+    : gradientClass === styles.cardImageGradient2 
+    ? styles.cardSecond 
+    : styles.cardThird;
 
   return (
-    <>
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Subscription</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-              <div className="mb-4 sm:mb-0">
-                <p className="font-medium">
-                  Current Plan: {planName === 'FREE' ? 'Free' : planName}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {isCancelledButActive && formattedCancellationDate
-                    ? `Active until ${formattedCancellationDate}`
-                    : hasActiveSubscription 
-                      ? `Status: ${tokenAccount.subscriptionStatus}`
-                      : 'No active subscription'
-                  }
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {isEffectivelyActive ? (
-                  <>
-                    <Button variant="outline" asChild>
-                      <Link href="/pricing">
-                        Change Plan
-                      </Link>
-                    </Button>
-                    {!isCancelledButActive && (
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => setShowUnsubscribeDialog(true)}
-                      >
-                        Unsubscribe
-                      </Button>
-                    )}
-                    {isCancelledButActive && (
-                      <form action={reactivateActionHandler} className="inline">
-                        <Button 
-                          type="submit" 
-                          variant="outline"
-                          disabled={isReactivating}
-                        >
-                          {isReactivating ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Reactivating...
-                            </>
-                          ) : (
-                            'Reactivate'
-                          )}
-                        </Button>
-                      </form>
-                    )}
-                  </>
-                ) : (
-                  <Button variant="outline" asChild>
-                    <Link href="/pricing">
-                      Upgrade Plan
-                    </Link>
-                  </Button>
-                )}
+    <div className={`${styles.card} ${cardPositionClass}`}>
+      <div className={styles.cardContent}>
+        <h3 className={styles.cardTitle}>{title}</h3>
+        <p className={styles.cardDescription}>{description}</p>
+        <button
+          onClick={onButtonClick}
+          className={styles.cardButton}
+        >
+          Create now
+        </button>
+      </div>
+      <div className={`${styles.cardImageSection} ${gradientClass} ${gradientClass === styles.cardImageGradient3 ? styles.cardImageSectionThird : ''}`.trim()}>
+        <div className={gradientClass === styles.cardImageGradient1 ? styles.imageContainer : styles.imageContainerSecond}>
+          {backImage && (
+            <div className={styles.imageBack}>
+              <div className={styles.imageTransform}>
+                <div className={styles.imageCard}>
+                  <img 
+                    src={backImage} 
+                    alt="" 
+                    className={`${styles.imageCardBack} ${backImageClass || ''}`}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog open={showUnsubscribeDialog} onClose={() => setShowUnsubscribeDialog(false)}>
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold text-gray-900">
-            Are you sure you want to unsubscribe?
-          </h3>
-          <p className="text-gray-600">
-            Your subscription will be cancelled at the end of your current billing period. 
-            You will keep access to your plan features until then.
-          </p>
-          {unsubscribeState.error && (
-            <p className="text-red-600 text-sm">{unsubscribeState.error}</p>
           )}
-          <form action={unsubscribeActionHandler} className="contents">
-            <div className="flex gap-3 justify-center pt-4">
-              <Button 
-                type="button"
-                variant="outline" 
-                onClick={() => setShowUnsubscribeDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                variant="destructive"
-                disabled={isUnsubscribing}
-              >
-                {isUnsubscribing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Unsubscribing...
-                  </>
-                ) : (
-                  'Yes, Unsubscribe'
+          <div className={`${styles.imageFront} ${gradientClass === styles.cardImageGradient1 ? '' : styles.imageFrontSecond}`}>
+            <div className={styles.imageTransform}>
+              <div className={styles.imageCard}>
+                <img 
+                  src={frontImage} 
+                  alt="" 
+                  className={`${styles.imageCardFront} ${frontImageClass || ''}`}
+                />
+                {gradientClass === styles.cardImageGradient1 && (
+                  <div className={styles.imageCardFrontOverlay}>
+                    <img src={imgImage5} alt="" />
+                  </div>
                 )}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Dialog>
-    </>
-  );
-}
-
-function UserProfileSkeleton() {
-  return (
-    <Card className="mb-8 h-[140px]">
-      <CardHeader>
-        <CardTitle>Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="animate-pulse space-y-4 mt-1">
-          <div className="flex items-center space-x-4">
-            <div className="size-8 rounded-full bg-gray-200"></div>
-            <div className="space-y-2">
-              <div className="h-4 w-32 bg-gray-200 rounded"></div>
-              <div className="h-3 w-14 bg-gray-200 rounded"></div>
+              </div>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
-function UserProfile() {
-  const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const [formattedLastLogin, setFormattedLastLogin] = useState<string>('');
-  const router = useRouter();
+function ScrollyButton() {
+  const [isPressed, setIsPressed] = useState(false);
 
-  useEffect(() => {
-    if (user?.lastLoginAt) {
-      setFormattedLastLogin(new Date(user.lastLoginAt).toLocaleDateString());
-    }
-  }, [user?.lastLoginAt]);
-
-  async function handleSignOut() {
-    await signOut();
-    mutate('/api/user');
-    router.push('/');
-  }
-
-  if (!user) {
-    return (
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Loading profile...</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleClick = () => {
+    console.log('Scrolly clicked');
+  };
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle>Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center space-x-4">
-          <Avatar>
-            <AvatarImage src={user.photoUrl || ''} alt={user.displayName || user.email} />
-            <AvatarFallback>
-              {user.displayName
-                ? user.displayName
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                : user.email
-                    .split('@')[0]
-                    .slice(0, 2)
-                    .toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">{user.displayName || user.email}</p>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
-          </div>
+    <button
+      onClick={handleClick}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={(e) => {
+        setIsPressed(false);
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+      style={{
+        position: 'fixed',
+        bottom: '32px',
+        right: '32px',
+        zIndex: 50,
+        width: '64px',
+        height: '64px',
+        borderRadius: '50%',
+        background: 'linear-gradient(to right, #00bfa6, #00bfa6, #0A5D7A)',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: isPressed ? '0 4px 6px rgba(0,0,0,0.1)' : '0 10px 20px rgba(0,0,0,0.2)',
+        transition: 'all 0.2s',
+        transform: isPressed ? 'scale(0.95)' : 'scale(1)',
+        border: 'none',
+        cursor: 'pointer',
+      }}
+      onMouseEnter={(e) => {
+        if (!isPressed) {
+          e.currentTarget.style.transform = 'scale(1.1)';
+        }
+      }}
+      aria-label="Scrolly"
+    >
+      <Rocket style={{ width: '24px', height: '24px' }} />
+    </button>
+  );
+}
+
+export default function DashboardHomePage() {
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  return (
+    <div className={styles.homePage}>
+      {/* Header Section */}
+      <div style={{ display: 'flex', gap: '10px', height: '40px', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%' }}>
+        <h1 className={styles.greeting}>
+          {getGreeting()}, let's create something 🔥
+        </h1>
+        {/* Character illustration */}
+        <div className={styles.characterIllustration}>
+          <img 
+            src={imgCharacter} 
+            alt="Character illustration" 
+            className={styles.characterImage}
+          />
         </div>
-        {formattedLastLogin && (
-          <p className="text-sm text-muted-foreground mt-4">
-            Last login: {formattedLastLogin}
-          </p>
-        )}
-      </CardContent>
-      <CardFooter>
-        <form action={handleSignOut} className="w-full">
-          <Button type="submit" variant="outline" className="w-full">
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </form>
-      </CardFooter>
-    </Card>
-  );
-}
+      </div>
 
-function TokenBalanceSkeleton() {
-  return (
-    <Card className="h-[140px]">
-      <CardHeader>
-        <CardTitle>Token Balance</CardTitle>
-      </CardHeader>
-    </Card>
-  );
-}
+      {/* Feature Cards */}
+      <div className={styles.cardsContainer}>
+        <FeatureCard
+          title="Quick Ads\nGeneration"
+          description="Only 25 seconds to get the ready ad."
+          gradientClass={styles.cardImageGradient1}
+          frontImage={imgImage6}
+          backImage={imgImage7}
+          onButtonClick={() => console.log('Quick Ads clicked')}
+        />
+        <FeatureCard
+          title="Customized Ads Generation"
+          description="Content tailored to your needs. Choose between several archetypes."
+          gradientClass={styles.cardImageGradient2}
+          frontImage={imgImage6}
+          backImage={imgImage20}
+          onButtonClick={() => console.log('Customized Ads clicked')}
+        />
+        <FeatureCard
+          title="Customer & Competitor Insights"
+          description="Get to know about your audience and the market itself."
+          gradientClass={styles.cardImageGradient3}
+          frontImage={imgImage22}
+          backImage={imgImage21}
+          frontImageClass={styles.imageCardThirdFront}
+          backImageClass={styles.imageCardThirdBack}
+          onButtonClick={() => console.log('Insights clicked')}
+        />
+      </div>
 
-function TokenBalance() {
-  const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const [formattedNextRefill, setFormattedNextRefill] = useState<string>('');
-
-  useEffect(() => {
-    if (user?.tokenAccount?.nextRefillAt) {
-      setFormattedNextRefill(new Date(user.tokenAccount.nextRefillAt).toLocaleDateString());
-    }
-  }, [user?.tokenAccount?.nextRefillAt]);
-
-  if (!user) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Token Balance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Loading balance...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const { tokenAccount } = user;
-  const balance = tokenAccount?.balance || 0;
-  const planName = tokenAccount?.planCode || 'FREE';
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Token Balance</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div>
-            <p className="text-3xl font-bold text-orange-500">
-              {balance.toLocaleString()}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Available tokens
-            </p>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>Current plan: {planName === 'FREE' ? 'Free' : planName}</p>
-            {formattedNextRefill && (
-              <p>Next refill: {formattedNextRefill}</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export default function SettingsPage() {
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
-  // Check for success messages
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('unsubscribed') === 'true') {
-        setSuccessMessage('Successfully scheduled cancellation. Your subscription will remain active until the end of your billing period.');
-        setShowSuccess(true);
-        // Clean up URL
-        window.history.replaceState({}, '', '/dashboard');
-        // Hide success message after 5 seconds
-        setTimeout(() => setShowSuccess(false), 5000);
-      } else if (urlParams.get('reactivated') === 'true') {
-        setSuccessMessage('Successfully reactivated your subscription. Cancellation has been removed.');
-        setShowSuccess(true);
-        // Clean up URL
-        window.history.replaceState({}, '', '/dashboard');
-        // Hide success message after 5 seconds
-        setTimeout(() => setShowSuccess(false), 5000);
-      }
-    }
-  }, []);
-
-  return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium mb-6">Dashboard</h1>
-      
-      {showSuccess && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800 text-sm">
-            ✓ {successMessage}
-          </p>
-        </div>
-      )}
-
-      <Suspense fallback={<SubscriptionSkeleton />}>
-        <ManageSubscription />
-      </Suspense>
-      <Suspense fallback={<UserProfileSkeleton />}>
-        <UserProfile />
-      </Suspense>
-      <Suspense fallback={<TokenBalanceSkeleton />}>
-        <TokenBalance />
-      </Suspense>
-    </section>
+      {/* Scrolly Button */}
+      <ScrollyButton />
+    </div>
   );
 }
