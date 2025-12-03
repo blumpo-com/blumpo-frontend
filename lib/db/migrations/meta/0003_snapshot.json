@@ -4,182 +4,6 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.asset_image": {
-      "name": "asset_image",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "job_id": {
-          "name": "job_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "storage_key": {
-          "name": "storage_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "public_url": {
-          "name": "public_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mime_type": {
-          "name": "mime_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bytes_size": {
-          "name": "bytes_size",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "format": {
-          "name": "format",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sha256": {
-          "name": "sha256",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "safety_flags": {
-          "name": "safety_flags",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'[]'::jsonb"
-        },
-        "is_deleted": {
-          "name": "is_deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        }
-      },
-      "indexes": {
-        "idx_asset_image_user_time": {
-          "name": "idx_asset_image_user_time",
-          "columns": [
-            {
-              "expression": "user_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_asset_image_job": {
-          "name": "idx_asset_image_job",
-          "columns": [
-            {
-              "expression": "job_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "asset_image_job_id_generation_job_id_fk": {
-          "name": "asset_image_job_id_generation_job_id_fk",
-          "tableFrom": "asset_image",
-          "tableTo": "generation_job",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "asset_image_user_id_user_id_fk": {
-          "name": "asset_image_user_id_user_id_fk",
-          "tableFrom": "asset_image",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.auth_otp": {
       "name": "auth_otp",
       "schema": "",
@@ -406,24 +230,12 @@
           "primaryKey": false,
           "notNull": false
         },
-        "custom_photo_id": {
-          "name": "custom_photo_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "archetype_inputs": {
           "name": "archetype_inputs",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
           "default": "'{}'::jsonb"
-        },
-        "expected_ads": {
-          "name": "expected_ads",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -497,19 +309,6 @@
           "tableTo": "brand",
           "columnsFrom": [
             "brand_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        },
-        "generation_job_custom_photo_id_asset_image_id_fk": {
-          "name": "generation_job_custom_photo_id_asset_image_id_fk",
-          "tableFrom": "generation_job",
-          "tableTo": "asset_image",
-          "columnsFrom": [
-            "custom_photo_id"
           ],
           "columnsTo": [
             "id"

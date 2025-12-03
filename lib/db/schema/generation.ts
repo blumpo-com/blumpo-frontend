@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, text, jsonb, bigint, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, timestamp, text, jsonb, bigint, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { jobStatusEnum } from './enums';
 import { user } from './user';
@@ -42,9 +42,6 @@ export const generationJob = pgTable('generation_job', {
   // Selected insights
   selectedPainPoints: text('selected_pain_points').array().notNull().default([]), // Array of selected pain points
   insightSource: text('insight_source').notNull().default('auto'), // 'auto' | 'manual' | 'mixed'
-  
-  // Expected ads count
-  expectedAds: integer('expected_ads'), // Expected number of ads to generate
   
   archetypeInputs: jsonb('archetype_inputs').notNull().default({}),
 }, (table) => ({

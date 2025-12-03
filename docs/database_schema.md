@@ -392,7 +392,6 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | format                | text                | Legacy single format (nullable)        |
 | selected_pain_points  | text[]              | Array of selected pain points from insights |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
-| expected_ads          | integer             | Expected number of ads to generate (nullable) |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
 
 **Indexes:**
@@ -424,7 +423,6 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "format": null,
   "selected_pain_points": ["High costs", "Complex setup"],
   "insight_source": "auto",
-  "expected_ads": 5,
   "archetype_inputs": {}
 }
 ```
@@ -517,6 +515,8 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | format        | text                | Format: WEBP / PNG / JPEG              |
 | archetypes    | text[]              | Array of archetype codes used (for "Random" mode can contain multiple) |
 | ban_flag      | boolean             | Whether image is banned (default: false) |
+| error_flag    | boolean             | Whether image generation had an error (default: false) |
+| error_message | text                | Error message if generation failed (nullable) |
 | is_deleted    | boolean             | Soft delete flag (default: false)      |
 | delete_at     | timestamptz         | Scheduled deletion timestamp (nullable) |
 
@@ -542,6 +542,8 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
   "format": "WEBP",
   "archetypes": ["problem_solution"],
   "ban_flag": false,
+  "error_flag": false,
+  "error_message": null,
   "is_deleted": false,
   "delete_at": null
 }

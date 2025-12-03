@@ -21,6 +21,8 @@ export const adImage = pgTable('ad_image', {
 
   archetypes: text('archetypes').array().notNull().default([]), // Array of archetype codes
   banFlag: boolean('ban_flag').notNull().default(false),
+  errorFlag: boolean('error_flag').notNull().default(false),
+  errorMessage: text('error_message'),
   isDeleted: boolean('is_deleted').notNull().default(false),
   deleteAt: timestamp('delete_at', { withTimezone: true }),
 }, (table) => ({

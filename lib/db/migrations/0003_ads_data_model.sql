@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS "public"."ad_image" (
 	"format" text NOT NULL,
 	"archetypes" text[] DEFAULT '{}'::text[] NOT NULL,
 	"ban_flag" boolean DEFAULT false NOT NULL,
+	"error_flag" boolean DEFAULT false NOT NULL,
+	"error_message" text,
 	"is_deleted" boolean DEFAULT false NOT NULL,
 	"delete_at" timestamp with time zone
 );
@@ -146,6 +148,26 @@ BEGIN
 END $$;
 
 --> statement-breakpoint
+-- Add error_flag and error_message columns to ad_image (idempotent)
+ALTER TABLE "public"."ad_image" ADD COLUMN IF NOT EXISTS "error_flag" boolean DEFAULT false NOT NULL;
+ALTER TABLE "public"."ad_image" ADD COLUMN IF NOT EXISTS "error_message" text;
+
+--> statement-breakpoint
+-- Drop asset_image table after data migration (idempotent)
+-- Only drop if the table exists and we've already migrated the data
+DO $$
+BEGIN
+	IF EXISTS (
+		SELECT 1 FROM information_schema.tables 
+		WHERE table_schema = 'public' 
+		AND table_name = 'asset_image'
+	) THEN
+		-- Drop the table (CASCADE will handle any remaining foreign key constraints)
+		DROP TABLE IF EXISTS "public"."asset_image" CASCADE;
+	END IF;
+END $$;
+
+--> statement-breakpoint
 -- Update generation_job: make prompt nullable
 ALTER TABLE "public"."generation_job" ALTER COLUMN "prompt" DROP NOT NULL;
 
@@ -204,10 +226,6 @@ ALTER TABLE "public"."generation_job" ALTER COLUMN "format" DROP NOT NULL;
 -- Update generation_job: add selected insight fields
 ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "selected_pain_points" text[] DEFAULT '{}'::text[] NOT NULL;
 ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "insight_source" text DEFAULT 'auto' NOT NULL;
-
---> statement-breakpoint
--- Update generation_job: add expected_ads column
-ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "expected_ads" integer;
 
 --> statement-breakpoint
 -- Remove custom_photo_id column from generation_job
