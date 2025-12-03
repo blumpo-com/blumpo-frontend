@@ -389,7 +389,6 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | archetype_code        | text FK → ad_archetype(code) | Selected archetype (nullable) |
 | archetype_mode        | text                | 'single' / 'random' (default: 'single') |
 | formats               | text[]              | Array of output formats (e.g., ['square', 'story']) |
-| format                | text                | Legacy single format (nullable)        |
 | selected_pain_points  | text[]              | Array of selected pain points from insights |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
@@ -420,7 +419,6 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "archetype_code": "problem_solution",
   "archetype_mode": "single",
   "formats": ["square", "story"],
-  "format": null,
   "selected_pain_points": ["High costs", "Complex setup"],
   "insight_source": "auto",
   "archetype_inputs": {}

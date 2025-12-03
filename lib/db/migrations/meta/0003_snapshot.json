@@ -218,18 +218,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "archetype": {
-          "name": "archetype",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "format": {
-          "name": "format",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "archetype_inputs": {
           "name": "archetype_inputs",
           "type": "jsonb",

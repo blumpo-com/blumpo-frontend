@@ -37,7 +37,6 @@ export const generationJob = pgTable('generation_job', {
   
   // Format support
   formats: text('formats').array().notNull().default([]), // Array of formats (e.g., ['square', 'story'])
-  format: text('format'), // Legacy single format (nullable)
   
   // Selected insights
   selectedPainPoints: text('selected_pain_points').array().notNull().default([]), // Array of selected pain points

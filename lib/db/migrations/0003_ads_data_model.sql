@@ -206,6 +206,20 @@ BEGIN
 END $$;
 
 --> statement-breakpoint
+-- Drop old 'archetype' column from generation_job after migration
+DO $$
+BEGIN
+	IF EXISTS (
+		SELECT 1 FROM information_schema.columns 
+		WHERE table_schema = 'public' 
+		AND table_name = 'generation_job' 
+		AND column_name = 'archetype'
+	) THEN
+		ALTER TABLE "public"."generation_job" DROP COLUMN "archetype";
+	END IF;
+END $$;
+
+--> statement-breakpoint
 -- Update generation_job: add archetype_mode (default 'single')
 ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "archetype_mode" text DEFAULT 'single' NOT NULL;
 
@@ -219,8 +233,18 @@ ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "product_photo_mo
 ALTER TABLE "public"."generation_job" ADD COLUMN IF NOT EXISTS "formats" text[] DEFAULT '{}'::text[] NOT NULL;
 
 --> statement-breakpoint
--- Update generation_job: make legacy format column nullable
-ALTER TABLE "public"."generation_job" ALTER COLUMN "format" DROP NOT NULL;
+-- Drop legacy format column from generation_job
+DO $$
+BEGIN
+	IF EXISTS (
+		SELECT 1 FROM information_schema.columns 
+		WHERE table_schema = 'public' 
+		AND table_name = 'generation_job' 
+		AND column_name = 'format'
+	) THEN
+		ALTER TABLE "public"."generation_job" DROP COLUMN "format";
+	END IF;
+END $$;
 
 --> statement-breakpoint
 -- Update generation_job: add selected insight fields

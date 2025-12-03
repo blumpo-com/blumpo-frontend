@@ -17,7 +17,6 @@ export async function createGenerationJob(
     archetypeCode?: string; // FK to ad_archetype
     archetypeMode?: 'single' | 'random'; // 'single' or 'random'
     formats?: string[]; // Array of formats
-    format?: string; // Legacy single format
     selectedPainPoints?: string[]; // Array of selected pain points
     insightSource?: 'auto' | 'manual' | 'mixed'; // Insight source
     archetypeInputs?: any; // JSON object
@@ -47,7 +46,6 @@ export async function createGenerationJob(
         archetypeCode: jobData.archetypeCode || null,
         archetypeMode: jobData.archetypeMode || 'single',
         formats: jobData.formats || [],
-        format: jobData.format || null,
         selectedPainPoints: jobData.selectedPainPoints || [],
         insightSource: jobData.insightSource || 'auto',
         archetypeInputs: jobData.archetypeInputs || {},
