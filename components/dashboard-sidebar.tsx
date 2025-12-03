@@ -170,7 +170,7 @@ export function DashboardSidebar() {
                 }}
               />
               <BrandDropdownItem
-                iconSrc="/assets/icons/Rocket.svg"
+                iconSrc="/assets/icons/Rocket_black.svg"
                 iconAlt="Procore"
                 label="Procore"
                 onClick={() => {
@@ -179,7 +179,7 @@ export function DashboardSidebar() {
                 }}
               />
               <BrandDropdownItem
-                iconSrc="/assets/icons/Rocket.svg"
+                iconSrc="/assets/icons/Rocket_black.svg"
                 iconAlt="Monday"
                 label="Monday"
                 onClick={() => {

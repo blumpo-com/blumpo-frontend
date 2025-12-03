@@ -9,10 +9,10 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex min-h-screen bg-[#F9FAFB]">
-      {/* Sidebar */}
+        {/* Sidebar */}
       <DashboardSidebar />
 
-      {/* Main content */}
+        {/* Main content */}
       <main className="flex-1 ml-[267px] overflow-y-auto">
         {children}
       </main>
