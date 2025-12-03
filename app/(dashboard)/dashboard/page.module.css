@@ -52,7 +52,12 @@
   width: 340px;
   height: 613px; /* Card height (573px) + space above (40px) */
   padding-top: 40px; /* Empty space above card */
+  transition: all 0.3s ease;
 }
+
+/* .cardWrapper:hover {
+  transform: translateY(-8px);
+} */
 
 .cardWrapper.cardFirst {
   left: 0;
@@ -86,6 +91,11 @@
   height: 208px;
   z-index: 10;
   pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+.cardWrapper:hover .cardCharacterIllustration {
+  transform: translateY(-8px);
 }
 
 .cardCharacterImage {
@@ -109,6 +119,14 @@
   overflow: hidden;
   width: 340px;
   height: 573px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  border: 2px solid #00bfa6;
+  box-shadow: 0px 12px 16px 8px rgba(0, 0, 0, 0.2), 0px 6px 6px rgba(0, 0, 0, 0.35);
 }
 
 .cardFirst {
