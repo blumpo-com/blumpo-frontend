@@ -232,7 +232,7 @@ export function DashboardSidebar() {
           iconSrc="/assets/icons/Settings.svg"
           iconAlt="Settings"
           label="Settings"
-          isActive={pathname?.includes('/dashboard/security') || pathname === '/dashboard/general' || pathname === '/dashboard'}
+          isActive={pathname?.includes('/dashboard/security')}
         />
         <SidebarItem
           href="/dashboard/support"
