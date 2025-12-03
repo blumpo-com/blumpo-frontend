@@ -22,4 +22,13 @@ const withMDX = createMDX({
   }
 });
 
-export default withMDX(nextConfig);
+// Apply MDX config
+const config = withMDX(nextConfig);
+
+// Remove problematic Turbopack rules - MDX will work with webpack
+// For Turbopack compatibility, use: pnpm dev:webpack instead of pnpm dev
+if (config.turbopack?.rules && '{*,next-mdx-rule}' in config.turbopack.rules) {
+  delete config.turbopack.rules['{*,next-mdx-rule}'];
+}
+
+export default config;

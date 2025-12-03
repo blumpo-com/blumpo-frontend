@@ -142,7 +142,7 @@ brands/<brand_id>/website_data.json
 {
   "brandId": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
   "rootUrl": "https://monday.com",
-  "crawledAt": "2025-01-10T14:30:00.000Z",
+  "created": "2025-01-10T14:30:00.000Z",
   "pages": [
     {
       "path": "/",
