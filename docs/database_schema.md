@@ -296,13 +296,10 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
 | key_features                | text[]                 | Major selling points                      |
 | brand_voice                 | text                   | Tone-of-voice summary                     |
 | unique_value_prop           | text                   | Unique value proposition                  |
-| expected_customer          | text                   | "Best-fit" customer type                 |
-| target_customer             | text                   | More specific persona                     |
 | key_benefits                | text[]                 | Important benefits                        |
 | competitors                 | text[]                 | Competitors list                          |
 | ins_trigger_events          | text[]                 | Events that cause customers to convert    |
 | ins_aspirations             | text[]                 | Customer dreams/goals                     |
-| ins_interesting_quotes     | text[]                 | Interesting LLM-extracted quotes         |
 | ins_marketing_insight       | text                   | The main insight from analysis            |
 | ins_trend_opportunity       | text                   | Market opportunity                        |
 | ins_raw                     | jsonb                  | Raw LLM JSON dump                         |
@@ -312,6 +309,8 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
 | reddit_interesting_quotes   | jsonb                  | Quotes from Reddit threads                |
 | reddit_purchase_triggers    | jsonb                  | Reasons users decided to buy              |
 | reddit_marketing_brief      | text                   | AI-generated Reddit marketing summary    |
+| target_customers            | text[]                 | Target customer personas (array)          |
+| solution                    | text                   | Solution description                      |
 
 **Example:**
 
@@ -329,7 +328,9 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
   "ins_marketing_insight": "Users want lightweight alternatives to big enterprise tools.",
   "ins_trend_opportunity": "Position as a modular, AI-enhanced alternative.",
   "ins_raw": [{ "topPainPoints": ["..."], "triggerEvents": ["..."] }],
-  "reddit_customer_desires": ["better workflow speed", "AI suggestions"]
+  "reddit_customer_desires": ["better workflow speed", "AI suggestions"],
+  "target_customers": ["Small business owners", "Team leads", "Project managers"],
+  "solution": "Streamlined workflow management with AI-powered automation"
 }
 ```
 
@@ -463,7 +464,7 @@ Stores workflow implementations for each archetype. Multiple workflows can exist
 | -------------- | ------------------- | ------------------------------------- |
 | id             | uuid PK             | Workflow ID                           |
 | archetype_code | text FK → ad_archetype(code) | Associated archetype |
-| workflow_uid   | text                | External workflow ID (e.g., n8n)      |
+| workflow_uid   | text UNIQUE         | External workflow ID (e.g., n8n) - must be unique |
 | variant_key    | text                | Variant identifier (e.g., 'v1', 'square') |
 | format         | text                | Output format (e.g., 'square', 'story', '16:9') |
 | is_active      | boolean             | Whether workflow is active (default: true) |
@@ -472,6 +473,7 @@ Stores workflow implementations for each archetype. Multiple workflows can exist
 
 **Indexes:**
 - Unique index on `(archetype_code, variant_key)` ensures one workflow per archetype variant
+- Unique index on `workflow_uid` ensures each external workflow ID is unique
 - Index on `archetype_code` for archetype lookups
 - Index on `workflow_uid` for external workflow references
 
@@ -499,7 +501,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 
 | Column        | Type                | Description                           |
 | ------------- | ------------------- | ------------------------------------- |
-| id            | uuid PK             | Image ID                               |
+| id            | uuid PK             | Image ID (default: gen_random_uuid())  |
 | job_id        | uuid FK → generation_job(id) | Parent job |
 | user_id       | uuid FK → user(id)  | Owner                                  |
 | brand_id      | uuid FK → brand(id) | Associated brand (nullable)           |
