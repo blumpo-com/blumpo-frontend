@@ -29,6 +29,7 @@
   line-height: 23.69px;
   font-weight: 600;
   display: inline-block;
+  font-family: Roboto;
   flex-shrink: 0;
   color: #040404;
 }
@@ -38,6 +39,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-family: Roboto;
 }
 
 .cardsContainer {

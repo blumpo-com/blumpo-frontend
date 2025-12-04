@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Rocket } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -155,6 +156,8 @@ function FeatureCard({
 }
 
 export default function DashboardHomePage() {
+  const router = useRouter();
+  
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -187,7 +190,7 @@ export default function DashboardHomePage() {
           gradientClass={styles.cardImageGradient2}
           frontImage={imgImage4}
           backImage={imgImage3}
-          onButtonClick={() => console.log('Customized Ads clicked')}
+          onButtonClick={() => router.push('/dashboard/customized-ads')}
         />
         <FeatureCard
           title="Customer & Competitor Insights"
