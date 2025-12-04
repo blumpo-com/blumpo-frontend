@@ -110,13 +110,10 @@ export async function createBrandInsights(data: {
   keyFeatures?: string[];
   brandVoice?: string;
   uniqueValueProp?: string;
-  expectedCustomer?: string;
-  targetCustomer?: string;
   keyBenefits?: string[];
   competitors?: string[];
   insTriggerEvents?: string[];
   insAspirations?: string[];
-  insInterestingQuotes?: string[];
   insMarketingInsight?: string;
   insTrendOpportunity?: string;
   insRaw?: any;
@@ -126,6 +123,8 @@ export async function createBrandInsights(data: {
   redditInterestingQuotes?: any;
   redditPurchaseTriggers?: any;
   redditMarketingBrief?: string;
+  targetCustomers?: string[];
+  solution?: string;
 }) {
   const [newInsights] = await db
     .insert(brandInsights)
@@ -138,13 +137,10 @@ export async function createBrandInsights(data: {
       keyFeatures: data.keyFeatures || [],
       brandVoice: data.brandVoice,
       uniqueValueProp: data.uniqueValueProp,
-      expectedCustomer: data.expectedCustomer,
-      targetCustomer: data.targetCustomer,
       keyBenefits: data.keyBenefits || [],
       competitors: data.competitors || [],
       insTriggerEvents: data.insTriggerEvents || [],
       insAspirations: data.insAspirations || [],
-      insInterestingQuotes: data.insInterestingQuotes || [],
       insMarketingInsight: data.insMarketingInsight,
       insTrendOpportunity: data.insTrendOpportunity,
       insRaw: data.insRaw || [],
@@ -154,6 +150,8 @@ export async function createBrandInsights(data: {
       redditInterestingQuotes: data.redditInterestingQuotes,
       redditPurchaseTriggers: data.redditPurchaseTriggers,
       redditMarketingBrief: data.redditMarketingBrief,
+      targetCustomers: data.targetCustomers || [],
+      solution: data.solution,
     })
     .returning();
 

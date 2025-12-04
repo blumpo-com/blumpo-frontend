@@ -84,16 +84,15 @@ async function createSampleBrand(userId: string) {
       keyFeatures: ['Feature 1', 'Feature 2'],
       brandVoice: 'Professional and friendly',
       uniqueValueProp: 'The best solution for your needs',
-      expectedCustomer: 'Small businesses',
-      targetCustomer: 'Tech startups',
       keyBenefits: ['Benefit 1', 'Benefit 2'],
       competitors: ['Competitor A', 'Competitor B'],
       insTriggerEvents: [],
       insAspirations: [],
-      insInterestingQuotes: [],
       insMarketingInsight: null,
       insTrendOpportunity: null,
       insRaw: [],
+      targetCustomers: ['Tech startups', 'Small businesses'],
+      solution: 'A comprehensive solution that addresses key pain points',
     });
 
   console.log('Sample brand created:', newBrand.id);
