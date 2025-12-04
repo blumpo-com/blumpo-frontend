@@ -36,6 +36,13 @@
       "when": 1764610789000,
       "tag": "0004_ads_data_model",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1764700000000,
+      "tag": "0005_update_ad_image_workflow_insights",
+      "breakpoints": true
     }
   ]
 }

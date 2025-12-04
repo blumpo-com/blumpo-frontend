@@ -5,7 +5,7 @@ import { brand } from './brand';
 
 // Ad image table (replaces asset_image)
 export const adImage = pgTable('ad_image', {
-  id: uuid('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   jobId: uuid('job_id').notNull().references(() => generationJob.id, { onDelete: 'cascade' }),
   userId: uuid('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   brandId: uuid('brand_id').references(() => brand.id, { onDelete: 'set null' }),

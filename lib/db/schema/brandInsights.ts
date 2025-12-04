@@ -18,15 +18,12 @@ export const brandInsights = pgTable('brand_insights', {
   keyFeatures: text('key_features').array().notNull().default([]),
   brandVoice: text('brand_voice'),
   uniqueValueProp: text('unique_value_prop'),
-  expectedCustomer: text('expected_customer'),
-  targetCustomer: text('target_customer'),
   keyBenefits: text('key_benefits').array().notNull().default([]),
   competitors: text('competitors').array().notNull().default([]),
 
   // LLM-based insights
   insTriggerEvents: text('ins_trigger_events').array().notNull().default([]),
   insAspirations: text('ins_aspirations').array().notNull().default([]),
-  insInterestingQuotes: text('ins_interesting_quotes').array().notNull().default([]),
   insMarketingInsight: text('ins_marketing_insight'),
   insTrendOpportunity: text('ins_trend_opportunity'),
   insRaw: jsonb('ins_raw').notNull().default([]),
@@ -40,6 +37,10 @@ export const brandInsights = pgTable('brand_insights', {
   redditInterestingQuotes: jsonb('reddit_interesting_quotes').default([]),
   redditPurchaseTriggers: jsonb('reddit_purchase_triggers').default([]),
   redditMarketingBrief: text('reddit_marketing_brief'),
+
+  // Customer targeting
+  targetCustomers: text('target_customers').array().notNull().default([]),
+  solution: text('solution'),
 });
 
 // Relations

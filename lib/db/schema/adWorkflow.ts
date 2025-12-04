@@ -5,7 +5,7 @@ import { adArchetype } from './adArchetype';
 export const adWorkflow = pgTable('ad_workflow', {
   id: uuid('id').primaryKey().defaultRandom(),
   archetypeCode: text('archetype_code').notNull().references(() => adArchetype.code, { onDelete: 'restrict' }),
-  workflowUid: text('workflow_uid').notNull(),
+  workflowUid: text('workflow_uid').notNull().unique(),
   variantKey: text('variant_key').notNull(),
   format: text('format'),
   isActive: boolean('is_active').notNull().default(true),
