@@ -1,5 +1,5 @@
 import { db } from './drizzle';
-import { user, tokenAccount, tokenLedger, generationJob, assetImage, subscriptionPlan, topupPlan } from './schema/index';
+import { user, tokenAccount, tokenLedger, generationJob, adImage, subscriptionPlan, topupPlan, brand, brandInsights } from './schema/index';
 import { TokenPeriod, JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -51,7 +51,55 @@ async function createTestUser() {
   return newUser;
 }
 
-async function createSampleGenerationJob(userId: string) {
+async function createSampleBrand(userId: string) {
+  console.log('Creating sample brand...');
+  
+  const brandId = crypto.randomUUID();
+  
+  // Create brand (core data only)
+  const [newBrand] = await db
+    .insert(brand)
+    .values({
+      id: brandId,
+      userId,
+      name: 'Sample Brand',
+      websiteUrl: 'https://example.com',
+      language: 'en',
+      fonts: ['Arial', 'Helvetica'],
+      colors: ['#FF0000', '#00FF00'],
+      photos: [],
+      heroPhotos: [],
+    })
+    .returning();
+
+  // Create brand insights (separate table)
+  await db
+    .insert(brandInsights)
+    .values({
+      brandId: brandId,
+      clientAdPreferences: {},
+      industry: 'Technology',
+      customerPainPoints: ['High costs', 'Complex setup'],
+      productDescription: 'A sample product for testing',
+      keyFeatures: ['Feature 1', 'Feature 2'],
+      brandVoice: 'Professional and friendly',
+      uniqueValueProp: 'The best solution for your needs',
+      keyBenefits: ['Benefit 1', 'Benefit 2'],
+      competitors: ['Competitor A', 'Competitor B'],
+      insTriggerEvents: [],
+      insAspirations: [],
+      insMarketingInsight: null,
+      insTrendOpportunity: null,
+      insRaw: [],
+      targetCustomers: ['Tech startups', 'Small businesses'],
+      solution: 'A comprehensive solution that addresses key pain points',
+    });
+
+  console.log('Sample brand created:', newBrand.id);
+  return newBrand;
+}
+
+async function createSampleGenerationJob(userId: string, brandId: string) {
   console.log('Creating sample generation job...');
   
   const jobId = crypto.randomUUID();
@@ -63,6 +111,7 @@ async function createSampleGenerationJob(userId: string) {
     .values({
       id: jobId,
       userId,
+      brandId,
       status: JobStatus.SUCCEEDED,
       prompt: 'A beautiful landscape with mountains and a lake at sunset',
       params: {
@@ -75,6 +124,7 @@ async function createSampleGenerationJob(userId: string) {
       tokensCost: 10,
       startedAt: new Date(Date.now() - 30000), // 30 seconds ago
       completedAt: new Date(),
+      archetypeInputs: {},
     })
     .returning();
 
@@ -97,28 +147,26 @@ async function createSampleGenerationJob(userId: string) {
     .set({ balance: 90 })
     .where(eq(tokenAccount.userId, userId));
 
-  // Create asset image
+  // Create ad image
   await db
-    .insert(assetImage)
+    .insert(adImage)
     .values({
       id: imageId,
       jobId,
       userId,
+      brandId: brandId,
       title: 'Beautiful Sunset Landscape',
-      description: 'A stunning mountain landscape at sunset',
       storageKey: `users/${userId}/jobs/${jobId}/${imageId}.webp`,
       publicUrl: `https://cdn.blumpo.com/images/${imageId}.webp`,
-      mimeType: 'image/webp',
       bytesSize: 524288, // 512KB
       width: 1024,
       height: 1024,
       format: 'WEBP',
-      sha256: 'abcd1234567890abcd1234567890abcd1234567890abcd1234567890abcd1234',
-      safetyFlags: [],
+      archetypes: [], // Empty array for seed data
       isDeleted: false,
     });
 
-  console.log('Sample asset created for job.');
+  console.log('Sample ad image created for job.');
 
   return job;
 }
@@ -246,8 +294,11 @@ async function seed() {
     // Create test user with token account
     const testUser = await createTestUser();
 
+    // Create a sample brand
+    const sampleBrand = await createSampleBrand(testUser.id);
+
     // Create a sample generation job
-    await createSampleGenerationJob(testUser.id);
+    await createSampleGenerationJob(testUser.id, sampleBrand.id);
 
     console.log('✅ Database seed completed successfully!');
     console.log('\nTest credentials:');

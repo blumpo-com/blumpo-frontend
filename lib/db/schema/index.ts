@@ -7,23 +7,37 @@ export * from './enums';
 export { user } from './user';
 export { tokenAccount, tokenLedger } from './tokens';
 export { generationJob } from './generation';
-export { assetImage } from './assets';
 export { authOtp } from './auth';
+export { brand } from './brand';
+export { brandInsights } from './brandInsights';
+export { brandExtractionStatus } from './brandExtractionStatus';
 export { subscriptionPlan, topupPlan, generationPricing } from './subscription';
+export { adArchetype } from './adArchetype';
+export { adWorkflow } from './adWorkflow';
+export { adImage } from './adImage';
+export { adEvent } from './adEvent';
 
 // Export individual relations
 export { tokenAccountRelations, tokenLedgerRelations } from './tokens';
 export { generationJobRelations } from './generation';
-export { assetImageRelations } from './assets';
 export { authOtpRelations } from './auth';
+export { brandRelations } from './brand';
+export { brandInsightsRelations } from './brandInsights';
+export { brandExtractionStatusRelations } from './brandExtractionStatus';
 
 // Import tables for cross-relations
 import { user } from './user';
 import { tokenAccount, tokenLedger } from './tokens';
 import { generationJob } from './generation';
-import { assetImage } from './assets';
 import { authOtp } from './auth';
+import { brand } from './brand';
+import { brandInsights } from './brandInsights';
+import { brandExtractionStatus } from './brandExtractionStatus';
 import { subscriptionPlan, topupPlan, generationPricing } from './subscription';
+import { adArchetype } from './adArchetype';
+import { adWorkflow } from './adWorkflow';
+import { adImage } from './adImage';
+import { adEvent } from './adEvent';
 
 // Define user relations now that all tables are available
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -33,8 +47,9 @@ export const userRelations = relations(user, ({ one, many }) => ({
   }),
   tokenLedgerEntries: many(tokenLedger),
   generationJobs: many(generationJob),
-  assetImages: many(assetImage),
+  adImages: many(adImage),
   authOtps: many(authOtp),
+  brands: many(brand),
 }));
 
 // Complete generation job relations
@@ -47,7 +62,16 @@ export const generationJobCompleteRelations = relations(generationJob, ({ one, m
     fields: [generationJob.ledgerId],
     references: [tokenLedger.id],
   }),
-  assetImages: many(assetImage),
+  brand: one(brand, {
+    fields: [generationJob.brandId],
+    references: [brand.id],
+  }),
+  archetype: one(adArchetype, {
+    fields: [generationJob.archetypeCode],
+    references: [adArchetype.code],
+    relationName: 'archetypeJobs',
+  }),
+  adImages: many(adImage),
 }));
 
 // Complete token ledger relations  
@@ -62,9 +86,89 @@ export const tokenLedgerCompleteRelations = relations(tokenLedger, ({ one }) => 
   }),
 }));
 
+// Complete brand relations (add insights relation here to avoid circular dependency)
+export const brandCompleteRelations = relations(brand, ({ one, many }) => ({
+  insights: one(brandInsights, {
+    fields: [brand.id],
+    references: [brandInsights.brandId],
+  }),
+  adImages: many(adImage),
+}));
+
+// Ad archetype relations
+export const adArchetypeCompleteRelations = relations(adArchetype, ({ many }) => ({
+  workflows: many(adWorkflow, { relationName: 'archetypeWorkflows' }),
+  generationJobs: many(generationJob, { relationName: 'archetypeJobs' }),
+  adEvents: many(adEvent, { relationName: 'archetypeEvents' }),
+}));
+
+// Ad workflow relations
+export const adWorkflowCompleteRelations = relations(adWorkflow, ({ one, many }) => ({
+  archetype: one(adArchetype, {
+    fields: [adWorkflow.archetypeCode],
+    references: [adArchetype.code],
+    relationName: 'archetypeWorkflows',
+  }),
+  adEvents: many(adEvent, { relationName: 'workflowEvents' }),
+}));
+
+// Ad image relations
+export const adImageCompleteRelations = relations(adImage, ({ one, many }) => ({
+  user: one(user, {
+    fields: [adImage.userId],
+    references: [user.id],
+  }),
+  generationJob: one(generationJob, {
+    fields: [adImage.jobId],
+    references: [generationJob.id],
+  }),
+  brand: one(brand, {
+    fields: [adImage.brandId],
+    references: [brand.id],
+  }),
+  adEvents: many(adEvent, { relationName: 'imageEvents' }),
+}));
+
+// Ad event relations
+export const adEventCompleteRelations = relations(adEvent, ({ one }) => ({
+  user: one(user, {
+    fields: [adEvent.userId],
+    references: [user.id],
+  }),
+  brand: one(brand, {
+    fields: [adEvent.brandId],
+    references: [brand.id],
+  }),
+  generationJob: one(generationJob, {
+    fields: [adEvent.jobId],
+    references: [generationJob.id],
+  }),
+  adImage: one(adImage, {
+    fields: [adEvent.adImageId],
+    references: [adImage.id],
+    relationName: 'imageEvents',
+  }),
+  archetype: one(adArchetype, {
+    fields: [adEvent.archetypeCode],
+    references: [adArchetype.code],
+    relationName: 'archetypeEvents',
+  }),
+  workflow: one(adWorkflow, {
+    fields: [adEvent.workflowId],
+    references: [adWorkflow.id],
+    relationName: 'workflowEvents',
+  }),
+}));
+
 // Export all types
 export type { User, NewUser } from './user';
 export type { TokenAccount, NewTokenAccount, TokenLedger, NewTokenLedger } from './tokens';
 export type { GenerationJob, NewGenerationJob } from './generation';
-export type { AssetImage, NewAssetImage} from './assets';
 export type { AuthOtp, NewAuthOtp } from './auth';
+export type { Brand, NewBrand } from './brand';
+export type { BrandInsights, NewBrandInsights } from './brandInsights';
+export type { BrandExtractionStatus, NewBrandExtractionStatus } from './brandExtractionStatus';
+export type { AdArchetype, NewAdArchetype } from './adArchetype';
+export type { AdWorkflow, NewAdWorkflow } from './adWorkflow';
+export type { AdImage, NewAdImage } from './adImage';
+export type { AdEvent, NewAdEvent } from './adEvent';
