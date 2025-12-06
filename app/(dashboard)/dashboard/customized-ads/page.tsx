@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoSelectionContent } from './photo-selection';
+import { ArchetypeSelectionContent } from './archetype-selection';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
@@ -92,6 +93,11 @@ export default function CustomizedAdsPage() {
       title: "Choose product photos",
       description: "We will include them in your ad.",
       content: <PhotoSelectionContent />
+    },
+    2: {
+      title: "Choose ad archetype",
+      description: "Select the soul of your ad.",
+      content: <ArchetypeSelectionContent />
     }
   };
 
@@ -107,8 +113,13 @@ export default function CustomizedAdsPage() {
   };
 
   const handleNext = () => {
-    // TODO: Implement next step logic
-    console.log('Next step');
+    const maxSteps = Object.keys(stepConfig).length;
+    if (currentStep < maxSteps) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // TODO: Handle final step (submit or navigate to results)
+      console.log('Final step - submit');
+    }
   };
 
   return (

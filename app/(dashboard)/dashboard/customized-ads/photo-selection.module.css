@@ -3,7 +3,7 @@
   border: 2px solid transparent;
   background:
     linear-gradient(white, white) padding-box,
-    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 /* Photo Selection Content */
@@ -34,7 +34,7 @@
   background:
     linear-gradient(177.94deg, rgba(0, 191, 166, 0.19) 2.64%, rgba(88, 199, 255, 0.19) 48.88%, rgba(13, 59, 102, 0.19) 100.4%),
     linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
-    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .sectionTitle {
@@ -65,7 +65,7 @@
   border: 2px solid transparent;
   background:
     linear-gradient(white, white) padding-box,
-    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .mainPhotoContent {
@@ -115,7 +115,7 @@
   border: 2px solid transparent;
   background:
     linear-gradient(white, white) padding-box,
-    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .photoCard:nth-child(1) {
@@ -200,7 +200,7 @@
   border: 2px solid transparent;
   background:
     linear-gradient(white, white) padding-box,
-    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .addNewPhotoSection:hover {
