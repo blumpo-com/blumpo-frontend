@@ -2,10 +2,11 @@
 .pageContainer {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   padding: 26px 52px 24px 52px;
   background-color: #F9FAFB;
   gap: 40px;
+  overflow: hidden;
 }
 
 /* Header Section */
@@ -19,22 +20,23 @@
 }
 
 .pageTitle {
-  font-family: 'Roboto', sans-serif;
-  font-weight: 700;
-  font-size: 40px;
-  line-height: normal;
-  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  width: 1145px;
+position: relative;
+font-size: 40px;
+display: inline-block;
+font-family: Roboto;
+font-weight: 700;
+  background: linear-gradient(90.98deg, #00bfa6, #0d3b66);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  width: 100%;
-  max-width: 1145px;
+text-align: center;
 }
 
 .pageDescription {
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
-  font-size: 32px;
+  font-size: 30px;
   line-height: normal;
   color: #888e98;
   width: 100%;
@@ -48,7 +50,8 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 673px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Photo Selection Content */
@@ -61,12 +64,17 @@
   padding: 0 31px;
 }
 
+/* Reusable Gradient Border */
+.gradientBorder {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+}
+
 /* Current Photos Section */
 .currentPhotosSection {
-  border: 2px solid #00bfa6;
   border-radius: 8px;
-  background: linear-gradient(177.94deg, rgba(0, 191, 166, 0.19) 2.64%, rgba(88, 199, 255, 0.19) 48.88%, rgba(13, 59, 102, 0.19) 100.4%),
-              linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
@@ -75,6 +83,14 @@
   padding: 26px 30px;
   width: 412px;
   height: 515px;
+}
+
+.currentPhotosSection.gradientBorder {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(177.94deg, rgba(0, 191, 166, 0.19) 2.64%, rgba(88, 199, 255, 0.19) 48.88%, rgba(13, 59, 102, 0.19) 100.4%),
+    linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
+    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
 }
 
 .sectionTitle {
@@ -89,8 +105,6 @@
 
 /* Main Photo Card */
 .mainPhotoCard {
-  background: white;
-  border: 2px solid #00bfa6;
   border-radius: 5.446px;
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -101,6 +115,13 @@
   padding: 15.154px 11.366px;
   width: 100%;
   height: 135px;
+}
+
+.mainPhotoCard.gradientBorder {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
 }
 
 .mainPhotoContent {
@@ -137,8 +158,6 @@
   position: absolute;
   width: 150.14px;
   height: 150.14px;
-  background: white;
-  border: 2px solid #00bfa6;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -146,7 +165,13 @@
   align-items: center;
   justify-content: center;
   padding: 9px 13.405px;
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.4);
+}
+
+.photoCard.gradientBorder {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
 }
 
 .photoCard:nth-child(1) {
@@ -156,19 +181,19 @@
 }
 
 .photoCard:nth-child(2) {
-  left: 65px;
+  left: 55px;
   transform: rotate(-10deg);
   z-index: 2;
 }
 
 .photoCard:nth-child(3) {
-  left: 130px;
+  left: 100px;
   transform: rotate(-5deg);
   z-index: 3;
 }
 
 .photoCard:nth-child(4) {
-  left: 195px;
+  left: 130px;
   transform: rotate(0deg);
   z-index: 4;
 }
@@ -213,8 +238,6 @@
 
 /* Add New Photo Section */
 .addNewPhotoSection {
-  background: white;
-  border: 2px solid #00bfa6;
   border-radius: 8px;
   box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -229,6 +252,13 @@
   transition: all 0.3s ease;
 }
 
+.addNewPhotoSection.gradientBorder {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(90.98deg, #00bfa6, #0d3b66) border-box;
+}
+
 .addNewPhotoSection:hover {
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
   transform: translateY(-2px);
@@ -238,8 +268,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 320.727px;
-  height: 320.727px;
+  width: 120px;
+  height: 120px;
   border-radius: 33px;
   overflow: hidden;
   flex-shrink: 0;
@@ -315,13 +345,12 @@
 }
 
 .arrowIcon {
-  width: 10.667px;
-  height: 10.667px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
 }
 
 .nextButton {
-  border: 2px solid #00bfa6;
   border-radius: 23px;
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
   display: flex;

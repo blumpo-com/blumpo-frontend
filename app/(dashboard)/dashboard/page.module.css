@@ -1,11 +1,12 @@
 .homePage {
-  min-height: 100vh;
+  height: 100vh;
   background: #f9fafb;
   padding: 91px 58px 209px 58px;
   display: flex;
   flex-direction: column;
   gap: 82px;
   align-items: flex-start;
+  overflow: hidden;
 }
 
 .greetingContainer {

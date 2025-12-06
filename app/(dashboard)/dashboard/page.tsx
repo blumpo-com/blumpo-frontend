@@ -33,7 +33,7 @@ interface FeatureCardProps {
   onButtonClick?: () => void;
   showCharacter?: boolean;
   characterImage?: string;
-}
+      }
 
 function FeatureCard({ 
   title, 
@@ -62,7 +62,7 @@ function FeatureCard({
             alt="Character illustration" 
             className={styles.cardCharacterImage}
           />
-        </div>
+              </div>
         <div className={`${styles.card} ${styles.cardInWrapper}`}>
           <div className={styles.cardContent}>
             <h3 className={styles.cardTitle}>{title}</h3>
@@ -98,9 +98,9 @@ function FeatureCard({
                         alt="" 
                         className={`${styles.imageCardFront} ${backImageClass || ''}`}
                       />
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
+          </div>
               )}
             </div>
           </div>
@@ -132,8 +132,8 @@ function FeatureCard({
                   alt="" 
                   className={`${styles.imageCardBack} ${frontImageClass || ''}`}
                 />
-              </div>
-            </div>
+          </div>
+        </div>
           </div>
           {/* Swapped: backImage now in front position */}
           {backImage && (
@@ -148,9 +148,9 @@ function FeatureCard({
                 </div>
               </div>
             </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
     </div>
   );
 }
@@ -205,6 +205,6 @@ export default function DashboardHomePage() {
           characterImage={imgCharacter}
         />
       </div>
-    </div>
+        </div>
   );
 }

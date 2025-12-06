@@ -13,7 +13,7 @@ import { signIn } from 'next-auth/react';
 import styles from './login.module.css';
 
 // Figma asset URLs (valid for 7 days - should be downloaded and hosted locally for production)
-const imgVector3 = "https://www.figma.com/api/mcp/asset/038af82d-ca64-473e-963d-312d288cfa04";
+const imgVector3 = "https://www.figma.com/api/mcp/asset/4cb293cc-3840-43f5-bab3-792ed7bd3598";
 const imgChatGptImage3Lis2025232050Photoroom1 = "https://www.figma.com/api/mcp/asset/cb53bad9-e39e-47c9-b19f-87985ca00d3f";
 const imgLogo = "https://www.figma.com/api/mcp/asset/25cb668c-6767-447a-99e6-bf76cd814dc0";
 const imgLine2 = "https://www.figma.com/api/mcp/asset/fc6cafab-ef74-4000-9715-989145be0e38";

@@ -45,8 +45,8 @@ function NavigationButtons({
       >
         <svg 
           className={styles.arrowIcon} 
-          width="11" 
-          height="11" 
+          width="16" 
+          height="16" 
           viewBox="0 0 11 11" 
           fill="none"
         >
@@ -68,8 +68,8 @@ function NavigationButtons({
         <span>{nextLabel}</span>
         <svg 
           className={styles.arrowIcon} 
-          width="11" 
-          height="11" 
+          width="16" 
+          height="16" 
           viewBox="0 0 11 11" 
           fill="none"
         >
@@ -99,11 +99,11 @@ function PhotoSelectionContent() {
   return (
     <div className={styles.photoSelectionContent}>
       {/* Current Product Photos Section */}
-      <div className={styles.currentPhotosSection}>
+      <div className={`${styles.currentPhotosSection} ${styles.gradientBorder}`}>
         <h2 className={styles.sectionTitle}>Current product photos</h2>
         
         {/* Main photo display */}
-        <div className={styles.mainPhotoCard}>
+        <div className={`${styles.mainPhotoCard} ${styles.gradientBorder}`}>
           <div className={styles.mainPhotoContent}>
             <img 
               src="/images/default_ads/ads_1.png" 
@@ -118,7 +118,7 @@ function PhotoSelectionContent() {
           {currentPhotos.map((photo, index) => (
             <div 
               key={photo.id}
-              className={styles.photoCard}
+              className={`${styles.photoCard} ${styles.gradientBorder}`}
             >
               <div className={styles.photoCardInner}>
                 <img 
@@ -138,13 +138,11 @@ function PhotoSelectionContent() {
       </div>
 
       {/* Add New Photo Section */}
-      <button className={styles.addNewPhotoSection} type="button">
+      <button className={`${styles.addNewPhotoSection} ${styles.gradientBorder}`} type="button">
         <h2 className={styles.sectionTitle}>Add new product photo</h2>
         <div className={styles.addIconContainer}>
           <div className={styles.addIconCircle}>
             <svg 
-              width="321" 
-              height="321" 
               viewBox="0 0 321 321" 
               fill="none"
               className={styles.addIcon}
