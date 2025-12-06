@@ -12,7 +12,7 @@ interface PageHeaderProps {
   description: string;
 }
 
-export function PageHeader({ title, description }: PageHeaderProps) {
+function PageHeader({ title, description }: PageHeaderProps) {
   return (
     <div className={styles.pageHeader}>
       <h1 className={styles.pageTitle}>{title}</h1>
@@ -28,7 +28,7 @@ interface NavigationButtonsProps {
   nextLabel?: string;
 }
 
-export function NavigationButtons({ 
+function NavigationButtons({ 
   onBack, 
   onNext, 
   backLabel = "Back", 
