@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
+import { FormatSelectionContent } from './format-selection';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
@@ -98,6 +99,11 @@ export default function CustomizedAdsPage() {
       title: "Choose ad archetype",
       description: "Select the soul of your ad.",
       content: <ArchetypeSelectionContent />
+    },
+    3: {
+      title: "Select format",
+      description: "Select the format for where you'll publish.",
+      content: <FormatSelectionContent />
     }
   };
 
