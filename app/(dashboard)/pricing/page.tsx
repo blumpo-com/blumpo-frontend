@@ -6,6 +6,7 @@ import { SubmitButton } from './submit-button';
 import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 type PricingInterval = 'monthly' | 'annually';
