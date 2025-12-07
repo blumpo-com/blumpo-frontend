@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
@@ -86,7 +87,11 @@ function NavigationButtons({
 
 export default function CustomizedAdsPage() {
   const router = useRouter();
+  const { currentBrand } = useBrand();
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Example: Access current brand data
+  // console.log('Current brand:', currentBrand);
 
   // Step configuration - can be extended for multiple steps
   const stepConfig = {

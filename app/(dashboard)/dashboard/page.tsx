@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Rocket } from 'lucide-react';
+import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './page.module.css';
 
 // Image URLs from Figma - these will expire in 7 days
@@ -157,6 +158,7 @@ function FeatureCard({
 
 export default function DashboardHomePage() {
   const router = useRouter();
+  const { currentBrand } = useBrand();
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -164,6 +166,9 @@ export default function DashboardHomePage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
+  
+  // Example: Access current brand data
+  // console.log('Current brand:', currentBrand);
 
   return (
     <div className={styles.homePage}>

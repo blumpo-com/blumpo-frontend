@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
-import { User, TokenAccount } from '@/lib/db/schema';
+import { User, TokenAccount, Brand } from '@/lib/db/schema';
+import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './dashboard-sidebar.module.css';
 
 type UserWithTokenAccount = User & {
@@ -79,12 +80,27 @@ function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownIt
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher);
+  const { currentBrand, setCurrentBrand, isInitialized } = useBrand();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const BrandRef = useRef<HTMLDivElement>(null);
   
   const tokenBalance = user?.tokenAccount?.balance || 0;
-  const isCreateNewActive = pathname === '/dashboard';
+  const isCreateNewActive = pathname === '/dashboard' || pathname === '/dashboard/customized-ads';
+  
+  // Set first brand as current if none is selected, context is initialized, and brands exist
+  useEffect(() => {
+    if (isInitialized && !currentBrand && brands && brands.length > 0) {
+      setCurrentBrand(brands[0]);
+    }
+  }, [brands, currentBrand, setCurrentBrand, isInitialized]);
+  
+  // Get current brand name for display, or default to "Brand"
+  const currentBrandName = isLoadingBrands ? 'Loading...' : (currentBrand?.name || 'Brand');
+  
+  // Filter out current brand from dropdown list
+  const availableBrands = brands?.filter((brand) => brand.id !== currentBrand?.id) || [];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -152,7 +168,7 @@ export function DashboardSidebar() {
           <SidebarItem
             iconSrc="/assets/icons/Rocket.svg"
             iconAlt="Brand"
-            label="Scrolly"
+            label={currentBrandName}
             isActive={isBrandOpen}
             onClick={() => {
               setIsBrandOpen(!isBrandOpen);
@@ -169,24 +185,28 @@ export function DashboardSidebar() {
                   setIsBrandOpen(false);
                 }}
               />
-              <BrandDropdownItem
-                iconSrc="/assets/icons/Rocket_black.svg"
-                iconAlt="Procore"
-                label="Procore"
-                onClick={() => {
-                  console.log('Procore clicked');
-                  setIsBrandOpen(false);
-                }}
-              />
-              <BrandDropdownItem
-                iconSrc="/assets/icons/Rocket_black.svg"
-                iconAlt="Monday"
-                label="Monday"
-                onClick={() => {
-                  console.log('Monday clicked');
-                  setIsBrandOpen(false);
-                }}
-              />
+              {isLoadingBrands ? (
+                <div className={styles.brandDropdownEmpty}>
+                  <span>Loading brands...</span>
+                </div>
+              ) : availableBrands.length > 0 ? (
+                availableBrands.map((brand) => (
+                  <BrandDropdownItem
+                    key={brand.id}
+                    iconSrc="/assets/icons/Rocket_black.svg"
+                    iconAlt={brand.name}
+                    label={brand.name}
+                    onClick={() => {
+                      setCurrentBrand(brand);
+                      setIsBrandOpen(false);
+                    }}
+                  />
+                ))
+              ) : brands && brands.length > 0 ? null : (
+                <div className={styles.brandDropdownEmpty}>
+                  <span>No brands yet</span>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -199,8 +219,14 @@ export function DashboardSidebar() {
             className={styles.coinsButtonIcon}
           />
           <span className={styles.coinsText}>
-            <span className={styles.coinsBold}>{tokenBalance.toLocaleString()}</span>
-            <span> coins left</span>
+            {isLoadingUser ? (
+              <span className={styles.coinsBold}>Loading...</span>
+            ) : (
+              <>
+                <span className={styles.coinsBold}>{tokenBalance.toLocaleString()}</span>
+                <span> coins left</span>
+              </>
+            )}
           </span>
           <button
             className={styles.addButton}
