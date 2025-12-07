@@ -4,12 +4,7 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
 const nextConfig: NextConfig = {
-  pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
-  experimental: {
-    ppr: true,
-    clientSegmentCache: true,
-    nodeMiddleware: true
-  }
+  pageExtensions: ['ts', 'tsx', 'md', 'mdx']
 };
 
 // Configure MDX with plugins
@@ -24,11 +19,5 @@ const withMDX = createMDX({
 
 // Apply MDX config
 const config = withMDX(nextConfig);
-
-// Remove problematic Turbopack rules - MDX will work with webpack
-// For Turbopack compatibility, use: pnpm dev:webpack instead of pnpm dev
-if (config.turbopack?.rules && '{*,next-mdx-rule}' in config.turbopack.rules) {
-  delete config.turbopack.rules['{*,next-mdx-rule}'];
-}
 
 export default config;
