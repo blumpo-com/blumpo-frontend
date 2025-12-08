@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import styles from './archetype-selection.module.css';
 
 interface ArchetypeCardProps {
@@ -19,10 +20,16 @@ function ArchetypeCard({
   isSelected, 
   onClick 
 }: ArchetypeCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const shouldShowTwoImages = isSelected || isHovered;
+  const imagesToShow = shouldShowTwoImages ? previewImages.slice(0, 2) : previewImages.slice(0, 1);
+
   return (
     <button
       className={`${styles.archetypeCard} ${isSelected ? styles.archetypeCardSelected : styles.gradientBorder}`}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       type="button"
     >
       <div className={styles.cardContent}>
@@ -31,17 +38,20 @@ function ArchetypeCard({
       </div>
       
       <div className={styles.previewContainer}>
-        {previewImages.map((imageSrc, index) => (
+        {imagesToShow.map((imageSrc, index) => (
           <div 
             key={index}
-            className={styles.previewImageWrapper}
+            className={`${styles.previewImageWrapper} ${
+              shouldShowTwoImages 
+                ? index === 0 
+                  ? styles.firstImageAnimate 
+                  : styles.secondImageAnimate
+                : index === 0 
+                  ? styles.singleImageState 
+                  : ''
+            }`}
             style={{ 
-              transform: previewImages.length > 1 
-                ? 'rotate(4deg) skewX(3.99deg)' 
-                : 'none',
-              zIndex: previewImages.length - index,
-              marginLeft: index === 0 ? '0' : '19.03px',
-              marginTop: index === 0 ? '13.57px' : '0'
+              zIndex: imagesToShow.length - index,
             }}
           >
             <div className={styles.previewImageCard}>
@@ -82,7 +92,8 @@ export function ArchetypeSelectionContent({
       title: 'Testimonial',
       description: 'Build the ad around a customer review/quote',
       previewImages: [
-        '/images/default_ads/ads_3.png'
+        '/images/default_ads/ads_3.png',
+        '/images/default_ads/ads_2.png'
       ]
     },
     {
@@ -90,7 +101,8 @@ export function ArchetypeSelectionContent({
       title: 'Competitor Comparison',
       description: 'Visually present how the product works and delivers value',
       previewImages: [
-        '/images/default_ads/ads_4.png'
+        '/images/default_ads/ads_4.png',
+        '/images/default_ads/ads_2.png'
       ]
     },
     {
@@ -98,7 +110,8 @@ export function ArchetypeSelectionContent({
       title: 'Promotion (Offer)',
       description: 'Communicate a clear, time-limited deal to prompt immediate action',
       previewImages: [
-        '/images/default_ads/ads_5.png'
+        '/images/default_ads/ads_5.png',
+        '/images/default_ads/ads_2.png'
       ]
     },
     {
@@ -106,7 +119,8 @@ export function ArchetypeSelectionContent({
       title: 'Value Proposition',
       description: 'Highlight the core benefit and what sets the product apart',
       previewImages: [
-        '/images/default_ads/ads_6.png'
+        '/images/default_ads/ads_6.png',
+        '/images/default_ads/ads_2.png'
       ]
     },
     {
@@ -114,7 +128,8 @@ export function ArchetypeSelectionContent({
       title: 'Random',
       description: 'Use 2 random archetypes to generate ads',
       previewImages: [
-        '/images/default_ads/ads_1.png'
+        '/images/default_ads/ads_1.png',
+        '/images/default_ads/ads_2.png'
       ]
     }
   ];

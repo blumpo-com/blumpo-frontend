@@ -115,14 +115,49 @@
     grid-row: 1;
 }
 
-.previewImageWrapper:first-child {
+/* Single image state - centered, no transform */
+.singleImageState {
     margin-left: 19.03px;
     margin-top: 0;
+    transform: translateX(0) translateY(0) rotate(0deg) skewX(0deg);
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-.previewImageWrapper:not(:first-child) {
+/* First image when two images are shown */
+.firstImageAnimate {
     margin-left: 0;
     margin-top: 13.57px;
+    animation: firstImageSlide 0.3s ease-out forwards;
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Second image when two images are shown */
+.secondImageAnimate {
+    margin-left: 19.03px;
+    margin-top: 0;
+    animation: secondImageSlide 0.3s ease-out forwards;
+}
+
+@keyframes firstImageSlide {
+    from {
+        transform: translateX(19.03px) translateY(-13.57px) rotate(0deg) skewX(0deg);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(0) translateY(0) rotate(4deg) skewX(3.99deg);
+        opacity: 1;
+    }
+}
+
+@keyframes secondImageSlide {
+    from {
+        transform: translateX(-19.03px) translateY(13.57px) rotate(0deg) skewX(0deg);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) translateY(0) rotate(4deg) skewX(3.99deg);
+        opacity: 1;
+    }
 }
 
 .previewImageCard {
