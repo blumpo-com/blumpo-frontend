@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './archetype-selection.module.css';
 
 interface ArchetypeCardProps {
@@ -21,8 +21,21 @@ function ArchetypeCard({
   onClick 
 }: ArchetypeCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const prevShouldShowTwoImagesRef = useRef(false);
   const shouldShowTwoImages = isSelected || isHovered;
-  const imagesToShow = shouldShowTwoImages ? previewImages.slice(0, 2) : previewImages.slice(0, 1);
+  const showTwoImagesForAnimation = shouldShowTwoImages || isAnimatingOut;
+
+  useEffect(() => {
+    if (prevShouldShowTwoImagesRef.current && !shouldShowTwoImages) {
+      setIsAnimatingOut(true);
+      const timer = setTimeout(() => setIsAnimatingOut(false), 300);
+      return () => clearTimeout(timer);
+    } else if (!prevShouldShowTwoImagesRef.current && shouldShowTwoImages) {
+      setIsAnimatingOut(false);
+    }
+    prevShouldShowTwoImagesRef.current = shouldShowTwoImages;
+  }, [shouldShowTwoImages]);
 
   return (
     <button
@@ -38,31 +51,51 @@ function ArchetypeCard({
       </div>
       
       <div className={styles.previewContainer}>
-        {imagesToShow.map((imageSrc, index) => (
+        {showTwoImagesForAnimation && previewImages.length > 1 ? (
+          <>
+            <div 
+              className={`${styles.previewImageWrapper} ${
+                isAnimatingOut ? styles.firstImageReverse : styles.firstImageAnimate
+              }`}
+              style={{ zIndex: 2 }}
+            >
+              <div className={styles.previewImageCard}>
+                <img 
+                  src={previewImages[0]} 
+                  alt={`${title} preview 1`}
+                  className={styles.previewImage}
+                />
+              </div>
+            </div>
+            <div 
+              className={`${styles.previewImageWrapper} ${
+                isAnimatingOut ? styles.secondImageReverse : styles.secondImageAnimate
+              }`}
+              style={{ zIndex: 1 }}
+            >
+              <div className={styles.previewImageCard}>
+                <img 
+                  src={previewImages[1]} 
+                  alt={`${title} preview 2`}
+                  className={styles.previewImage}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
           <div 
-            key={index}
-            className={`${styles.previewImageWrapper} ${
-              shouldShowTwoImages 
-                ? index === 0 
-                  ? styles.firstImageAnimate 
-                  : styles.secondImageAnimate
-                : index === 0 
-                  ? styles.singleImageState 
-                  : ''
-            }`}
-            style={{ 
-              zIndex: imagesToShow.length - index,
-            }}
+            className={`${styles.previewImageWrapper} ${styles.singleImageState}`}
+            style={{ zIndex: 1 }}
           >
             <div className={styles.previewImageCard}>
               <img 
-                src={imageSrc} 
-                alt={`${title} preview ${index + 1}`}
+                src={previewImages[0]} 
+                alt={`${title} preview 1`}
                 className={styles.previewImage}
               />
             </div>
           </div>
-        ))}
+        )}
       </div>
     </button>
   );
