@@ -20,17 +20,17 @@
   justify-content: left;
   text-align: center;
   font-size: 34.99px;
-  font-family: Roboto;
-  width: 680px;
+  font-family: 'Roboto', sans-serif;
+  width: 710px;
 }
 
 .greeting {
-  width: 630px;
+  width: 700px;
   position: relative;
   line-height: 23.69px;
   font-weight: 600;
   display: inline-block;
-  font-family: Roboto;
+  font-family: 'Roboto', sans-serif;
   flex-shrink: 0;
   color: #040404;
 }
@@ -40,7 +40,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-family: Roboto;
+  font-family: 'Roboto', sans-serif;
 }
 
 .cardsContainer {
