@@ -1,6 +1,6 @@
 /* Reusable Gradient Border */
 .gradientBorder {
-  border: 2px solid transparent;
+  border: 3.4px solid transparent;
   background:
     linear-gradient(white, white) padding-box,
     linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
@@ -16,10 +16,10 @@
   padding: 0 31px;
 }
 
-/* Current Photos Section */
+/* Current Photos Section - use same styles as addNewPhotoSection */
 .currentPhotosSection {
   border-radius: 8px;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   gap: 33px;
@@ -27,14 +27,32 @@
   padding: 26px 30px;
   width: 412px;
   height: 515px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .currentPhotosSection.gradientBorder {
   border: 2px solid transparent;
   background:
-    linear-gradient(177.94deg, rgba(0, 191, 166, 0.19) 2.64%, rgba(88, 199, 255, 0.19) 48.88%, rgba(13, 59, 102, 0.19) 100.4%),
     linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
     linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
+}
+
+.currentPhotosSection:hover {
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* .currentPhotosSection:hover:not(.currentPhotosSectionSelected) {
+  transform: translateY(-2px);
+} */
+
+.currentPhotosSectionSelected {
+  background:
+    linear-gradient(177.94deg, rgba(0, 191, 166, 0.19) 2.64%, rgba(88, 199, 255, 0.19) 48.88%, rgba(13, 59, 102, 0.19) 100.4%),
+    linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box !important;
 }
 
 .sectionTitle {
@@ -76,15 +94,20 @@
   justify-content: center;
   padding: 6.062px 15.154px 6.062px 10.608px;
   border-radius: 7.577px;
-  width: 201.55px;
+  width: 100%;
   height: 91.682px;
 }
 
 .mainPhoto {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: cover;
   border-radius: 7.577px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Photo Collage */
@@ -92,8 +115,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 277.607px;
-  height: 254px;
+  /* width: 277.607px; */
+  width: 100%;
+  height: 300px;
   padding-right: 131px;
   position: relative;
 }
@@ -108,7 +132,13 @@
   gap: 13.405px;
   align-items: center;
   justify-content: center;
-  padding: 9px 13.405px;
+  padding: 5px 7px;
+  transition: transform 0.8s ease;
+}
+
+.currentPhotosSection:hover .photoCard {
+  width: 135.14px;
+  height: 135.14px;
 }
 
 .photoCard.gradientBorder {
@@ -116,30 +146,50 @@
   background:
     linear-gradient(white, white) padding-box,
     linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
+  transition: all 0.2s;
+  pointer-events: none; /* Disable clicking on individual cards */
 }
 
+/* Default positions for photoCards - more centered/stacked */
 .photoCard:nth-child(1) {
-  left: 0;
-  transform: rotate(-15deg);
-  z-index: 1;
+  left: 155px;
+  z-index: 4;
+  rotate: 0deg;
 }
 
 .photoCard:nth-child(2) {
-  left: 55px;
-  transform: rotate(-10deg);
-  z-index: 2;
+  left: 125px;
+  z-index: 3;
+  rotate: -5deg;
 }
 
 .photoCard:nth-child(3) {
-  left: 100px;
-  transform: rotate(-5deg);
-  z-index: 3;
+  left: 80px;
+  z-index: 2;
+  rotate: -10deg;
 }
 
 .photoCard:nth-child(4) {
-  left: 130px;
-  transform: rotate(0deg);
-  z-index: 4;
+  left: 25px;
+  z-index: 1;
+  rotate: -15deg;
+}
+
+/* Transform photoCards on currentPhotosSection hover - spread out */
+.currentPhotosSection:hover .photoCard:nth-child(1) {
+  transform: translate(15px, 70px) rotate(0deg);
+}
+
+.currentPhotosSection:hover .photoCard:nth-child(2) {
+  transform: translate(-115px, 60px) rotate(5deg);
+}
+
+.currentPhotosSection:hover .photoCard:nth-child(3) {
+  transform: translate(100px, -58px) rotate(10deg);
+}
+
+.currentPhotosSection:hover .photoCard:nth-child(4) {
+  transform: translate(10px, -75px) rotate(15deg);
 }
 
 .photoCardInner {
@@ -148,10 +198,10 @@
   gap: 15.445px;
   align-items: center;
   justify-content: center;
-  padding: 15.445px;
+  padding: 0;
   border-radius: 9.384px;
-  width: 142.097px;
-  height: 142.097px;
+  width: 100%;
+  height: 100%;
 }
 
 .photoImage {
@@ -180,17 +230,17 @@
   text-align: center;
 }
 
-/* Add New Photo Section */
+/* Add New Photo Section - same styles as currentPhotosSection */
 .addNewPhotoSection {
   border-radius: 8px;
-  box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
-  gap: 170px;
+  gap: 33px;
   align-items: center;
   padding: 26px 30px;
   width: 412px;
-  height: 513px;
+  height: 515px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
@@ -199,7 +249,7 @@
 .addNewPhotoSection.gradientBorder {
   border: 2px solid transparent;
   background:
-    linear-gradient(white, white) padding-box,
+    linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
     linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
@@ -207,6 +257,10 @@
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
   transform: translateY(-2px);
 }
+
+/* .addNewPhotoSection:hover:not(.currentPhotosSectionSelected) {
+  transform: translateY(-2px);
+} */
 
 .addIconContainer {
   display: flex;
@@ -217,6 +271,10 @@
   border-radius: 33px;
   overflow: hidden;
   flex-shrink: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .addIconCircle {
@@ -254,5 +312,185 @@
   width: 204px;
   height: 306px;
   /* Character image will be added here */
+}
+
+/* Remove Photo Button */
+.removePhotoButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.removePhotoButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.mainPhotoContent {
+  position: relative;
+}
+
+.photoCardInner {
+  position: relative;
+}
+
+/* Upload Error */
+.uploadError {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #ef4444;
+  text-align: center;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 8px 16px;
+  border-radius: 4px;
+  width: calc(100% - 60px);
+}
+
+/* Uploading Spinner */
+.uploadingSpinner {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: white;
+  text-align: center;
+}
+
+/* Preview Photo Container */
+.previewPhotoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 22.857px;
+}
+
+.previewPhotoCard.gradientBorder {
+  border: 3.4px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
+  border-radius: 18px;
+  padding: 8px;
+}
+
+.previewPhotoCard {
+  position: relative;
+  background: white;
+  border: 3.41px solid #00bfa6;
+  border-radius: 17.051px;
+  box-shadow: 0px 0px 6.82px 0px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 10px;
+  width: 256px;
+  height: 256px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.previewPhotoCard:hover {
+  border-radius: 17.051px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
+}
+
+.previewPhotoCard:hover .previewPhotoOverlay {
+  opacity: 1;
+}
+
+.previewPhotoCard:hover .cancelButton {
+  opacity: 1;
+  visibility: visible;
+}
+
+.previewPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 0 !important;
+}
+
+.previewPhotoOverlay {
+  width: 100%;
+  height: 256px;
+  position: absolute;
+  margin: 0 !important;
+  top: 0px;
+  left: 0px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.36), rgba(0, 0, 0, 0.36));
+  overflow: hidden;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cancelButton {
+  width: 35px;
+  height: 35px;
+  position: absolute;
+  margin: 0 !important;
+  top: 16px;
+  left: 205px;
+  border-radius: 47.73px;
+  max-width: 100%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #0a0a0a;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(249, 250, 251, 0.9);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, background 0.2s;
+  z-index: 10;
+}
+
+.cancelButton:hover {
+  background: rgba(249, 250, 251, 1);
+}
+
+.cancelButton:hover {
+  opacity: 1;
+}
+
+.cancelButton svg {
+  width: 35px;
+  height: 35px;
+}
+
+.currentPhotosSection {
+  cursor: pointer;
+}
+
+.addNewPhotoSectionWithPreview {
+  gap: 103px !important;
 }
 

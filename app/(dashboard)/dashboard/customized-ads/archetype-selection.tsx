@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import styles from './archetype-selection.module.css';
 
 interface ArchetypeCardProps {
@@ -59,9 +58,15 @@ function ArchetypeCard({
   );
 }
 
-export function ArchetypeSelectionContent() {
-  const [selectedArchetype, setSelectedArchetype] = useState<string>('problem-solution');
+interface ArchetypeSelectionContentProps {
+  selectedArchetype: string;
+  onSelectedArchetypeChange: (archetype: string) => void;
+}
 
+export function ArchetypeSelectionContent({
+  selectedArchetype,
+  onSelectedArchetypeChange,
+}: ArchetypeSelectionContentProps) {
   const archetypes = [
     {
       id: 'problem-solution',
@@ -124,7 +129,7 @@ export function ArchetypeSelectionContent() {
           description={archetype.description}
           previewImages={archetype.previewImages}
           isSelected={selectedArchetype === archetype.id}
-          onClick={() => setSelectedArchetype(archetype.id)}
+          onClick={() => onSelectedArchetypeChange(archetype.id)}
         />
       ))}
     </div>

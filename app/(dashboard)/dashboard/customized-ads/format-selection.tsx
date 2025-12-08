@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import styles from './format-selection.module.css';
 
 interface FormatCardProps {
@@ -81,9 +80,15 @@ function FormatCard({
   );
 }
 
-export function FormatSelectionContent() {
-  const [selectedFormat, setSelectedFormat] = useState<string>('1:1');
+interface FormatSelectionContentProps {
+  selectedFormat: string;
+  onSelectedFormatChange: (format: string) => void;
+}
 
+export function FormatSelectionContent({
+  selectedFormat,
+  onSelectedFormatChange,
+}: FormatSelectionContentProps) {
   const formats = [
     {
       id: '1:1',
@@ -133,7 +138,7 @@ export function FormatSelectionContent() {
           socialIcons={format.socialIcons}
           formatBoxes={format.formatBoxes}
           isSelected={selectedFormat === format.id}
-          onClick={() => setSelectedFormat(format.id)}
+          onClick={() => onSelectedFormatChange(format.id)}
         />
       ))}
     </div>
