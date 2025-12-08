@@ -112,7 +112,7 @@ export function ArchetypeSelectionContent({
 }: ArchetypeSelectionContentProps) {
   const archetypes = [
     {
-      id: 'problem-solution',
+      id: 'problem_solution',
       title: 'Problem-Solution',
       description: "Show user's pain point and how your product resolves it",
       previewImages: [
@@ -130,7 +130,7 @@ export function ArchetypeSelectionContent({
       ]
     },
     {
-      id: 'competitor-comparison',
+      id: 'competitor_comparison',
       title: 'Competitor Comparison',
       description: 'Visually present how the product works and delivers value',
       previewImages: [
@@ -139,7 +139,7 @@ export function ArchetypeSelectionContent({
       ]
     },
     {
-      id: 'promotion-offer',
+      id: 'promotion_offer',
       title: 'Promotion (Offer)',
       description: 'Communicate a clear, time-limited deal to prompt immediate action',
       previewImages: [
@@ -148,7 +148,7 @@ export function ArchetypeSelectionContent({
       ]
     },
     {
-      id: 'value-proposition',
+      id: 'value_proposition',
       title: 'Value Proposition',
       description: 'Highlight the core benefit and what sets the product apart',
       previewImages: [

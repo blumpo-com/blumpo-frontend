@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
@@ -105,7 +105,7 @@ function CustomizedAdsPageContent() {
   const [productPhotoMode, setProductPhotoMode] = useState<'brand' | 'custom' | 'mixed'>('brand');
   
   // Archetype selection state
-  const [selectedArchetype, setSelectedArchetype] = useState<string>('problem-solution');
+  const [selectedArchetype, setSelectedArchetype] = useState<string>('problem_solution');
   const [archetypeMode, setArchetypeMode] = useState<'single' | 'random'>('single');
   
   // Format selection state
@@ -150,7 +150,7 @@ function CustomizedAdsPageContent() {
   
   // Sync to DB when isUploaded is true and state changes
   const syncToDatabase = useCallback(async () => {
-    if (!isUploaded || !jobId || !currentBrand?.id) return;
+    if (!isUploaded || !jobId || !currentBrand?.id || isLoading) return;
     
     setIsLoading(true);
     try {
@@ -165,6 +165,7 @@ function CustomizedAdsPageContent() {
           jobId
         );
         finalPhotoUrls = [uploadedUrl];
+        // Update state but don't trigger another sync
         setProductPhotoUrls(finalPhotoUrls);
         setPreviousPhotoUrls(finalPhotoUrls);
       } else if (selectedSection === 'current') {
@@ -172,9 +173,17 @@ function CustomizedAdsPageContent() {
         const brandPhotos = currentBrand.photos || [];
         const heroPhotos = currentBrand.heroPhotos || [];
         finalPhotoUrls = [...heroPhotos, ...brandPhotos];
-        setProductPhotoUrls(finalPhotoUrls);
-        setPreviousPhotoUrls(finalPhotoUrls);
+        // Only update if different to avoid loop
+        if (JSON.stringify(finalPhotoUrls) !== JSON.stringify(productPhotoUrls)) {
+          setProductPhotoUrls(finalPhotoUrls);
+          setPreviousPhotoUrls(finalPhotoUrls);
+        }
       }
+      
+      // Convert archetype code format (problem-solution -> problem_solution)
+      const archetypeCode = selectedArchetype === 'random' 
+        ? null 
+        : selectedArchetype.replace(/-/g, '_');
       
       // Update job with current state
       const response = await fetch('/api/generation-job', {
@@ -185,28 +194,37 @@ function CustomizedAdsPageContent() {
           brandId: currentBrand.id,
           productPhotoUrls: finalPhotoUrls,
           productPhotoMode,
-          archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype,
+          archetypeCode,
           archetypeMode,
           formats,
         }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to sync to database');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to sync to database');
       }
     } catch (error) {
       console.error('Error syncing to database:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [isUploaded, jobId, currentBrand, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection]);
+  }, [isUploaded, jobId, currentBrand, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection, isLoading]);
+  
+  // Use ref to track if we're already syncing to prevent loops
+  const isSyncingRef = useRef(false);
   
   // Sync when relevant state changes and isUploaded is true
   useEffect(() => {
-    if (isUploaded) {
-      syncToDatabase();
+    if (isUploaded && !isSyncingRef.current && !isLoading) {
+      isSyncingRef.current = true;
+      syncToDatabase().finally(() => {
+        isSyncingRef.current = false;
+      });
     }
-  }, [isUploaded, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection, syncToDatabase]);
+    // Remove syncToDatabase from dependencies to prevent loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUploaded, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection]);
 
   // Step configuration - can be extended for multiple steps
   const stepConfig = {
@@ -289,7 +307,7 @@ function CustomizedAdsPageContent() {
             brandId,
             productPhotoUrls: [],
             productPhotoMode,
-            archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype,
+            archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype.replace(/-/g, '_'),
             archetypeMode,
             formats,
           }),
@@ -333,7 +351,7 @@ function CustomizedAdsPageContent() {
           brandId: currentBrand.id,
           productPhotoUrls: finalPhotoUrls,
           productPhotoMode,
-          archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype,
+          archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype.replace(/-/g, '_'),
           archetypeMode,
           formats,
         }),
