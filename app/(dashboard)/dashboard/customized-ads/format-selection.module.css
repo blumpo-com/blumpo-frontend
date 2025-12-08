@@ -42,8 +42,11 @@
 
 /* Selected Card State */
 .formatCardSelected {
-  border: 2px solid #00bfa6;
-  background: white;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(178.36deg, rgba(0, 191, 166, 0.19), rgba(88, 199, 255, 0.19) 50%, rgba(13, 59, 102, 0.19)) padding-box,
+    linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 /* Apply gradient border to non-selected cards */
@@ -71,13 +74,17 @@
 }
 
 .formatCard.gradientBorder .creditsBadge {
-  border: 2.391px solid #00bfa6;
-  background: white;
+  border: 2.391px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .formatCardSelected .creditsBadge {
-  border: 2.391px solid #00bfa6;
-  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  border: 2.391px solid transparent;
+  background:
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
 }
 
 .creditsBadgeText {
@@ -152,6 +159,7 @@
   width: 33px;
   height: 33px;
   flex-shrink: 0;
+  columns: white;
 }
 
 .socialIconImage {
@@ -169,14 +177,17 @@
 }
 
 .formatBox {
-  border: 0.631px solid #00bfa6;
+  border: 0.631px solid transparent;
   border-radius: 3.153px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 0 11.668px;
-  background: white;
+  background:
+    linear-gradient(178.36deg, rgba(0, 191, 166, 0.19), rgba(88, 199, 255, 0.19) 50%, rgba(13, 59, 102, 0.19)) padding-box,
+    linear-gradient(90deg, #ffffff 0%, #ffffff 100%) padding-box,
+    linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66) border-box;
   overflow: hidden;
 }
 

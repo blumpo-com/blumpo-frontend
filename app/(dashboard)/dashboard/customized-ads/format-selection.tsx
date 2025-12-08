@@ -96,11 +96,11 @@ export function FormatSelectionContent({
       description: 'Perfect for posts',
       credits: 50,
       socialIcons: [
-        '/assets/icons/Facebook.svg',
-        '/assets/icons/Instagram.svg',
-        '/assets/icons/Reddit.svg',
-        '/assets/icons/X.svg',
-        '/assets/icons/LinkedIn.svg'
+        '/images/social_media_logo/facebook.png',
+        '/images/social_media_logo/instagram.png',
+        '/images/social_media_logo/reddit.png',
+        '/images/social_media_logo/x.png',
+        '/images/social_media_logo/linkedin.png'
       ]
     },
     {
@@ -109,9 +109,9 @@ export function FormatSelectionContent({
       description: 'Perfect for stories',
       credits: 50,
       socialIcons: [
-        '/assets/icons/Instagram.svg',
-        '/assets/icons/Facebook.svg',
-        '/assets/icons/TikTok.svg'
+        '/images/social_media_logo/instagram.png',
+        '/images/social_media_logo/facebook.png',
+        '/images/social_media_logo/tiktok.png'
       ]
     },
     {
