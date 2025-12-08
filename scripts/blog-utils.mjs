@@ -89,15 +89,67 @@ function findImageReferences(content) {
   const images = [];
   
   // Match ![alt](path)
-  const markdownImages = content.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g);
-  for (const match of markdownImages) {
-    images.push({
-      full: match[0],
-      alt: match[1],
-      path: match[2].split(/[?#]/)[0].trim(),
-      original: match[2],
-      type: 'markdown'
-    });
+  // Use a regex that handles parentheses in filenames by matching up to the last ) on the line
+  // or before whitespace/newline, prioritizing complete file paths
+  const markdownImagePattern = /!\[([^\]]*)\]\(/g;
+  let match;
+  
+  while ((match = markdownImagePattern.exec(content)) !== null) {
+    const startPos = match.index;
+    const altText = match[1];
+    const urlStart = match.index + match[0].length;
+    
+    // Find the line end or next significant character
+    const lineEnd = content.indexOf('\n', urlStart);
+    const searchEnd = lineEnd > 0 ? lineEnd : content.length;
+    const urlSection = content.substring(urlStart, searchEnd);
+    
+    // Try to find the best closing parenthesis
+    // Look for ) that completes a valid file path (has extension) or is at the end
+    let bestMatch = null;
+    let bestIndex = -1;
+    
+    for (let i = 0; i < urlSection.length; i++) {
+      if (urlSection[i] === ')') {
+        const candidate = urlSection.substring(0, i);
+        // If it looks like a complete file path, prefer this match
+        if (candidate.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?|#|$)/i)) {
+          bestMatch = candidate;
+          bestIndex = i;
+          break; // Take the first complete path match
+        } else if (bestIndex === -1) {
+          // Store first ) as fallback
+          bestMatch = candidate;
+          bestIndex = i;
+        }
+      }
+    }
+    
+    if (bestMatch !== null) {
+      const fullMatch = content.substring(startPos, urlStart + bestIndex + 1);
+      const url = bestMatch.split(/[?#]/)[0].trim();
+      
+      images.push({
+        full: fullMatch,
+        alt: altText,
+        path: url,
+        original: url,
+        type: 'markdown'
+      });
+    } else {
+      // Fallback: try standard regex
+      const remaining = content.substring(startPos);
+      const simpleMatch = remaining.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      if (simpleMatch) {
+        images.push({
+          full: simpleMatch[0],
+          alt: simpleMatch[1],
+          path: simpleMatch[2].split(/[?#]/)[0].trim(),
+          original: simpleMatch[2],
+          type: 'markdown'
+        });
+      }
+    }
   }
   
   // Match <Image src="path" ... /> (JSX Image component)
