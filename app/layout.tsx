@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 // import { Manrope } from 'next/font/google';
+import Script from 'next/script';
 import { getUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
 import { Providers } from './providers';
@@ -27,6 +28,18 @@ export default function RootLayout({
       className="bg-white dark:bg-gray-950 text-black dark:text-white font-sans"
     >
       <body className="min-h-[100dvh] bg-gray-50">
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-MPCVHHVPKR"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-MPCVHHVPKR');
+          `}
+        </Script>
         <Providers>
           <SWRConfig
             value={{
