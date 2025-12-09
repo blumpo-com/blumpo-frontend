@@ -85,7 +85,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
   }
 
   return (
-    <article className="max-w-3xl mx-auto px-4 py-12">
+    <article className="max-w-4xl mx-auto px-4 py-12">
       <header className="mb-8">
         {post.draft && (
           <div className="mb-4 px-4 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200">
