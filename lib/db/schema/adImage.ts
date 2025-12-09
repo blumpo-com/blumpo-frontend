@@ -2,6 +2,7 @@ import { pgTable, uuid, timestamp, text, bigint, integer, boolean, index } from 
 import { generationJob } from './generation';
 import { user } from './user';
 import { brand } from './brand';
+import { adWorkflow } from './adWorkflow';
 
 // Ad image table (replaces asset_image)
 export const adImage = pgTable('ad_image', {
@@ -19,7 +20,7 @@ export const adImage = pgTable('ad_image', {
   height: integer('height').notNull(),
   format: text('format').notNull(),
 
-  archetypes: text('archetypes').array().notNull().default([]), // Array of archetype codes
+  workflowId: uuid('workflow_id').references(() => adWorkflow.id, { onDelete: 'set null' }),
   banFlag: boolean('ban_flag').notNull().default(false),
   errorFlag: boolean('error_flag').notNull().default(false),
   errorMessage: text('error_message'),
@@ -29,6 +30,7 @@ export const adImage = pgTable('ad_image', {
   userTimeIdx: index('idx_ad_image_user_time').on(table.userId, table.createdAt.desc()),
   jobIdx: index('idx_ad_image_job').on(table.jobId),
   brandIdx: index('idx_ad_image_brand').on(table.brandId),
+  workflowIdx: index('idx_ad_image_workflow').on(table.workflowId),
 }));
 
 // Relations will be defined in index.ts to avoid circular dependencies

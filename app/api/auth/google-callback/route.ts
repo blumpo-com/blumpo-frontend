@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const redirect = searchParams.get('redirect');
     const priceId = searchParams.get('priceId');
+    const websiteUrl = searchParams.get('website_url');
     
     if (session?.user?.email) {
       // Get user from database and set our custom session
@@ -20,9 +21,11 @@ export async function GET(request: NextRequest) {
     }
     
     // Determine redirect URL (same logic as OTP)
-    let redirectUrl = '/dashboard';
+    let redirectUrl = '/'; // Default to root instead of dashboard
     if (redirect === 'checkout') {
       redirectUrl = priceId ? `/pricing?priceId=${priceId}` : '/pricing';
+    } else if (redirect === 'generate' && websiteUrl) {
+      redirectUrl = `/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
     } else if (redirect) {
       redirectUrl = redirect;
     }

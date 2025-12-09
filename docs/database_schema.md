@@ -414,7 +414,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
     "cfg": 7.5,
     "seed": 12345
   },
-  "tokens_cost": 20,
+  "tokens_cost": 50,
   "product_photo_urls": ["https://blob.vercel.com/.../photo1.jpg"],
   "product_photo_mode": "brand",
   "archetype_code": "problem_solution",
