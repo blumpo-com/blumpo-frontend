@@ -162,7 +162,7 @@ async function createSampleGenerationJob(userId: string, brandId: string) {
       width: 1024,
       height: 1024,
       format: 'WEBP',
-      archetypes: [], // Empty array for seed data
+      workflowId: null, // No workflow for seed data
       isDeleted: false,
     });
 

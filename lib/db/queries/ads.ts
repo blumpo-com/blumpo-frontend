@@ -61,7 +61,7 @@ export async function saveGeneratedAdImages(
     width: number;
     height: number;
     format: string;
-    archetypes: string[]; // Array of archetype codes
+    workflowId?: string;
     brandId?: string;
   }>
 ) {
@@ -82,7 +82,7 @@ export async function saveGeneratedAdImages(
         width: img.width,
         height: img.height,
         format: img.format,
-        archetypes: img.archetypes,
+        workflowId: img.workflowId || null,
       }))
     )
     .returning();
