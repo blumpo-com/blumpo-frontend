@@ -98,6 +98,7 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // Handle redirect parameter from URL
       try {
+        // Check if URL is relative first
         let urlObj: URL;
         
         // Parse URL - handle both relative and absolute
@@ -108,8 +109,8 @@ export const authOptions: NextAuthOptions = {
           // Absolute URL
           urlObj = new URL(url);
         }
-        
-        // Extract query parameters from URL
+
+        // Only parse as URL if it's absolute
         const redirectParam = urlObj.searchParams.get('redirect');
         const priceId = urlObj.searchParams.get('priceId');
         const websiteUrl = urlObj.searchParams.get('website_url');
@@ -122,34 +123,34 @@ export const authOptions: NextAuthOptions = {
         if (redirectParam === 'checkout') {
           return `${baseUrl}/pricing`;
         }
+
+        if (redirectParam === 'dashboard') {
+          return `${baseUrl}/dashboard`;
+        }
         
-        // Handle generation redirect (from Google OAuth or direct) - redirect to root (/)
+        // Handle generation redirect - redirect to root with params
         if (redirectParam === 'generate' && websiteUrl) {
           return `${baseUrl}/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
         }
-        
         // For auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
         if (urlObj.pathname.startsWith('/api/auth/callback') || urlObj.pathname === '/api/auth/google-callback') {
           // Redirect to root - the OAuthRedirectHandler component will check the cookie
           // and redirect to the appropriate page with query params
           return `${baseUrl}/`;
         }
-        
-        // If URL is already absolute and on same domain, return as-is
-        if (url.startsWith(baseUrl)) {
+         // If URL is already absolute and on same domain, return as-is
+         if (url.startsWith(baseUrl)) {
           return url;
         }
         
         // For relative URLs without special handling, construct full URL
         if (url.startsWith('/')) {
           return `${baseUrl}${url}`;
-        }
-        
-        // Default redirect - changed to root instead of dashboard
+        }        // Default redirect
         return `${baseUrl}/`;
       } catch (error) {
         console.error('Error in redirect callback:', error);
-        return `${baseUrl}/dashboard`;
+        return `${baseUrl}/`;
       }
     },
   },

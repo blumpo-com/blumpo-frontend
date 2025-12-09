@@ -116,6 +116,7 @@ export function UrlInputSection() {
     };
 
     const handleSubmit = async (url: string) => {
+        if(isLoading) return;
         setIsOpen(true);
         setIsLoading(true);
         setErrorMsg(null);

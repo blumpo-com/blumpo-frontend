@@ -115,8 +115,8 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
     redirect('/pricing');
   }
 
-  // Default redirect - go to root instead of dashboard
-  redirect('/');
+  // Default redirect - go to dashboard
+  redirect('/dashboard');
 });
 
 // Legacy exports for backward compatibility (will be removed after UI update)
@@ -127,7 +127,7 @@ export const verifySignUp = verifyOtp;
 
 export async function signOut() {
   (await cookies()).delete('session');
-  redirect('/sign-in');
+  redirect('/sign-in?redirect=dashboard');
 }
 
 // User account management actions
