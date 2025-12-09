@@ -5,6 +5,8 @@
     "dev:turbo": "next dev --turbopack",
     "build": "next build --webpack",
     "start": "next start",
+    "clean": "rm -rf .next",
+    "clean:dev": "rm -rf .next/dev",
     "new:post": "npx tsx scripts/new-post.ts",
     "db:setup": "npx tsx lib/db/setup.ts",
     "db:seed": "npx tsx lib/db/seed.ts",

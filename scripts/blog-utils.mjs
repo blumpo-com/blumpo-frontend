@@ -83,27 +83,99 @@ export async function readMarkdownSource(mode, source) {
 }
 
 /**
+ * Decode URL-encoded path to get actual filename
+ */
+function decodeImagePath(imagePath) {
+  try {
+    // Decode URL encoding (e.g., %20 -> space, %28 -> (, etc.)
+    return decodeURIComponent(imagePath);
+  } catch (e) {
+    // If decoding fails, return original
+    return imagePath;
+  }
+}
+
+/**
  * Find all image references in markdown and JSX
  */
 function findImageReferences(content) {
   const images = [];
   
   // Match ![alt](path)
-  const markdownImages = content.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g);
-  for (const match of markdownImages) {
-    images.push({
-      full: match[0],
-      alt: match[1],
-      path: match[2].split(/[?#]/)[0].trim(),
-      original: match[2],
-      type: 'markdown'
-    });
+  // Use a regex that handles parentheses in filenames by matching up to the last ) on the line
+  // or before whitespace/newline, prioritizing complete file paths
+  const markdownImagePattern = /!\[([^\]]*)\]\(/g;
+  let match;
+  
+  while ((match = markdownImagePattern.exec(content)) !== null) {
+    const startPos = match.index;
+    const altText = match[1];
+    const urlStart = match.index + match[0].length;
+    
+    // Find the line end or next significant character
+    const lineEnd = content.indexOf('\n', urlStart);
+    const searchEnd = lineEnd > 0 ? lineEnd : content.length;
+    const urlSection = content.substring(urlStart, searchEnd);
+    
+    // Try to find the best closing parenthesis
+    // Look for ) that completes a valid file path (has extension) or is at the end
+    let bestMatch = null;
+    let bestIndex = -1;
+    
+    for (let i = 0; i < urlSection.length; i++) {
+      if (urlSection[i] === ')') {
+        const candidate = urlSection.substring(0, i);
+        // If it looks like a complete file path, prefer this match
+        if (candidate.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?|#|$)/i)) {
+          bestMatch = candidate;
+          bestIndex = i;
+          break; // Take the first complete path match
+        } else if (bestIndex === -1) {
+          // Store first ) as fallback
+          bestMatch = candidate;
+          bestIndex = i;
+        }
+      }
+    }
+    
+    if (bestMatch !== null) {
+      const fullMatch = content.substring(startPos, urlStart + bestIndex + 1);
+      let url = bestMatch.split(/[?#]/)[0].trim();
+      // Decode URL-encoded characters
+      url = decodeImagePath(url);
+      
+      images.push({
+        full: fullMatch,
+        alt: altText,
+        path: url,
+        original: url,
+        type: 'markdown'
+      });
+    } else {
+      // Fallback: try standard regex
+      const remaining = content.substring(startPos);
+      const simpleMatch = remaining.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      if (simpleMatch) {
+        let url = simpleMatch[2].split(/[?#]/)[0].trim();
+        // Decode URL-encoded characters
+        url = decodeImagePath(url);
+        images.push({
+          full: simpleMatch[0],
+          alt: simpleMatch[1],
+          path: url,
+          original: url,
+          type: 'markdown'
+        });
+      }
+    }
   }
   
   // Match <Image src="path" ... /> (JSX Image component)
   const jsxImages = content.matchAll(/<Image[^>]*\ssrc=["']([^"']+)["'][^>]*\/?>/gi);
   for (const match of jsxImages) {
-    const src = match[1].split(/[?#]/)[0].trim();
+    let src = match[1].split(/[?#]/)[0].trim();
+    // Decode URL-encoded characters
+    src = decodeImagePath(src);
     // Skip if already using a variable (starts with {)
     if (!src.startsWith('{')) {
       images.push({
@@ -119,7 +191,9 @@ function findImageReferences(content) {
   // Match <img src="path" ... /> (regular HTML)
   const htmlImages = content.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*\/?>/gi);
   for (const match of htmlImages) {
-    const src = match[1].split(/[?#]/)[0].trim();
+    let src = match[1].split(/[?#]/)[0].trim();
+    // Decode URL-encoded characters
+    src = decodeImagePath(src);
     images.push({
       full: match[0],
       alt: '',
@@ -141,14 +215,30 @@ function normalizeImagePath(imagePath, imagesDir, contentRoot) {
     return { normalized: imagePath, needsCopy: false };
   }
 
+  // Decode URL-encoded characters first
+  let decodedPath = decodeImagePath(imagePath);
+  
   // Convert Windows paths to forward slashes
-  let normalized = imagePath.replace(/\\/g, '/');
+  let normalized = decodedPath.replace(/\\/g, '/');
   
   // Get slug directory name
   const slugDir = path.basename(imagesDir);
   
-  // If already correctly formatted (./slug/image.png), return as-is
+  // If already correctly formatted (./slug/image.png), check if file exists and use actual filename
   if (normalized.startsWith(`./${slugDir}/`)) {
+    const fileNameFromPath = normalized.substring(`./${slugDir}/`.length);
+    const targetPath = path.join(imagesDir, fileNameFromPath);
+    
+    // If file exists, use the actual filename from filesystem
+    if (fs.existsSync(targetPath)) {
+      const actualFileName = path.basename(targetPath);
+      return {
+        normalized: `./${slugDir}/${actualFileName}`,
+        needsCopy: false
+      };
+    }
+    
+    // File doesn't exist, but path is already normalized, return as-is
     return { normalized, needsCopy: false };
   }
   
@@ -159,8 +249,10 @@ function normalizeImagePath(imagePath, imagesDir, contentRoot) {
     // Check if the file exists in images directory
     const targetPath = path.join(imagesDir, fileName);
     if (fs.existsSync(targetPath)) {
+      // Use actual filename from filesystem
+      const actualFileName = path.basename(targetPath);
       return {
-        normalized: `./${slugDir}/${fileName}`,
+        normalized: `./${slugDir}/${actualFileName}`,
         needsCopy: false
       };
     }
@@ -173,29 +265,52 @@ function normalizeImagePath(imagePath, imagesDir, contentRoot) {
 
   // Try to resolve as absolute or relative to content root
   let resolvedPath;
-  if (path.isAbsolute(imagePath)) {
-    resolvedPath = imagePath;
+  if (path.isAbsolute(decodedPath)) {
+    resolvedPath = decodedPath;
   } else {
-    resolvedPath = path.resolve(contentRoot, imagePath);
+    resolvedPath = path.resolve(contentRoot, decodedPath);
   }
 
   // Check if file exists
   if (fs.existsSync(resolvedPath)) {
-    const fileName = path.basename(resolvedPath);
-    const targetPath = path.join(imagesDir, fileName);
+    // Use actual filename from filesystem
+    const actualFileName = path.basename(resolvedPath);
+    const targetPath = path.join(imagesDir, actualFileName);
     
     return {
-      normalized: `./${slugDir}/${fileName}`,
+      normalized: `./${slugDir}/${actualFileName}`,
       needsCopy: true,
       sourcePath: resolvedPath,
       targetPath
     };
   }
 
-  // File doesn't exist, assume it needs slug prefix
-  const fileName = path.basename(normalized);
+  // File doesn't exist, try to find it by decoding and searching
+  // Extract just the filename part
+  const fileNameFromPath = path.basename(decodedPath);
+  
+  // Check if a file with this name (or decoded version) exists in images directory
+  if (fs.existsSync(imagesDir)) {
+    const files = fs.readdirSync(imagesDir);
+    // Try to find matching file (case-insensitive, handle encoding variations)
+    const matchingFile = files.find(file => {
+      const fileBase = path.basename(file, path.extname(file));
+      const pathBase = path.basename(fileNameFromPath, path.extname(fileNameFromPath));
+      return fileBase.toLowerCase() === pathBase.toLowerCase() && 
+             path.extname(file).toLowerCase() === path.extname(fileNameFromPath).toLowerCase();
+    });
+    
+    if (matchingFile) {
+      return {
+        normalized: `./${slugDir}/${matchingFile}`,
+        needsCopy: false
+      };
+    }
+  }
+  
+  // File doesn't exist, use decoded filename
   return {
-    normalized: `./${slugDir}/${fileName}`,
+    normalized: `./${slugDir}/${fileNameFromPath}`,
     needsCopy: false
   };
 }
@@ -312,6 +427,58 @@ export function parseAndFixMarkdown({ mdx, slug, imagesDir, contentRoot }) {
       importsAdded: imports.length
     }
   };
+}
+
+/**
+ * Remove "# Untitled" or "#Untitled" heading if it appears as the first heading
+ */
+export function removeUntitledHeading(content) {
+  if (!content) return content;
+  
+  const lines = content.split('\n');
+  let firstHeadingIndex = -1;
+  
+  // Find the first heading (line starting with #)
+  // Skip import statements
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Skip empty lines and import statements
+    if (line === '' || line.startsWith('import ')) {
+      continue;
+    }
+    
+    // Check if this is a heading
+    if (line.startsWith('#')) {
+      firstHeadingIndex = i;
+      break;
+    }
+  }
+  
+  // If we found a first heading, check if it's "Untitled"
+  if (firstHeadingIndex !== -1) {
+    const headingLine = lines[firstHeadingIndex].trim();
+    // Match "# Untitled" or "#Untitled" (case insensitive, with optional spaces)
+    const untitledMatch = headingLine.match(/^#+\s*[Uu]ntitled\s*$/);
+    
+    if (untitledMatch) {
+      // Remove the line
+      lines.splice(firstHeadingIndex, 1);
+      
+      // Remove any following blank lines (up to 2)
+      let removedBlanks = 0;
+      while (firstHeadingIndex < lines.length && 
+             lines[firstHeadingIndex].trim() === '' && 
+             removedBlanks < 2) {
+        lines.splice(firstHeadingIndex, 1);
+        removedBlanks++;
+      }
+      
+      return lines.join('\n');
+    }
+  }
+  
+  return content;
 }
 
 /**
@@ -515,6 +682,9 @@ async function main() {
         
         // Clean any remaining frontmatter markers from content
         contentOnly = contentOnly.replace(/^---\s*\n[\s\S]*?\n---\s*\n/g, '').trim();
+
+        // Remove "# Untitled" heading if present
+        contentOnly = removeUntitledHeading(contentOnly);
 
         // STEP 2: Fix image paths in CLEAN content (no frontmatter)
         const { fixedMdx, meta } = parseAndFixMarkdown({
