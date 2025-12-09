@@ -1,6 +1,6 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '../drizzle';
-import { generationJob, adImage } from '../schema/index';
+import { generationJob, adImage, JobStatus } from '../schema/index';
 import { appendTokenLedgerEntry } from './tokens';
 
 // Generation job operations

@@ -10,7 +10,8 @@ The main ideas:
 
 ```json
 {
-  "job_id": "..."
+  "job_id": "...",
+  "website_url": "..."
 }
 ````
 
