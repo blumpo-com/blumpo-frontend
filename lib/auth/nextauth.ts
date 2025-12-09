@@ -47,10 +47,10 @@ export const authOptions: NextAuthOptions = {
           if (newUser.length > 0) {
             dbUser = newUser[0];
             
-            // Create default token account (10,000 free tokens)
+            // Create default token account (50 tokens for FREE plan)
             await db.insert(tokenAccount).values({
               userId: dbUser.id,
-              balance: 10000,
+              balance: 50,
               planCode: 'FREE',
             });
           }

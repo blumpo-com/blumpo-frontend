@@ -83,10 +83,10 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       };
     }
 
-    // Create default token account with free tier (10,000 tokens)
+    // Create default token account with free tier (50 tokens)
     await db.insert(tokenAccount).values({
       userId: createdUser.id,
-      balance: 10000,
+      balance: 50,
       planCode: 'FREE',
     });
 

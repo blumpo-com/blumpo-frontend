@@ -28,7 +28,7 @@ async function createTestUser() {
     .insert(tokenAccount)
     .values({
       userId: testUserId,
-      balance: 100,
+      balance: 50,
       planCode: 'FREE',
     })
     .returning();
@@ -40,10 +40,10 @@ async function createTestUser() {
     .insert(tokenLedger)
     .values({
       userId: testUserId,
-      delta: 100,
+      delta: 50,
       reason: 'INITIAL_GRANT',
       referenceId: `seed_${testUserId}`,
-      balanceAfter: 100,
+      balanceAfter: 50,
     });
 
   console.log('Initial token grant recorded.');
@@ -121,7 +121,7 @@ async function createSampleGenerationJob(userId: string, brandId: string) {
         cfg: 7.5,
         seed: 12345,
       },
-      tokensCost: 10,
+      tokensCost: 50,
       startedAt: new Date(Date.now() - 30000), // 30 seconds ago
       completedAt: new Date(),
       archetypeInputs: {},
@@ -135,16 +135,16 @@ async function createSampleGenerationJob(userId: string, brandId: string) {
     .insert(tokenLedger)
     .values({
       userId,
-      delta: -10,
-      reason: 'GENERATION',
+      delta: -50,
+      reason: 'JOB_RESERVE',
       referenceId: jobId,
-      balanceAfter: 90,
+      balanceAfter: 0,
     });
 
   // Update token account balance
   await db
     .update(tokenAccount)
-    .set({ balance: 90 })
+    .set({ balance: 0 })
     .where(eq(tokenAccount.userId, userId));
 
   // Create ad image
@@ -179,7 +179,7 @@ async function seedSubscriptionPlans() {
       planCode: 'FREE',
       displayName: 'Free',
       monthlyTokens: 50,
-      description: ['50 tokens per month', 'Basic ad generation', 'Email support'],
+      description: ['50 tokens per month', '1 ad per month', 'Basic ad generation', 'Email support'],
       stripeProductId: null,
       isActive: true,
       isDefault: true,
@@ -188,18 +188,18 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'STARTER',
       displayName: 'Starter',
-      monthlyTokens: 300,
-      description: ['300 tokens per month', 'All ad types', 'Priority support', 'Export options'],
+      monthlyTokens: 2500,
+      description: ['2,500 tokens per month', '50 ads per month', 'All ad types', 'Priority support', 'Export options'],
       stripeProductId: process.env.STRIPE_STARTER_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
       sortOrder: 2,
     },
     {
-      planCode: 'PRO',
-      displayName: 'Pro',
-      monthlyTokens: 1500,
-      description: ['1,500 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding'],
+      planCode: 'GROWTH',
+      displayName: 'Growth',
+      monthlyTokens: 7500,
+      description: ['7,500 tokens per month', '150 ads per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding'],
       stripeProductId: process.env.STRIPE_GROWTH_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -208,8 +208,8 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'TEAM',
       displayName: 'TEAM',
-      monthlyTokens: 5000,
-      description: ['5,000 tokens per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding', 'User management', 'Analytics dashboard'],
+      monthlyTokens: 100000,
+      description: ['100,000 tokens per month', '2,000 ads per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding', 'User management', 'Analytics dashboard'],
       stripeProductId: process.env.STRIPE_TEAM_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -303,7 +303,7 @@ async function seed() {
     console.log('✅ Database seed completed successfully!');
     console.log('\nTest credentials:');
     console.log('Email: test@blumpo.com');
-    console.log('Initial token balance: 90 tokens');
+    console.log('Initial token balance: 0 tokens (50 tokens used for sample generation)');
     console.log('\nSubscription plans and topup plans have been created.');
     
   } catch (error) {

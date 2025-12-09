@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser, reserveTokens, refundTokens, hasEnoughTokens } from "@/lib/db/queries";
 import { randomUUID } from "crypto";
 
-const TOKENS_COST_PER_GENERATION = 20;
+const TOKENS_COST_PER_GENERATION = 50;
 
 export async function POST(req: Request) {
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
