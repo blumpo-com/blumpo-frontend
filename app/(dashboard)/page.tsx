@@ -6,11 +6,14 @@ import { HeroPhotoWall } from "@/components/hero-photo-wall";
 import { ContentProofSection } from "./content-proof-section";
 import { PricingSection } from "./pricing-section";
 import { OAuthRedirectHandler } from "./oauth-redirect-handler";
+import { Suspense } from "react";
 
 export default function HomePage() {
   return (
     <>
-      <OAuthRedirectHandler />
+      <Suspense fallback={null}>
+        <OAuthRedirectHandler />
+      </Suspense>
     <main>
       <section className="py-10 md:py-20">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,7 +30,9 @@ export default function HomePage() {
                 YT, and your website into +$500 worth ads.<br></br>
                 No credit card.
               </p>
-              <UrlInputSection />
+              <Suspense fallback={<div className="mt-5">Loading...</div>}>
+                <UrlInputSection />
+              </Suspense>
             </div>
             <HeroPhotoWall />
           </div>

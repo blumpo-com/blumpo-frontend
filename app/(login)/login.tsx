@@ -287,9 +287,9 @@ export function Login() {
                     onClick={() => {
                       // Store redirect params in a cookie to preserve through OAuth flow
                       if (redirect || priceId || websiteUrl) {
-                        const params = new URLSearchParams();
-                        if (redirect) params.set('redirect', redirect);
-                        if (priceId) params.set('priceId', priceId);
+                      const params = new URLSearchParams();
+                      if (redirect) params.set('redirect', redirect);
+                      if (priceId) params.set('priceId', priceId);
                         if (websiteUrl) params.set('website_url', websiteUrl);
                         
                         // Set cookie that will be read by the redirect callback

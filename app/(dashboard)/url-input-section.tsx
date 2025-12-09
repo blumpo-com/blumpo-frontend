@@ -130,19 +130,19 @@ export function UrlInputSection() {
         }
     
         try {
-            const res = await fetch('/api/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url }),
-            });
+          const res = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url }),
+          });
     
-            if (!res.ok) {
+          if (!res.ok) {
                 let msg = 'Generation request failed';
                 let errorCode = null;
                 let websiteUrl = null;
-                try {
-                    const j = await res.json();
-                    if (j?.error) msg = j.error;
+            try {
+              const j = await res.json();
+              if (j?.error) msg = j.error;
                     errorCode = j?.error_code;
                     websiteUrl = j?.website_url;
                     
@@ -154,9 +154,9 @@ export function UrlInputSection() {
                         window.location.href = signInUrl;
                         return; // Don't throw error, just redirect
                     }
-                } catch {}
-                throw new Error(msg);
-            }
+            } catch {}
+            throw new Error(msg);
+          }
     
             const data = await res.json();
             
@@ -186,14 +186,14 @@ export function UrlInputSection() {
             // Poll immediately
             pollJobStatus(data.job_id);
         } catch (e: any) {
-            setErrorMsg(e?.message || 'Request failed');
-            setIsLoading(false);
+          setErrorMsg(e?.message || 'Request failed');
+          setIsLoading(false);
             if (pollIntervalRef.current) {
                 clearInterval(pollIntervalRef.current);
                 pollIntervalRef.current = null;
             }
         }
-    };
+      };
 
     // Auto-trigger generation if we have a pending auto-generate request
     useEffect(() => {
@@ -230,7 +230,7 @@ export function UrlInputSection() {
             }}>
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center gap-4 p-6">
-                        <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-500 rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-500 rounded-full animate-spin" />
                         <p className="text-gray-600">
                             {jobStatus?.status === 'QUEUED' && 'Queuing your generation...'}
                             {jobStatus?.status === 'RUNNING' && 'Generating your ads...'}
@@ -279,14 +279,14 @@ export function UrlInputSection() {
                                     )}
                                 </div>
                             ))}
-                        </div>
-                        <Button
-                            onClick={() => setIsOpen(false)}
+                </div>
+                    <Button
+                    onClick={() => setIsOpen(false)}
                             className="bg-orange-500 text-white mt-4"
-                        >
-                            Close
-                        </Button>
-                    </div>
+                    >
+                    Close
+                    </Button>
+                </div>
                 ) : (
                     <div className="flex flex-col gap-4 p-6">
                         <p className="text-gray-600">No images generated</p>
