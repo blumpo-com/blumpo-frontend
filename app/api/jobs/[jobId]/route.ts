@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/db/queries";
 import { getGenerationJobById } from "@/lib/db/queries/generation";
-import { getAdImagesByJobId } from "@/lib/db/queries/ads";
+import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds } from "@/lib/db/queries/ads";
 
 export async function GET(
   req: Request,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {
     // Check if user is authenticated
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { jobId } = params;
+    const { jobId } = await params;
 
     if (!jobId) {
       return NextResponse.json({ error: "Missing job_id" }, { status: 400 });
@@ -40,6 +40,12 @@ export async function GET(
       (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
     );
 
+    // Get archetypes for each image from workflow_id
+    const workflowIds = validImages.map((img) => img.workflowId).filter((id): id is string => Boolean(id));
+    const workflowsWithArchetypes = workflowIds.length > 0 
+      ? await getWorkflowsAndArchetypesByWorkflowIds(workflowIds)
+      : [];
+
     return NextResponse.json({
       job: {
         id: job.id,
@@ -50,16 +56,28 @@ export async function GET(
         startedAt: job.startedAt,
         completedAt: job.completedAt,
       },
-      images: validImages.map((img) => ({
-        id: img.id,
-        title: img.title,
-        publicUrl: img.publicUrl,
-        width: img.width,
-        height: img.height,
-        format: img.format,
-        archetypes: img.archetypes,
-        createdAt: img.createdAt,
-      })),
+      images: validImages.map((img) => {
+        const workflowMatch = img.workflowId 
+          ? workflowsWithArchetypes.find((w) => w.ad_workflow.id === img.workflowId)
+          : null;
+        const archetype = workflowMatch?.ad_archetype || null;
+        
+        return {
+          id: img.id,
+          title: img.title,
+          publicUrl: img.publicUrl,
+          width: img.width,
+          height: img.height,
+          format: img.format,
+          workflowId: img.workflowId,
+          createdAt: img.createdAt,
+          archetype: archetype ? {
+            code: archetype.code,
+            displayName: archetype.displayName,
+            description: archetype.description,
+          } : null,
+        };
+      }),
     });
   } catch (e) {
     console.error('Error fetching job:', e);

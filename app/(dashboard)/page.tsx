@@ -5,9 +5,12 @@ import { UrlInputSection } from "./url-input-section";
 import { HeroPhotoWall } from "@/components/hero-photo-wall";
 import { ContentProofSection } from "./content-proof-section";
 import { PricingSection } from "./pricing-section";
+import { OAuthRedirectHandler } from "./oauth-redirect-handler";
 
 export default function HomePage() {
   return (
+    <>
+      <OAuthRedirectHandler />
     <main>
       <section className="py-10 md:py-20">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,5 +57,6 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
       </section>
     </main>
+    </>
   );
 }

@@ -98,21 +98,23 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       // Handle redirect parameter from URL
       try {
-        // Check if URL is relative first
+        let urlObj: URL;
+        
+        // Parse URL - handle both relative and absolute
         if (url.startsWith('/')) {
-          // For relative URLs, check if it's the callback endpoint
-          if (url.startsWith('/api/auth/')) {
-            // For auth callbacks, redirect to dashboard
-            return `${baseUrl}/dashboard`;
-          }
-          return `${baseUrl}${url}`;
+          // Relative URL - construct full URL
+          urlObj = new URL(url, baseUrl);
+        } else {
+          // Absolute URL
+          urlObj = new URL(url);
         }
         
-        // Only parse as URL if it's absolute
-        const urlObj = new URL(url);
+        // Extract query parameters from URL
         const redirectParam = urlObj.searchParams.get('redirect');
         const priceId = urlObj.searchParams.get('priceId');
+        const websiteUrl = urlObj.searchParams.get('website_url');
         
+        // Handle checkout redirect
         if (redirectParam === 'checkout' && priceId) {
           return `${baseUrl}/pricing?priceId=${priceId}`;
         }
@@ -121,13 +123,30 @@ export const authOptions: NextAuthOptions = {
           return `${baseUrl}/pricing`;
         }
         
-        // If URL is already absolute and on same domain
+        // Handle generation redirect (from Google OAuth or direct) - redirect to root (/)
+        if (redirectParam === 'generate' && websiteUrl) {
+          return `${baseUrl}/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+        }
+        
+        // For auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
+        if (urlObj.pathname.startsWith('/api/auth/callback') || urlObj.pathname === '/api/auth/google-callback') {
+          // Redirect to root - the OAuthRedirectHandler component will check the cookie
+          // and redirect to the appropriate page with query params
+          return `${baseUrl}/`;
+        }
+        
+        // If URL is already absolute and on same domain, return as-is
         if (url.startsWith(baseUrl)) {
           return url;
         }
         
-        // Default redirect
-        return `${baseUrl}/dashboard`;
+        // For relative URLs without special handling, construct full URL
+        if (url.startsWith('/')) {
+          return `${baseUrl}${url}`;
+        }
+        
+        // Default redirect - changed to root instead of dashboard
+        return `${baseUrl}/`;
       } catch (error) {
         console.error('Error in redirect callback:', error);
         return `${baseUrl}/dashboard`;

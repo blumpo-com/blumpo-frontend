@@ -300,3 +300,11 @@ export async function getAdEventsForJob(jobId: string, limit = 100) {
     .limit(limit);
 }
 
+// Get worklows and their archetypes by workflow ids
+export async function getWorkflowsAndArchetypesByWorkflowIds(workflowIds: string[]) {
+  return await db
+    .select()
+    .from(adWorkflow)
+    .where(inArray(adWorkflow.id, workflowIds))
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code));
+}

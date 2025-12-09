@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { UrlInput } from '@/components/url-input';
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface AdImage {
   id: string;
@@ -12,7 +13,12 @@ interface AdImage {
   width: number | null;
   height: number | null;
   format: string;
-  archetypes: string[];
+  workflowId: string | null;
+  archetype: {
+    code: string;
+    displayName: string;
+    description: string | null;
+  } | null;
   createdAt: string;
 }
 
@@ -27,9 +33,11 @@ interface JobStatus {
 }
 
 const POLL_INTERVAL = 2000; // Poll every 2 seconds
-const MAX_POLL_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
+const MAX_POLL_TIME = 7 * 60 * 1000; // 5 minutes in milliseconds
 
 export function UrlInputSection() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<AdImage[]>([]);
@@ -38,6 +46,7 @@ export function UrlInputSection() {
     const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
     const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const pollStartTimeRef = useRef<number | null>(null);
+    const [autoGenerateUrl, setAutoGenerateUrl] = useState<string | null>(null);
 
     // Cleanup polling on unmount
     useEffect(() => {
@@ -47,6 +56,19 @@ export function UrlInputSection() {
             }
         };
     }, []);
+
+    // Check for auto-generation params (after login redirect)
+    useEffect(() => {
+        const websiteUrl = searchParams.get('website_url');
+        const shouldGenerate = searchParams.get('generate') === 'true';
+        
+        if (shouldGenerate && websiteUrl) {
+            // Clear the query params but stay on the same page (root /)
+            router.replace('/', { scroll: false });
+            // Set state to trigger generation
+            setAutoGenerateUrl(websiteUrl);
+        }
+    }, [searchParams, router]);
 
     const pollJobStatus = async (jobId: string) => {
         try {
@@ -116,11 +138,21 @@ export function UrlInputSection() {
     
             if (!res.ok) {
                 let msg = 'Generation request failed';
+                let errorCode = null;
+                let websiteUrl = null;
                 try {
                     const j = await res.json();
                     if (j?.error) msg = j.error;
-                    if (j?.error_code === 'INSUFFICIENT_TOKENS') {
+                    errorCode = j?.error_code;
+                    websiteUrl = j?.website_url;
+                    
+                    if (errorCode === 'INSUFFICIENT_TOKENS') {
                         msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
+                    } else if (errorCode === 'AUTH_REQUIRED') {
+                        // Redirect to sign-in with website_url for auto-generation after login
+                        const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(websiteUrl || url)}`;
+                        window.location.href = signInUrl;
+                        return; // Don't throw error, just redirect
                     }
                 } catch {}
                 throw new Error(msg);
@@ -162,6 +194,16 @@ export function UrlInputSection() {
             }
         }
     };
+
+    // Auto-trigger generation if we have a pending auto-generate request
+    useEffect(() => {
+        if (autoGenerateUrl) {
+            const url = autoGenerateUrl;
+            setAutoGenerateUrl(null); // Clear the state
+            handleSubmit(url);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [autoGenerateUrl]); // Trigger when autoGenerateUrl is set
 
     return (
         <section className="flex flex-col gap-4">
@@ -226,16 +268,13 @@ export function UrlInputSection() {
                                     {image.title && (
                                         <p className="text-sm text-gray-600">{image.title}</p>
                                     )}
-                                    {image.archetypes.length > 0 && (
+                                    {image.archetype && (
                                         <div className="flex flex-wrap gap-1">
-                                            {image.archetypes.map((archetype) => (
-                                                <span 
-                                                    key={archetype}
-                                                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
-                                                >
-                                                    {archetype}
-                                                </span>
-                                            ))}
+                                            <span 
+                                                className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded"
+                                            >
+                                                {image.archetype.displayName}
+                                            </span>
                                         </div>
                                     )}
                                 </div>

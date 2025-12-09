@@ -103,7 +103,20 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   await setSession(foundUser);
 
   const redirectTo = formData.get('redirect') as string | null;
-  redirect(redirectTo === 'checkout' ? '/pricing' : '/dashboard');
+  const websiteUrl = formData.get('website_url') as string | null;
+
+  // Handle generation redirect - redirect to root (/) with website_url
+  if (redirectTo === 'generate' && websiteUrl) {
+    redirect(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
+  }
+
+  // Handle checkout redirect
+  if (redirectTo === 'checkout') {
+    redirect('/pricing');
+  }
+
+  // Default redirect - go to root instead of dashboard
+  redirect('/');
 });
 
 // Legacy exports for backward compatibility (will be removed after UI update)

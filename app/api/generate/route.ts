@@ -13,13 +13,16 @@ export async function POST(req: Request) {
   }
 
   try {
+    const { url } = await req.json();
     // Check if user is authenticated
     const user = await getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ 
+        error: "Unauthorized", 
+        error_code: "AUTH_REQUIRED",
+        website_url: url // Include website URL for redirect after login
+      }, { status: 401 });
     }
-
-    const { url } = await req.json();
 
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "Missing url" }, { status: 400 });
@@ -63,7 +66,6 @@ export async function POST(req: Request) {
       }
       throw error;
     }
-
     // Send job_id to n8n webhook (as per ad_generation_flow.md)
     try {
       const res = await fetch(webhookUrl, {

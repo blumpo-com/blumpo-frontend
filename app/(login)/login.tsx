@@ -83,6 +83,7 @@ export function Login() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
+  const websiteUrl = searchParams.get('website_url');
   const [awaitingOtp, setAwaitingOtp] = useState(false);
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
 
@@ -204,7 +205,9 @@ export function Login() {
 
                 <form id="otp-form" className="w-full flex flex-col gap-[36px] items-center" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
+                  <input type="hidden" name="website_url" value={websiteUrl || ''} />
                   <input type="hidden" name="priceId" value={priceId || ''} />
+                  <input type="hidden" name="website_url" value={websiteUrl || ''} />
                   <input type="hidden" name="email" value={state.email} />
                   <input type="hidden" name="code" value={otpCode.join('')} />
 
@@ -275,18 +278,26 @@ export function Login() {
               <div className="w-full">
                 <form className="space-y-6" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
+                  <input type="hidden" name="website_url" value={websiteUrl || ''} />
                   <input type="hidden" name="priceId" value={priceId || ''} />
 
                   {/* Google Sign-in Button */}
                   <button
                     type="button"
                     onClick={() => {
-                      const params = new URLSearchParams();
-                      if (redirect) params.set('redirect', redirect);
-                      if (priceId) params.set('priceId', priceId);
+                      // Store redirect params in a cookie to preserve through OAuth flow
+                      if (redirect || priceId || websiteUrl) {
+                        const params = new URLSearchParams();
+                        if (redirect) params.set('redirect', redirect);
+                        if (priceId) params.set('priceId', priceId);
+                        if (websiteUrl) params.set('website_url', websiteUrl);
+                        
+                        // Set cookie that will be read by the redirect callback
+                        document.cookie = `oauth_redirect=${params.toString()}; path=/; max-age=300; SameSite=Lax`;
+                      }
                       
-                      const callbackUrl = `/api/auth/google-callback${params.toString() ? `?${params.toString()}` : ''}`;
-                      signIn('google', { callbackUrl });
+                      // Use NextAuth's default callback - redirect callback will read the cookie
+                      signIn('google');
                     }}
                     className={styles.googleButton}
                   >
