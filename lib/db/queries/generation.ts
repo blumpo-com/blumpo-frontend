@@ -80,6 +80,28 @@ export async function getGenerationJobsForUser(userId: string, limit = 20) {
     .limit(limit);
 }
 
+export async function updateGenerationJob(
+  jobId: string,
+  updates: {
+    productPhotoUrls?: string[];
+    productPhotoMode?: 'brand' | 'custom' | 'mixed';
+    archetypeCode?: string | null;
+    archetypeMode?: 'single' | 'random';
+    formats?: string[];
+    selectedPainPoints?: string[];
+    insightSource?: 'auto' | 'manual' | 'mixed';
+    archetypeInputs?: any;
+  }
+) {
+  const [updated] = await db
+    .update(generationJob)
+    .set(updates)
+    .where(eq(generationJob.id, jobId))
+    .returning();
+
+  return updated;
+}
+
 export async function updateGenerationJobStatus(
   jobId: string,
   status: 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED',
@@ -103,4 +125,9 @@ export async function updateGenerationJobStatus(
     .update(generationJob)
     .set(updates)
     .where(eq(generationJob.id, jobId));
+}
+
+export async function deleteGenerationJob(jobId: string) {
+  // Update status to CANCELED instead of hard delete
+  await updateGenerationJobStatus(jobId, 'CANCELED');
 }
