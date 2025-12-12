@@ -91,7 +91,7 @@ export function DashboardSidebar() {
   
   // Set first brand as current if none is selected, context is initialized, and brands exist
   useEffect(() => {
-    if (isInitialized && !currentBrand && brands && brands.length > 0) {
+    if (isInitialized && !currentBrand && Array.isArray(brands) && brands.length > 0) {
       setCurrentBrand(brands[0]);
     }
   }, [brands, currentBrand, setCurrentBrand, isInitialized]);
@@ -100,7 +100,7 @@ export function DashboardSidebar() {
   const currentBrandName = isLoadingBrands ? 'Loading...' : (currentBrand?.name || 'Brand');
   
   // Filter out current brand from dropdown list
-  const availableBrands = brands?.filter((brand) => brand.id !== currentBrand?.id) || [];
+  const availableBrands = Array.isArray(brands) ? brands.filter((brand) => brand.id !== currentBrand?.id) : [];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -202,7 +202,7 @@ export function DashboardSidebar() {
                     }}
                   />
                 ))
-              ) : brands && brands.length > 0 ? null : (
+              ) : Array.isArray(brands) && brands.length > 0 ? null : (
                 <div className={styles.brandDropdownEmpty}>
                   <span>No brands yet</span>
                 </div>
