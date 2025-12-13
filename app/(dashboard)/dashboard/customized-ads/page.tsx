@@ -35,8 +35,9 @@ function NavigationButtons({
   onBack, 
   onNext, 
   backLabel = "Back", 
-  nextLabel = "Next" 
-}: NavigationButtonsProps) {
+  nextLabel = "Next",
+  showRandomIcon = false
+}: NavigationButtonsProps & { showRandomIcon?: boolean }) {
   return (
     <div className={styles.navigationButtons}>
       <button 
@@ -62,26 +63,36 @@ function NavigationButtons({
         <span>{backLabel}</span>
       </button>
       <button 
-        className={styles.nextButton}
+        className={`${styles.nextButton} ${showRandomIcon ? styles.chooseRandom : ''}`}
         onClick={onNext}
         type="button"
       >
         <span>{nextLabel}</span>
-        <svg 
-          className={styles.arrowIcon} 
-          width="16" 
-          height="16" 
-          viewBox="0 0 11 11" 
-          fill="none"
-        >
-          <path 
-            d="M4.5 2.5L7 5L4.5 7.5" 
-            stroke="#F9FAFB" 
-            strokeWidth="1.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
+        {showRandomIcon ? (
+          <img 
+            src="/assets/icons/Wand.svg" 
+            alt="Magic wand" 
+            className={styles.magicWandIcon}
+            width={16}
+            height={16}
           />
-        </svg>
+        ) : (
+          <svg 
+            className={styles.arrowIcon} 
+            width="16" 
+            height="16" 
+            viewBox="0 0 11 11" 
+            fill="none"
+          >
+            <path 
+              d="M4.5 2.5L7 5L4.5 7.5" 
+              stroke="#F9FAFB" 
+              strokeWidth="1.5" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
     </div>
   );
@@ -118,6 +129,7 @@ function CustomizedAdsPageContent() {
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [isLoadingHeadlines, setIsLoadingHeadlines] = useState(false);
   const [headlinesError, setHeadlinesError] = useState<string | null>(null);
+  const prevArchetypeRef = useRef<string | null>(null);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -173,8 +185,11 @@ function CustomizedAdsPageContent() {
 
   // Simple function to fetch headlines
   const fetchHeadlines = useCallback(async () => {
+    if (currentStep !== 3) return;
+
     if (!selectedArchetype || selectedArchetype === 'random') {
       setHeadlines([]);
+      prevArchetypeRef.current = selectedArchetype;
       return;
     }
 
@@ -204,13 +219,22 @@ function CustomizedAdsPageContent() {
 
       const data = await response.json();
       setHeadlines(data.headlines || []);
+      prevArchetypeRef.current = selectedArchetype;
+      console.log('headlines', data.headlines);
     } catch (err) {
       console.error('Error fetching headlines:', err);
       setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch headlines');
     } finally {
       setIsLoadingHeadlines(false);
     }
-  }, [selectedArchetype, currentBrand?.id]);
+  }, [selectedArchetype, currentBrand?.id, currentStep]);
+
+  // Fetch headlines when archetype changes
+  useEffect(() => {
+    if (prevArchetypeRef.current !== selectedArchetype) {
+      fetchHeadlines();
+    }
+  }, [selectedArchetype, fetchHeadlines]);
   
   // Sync to DB when isUploaded is true and state changes
   const syncToDatabase = useCallback(async () => {
@@ -295,23 +319,23 @@ function CustomizedAdsPageContent() {
     const configs: Record<string, { title: string; subtitle: string }> = {
       problem_solution: {
         title: "Select Insight",
-        subtitle: "Choose headlines that best represent your problem-solution approach"
+        subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       testimonial: {
         title: "Select Insight",
-        subtitle: "Choose headlines that best showcase customer testimonials"
+        subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       competitor_comparison: {
-        title: "Select Insight",
-        subtitle: "Choose headlines that highlight your competitive advantages"
+        title: "Competitor insight",
+        subtitle: "Competitor insights for you product category we found on Reddit & Social media"
       },
       promotion_offer: {
-        title: "Select Insight",
-        subtitle: "Choose headlines that communicate your promotional offers"
+        title: "Value insight",
+        subtitle: "Customer value perception of your product we found on Reddit & Social media"
       },
       value_proposition: {
-        title: "Select Insight",
-        subtitle: "Choose headlines that emphasize your unique value proposition"
+        title: "Value insight",
+        subtitle: "Customer value perception of your product we found on Reddit & Social media"
       },
       random: {
         title: "Select Insight",
@@ -365,6 +389,7 @@ function CustomizedAdsPageContent() {
       description: insightConfig.subtitle,
       content: (
         <InsightSelectionContent
+          selectedArchetype={selectedArchetype}
           headlines={headlines}
           isLoading={isLoadingHeadlines}
           error={headlinesError}
@@ -390,10 +415,8 @@ function CustomizedAdsPageContent() {
   const handleNext = async () => {
     const maxSteps = Object.keys(stepConfig).length;
     
-    // If on step 2 (archetype selection), fetch headlines before moving to next step
-    if (currentStep === 2) {
-      fetchHeadlines();
-    }
+    // Headlines are now fetched automatically when archetype changes via useEffect
+    // No need to fetch here unless we need to ensure they're loaded before step 3
     
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
@@ -515,6 +538,8 @@ function CustomizedAdsPageContent() {
       <NavigationButtons 
         onBack={handleBack}
         onNext={handleNext}
+        nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
+        showRandomIcon={currentStep === 4 && selectedInsights.length === 0}
       />
     </div>
   );

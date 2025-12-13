@@ -61,10 +61,16 @@
 
 /* Navigation Buttons */
 .navigationButtons {
+  width: 100%;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
+  gap: 20px;
+  text-align: left;
+  font-size: 18px;
+  color: #f9fafb;
+  font-family: Roboto;
   flex-shrink: 0;
   margin-top: auto;
   padding: 0;
@@ -72,52 +78,86 @@
 }
 
 .backButton {
-  border: 2px solid #040404;
+  height: 44px;
+  min-width: 146px;
   border-radius: 23px;
-  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  gap: 8px;
-  width: 146px;
-  height: 44px;
+  padding: 8px 14px;
+  gap: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
   font-size: 18px;
   line-height: 20px;
-  color: #040404;
+  background: white;
 }
 
 .backButton:hover {
   background: #f5f5f5;
 }
 
+.backButton span {
+  position: relative;
+  line-height: 20px;
+  font-weight: 500;
+  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #0a0a0a;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .arrowIcon {
-  width: 16px;
   height: 16px;
+  width: 16px;
+  position: relative;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.magicWandIcon {
+  height: 16px;
+  width: 16px;
+  position: relative;
   flex-shrink: 0;
 }
 
 .nextButton {
+  height: 44px;
+  min-width: 146px;
   border-radius: 23px;
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  gap: 8px;
-  width: 146px;
-  height: 44px;
+  padding: 8px 14px;
+  gap: 10px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    opacity 0.3s cubic-bezier(0.4,0,0.2,1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    min-width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
-  font-size: 16px;
   line-height: 20px;
   color: #F9FAFB;
+}
+
+.chooseRandom {
+  min-width: 172px;
+}
+
+.nextButton span {
+  position: relative;
+  line-height: 20px;
+  font-weight: 500;
 }
 
 .nextButton:hover {
