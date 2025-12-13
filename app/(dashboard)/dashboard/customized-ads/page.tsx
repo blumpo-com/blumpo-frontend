@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
+import { InsightSelectionContent } from './insight-selection';
 import { uploadPhotoAndUpdateGeneration } from './photo-upload';
 import styles from './page.module.css';
 
@@ -111,6 +112,12 @@ function CustomizedAdsPageContent() {
   // Format selection state
   const [selectedFormat, setSelectedFormat] = useState<string>('1:1');
   const [formats, setFormats] = useState<string[]>([]);
+  
+  // Insight selection state
+  const [selectedInsights, setSelectedInsights] = useState<string[]>([]);
+  const [headlines, setHeadlines] = useState<string[]>([]);
+  const [isLoadingHeadlines, setIsLoadingHeadlines] = useState(false);
+  const [headlinesError, setHeadlinesError] = useState<string | null>(null);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -147,6 +154,63 @@ function CustomizedAdsPageContent() {
       setFormats([selectedFormat]);
     }
   }, [selectedFormat]);
+
+  // Navigate to dashboard when brand changes (but not on initial mount)
+  const prevBrandIdRef = useRef<string | null>(null);
+  const isInitialMountRef = useRef(true);
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      prevBrandIdRef.current = currentBrand?.id || null;
+      return;
+    }
+    
+    if (prevBrandIdRef.current && currentBrand?.id && prevBrandIdRef.current !== currentBrand.id) {
+      router.push('/dashboard');
+    }
+    prevBrandIdRef.current = currentBrand?.id || null;
+  }, [currentBrand?.id, router]);
+
+  // Simple function to fetch headlines
+  const fetchHeadlines = useCallback(async () => {
+    if (!selectedArchetype || selectedArchetype === 'random') {
+      setHeadlines([]);
+      return;
+    }
+
+    if (!currentBrand?.id) {
+      setHeadlinesError('No brand selected');
+      return;
+    }
+
+    setIsLoadingHeadlines(true);
+    setHeadlinesError(null);
+
+    try {
+      console.log('fetching headlines');
+      const response = await fetch('/api/headlines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          archetypeId: selectedArchetype,
+          brandId: currentBrand.id
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch headlines');
+      }
+
+      const data = await response.json();
+      setHeadlines(data.headlines || []);
+    } catch (err) {
+      console.error('Error fetching headlines:', err);
+      setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch headlines');
+    } finally {
+      setIsLoadingHeadlines(false);
+    }
+  }, [selectedArchetype, currentBrand?.id]);
   
   // Sync to DB when isUploaded is true and state changes
   const syncToDatabase = useCallback(async () => {
@@ -226,8 +290,42 @@ function CustomizedAdsPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUploaded, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection]);
 
+  // Archetype-specific titles and subtitles for insight selection
+  const getInsightStepConfig = () => {
+    const configs: Record<string, { title: string; subtitle: string }> = {
+      problem_solution: {
+        title: "Select Insight",
+        subtitle: "Choose headlines that best represent your problem-solution approach"
+      },
+      testimonial: {
+        title: "Select Insight",
+        subtitle: "Choose headlines that best showcase customer testimonials"
+      },
+      competitor_comparison: {
+        title: "Select Insight",
+        subtitle: "Choose headlines that highlight your competitive advantages"
+      },
+      promotion_offer: {
+        title: "Select Insight",
+        subtitle: "Choose headlines that communicate your promotional offers"
+      },
+      value_proposition: {
+        title: "Select Insight",
+        subtitle: "Choose headlines that emphasize your unique value proposition"
+      },
+      random: {
+        title: "Select Insight",
+        subtitle: "Choose headlines for your ad"
+      }
+    };
+    
+    return configs[selectedArchetype] || configs.problem_solution;
+  };
+
   // Step configuration - can be extended for multiple steps
-  const stepConfig = {
+  const insightConfig = useMemo(() => getInsightStepConfig(), [selectedArchetype]);
+  
+  const stepConfig = useMemo(() => ({
     1: {
       title: "Choose product photos",
       description: "We will include them in your ad.",
@@ -261,8 +359,22 @@ function CustomizedAdsPageContent() {
           onSelectedFormatChange={setSelectedFormat}
         />
       )
+    },
+    4: {
+      title: insightConfig.title,
+      description: insightConfig.subtitle,
+      content: (
+        <InsightSelectionContent
+          headlines={headlines}
+          isLoading={isLoadingHeadlines}
+          error={headlinesError}
+          onRetry={fetchHeadlines}
+          selectedInsights={selectedInsights}
+          onSelectedInsightsChange={setSelectedInsights}
+        />
+      )
     }
-  };
+  }), [previewPhoto, previewFile, selectedSection, selectedArchetype, selectedFormat, selectedInsights, insightConfig, headlines, isLoadingHeadlines, headlinesError, fetchHeadlines]);
 
   const currentConfig = stepConfig[currentStep as keyof typeof stepConfig];
 
@@ -278,7 +390,12 @@ function CustomizedAdsPageContent() {
   const handleNext = async () => {
     const maxSteps = Object.keys(stepConfig).length;
     
-    // If on final step (format selection), upload everything
+    // If on step 2 (archetype selection), fetch headlines before moving to next step
+    if (currentStep === 2) {
+      fetchHeadlines();
+    }
+    
+    // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
       await handleFinalSubmit();
       return;

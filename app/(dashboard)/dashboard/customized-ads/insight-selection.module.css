@@ -1,0 +1,115 @@
+.insightSelectionContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.headlinesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.headlineCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  min-height: 60px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.headlineCard:hover {
+  border-color: #00bfa6;
+  background: #f0fdfa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 191, 166, 0.1);
+}
+
+.headlineCardSelected {
+  border-color: #00bfa6;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f7f4 100%);
+  box-shadow: 0 2px 8px rgba(0, 191, 166, 0.2);
+}
+
+.headlineText {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #040404;
+  margin-right: 12px;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.loadingContainer,
+.errorContainer,
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loadingText,
+.errorText,
+.emptyText {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  color: #888e98;
+  margin-top: 16px;
+}
+
+.errorText {
+  color: #ef4444;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #00bfa6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retryButton {
+  margin-top: 20px;
+  padding: 10px 24px;
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  color: white;
+  border: none;
+  border-radius: 23px;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retryButton:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 8px rgba(0, 191, 166, 0.3);
+}
