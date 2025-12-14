@@ -7,6 +7,7 @@ import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
+import { CreatingProcess } from './creating-process';
 import { uploadPhotoAndUpdateGeneration } from './photo-upload';
 import styles from './page.module.css';
 
@@ -105,7 +106,7 @@ function CustomizedAdsPageContent() {
   
   // Generation job state
   const [jobId, setJobId] = useState<string | null>(null);
-  const [isUploaded, setIsUploaded] = useState(false);
+  const [isUploaded, setIsUploaded] = useState(true); // For testing purposes TODO: Change to false
   const [isLoading, setIsLoading] = useState(false);
   
   // Photo selection state - persisted across steps
@@ -420,7 +421,8 @@ function CustomizedAdsPageContent() {
     
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
-      await handleFinalSubmit();
+      // await handleFinalSubmit();
+      setIsUploaded(true); // For testing purposes
       return;
     }
     
@@ -523,6 +525,27 @@ function CustomizedAdsPageContent() {
       }
     };
   }, [jobId, isUploaded]);
+
+  // Show creating process view after upload
+  if (isUploaded) {
+    return (
+      <div className={styles.pageContainer}>
+        <PageHeader 
+          title="Creating your customized ads"
+          description="We're analyzing your brand and crafting personalized ad content."
+        />
+        
+        <div className={styles.contentArea}>
+          <CreatingProcess 
+            onComplete={() => {
+              // TODO: Navigate to results page when webhook integration is ready
+              console.log('Process completed');
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageContainer}>

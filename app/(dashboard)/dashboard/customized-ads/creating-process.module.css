@@ -1,0 +1,303 @@
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 0;
+}
+
+.stepsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+}
+
+.stepItem {
+  position: relative;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  position: relative;
+}
+
+/* Icon Container */
+.iconContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.iconCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 2;
+  border: 1px solid #626D7C;
+}
+
+.iconCircleActive {
+  background: linear-gradient(135deg, #00BFA6, #0D3B66);
+  box-shadow: 0 2px 8px rgba(0, 191, 166, 0.3);
+}
+
+.iconCircleInProgress {
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.iconCirclePending {
+  background: #7F858C;
+  box-shadow: none;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(0, 191, 166, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 191, 166, 0.4);
+  }
+}
+
+.iconBox {
+  transition: all 0.3s ease;
+}
+
+.iconBoxActive {
+  color: white;
+  stroke: white;
+}
+
+.iconBoxPending {
+  color: #B0B7C2;
+  stroke: #B0B7C2;
+}
+
+/* Connector Line */
+.connectorLine {
+  width: 2.7px;
+  min-height: 80px;
+  margin-top: 0;
+  margin-bottom: 0;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  background: #7F858C;
+}
+
+.connectorLineAnimating {
+  background: #7F858C;
+  position: relative;
+  overflow: hidden;
+}
+
+.connectorLineAnimating::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #0D3B66 0%, #00BFA6 50%);
+  transform: scaleY(0);
+  transform-origin: top;
+  animation: lineFill 0.8s ease-in-out forwards;
+}
+
+.connectorLineGradient {
+  background: linear-gradient(180deg, #0D3B66 0%, #00BFA6 50%);
+}
+
+.connectorLinePending {
+  background: #7F858C;
+}
+
+@keyframes lineFill {
+  from {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+@keyframes gradientTransition {
+  0% {
+    background: linear-gradient(180deg, #00bfa6, #58c7ff);
+  }
+  50% {
+    background: linear-gradient(180deg, #00bfa6 0%, #58c7ff 30%, #888e98 70%, #D3D5D7 100%);
+  }
+  100% {
+    background: linear-gradient(180deg, #00bfa6 0%, #58c7ff 50%, #D3D5D7 100%);
+  }
+}
+
+/* Step Content */
+.stepContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  min-height: 60px;
+}
+
+.stepTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.stepTitleActive {
+  color: #040404;
+}
+
+.stepTitlePending {
+  color: #888e98;
+}
+
+.stepDescription {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.stepDescriptionActive {
+  color: #00bfa6;
+}
+
+.stepDescriptionPending {
+  color: #B0B5BA;
+}
+
+/* Status Indicator */
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.statusDot {
+  font-size: 12px;
+  color: #888e98;
+  line-height: 1;
+}
+
+.statusText {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888e98;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Progress Bar */
+.progressBarContainer {
+  
+  width: 100%;
+  height: 3.6px;
+  background: #314158;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+  /* padding: 0px 200.5px 0px 0px; */
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0D3B66, #00BFA6);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+  position: relative;
+  overflow: hidden;
+}
+
+.progressBarFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stepWrapper {
+    gap: 16px;
+  }
+  
+  .iconCircle {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .stepTitle {
+    font-size: 18px;
+  }
+  
+  .stepDescription {
+    font-size: 14px;
+  }
+  
+  .connectorLine {
+    min-height: 50px;
+  }
+}
