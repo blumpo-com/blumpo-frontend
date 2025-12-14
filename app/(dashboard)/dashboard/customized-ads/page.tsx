@@ -529,21 +529,12 @@ function CustomizedAdsPageContent() {
   // Show creating process view after upload
   if (isUploaded) {
     return (
-      <div className={styles.pageContainer}>
-        <PageHeader 
-          title="Creating your customized ads"
-          description="We're analyzing your brand and crafting personalized ad content."
-        />
-        
-        <div className={styles.contentArea}>
-          <CreatingProcess 
-            onComplete={() => {
-              // TODO: Navigate to results page when webhook integration is ready
-              console.log('Process completed');
-            }}
-          />
-        </div>
-      </div>
+      <CreatingProcess 
+        onComplete={() => {
+          // TODO: Navigate to results page when webhook integration is ready
+          console.log('Process completed');
+        }}
+      />
     );
   }
 
