@@ -344,8 +344,8 @@ function CustomizedAdsPageContent() {
     
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
-      await handleFinalSubmit();
-      // setIsUploaded(true); // For testing purposes
+      // await handleFinalSubmit();
+      setIsUploaded(true); // For testing purposes
       return;
     }
     
