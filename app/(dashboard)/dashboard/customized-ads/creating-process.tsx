@@ -246,7 +246,7 @@ export function CreatingProcess({
         ? { ...step, status: 'inProgress' as StepStatus, progress: 0 }
         : step
     ));
-  }, [isRunning, isControlled]);
+  }, [isControlled]);
 
   // Update step progress (only for automatic mode)
   useEffect(() => {
