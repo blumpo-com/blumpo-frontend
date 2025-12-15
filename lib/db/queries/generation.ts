@@ -89,7 +89,9 @@ export async function updateGenerationJob(
     archetypeMode?: 'single' | 'random';
     formats?: string[];
     selectedPainPoints?: string[];
+    selectedInsights?: string[];
     insightSource?: 'auto' | 'manual' | 'mixed';
+    promotionValueInsight?: any;
     archetypeInputs?: any;
   }
 ) {

@@ -8,7 +8,6 @@ import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
 import { CreatingProcess } from './creating-process';
-import { uploadPhotoAndUpdateGeneration } from './photo-upload';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
@@ -106,7 +105,7 @@ function CustomizedAdsPageContent() {
   
   // Generation job state
   const [jobId, setJobId] = useState<string | null>(null);
-  const [isUploaded, setIsUploaded] = useState(true); // For testing purposes TODO: Change to false
+  const [isUploaded, setIsUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   // Photo selection state - persisted across steps
@@ -198,6 +197,7 @@ function CustomizedAdsPageContent() {
       setHeadlinesError('No brand selected');
       return;
     }
+    if (isLoadingHeadlines) return;
 
     setIsLoadingHeadlines(true);
     setHeadlinesError(null);
@@ -237,83 +237,6 @@ function CustomizedAdsPageContent() {
     }
   }, [selectedArchetype, fetchHeadlines]);
   
-  // Sync to DB when isUploaded is true and state changes
-  const syncToDatabase = useCallback(async () => {
-    if (!isUploaded || !jobId || !currentBrand?.id || isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      // Handle photo changes: upload new photos or detect deletions
-      let finalPhotoUrls = [...productPhotoUrls];
-      
-      // If previewFile exists and is new, upload it
-      if (previewFile && selectedSection === 'new' && currentBrand.id) {
-        const uploadedUrl = await uploadPhotoAndUpdateGeneration(
-          previewFile,
-          currentBrand.id,
-          jobId
-        );
-        finalPhotoUrls = [uploadedUrl];
-        // Update state but don't trigger another sync
-        setProductPhotoUrls(finalPhotoUrls);
-        setPreviousPhotoUrls(finalPhotoUrls);
-      } else if (selectedSection === 'current') {
-        // Use brand photos
-        const brandPhotos = currentBrand.photos || [];
-        const heroPhotos = currentBrand.heroPhotos || [];
-        finalPhotoUrls = [...heroPhotos, ...brandPhotos];
-        // Only update if different to avoid loop
-        if (JSON.stringify(finalPhotoUrls) !== JSON.stringify(productPhotoUrls)) {
-          setProductPhotoUrls(finalPhotoUrls);
-          setPreviousPhotoUrls(finalPhotoUrls);
-        }
-      }
-      
-      // Convert archetype code format (problem-solution -> problem_solution)
-      const archetypeCode = selectedArchetype === 'random' 
-        ? null 
-        : selectedArchetype.replace(/-/g, '_');
-      
-      // Update job with current state
-      const response = await fetch('/api/generation-job', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          brandId: currentBrand.id,
-          productPhotoUrls: finalPhotoUrls,
-          productPhotoMode,
-          archetypeCode,
-          archetypeMode,
-          formats,
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to sync to database');
-      }
-    } catch (error) {
-      console.error('Error syncing to database:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isUploaded, jobId, currentBrand, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection, isLoading]);
-  
-  // Use ref to track if we're already syncing to prevent loops
-  const isSyncingRef = useRef(false);
-  
-  // Sync when relevant state changes and isUploaded is true
-  useEffect(() => {
-    if (isUploaded && !isSyncingRef.current && !isLoading) {
-      isSyncingRef.current = true;
-      syncToDatabase().finally(() => {
-        isSyncingRef.current = false;
-      });
-    }
-    // Remove syncToDatabase from dependencies to prevent loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUploaded, productPhotoUrls, productPhotoMode, selectedArchetype, archetypeMode, formats, previewFile, selectedSection]);
 
   // Archetype-specific titles and subtitles for insight selection
   const getInsightStepConfig = () => {
@@ -400,7 +323,7 @@ function CustomizedAdsPageContent() {
         />
       )
     }
-  }), [previewPhoto, previewFile, selectedSection, selectedArchetype, selectedFormat, selectedInsights, insightConfig, headlines, isLoadingHeadlines, headlinesError, fetchHeadlines]);
+  }), [previewPhoto, previewFile, selectedSection, selectedArchetype, selectedFormat, selectedInsights, insightConfig, headlines, isLoadingHeadlines, headlinesError]);
 
   const currentConfig = stepConfig[currentStep as keyof typeof stepConfig];
 
@@ -421,8 +344,8 @@ function CustomizedAdsPageContent() {
     
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
-      // await handleFinalSubmit();
-      setIsUploaded(true); // For testing purposes
+      await handleFinalSubmit();
+      // setIsUploaded(true); // For testing purposes
       return;
     }
     
@@ -439,70 +362,69 @@ function CustomizedAdsPageContent() {
     const brandId = currentBrand.id;
     setIsLoading(true);
     try {
-      // Create or get job ID
-      let currentJobId: string = jobId || '';
-      if (!currentJobId) {
-        const createResponse = await fetch('/api/generation-job', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            brandId,
-            productPhotoUrls: [],
-            productPhotoMode,
-            archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype.replace(/-/g, '_'),
-            archetypeMode,
-            formats,
-          }),
-        });
-        
-        if (!createResponse.ok) {
-          throw new Error('Failed to create generation job');
-        }
-        
-        const newJob = await createResponse.json();
-        currentJobId = newJob.id;
-        setJobId(currentJobId);
-      }
+      // Determine final photo URLs
+      let finalPhotoUrls: string[] = [];
       
       // Upload photo if there's a preview file
-      let finalPhotoUrls: string[] = [];
       if (previewFile) {
-        const uploadedUrl = await uploadPhotoAndUpdateGeneration(
-          previewFile,
-          brandId,
-          currentJobId
-        );
-        finalPhotoUrls = [uploadedUrl];
-        setProductPhotoUrls(finalPhotoUrls);
-        setPreviousPhotoUrls(finalPhotoUrls);
+        const formData = new FormData();
+        formData.append('file', previewFile);
+        formData.append('brandId', brandId);
+
+        const uploadResponse = await fetch('/api/upload-photo', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.error || 'Failed to upload photo');
+        }
+
+        const { url } = await uploadResponse.json();
+        finalPhotoUrls = [url];
       } else if (selectedSection === 'current') {
         // Use brand photos
         const brandPhotos = currentBrand.photos || [];
         const heroPhotos = currentBrand.heroPhotos || [];
         finalPhotoUrls = [...heroPhotos, ...brandPhotos];
-        setProductPhotoUrls(finalPhotoUrls);
-        setPreviousPhotoUrls(finalPhotoUrls);
       }
       
-      // Update job with final data
-      const updateResponse = await fetch('/api/generation-job', {
+      // Determine insight source based on selection
+      // If user selected insights manually, it's 'manual', otherwise 'auto'
+      const insightSource = selectedInsights.length > 0 ? 'manual' : 'auto';
+      
+      // Convert archetype code format (problem-solution -> problem_solution)
+      const archetypeCode = selectedArchetype === 'random' 
+        ? null 
+        : selectedArchetype.replace(/-/g, '_');
+      
+      // Create generation job with all data
+      const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          jobId: currentJobId,
-          brandId: currentBrand.id,
+          brandId,
           productPhotoUrls: finalPhotoUrls,
           productPhotoMode,
-          archetypeCode: selectedArchetype === 'random' ? null : selectedArchetype.replace(/-/g, '_'),
+          archetypeCode,
           archetypeMode,
           formats,
+          selectedInsights,
+          insightSource,
+          promotionValueInsight: {}, // Can be extended later with specific promotion data
         }),
       });
       
-      if (!updateResponse.ok) {
-        throw new Error('Failed to update generation job');
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create generation job');
       }
       
+      const newJob = await createResponse.json();
+      setJobId(newJob.id);
+      setProductPhotoUrls(finalPhotoUrls);
+      setPreviousPhotoUrls(finalPhotoUrls);
       setIsUploaded(true);
       
       // TODO: Navigate to results page or show success message
@@ -540,6 +462,14 @@ function CustomizedAdsPageContent() {
 
   return (
     <div className={styles.pageContainer}>
+      {isLoading && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingContent}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>Processing...</p>
+          </div>
+        </div>
+      )}
       <PageHeader 
         title={currentConfig.title}
         description={currentConfig.description}

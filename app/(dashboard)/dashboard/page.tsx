@@ -13,7 +13,7 @@ import styles from './page.module.css';
 // const imgImage20 = "https://www.figma.com/api/mcp/asset/1684968d-406d-4dbc-838c-722ac4e63ce3";
 // const imgImage22 = "https://www.figma.com/api/mcp/asset/1831df1f-4459-4a4e-a85b-72cfb267706c";
 // const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
-const imgCharacter = "https://www.figma.com/api/mcp/asset/14b3e895-0f7a-4d3d-bcfc-f1b5dc7e01f3";
+const imgCharacter = "/images/temp/blumpo_sitting.png";
 
 const imgImage1 = "/images/default_ads/ads_1.png";
 const imgImage2 = "/images/default_ads/ads_2.png";
