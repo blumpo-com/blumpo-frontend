@@ -46,7 +46,7 @@ export async function createGenerationJob(
         archetypeCode: jobData.archetypeCode || null,
         archetypeMode: jobData.archetypeMode || 'single',
         formats: jobData.formats || [],
-        selectedPainPoints: jobData.selectedPainPoints || [],
+        // selectedPainPoints: jobData.selectedPainPoints || [],
         insightSource: jobData.insightSource || 'auto',
         archetypeInputs: jobData.archetypeInputs || {},
         ledgerId: ledgerEntry.id,
