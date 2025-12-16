@@ -31,7 +31,7 @@ export default function HomePage() {
                 No credit card.
               </p>
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
-                <UrlInputSection />
+              <UrlInputSection />
               </Suspense>
             </div>
             <HeroPhotoWall />

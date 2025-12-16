@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
 import { UrlInput } from '@/components/url-input';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 interface AdImage {
@@ -22,18 +22,7 @@ interface AdImage {
   createdAt: string;
 }
 
-interface JobStatus {
-  id: string;
-  status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED';
-  errorCode: string | null;
-  errorMessage: string | null;
-  createdAt: string;
-  startedAt: string | null;
-  completedAt: string | null;
-}
-
-const POLL_INTERVAL = 2000; // Poll every 2 seconds
-const MAX_POLL_TIME = 7 * 60 * 1000; // 5 minutes in milliseconds
+// Removed JobStatus interface and polling constants - no longer needed
 
 export function UrlInputSection() {
     const searchParams = useSearchParams();
@@ -42,20 +31,7 @@ export function UrlInputSection() {
     const [isLoading, setIsLoading] = useState(false);
     const [images, setImages] = useState<AdImage[]>([]);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const [jobId, setJobId] = useState<string | null>(null);
-    const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
-    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-    const pollStartTimeRef = useRef<number | null>(null);
     const [autoGenerateUrl, setAutoGenerateUrl] = useState<string | null>(null);
-
-    // Cleanup polling on unmount
-    useEffect(() => {
-        return () => {
-            if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-            }
-        };
-    }, []);
 
     // Check for auto-generation params (after login redirect)
     useEffect(() => {
@@ -70,65 +46,12 @@ export function UrlInputSection() {
         }
     }, [searchParams, router]);
 
-    const pollJobStatus = async (jobId: string) => {
-        try {
-            const res = await fetch(`/api/jobs/${jobId}`);
-            
-            if (!res.ok) {
-                throw new Error('Failed to fetch job status');
-            }
-
-            const data = await res.json();
-            setJobStatus(data.job);
-
-            // If job is completed (SUCCEEDED or FAILED), stop polling
-            if (data.job.status === 'SUCCEEDED' || data.job.status === 'FAILED' || data.job.status === 'CANCELED') {
-                if (pollIntervalRef.current) {
-                    clearInterval(pollIntervalRef.current);
-                    pollIntervalRef.current = null;
-                }
-                setIsLoading(false);
-
-                if (data.job.status === 'SUCCEEDED') {
-                    setImages(data.images || []);
-                    if (data.images.length === 0) {
-                        setErrorMsg('Generation completed but no images were created.');
-                    }
-                } else {
-                    setErrorMsg(data.job.errorMessage || `Generation ${data.job.status.toLowerCase()}`);
-                }
-                return;
-            }
-
-            // Check if we've exceeded max poll time
-            if (pollStartTimeRef.current && Date.now() - pollStartTimeRef.current > MAX_POLL_TIME) {
-                if (pollIntervalRef.current) {
-                    clearInterval(pollIntervalRef.current);
-                    pollIntervalRef.current = null;
-                }
-                setIsLoading(false);
-                setErrorMsg('Generation is taking longer than expected. Please check back later.');
-            }
-        } catch (e: any) {
-            console.error('Polling error:', e);
-            // Don't stop polling on network errors, just log them
-        }
-    };
-
     const handleSubmit = async (url: string) => {
         if(isLoading) return;
         setIsOpen(true);
         setIsLoading(true);
         setErrorMsg(null);
         setImages([]);
-        setJobId(null);
-        setJobStatus(null);
-    
-        // Clear any existing polling
-        if (pollIntervalRef.current) {
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
-        }
     
         try {
           const res = await fetch('/api/generate', {
@@ -154,6 +77,8 @@ export function UrlInputSection() {
                         const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(websiteUrl || url)}`;
                         window.location.href = signInUrl;
                         return; // Don't throw error, just redirect
+                    } else if (errorCode === 'TIMEOUT') {
+                        msg = 'Generation is taking longer than expected. Please try again later.';
                     }
             } catch {}
             throw new Error(msg);
@@ -161,38 +86,26 @@ export function UrlInputSection() {
     
             const data = await res.json();
             
-            if (!data.job_id) {
-                throw new Error('No job ID returned');
-            }
-
-            setJobId(data.job_id);
-            setJobStatus({
-                id: data.job_id,
-                status: 'QUEUED',
-                errorCode: null,
-                errorMessage: null,
-                createdAt: new Date().toISOString(),
-                startedAt: null,
-                completedAt: null,
-            });
-
-            // Start polling for job status
-            pollStartTimeRef.current = Date.now();
-            pollIntervalRef.current = setInterval(() => {
-                if (data.job_id) {
-                    pollJobStatus(data.job_id);
+            // API now returns images directly when job completes
+            if (data.status === 'SUCCEEDED') {
+                setImages(data.images || []);
+                if (!data.images || data.images.length === 0) {
+                    setErrorMsg('Generation completed but no images were created.');
                 }
-            }, POLL_INTERVAL);
-
-            // Poll immediately
-            pollJobStatus(data.job_id);
+            } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
+                setErrorMsg(data.error_message || `Generation ${data.status.toLowerCase()}`);
+                // Still show any images that were created before failure
+                if (data.images && data.images.length > 0) {
+                    setImages(data.images);
+                }
+            } else {
+                throw new Error('Unexpected response status');
+            }
+            
+            setIsLoading(false);
         } catch (e: any) {
           setErrorMsg(e?.message || 'Request failed');
           setIsLoading(false);
-            if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-                pollIntervalRef.current = null;
-            }
         }
       };
 
@@ -221,33 +134,18 @@ export function UrlInputSection() {
                 Yes, it is that simple.
               </p>
 
-            <Dialog open={isOpen} onClose={() => {
-                setIsOpen(false);
-                // Cleanup polling when dialog closes
-                if (pollIntervalRef.current) {
-                    clearInterval(pollIntervalRef.current);
-                    pollIntervalRef.current = null;
-                }
-            }}>
+            <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center gap-4 p-6">
                     <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-500 rounded-full animate-spin" />
                         <p className="text-gray-600">
-                            {jobStatus?.status === 'QUEUED' && 'Queuing your generation...'}
-                            {jobStatus?.status === 'RUNNING' && 'Generating your ads...'}
-                            {!jobStatus && 'Starting generation...'}
+                            Generating your ads... This may take up to 7 minutes.
                         </p>
-                        {jobId && (
-                            <p className="text-sm text-gray-400">Job ID: {jobId.slice(0, 8)}...</p>
-                        )}
                     </div>
                 ) : errorMsg ? (
                     <div className="flex flex-col gap-4 p-6">
                         <p className="text-red-600 font-semibold">Error</p>
                         <p className="text-gray-600">{errorMsg}</p>
-                        {jobStatus?.errorCode && (
-                            <p className="text-sm text-gray-400">Error code: {jobStatus.errorCode}</p>
-                        )}
                         <Button
                             onClick={() => setIsOpen(false)}
                             className="bg-orange-500 text-white"
