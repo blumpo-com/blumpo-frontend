@@ -43,6 +43,13 @@
       "when": 1764700000000,
       "tag": "0005_update_ad_image_workflow_insights",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764800000000,
+      "tag": "0006_update_insights_and_promotion",
+      "breakpoints": true
     }
   ]
 }

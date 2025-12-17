@@ -17,8 +17,9 @@ export async function createGenerationJob(
     archetypeCode?: string; // FK to ad_archetype
     archetypeMode?: 'single' | 'random'; // 'single' or 'random'
     formats?: string[]; // Array of formats
-    selectedPainPoints?: string[]; // Array of selected pain points
+    selectedInsights?: string[]; // Array of selected insights
     insightSource?: 'auto' | 'manual' | 'mixed'; // Insight source
+    promotionValueInsight?: any; // Promotion value configuration
     archetypeInputs?: any; // JSON object
   }
 ) {
@@ -46,8 +47,9 @@ export async function createGenerationJob(
         archetypeCode: jobData.archetypeCode || null,
         archetypeMode: jobData.archetypeMode || 'single',
         formats: jobData.formats || [],
-        selectedPainPoints: jobData.selectedPainPoints || [],
+        selectedInsights: jobData.selectedInsights || [],
         insightSource: jobData.insightSource || 'auto',
+        promotionValueInsight: jobData.promotionValueInsight || {},
         archetypeInputs: jobData.archetypeInputs || {},
         ledgerId: ledgerEntry.id,
       })
@@ -88,8 +90,9 @@ export async function updateGenerationJob(
     archetypeCode?: string | null;
     archetypeMode?: 'single' | 'random';
     formats?: string[];
-    selectedPainPoints?: string[];
+    selectedInsights?: string[];
     insightSource?: 'auto' | 'manual' | 'mixed';
+    promotionValueInsight?: any;
     archetypeInputs?: any;
   }
 ) {

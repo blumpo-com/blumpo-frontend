@@ -86,7 +86,7 @@
   body {
     margin: 0;
     line-height: normal;
-    font-family: "Roboto", "Manrope", Arial, Helvetica, sans-serif;
+    font-family: "Roboto", sans-serif;
   }
 }
 
@@ -175,6 +175,7 @@
 @layer base {
   * {
     @apply border-border;
+    font-family: "Roboto", sans-serif;
   }
   body {
     @apply bg-background text-foreground;
@@ -188,6 +189,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: "Roboto", sans-serif;
   }
   body {
     @apply bg-background text-foreground;

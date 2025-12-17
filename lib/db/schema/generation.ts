@@ -39,8 +39,9 @@ export const generationJob = pgTable('generation_job', {
   formats: text('formats').array().notNull().default([]), // Array of formats (e.g., ['square', 'story'])
   
   // Selected insights
-  selectedPainPoints: text('selected_pain_points').array().notNull().default([]), // Array of selected pain points
+  selectedInsights: text('selected_insights').array().notNull().default([]), // Array of selected insights
   insightSource: text('insight_source').notNull().default('auto'), // 'auto' | 'manual' | 'mixed'
+  promotionValueInsight: jsonb('promotion_value_insight').notNull().default({}), // Promotion value configuration (type, time, etc.)
   
   archetypeInputs: jsonb('archetype_inputs').notNull().default({}),
 }, (table) => ({

@@ -41,6 +41,9 @@ export const brandInsights = pgTable('brand_insights', {
   // Customer targeting
   targetCustomers: text('target_customers').array().notNull().default([]),
   solution: text('solution'),
+
+  // Website text
+  websiteText: text('website_text'),
 });
 
 // Relations

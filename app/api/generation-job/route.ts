@@ -14,7 +14,18 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { jobId, brandId, productPhotoUrls, productPhotoMode, archetypeCode, archetypeMode, formats } = body;
+    const { 
+      jobId, 
+      brandId, 
+      productPhotoUrls, 
+      productPhotoMode, 
+      archetypeCode, 
+      archetypeMode, 
+      formats,
+      selectedInsights,
+      insightSource,
+      promotionValueInsight
+    } = body;
 
     // If jobId provided, update existing job
     if (jobId) {
@@ -29,6 +40,9 @@ export async function POST(req: Request) {
         archetypeCode,
         archetypeMode,
         formats,
+        selectedInsights,
+        insightSource,
+        promotionValueInsight,
       });
 
       return NextResponse.json(updated);
@@ -47,6 +61,9 @@ export async function POST(req: Request) {
         archetypeCode: archetypeCode || null,
         archetypeMode: archetypeMode || 'single',
         formats: formats || [],
+        selectedInsights: selectedInsights || [],
+        insightSource: insightSource || 'auto',
+        promotionValueInsight: promotionValueInsight || {},
         params: {},
         tokensCost: 0, // Will be set on final submission
         status: 'QUEUED',
