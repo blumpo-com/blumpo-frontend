@@ -293,7 +293,27 @@ export function CreatingProcess({
       clearInterval(progressInterval);
       startTimeRef.current = null;
 
-      // Mark current step as done
+      // Check if this is the last step
+      const isLastStep = currentStepIndex >= defaultSteps.length - 1;
+
+      if (isLastStep) {
+        // Last step: keep inProgress state with 100% progress, don't mark as done
+        setSteps(prev => prev.map((step, index) => {
+          if (index === currentStepIndex) {
+            const updated = { ...step, status: 'inProgress' as StepStatus, progress: 100 };
+            onStepUpdate?.(step.id, 'inProgress', 100);
+            return updated;
+          }
+          return step;
+        }));
+        
+        // Stop running but keep animation state
+        setIsRunning(false);
+        onComplete?.();
+        return;
+      }
+
+      // For non-last steps: mark as done
       setSteps(prev => prev.map((step, index) => {
         if (index === currentStepIndex) {
           const updated = { ...step, status: 'done' as StepStatus, progress: 100 };
@@ -304,35 +324,29 @@ export function CreatingProcess({
       }));
 
       // Trigger connector line animation for the line below this step
-      if (currentStepIndex < defaultSteps.length - 1) {
-        setAnimatingConnectorIndex(currentStepIndex);
+      setAnimatingConnectorIndex(currentStepIndex);
 
-        // After connector animation completes, start next step
-        setTimeout(() => {
-          setAnimatingConnectorIndex(null);
+      // After connector animation completes, start next step
+      setTimeout(() => {
+        setAnimatingConnectorIndex(null);
 
-          setCurrentStepIndex(prevIndex => {
-            const nextIndex = prevIndex + 1;
-            if (nextIndex < defaultSteps.length) {
-              setSteps(prev => prev.map((step, index) =>
-                index === nextIndex
-                  ? { ...step, status: 'inProgress' as StepStatus, progress: 0 }
-                  : step
-              ));
-              return nextIndex;
-            } else {
-              // All steps completed
-              setIsRunning(false);
-              onComplete?.();
-              return prevIndex;
-            }
-          });
-        }, CONNECTOR_ANIMATION_DURATION);
-      } else {
-        // Last step completed
-        setIsRunning(false);
-        onComplete?.();
-      }
+        setCurrentStepIndex(prevIndex => {
+          const nextIndex = prevIndex + 1;
+          if (nextIndex < defaultSteps.length) {
+            setSteps(prev => prev.map((step, index) =>
+              index === nextIndex
+                ? { ...step, status: 'inProgress' as StepStatus, progress: 0 }
+                : step
+            ));
+            return nextIndex;
+          } else {
+            // All steps completed
+            setIsRunning(false);
+            onComplete?.();
+            return prevIndex;
+          }
+        });
+      }, CONNECTOR_ANIMATION_DURATION);
     }, stepDuration);
 
     return () => {
