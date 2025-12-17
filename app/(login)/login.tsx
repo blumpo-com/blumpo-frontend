@@ -13,11 +13,9 @@ import { signIn } from 'next-auth/react';
 import styles from './login.module.css';
 
 // Figma asset URLs (valid for 7 days - should be downloaded and hosted locally for production)
-const imgVector3 = "https://www.figma.com/api/mcp/asset/038af82d-ca64-473e-963d-312d288cfa04";
+const imgVector3 = "https://www.figma.com/api/mcp/asset/4cb293cc-3840-43f5-bab3-792ed7bd3598";
 const imgChatGptImage3Lis2025232050Photoroom1 = "https://www.figma.com/api/mcp/asset/cb53bad9-e39e-47c9-b19f-87985ca00d3f";
-const imgLogo = "https://www.figma.com/api/mcp/asset/25cb668c-6767-447a-99e6-bf76cd814dc0";
-const imgLine2 = "https://www.figma.com/api/mcp/asset/fc6cafab-ef74-4000-9715-989145be0e38";
-const imgLine4 = "https://www.figma.com/api/mcp/asset/b0f913ae-022a-429c-a446-e841933a0850";
+const googleLogo = "/assets/icons/google.svg";
 const imgVector1 = "https://www.figma.com/api/mcp/asset/7ec896d3-82df-4211-bc6b-85ce63be87d5";
 const imgVector2 = "https://www.figma.com/api/mcp/asset/72cd7bd8-0efb-4ea0-9ec6-dcf557143eb5";
 
@@ -301,15 +299,15 @@ export function Login() {
                     }}
                     className={styles.googleButton}
                   >
-                    <img alt="Google Logo" className={styles.googleLogo} src={imgLogo} loading="eager" key="logo" />
+                    <img alt="Google Logo" className={styles.googleLogo} src={googleLogo} loading="eager" key="logo" />
                     <div className={styles.googleButtonText}>Continue with Google</div>
                   </button>
 
                   {/* OR Divider */}
                   <div className={styles.orDivider}>
-                    <img className={styles.orLine} alt="" src={imgLine2} loading="eager" key="line2-1" />
+                    <div className={styles.orLine}></div>
                     <div className={styles.orText}>OR</div>
-                    <img className={styles.orLine} alt="" src={imgLine2} loading="eager" key="line2-2" />
+                    <div className={styles.orLine}></div>
                   </div>
 
                   {/* Email Input with gradient border on hover */}
@@ -363,13 +361,7 @@ export function Login() {
               Privacy policy
             </Link>
             <div className="flex h-[17px] items-center justify-center relative shrink-0 w-0">
-              <div className="flex-none rotate-[90deg]">
-                <div className="h-0 relative w-[17px]">
-                  <div className="absolute bottom-0 left-0 right-0 top-[-1px]">
-                    <img alt="" className="block max-w-none size-full" src={imgLine4} loading="eager" key="line4" />
-                </div>
-                </div>
-              </div>
+              <div className="h-full w-[1px] bg-[#E0E0E0]"></div>
             </div>
                 <Link
               href="/terms" 

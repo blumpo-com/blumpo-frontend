@@ -155,7 +155,9 @@
   height: 1px;
   width: 228px;
   position: relative;
-  object-fit: contain;
+  background: black;
+  flex: 1;
+  max-width: 228px;
 }
 
 .orText {

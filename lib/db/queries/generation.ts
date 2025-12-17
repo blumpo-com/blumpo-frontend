@@ -17,8 +17,9 @@ export async function createGenerationJob(
     archetypeCode?: string; // FK to ad_archetype
     archetypeMode?: 'single' | 'random'; // 'single' or 'random'
     formats?: string[]; // Array of formats
-    selectedPainPoints?: string[]; // Array of selected pain points
+    selectedInsights?: string[]; // Array of selected insights
     insightSource?: 'auto' | 'manual' | 'mixed'; // Insight source
+    promotionValueInsight?: any; // Promotion value configuration
     archetypeInputs?: any; // JSON object
   }
 ) {
@@ -46,8 +47,9 @@ export async function createGenerationJob(
         archetypeCode: jobData.archetypeCode || null,
         archetypeMode: jobData.archetypeMode || 'single',
         formats: jobData.formats || [],
-        // selectedPainPoints: jobData.selectedPainPoints || [],
+        selectedInsights: jobData.selectedInsights || [],
         insightSource: jobData.insightSource || 'auto',
+        promotionValueInsight: jobData.promotionValueInsight || {},
         archetypeInputs: jobData.archetypeInputs || {},
         ledgerId: ledgerEntry.id,
       })
@@ -80,6 +82,29 @@ export async function getGenerationJobsForUser(userId: string, limit = 20) {
     .limit(limit);
 }
 
+export async function updateGenerationJob(
+  jobId: string,
+  updates: {
+    productPhotoUrls?: string[];
+    productPhotoMode?: 'brand' | 'custom' | 'mixed';
+    archetypeCode?: string | null;
+    archetypeMode?: 'single' | 'random';
+    formats?: string[];
+    selectedInsights?: string[];
+    insightSource?: 'auto' | 'manual' | 'mixed';
+    promotionValueInsight?: any;
+    archetypeInputs?: any;
+  }
+) {
+  const [updated] = await db
+    .update(generationJob)
+    .set(updates)
+    .where(eq(generationJob.id, jobId))
+    .returning();
+
+  return updated;
+}
+
 export async function updateGenerationJobStatus(
   jobId: string,
   status: 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED',
@@ -103,4 +128,9 @@ export async function updateGenerationJobStatus(
     .update(generationJob)
     .set(updates)
     .where(eq(generationJob.id, jobId));
+}
+
+export async function deleteGenerationJob(jobId: string) {
+  // Update status to CANCELED instead of hard delete
+  await updateGenerationJobStatus(jobId, 'CANCELED');
 }

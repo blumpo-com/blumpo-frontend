@@ -311,6 +311,7 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
 | reddit_marketing_brief      | text                   | AI-generated Reddit marketing summary    |
 | target_customers            | text[]                 | Target customer personas (array)          |
 | solution                    | text                   | Solution description                      |
+| website_text                | text                   | Extracted text content from the brand's website |
 
 **Example:**
 
@@ -330,7 +331,8 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
   "ins_raw": [{ "topPainPoints": ["..."], "triggerEvents": ["..."] }],
   "reddit_customer_desires": ["better workflow speed", "AI suggestions"],
   "target_customers": ["Small business owners", "Team leads", "Project managers"],
-  "solution": "Streamlined workflow management with AI-powered automation"
+  "solution": "Streamlined workflow management with AI-powered automation",
+  "website_text": "Extracted text content from the brand's website..."
 }
 ```
 
@@ -390,8 +392,9 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | archetype_code        | text FK → ad_archetype(code) | Selected archetype (nullable) |
 | archetype_mode        | text                | 'single' / 'random' (default: 'single') |
 | formats               | text[]              | Array of output formats (e.g., ['square', 'story']) |
-| selected_pain_points  | text[]              | Array of selected pain points from insights |
+| selected_insights     | text[]              | Array of selected insights (pain points, benefits, etc.) |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
+| promotion_value_insight | jsonb            | Promotion value configuration (type, time, etc.). Structure: `{ promotionType: { discount?, newPrice?, freeTrial?, promoCode? }, promotionTime: { unlimited?, occasion?, onlyUntil? } }` |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
 
 **Indexes:**
@@ -420,8 +423,21 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "archetype_code": "problem_solution",
   "archetype_mode": "single",
   "formats": ["square", "story"],
-  "selected_pain_points": ["High costs", "Complex setup"],
+  "selected_insights": ["High costs", "Complex setup"],
   "insight_source": "auto",
+  "promotion_value_insight": {
+    "promotionType": {
+      "discount": "5%",
+      "newPrice": { "new": "99$", "old": "129$" },
+      "freeTrial": "14 days",
+      "promoCode": { "code": "WEEK10", "value": "10%" }
+    },
+    "promotionTime": {
+      "unlimited": true,
+      "onlyUntil": "Next week",
+      "occasion": "Black Friday"
+    }
+  },
   "archetype_inputs": {}
 }
 ```
