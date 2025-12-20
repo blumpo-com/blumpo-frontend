@@ -10,7 +10,14 @@ import useSWR from 'swr';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { Brand } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
+// @ts-ignore - Package will be installed
+const languages = require('@cospired/i18n-iso-languages');
+// @ts-ignore - Package will be installed
+const en = require('@cospired/i18n-iso-languages/langs/en.json');
 import styles from './your-brand.module.css';
+
+// Register English locale for language names
+languages.registerLocale(en);
 
 interface BrandData {
   id: string;
@@ -34,16 +41,46 @@ interface YourBrandPageProps {
   onBrandDataUpdate: (data: BrandData) => void;
 }
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'fr', label: 'French' },
-  { value: 'de', label: 'German' },
-  { value: 'it', label: 'Italian' },
-  { value: 'pt', label: 'Portuguese' },
-  { value: 'zh', label: 'Chinese' },
-  { value: 'ja', label: 'Japanese' },
-];
+// Get all languages as array for dropdown
+const getAllLanguages = (): Array<{code: string, name: string}> => {
+  // @ts-ignore - Package will be installed
+  const codes = languages.getAlpha2Codes();
+  // Convert to array if it's an object
+  const codesArray = Array.isArray(codes) ? codes : Object.keys(codes);
+  return codesArray
+    .map((code: string) => {
+      // @ts-ignore - Package will be installed
+      const name = (languages.getName as (code: string, lang: string) => string | undefined)(code, 'en');
+      return name ? { code, name } : null;
+    })
+    .filter((lang: { code: string; name: string } | null): lang is { code: string; name: string } => lang !== null)
+    .sort((a: { code: string; name: string }, b: { code: string; name: string }) => a.name.localeCompare(b.name));
+};
+
+// Get language code from name or return as-is if it's already a code
+const getLanguageCode = (value: string): string => {
+  // Check if it's already a valid 2-letter code
+  if (value.length === 2 && (languages.getName as (code: string, lang: string) => string | undefined)(value, 'en')) {
+    return value.toLowerCase();
+  }
+  // Try to find the code by name
+  const code = (languages.getAlpha2Code as (name: string, lang: string) => string | undefined)(value, 'en');
+  return code || value;
+};
+
+// Get language name from code or return as-is if it's already a name
+const getLanguageName = (value: string): string => {
+  // If it's a 2-letter code, get the name
+  if (value.length === 2) {
+    const name = (languages.getName as (code: string, lang: string) => string | undefined)(value.toLowerCase(), 'en');
+    if (name) return name;
+  }
+  // If it's already a name, check if it's valid and return it
+  const code = (languages.getAlpha2Code as (name: string, lang: string) => string | undefined)(value, 'en');
+  if (code) return value; // It's a valid name, return as-is
+  // Fallback: try to get name from code
+  return (languages.getName as (code: string, lang: string) => string | undefined)(value.toLowerCase(), 'en') || value;
+};
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -81,8 +118,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   const [brandVoice, setBrandVoice] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [language, setLanguage] = useState('en');
+  const [languageDisplayName, setLanguageDisplayName] = useState<string>('English');
   const [photos, setPhotos] = useState<string[]>([]);
   const [insightsLoaded, setInsightsLoaded] = useState(false);
+  const [allLanguages, setAllLanguages] = useState<Array<{code: string, name: string}>>([]);
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +145,11 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     }
   }, [isBrandDropdownOpen]);
 
+  // Load all languages on mount
+  useEffect(() => {
+    setAllLanguages(getAllLanguages());
+  }, []);
+
   // Populate form fields from brandData
   useEffect(() => {
     if (brandData) {
@@ -125,11 +169,20 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       setColors(Array.isArray(brandData.colors) ? brandData.colors : []);
       setBrandVoice(brandData.insights?.brandVoice || '');
       setWebsiteUrl(brandData.websiteUrl || '');
-      setLanguage(brandData.language || 'en');
+      
+      // Handle language - could be code or full name
+      const langValue = brandData.language || 'en';
+      // Convert to code for storage, but keep display name
+      const langCode = getLanguageCode(langValue);
+      setLanguage(langCode);
+      // Get display name - if it was already a name, use it; if code, get name
+      const displayName = getLanguageName(langValue);
+      setLanguageDisplayName(displayName);
+      
       setPhotos(Array.isArray(brandData.photos) ? brandData.photos : []);
       setInsightsLoaded(brandData.insights !== null);
     }
-  }, [brandData]);
+  }, [brandData, allLanguages]);
 
   // Handle logo upload
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -269,7 +322,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
-    saveBrandData({ language: value });
+    const displayName = getLanguageName(value);
+    setLanguageDisplayName(displayName);
+    saveBrandData({ language: displayName });
   };
 
   // Save brand voice and website URL on blur
@@ -545,7 +600,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
               <Label className={styles.label}>
                 Website URL
               </Label>
-              <Input
+              <input
                 type="url"
                 value={websiteUrl}
                 onChange={(e) => handleWebsiteUrlChange(e.target.value)}
@@ -565,11 +620,15 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                 onChange={(e) => handleLanguageChange(e.target.value)}
                 className={styles.languageSelect}
               >
-                {LANGUAGES.map((lang) => (
-                  <option key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </option>
-                ))}
+                {allLanguages.length > 0 ? (
+                  allLanguages.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value={language}>{languageDisplayName}</option>
+                )}
               </select>
             </div>
 
