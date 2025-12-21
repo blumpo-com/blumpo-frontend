@@ -95,15 +95,12 @@ export default function BrandDNAPage() {
 
   if (!currentBrand) {
     return (
-      <div className={styles.noBrandContainer}>
-        <div className={styles.noBrandContent}>
-          <p className={styles.noBrandText}>No brand selected</p>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className={styles.goToDashboardButton}
-          >
-            Go to Dashboard
-          </button>
+      <div className={styles.container}>
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingContent}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>Loading...</p>
+          </div>
         </div>
       </div>
     );
