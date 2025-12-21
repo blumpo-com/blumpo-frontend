@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
-import { X, Plus, Upload, ChevronDown } from 'lucide-react';
+import { X, Plus, Upload, ChevronDown, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import useSWR from 'swr';
 import { HexColorPicker } from 'react-colorful';
@@ -30,6 +30,7 @@ interface BrandData {
   colors: string[];
   photos: string[];
   logoUrl: string | null;
+  heroPhotos: string[] | null;
   insights: {
     brandVoice: string | null;
   } | null;
@@ -110,6 +111,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   const brandDropdownRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [isUploadingHeroPhotos, setIsUploadingHeroPhotos] = useState(false);
+  const [deletingPhotoUrl, setDeletingPhotoUrl] = useState<string | null>(null);
   
   // Form state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -125,11 +130,13 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   const [language, setLanguage] = useState('en');
   const [languageDisplayName, setLanguageDisplayName] = useState<string>('English');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [heroPhotos, setHeroPhotos] = useState<string[]>([]);
   const [insightsLoaded, setInsightsLoaded] = useState(false);
   const [allLanguages, setAllLanguages] = useState<Array<{code: string, name: string}>>([]);
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const heroPhotoInputRef = useRef<HTMLInputElement>(null);
 
   // Filter out current brand from dropdown list
   const availableBrands = Array.isArray(brands) ? brands.filter((brand) => brand.id !== currentBrand?.id) : [];
@@ -187,6 +194,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       setLanguageDisplayName(displayName);
       
       setPhotos(Array.isArray(brandData.photos) ? brandData.photos : []);
+      setHeroPhotos(Array.isArray(brandData.heroPhotos) ? brandData.heroPhotos : []);
       setInsightsLoaded(brandData.insights !== null);
     }
   }, [brandData, allLanguages]);
@@ -197,6 +205,21 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     if (!file) return;
 
     try {
+      setIsUploadingLogo(true);
+      setError(null);
+      
+      // First, delete old logo if it exists
+      if (logoUrl) {
+        try {
+          await fetch(`/api/delete-photo?url=${encodeURIComponent(logoUrl)}&brandId=${brandId}&type=logo`, {
+            method: 'DELETE',
+          });
+        } catch (deleteErr) {
+          // Log error but continue with upload
+          console.error('Error deleting old logo:', deleteErr);
+        }
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('brandId', brandId);
@@ -218,19 +241,25 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       await saveBrandData({ logoUrl: url });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload logo');
+    } finally {
+      setIsUploadingLogo(false);
     }
   };
 
-  // Handle photo upload
+  // Handle photo upload (product photos)
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     try {
+      setIsUploadingPhotos(true);
+      setError(null);
+      
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('brandId', brandId);
+        formData.append('type', 'product');
 
         const response = await fetch('/api/upload-photo', {
           method: 'POST',
@@ -253,6 +282,49 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       await saveBrandData({ photos: newPhotos });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to upload photos');
+    } finally {
+      setIsUploadingPhotos(false);
+    }
+  };
+
+  // Handle hero photo upload
+  const handleHeroPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      setIsUploadingHeroPhotos(true);
+      setError(null);
+      
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('brandId', brandId);
+        formData.append('type', 'hero');
+
+        const response = await fetch('/api/upload-photo', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload hero photo');
+        }
+
+        const { url } = await response.json();
+        return url;
+      });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const newHeroPhotos = [...heroPhotos, ...uploadedUrls];
+      setHeroPhotos(newHeroPhotos);
+      
+      // Update brand with new hero photos
+      await saveBrandData({ heroPhotos: newHeroPhotos });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload hero photos');
+    } finally {
+      setIsUploadingHeroPhotos(false);
     }
   };
 
@@ -366,11 +438,31 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     });
   };
 
-  // Remove photo
-  const handleRemovePhoto = async (photoUrl: string) => {
-    const newPhotos = photos.filter(p => p !== photoUrl);
-    setPhotos(newPhotos);
-    await saveBrandData({ photos: newPhotos });
+  // Remove photo (product photos)
+  const handleRemovePhoto = async (photoUrl: string, type: 'product' | 'hero' = 'product') => {
+    try {
+      setDeletingPhotoUrl(photoUrl);
+      setError(null);
+      
+      // Delete from Vercel Blob
+      await fetch(`/api/delete-photo?url=${encodeURIComponent(photoUrl)}&brandId=${brandId}&type=${type}`, {
+        method: 'DELETE',
+      });
+
+      if (type === 'hero') {
+        const newHeroPhotos = heroPhotos.filter(p => p !== photoUrl);
+        setHeroPhotos(newHeroPhotos);
+        await saveBrandData({ heroPhotos: newHeroPhotos });
+      } else {
+        const newPhotos = photos.filter(p => p !== photoUrl);
+        setPhotos(newPhotos);
+        await saveBrandData({ photos: newPhotos });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete photo');
+    } finally {
+      setDeletingPhotoUrl(null);
+    }
   };
 
   if (isLoadingData && !brandData) {
@@ -473,22 +565,34 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                       alt="Brand logo"
                       className={styles.logoImage}
                     />
+                    {isUploadingLogo && (
+                      <div className={styles.photoLoadingOverlay}>
+                        <Loader2 className={styles.loadingSpinner} />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className={styles.logoUploadContainer}>
-                    <Upload className={styles.logoUploadIcon} />
-                    <p className={styles.logoUploadText}>Upload your brand logo</p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => logoInputRef.current?.click()}
-                    >
-                      Choose File
-                    </Button>
+                    {isUploadingLogo ? (
+                      <Loader2 className={styles.loadingSpinner} />
+                    ) : (
+                      <>
+                        <Upload className={styles.logoUploadIcon} />
+                        <p className={styles.logoUploadText}>Upload your brand logo</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={isUploadingLogo}
+                        >
+                          Choose File
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
                 </div>
-                {logoUrl && (
+                {logoUrl && !isUploadingLogo && (
                   <div 
                     className={styles.logoEditOverlay}
                     onClick={() => logoInputRef.current?.click()}
@@ -506,6 +610,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                   accept="image/*"
                   onChange={handleLogoUpload}
                   className={styles.hiddenInput}
+                  disabled={isUploadingLogo}
                 />
               </div>
             </div>
@@ -736,9 +841,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                 Product photos
               </Label>
               <div className={styles.photosGrid}>
+                {/* Display product photos */}
                 {photos.map((photo, index) => (
                   <div
-                    key={index}
+                    key={`product-${index}`}
                     className={styles.photoItem}
                   >
                     <img
@@ -746,21 +852,63 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                       alt={`Product photo ${index + 1}`}
                       className={styles.photoImage}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhoto(photo)}
-                      className={styles.photoRemoveButton}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    {deletingPhotoUrl === photo && (
+                      <div className={styles.photoLoadingOverlay}>
+                        <Loader2 className={styles.loadingSpinner} />
+                      </div>
+                    )}
+                    {deletingPhotoUrl !== photo && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(photo, 'product')}
+                        className={styles.photoRemoveButton}
+                        disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 ))}
+                {/* Display hero photos */}
+                {heroPhotos.map((photo, index) => (
+                  <div
+                    key={`hero-${index}`}
+                    className={styles.photoItem}
+                  >
+                    <img
+                      src={photo}
+                      alt={`Hero photo ${index + 1}`}
+                      className={styles.photoImage}
+                    />
+                    {deletingPhotoUrl === photo && (
+                      <div className={styles.photoLoadingOverlay}>
+                        <Loader2 className={styles.loadingSpinner} />
+                      </div>
+                    )}
+                    {deletingPhotoUrl !== photo && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(photo, 'hero')}
+                        className={styles.photoRemoveButton}
+                        disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {/* Add Product Photo Button */}
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
                   className={styles.addPhotoButton}
+                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
                 >
-                  <Plus className="w-8 h-8" />
+                  {isUploadingPhotos ? (
+                    <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
+                  ) : (
+                    <Plus className="w-8 h-8" />
+                  )}
                 </button>
                 <input
                   ref={photoInputRef}
@@ -769,7 +917,30 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                   multiple
                   onChange={handlePhotoUpload}
                   className={styles.hiddenInput}
+                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
                 />
+                {/* Add Hero Photo Button */}
+                {/* <button
+                  type="button"
+                  onClick={() => heroPhotoInputRef.current?.click()}
+                  className={styles.addPhotoButton}
+                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
+                >
+                  {isUploadingHeroPhotos ? (
+                    <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
+                  ) : (
+                    <Plus className="w-8 h-8" />
+                  )}
+                </button>
+                <input
+                  ref={heroPhotoInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleHeroPhotoUpload}
+                  className={styles.hiddenInput}
+                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
+                /> */}
               </div>
             </div>
           </div>

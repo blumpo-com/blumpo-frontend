@@ -15,6 +15,7 @@ interface BrandData {
   colors: string[];
   photos: string[];
   logoUrl: string | null;
+  heroPhotos: string[] | null;
   insights: {
     brandVoice: string | null;
   } | null;
@@ -52,6 +53,7 @@ export default function BrandDNAPage() {
             colors: currentBrand.colors || [],
             photos: currentBrand.photos || [],
             logoUrl: currentBrand.logoUrl || null,
+            heroPhotos: currentBrand.heroPhotos || [],
             insights: null, // Insights not in context, will be loaded separately
           };
           setBrandData(contextData);
