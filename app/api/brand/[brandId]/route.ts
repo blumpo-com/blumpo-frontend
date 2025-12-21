@@ -66,14 +66,15 @@ export async function PATCH(
 
   if (body.brandVoice !== undefined) insightsUpdates.brandVoice = body.brandVoice;
   if (body.industry !== undefined) insightsUpdates.industry = body.industry;
-  if (body.customerPainPoints !== undefined) insightsUpdates.customerPainPoints = body.customerPainPoints;
+  if (body.redditCustomerPainPoints !== undefined) insightsUpdates.redditCustomerPainPoints = body.redditCustomerPainPoints;
   if (body.productDescription !== undefined) insightsUpdates.productDescription = body.productDescription;
   if (body.keyFeatures !== undefined) insightsUpdates.keyFeatures = body.keyFeatures;
   if (body.uniqueValueProp !== undefined) insightsUpdates.uniqueValueProp = body.uniqueValueProp;
   if (body.keyBenefits !== undefined) insightsUpdates.keyBenefits = body.keyBenefits;
   if (body.competitors !== undefined) insightsUpdates.competitors = body.competitors;
   if (body.targetCustomers !== undefined) insightsUpdates.targetCustomers = body.targetCustomers;
-  if (body.solution !== undefined) insightsUpdates.solution = body.solution;
+  if (body.insTriggerEvents !== undefined) insightsUpdates.insTriggerEvents = body.insTriggerEvents;
+  if (body.insAspirations !== undefined) insightsUpdates.insAspirations = body.insAspirations;
 
   // Update brand if there are updates
   let updatedBrand = brandData;

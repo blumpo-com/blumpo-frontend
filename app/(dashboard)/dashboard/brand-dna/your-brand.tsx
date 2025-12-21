@@ -34,6 +34,10 @@ interface BrandData {
     keyBenefits: string[];
     industry: string | null;
     competitors: string[];
+    targetCustomers: string[];
+    redditCustomerPainPoints: string[];
+    insTriggerEvents: string[];
+    insAspirations: string[];
   } | null;
 }
 

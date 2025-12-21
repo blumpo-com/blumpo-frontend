@@ -5,6 +5,7 @@ import { useBrand } from '@/lib/contexts/brand-context';
 import { useRouter } from 'next/navigation';
 import YourBrandPage from './your-brand';
 import ProductCompetitionPage from './product-competition';
+import CustomerVoicePage from './customer-voice';
 import ContentWrapper from './content-wrapper';
 import styles from './page.module.css';
 
@@ -25,6 +26,10 @@ interface BrandData {
     keyBenefits: string[];
     industry: string | null;
     competitors: string[];
+    targetCustomers: string[];
+    redditCustomerPainPoints: string[];
+    insTriggerEvents: string[];
+    insAspirations: string[];
   } | null;
 }
 
@@ -162,9 +167,13 @@ export default function BrandDNAPage() {
           />
         )}
         {activeTab === 'customer-voice' && (
-          <div className={styles.comingSoonContainer}>
-            <p className={styles.comingSoonText}>Your customer voice page - Coming soon</p>
-          </div>
+          <CustomerVoicePage
+            brandId={currentBrand.id}
+            brandData={brandData}
+            isLoading={isLoading}
+            error={error}
+            onBrandDataUpdate={handleBrandDataUpdate}
+          />
         )}
       </div>
     </div>
