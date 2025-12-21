@@ -99,43 +99,43 @@ export default function BrandDNAPage() {
 
   return (
     <div className={styles.container}>
+      {/* Tabs Navigation */}
+      <div className={styles.tabsContainer}>
+        <div className={styles.tabsList}>
+          <button
+            onClick={() => setActiveTab('your-brand')}
+            className={`${styles.tabButton} ${
+              activeTab === 'your-brand'
+                ? styles.tabButtonActive
+                : styles.tabButtonInactive
+            }`}
+          >
+            Your brand
+          </button>
+          <button
+            onClick={() => setActiveTab('product-competition')}
+            className={`${styles.tabButton} ${
+              activeTab === 'product-competition'
+                ? styles.tabButtonActive
+                : styles.tabButtonInactive
+            }`}
+          >
+            Product & competition
+          </button>
+          <button
+            onClick={() => setActiveTab('customer-voice')}
+            className={`${styles.tabButton} ${
+              activeTab === 'customer-voice'
+                ? styles.tabButtonActive
+                : styles.tabButtonInactive
+            }`}
+          >
+            Your customer voice
+          </button>
+        </div>
+      </div>
       {/* Tab Content */}
       <div className={styles.tabContent}>
-        {/* Tabs Navigation */}
-        <div className={styles.tabsContainer}>
-          <div className={styles.tabsList}>
-            <button
-              onClick={() => setActiveTab('your-brand')}
-              className={`${styles.tabButton} ${
-                activeTab === 'your-brand'
-                  ? styles.tabButtonActive
-                  : styles.tabButtonInactive
-              }`}
-            >
-              Your brand
-            </button>
-            <button
-              onClick={() => setActiveTab('product-competition')}
-              className={`${styles.tabButton} ${
-                activeTab === 'product-competition'
-                  ? styles.tabButtonActive
-                  : styles.tabButtonInactive
-              }`}
-            >
-              Product & competition
-            </button>
-            <button
-              onClick={() => setActiveTab('customer-voice')}
-              className={`${styles.tabButton} ${
-                activeTab === 'customer-voice'
-                  ? styles.tabButtonActive
-                  : styles.tabButtonInactive
-              }`}
-            >
-              Your customer voice
-            </button>
-          </div>
-        </div>
         {activeTab === 'your-brand' && (
           <YourBrandPage
             brandId={currentBrand.id}

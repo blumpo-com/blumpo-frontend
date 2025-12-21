@@ -6,6 +6,7 @@
   overflow: hidden;
   background-color: #F9FAFB;
   border: none;
+  position: relative;
 }
 
 .noBrandContainer {
@@ -37,11 +38,13 @@
 }
 
 .tabsContainer {
-  padding: 1.5rem 2rem 1rem;
-  border-bottom: 1px solid #E5E7EB;
-  background-color: #F9FAFB;
+  padding: 1.5rem 2rem 0;
+  background-color: transparent;
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 10;
+  margin-bottom: -30px;
 }
 
 .tabsList {
@@ -66,12 +69,13 @@
 .tabButtonActive {
   background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
   color: white;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   font-size: 20px;
   font-weight: 500;
   color: #f9fafb;
   text-align: center;
+  z-index: 2;
 }
 
 .tabButtonInactive {
@@ -93,6 +97,11 @@
 .tabContent {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  padding-top: 40px;
 }
 
 .comingSoonContainer {
