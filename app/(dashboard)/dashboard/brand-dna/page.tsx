@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { useRouter } from 'next/navigation';
 import YourBrandPage from './your-brand';
+import ProductCompetitionPage from './product-competition';
+import ContentWrapper from './content-wrapper';
 import styles from './page.module.css';
 
 interface BrandData {
@@ -18,6 +20,11 @@ interface BrandData {
   heroPhotos: string[] | null;
   insights: {
     brandVoice: string | null;
+    productDescription: string | null;
+    keyFeatures: string[];
+    keyBenefits: string[];
+    industry: string | null;
+    competitors: string[];
   } | null;
 }
 
@@ -146,9 +153,13 @@ export default function BrandDNAPage() {
           />
         )}
         {activeTab === 'product-competition' && (
-          <div className={styles.comingSoonContainer}>
-            <p className={styles.comingSoonText}>Product & competition page - Coming soon</p>
-          </div>
+          <ProductCompetitionPage
+            brandId={currentBrand.id}
+            brandData={brandData}
+            isLoading={isLoading}
+            error={error}
+            onBrandDataUpdate={handleBrandDataUpdate}
+          />
         )}
         {activeTab === 'customer-voice' && (
           <div className={styles.comingSoonContainer}>

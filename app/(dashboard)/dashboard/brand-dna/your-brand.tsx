@@ -5,13 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/ui/dialog';
-import { X, Plus, Upload, ChevronDown, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import useSWR from 'swr';
+import { X, Plus, Loader2 } from 'lucide-react';
 import { HexColorPicker } from 'react-colorful';
-import { useBrand } from '@/lib/contexts/brand-context';
-import { Brand } from '@/lib/db/schema';
-import { useRouter } from 'next/navigation';
+import ContentWrapper from './content-wrapper';
 // @ts-ignore - Package will be installed
 const languages = require('@cospired/i18n-iso-languages');
 // @ts-ignore - Package will be installed
@@ -33,6 +29,11 @@ interface BrandData {
   heroPhotos: string[] | null;
   insights: {
     brandVoice: string | null;
+    productDescription: string | null;
+    keyFeatures: string[];
+    keyBenefits: string[];
+    industry: string | null;
+    competitors: string[];
   } | null;
 }
 
@@ -85,30 +86,7 @@ const getLanguageName = (value: string): string => {
   return (languages.getName as (code: string, lang: string) => string | undefined)(value.toLowerCase(), 'en') || value;
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-interface BrandDropdownItemProps {
-  iconSrc: string;
-  iconAlt: string;
-  label: string;
-  onClick?: () => void;
-}
-
-function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownItemProps) {
-  return (
-    <div className={styles.brandDropdownItem} onClick={onClick}>
-      <img src={iconSrc} alt={iconAlt} className={styles.brandDropdownIcon} />
-      <span className={styles.brandDropdownLabel}>{label}</span>
-    </div>
-  );
-}
-
 export default function YourBrandPage({ brandId, brandData, isLoading: isLoadingData, error: fetchError, onBrandDataUpdate }: YourBrandPageProps) {
-  const { currentBrand, setCurrentBrand } = useBrand();
-  const router = useRouter();
-  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher);
-  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
-  const brandDropdownRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -134,28 +112,8 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   const [insightsLoaded, setInsightsLoaded] = useState(false);
   const [allLanguages, setAllLanguages] = useState<Array<{code: string, name: string}>>([]);
   
-  const logoInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const heroPhotoInputRef = useRef<HTMLInputElement>(null);
-
-  // Filter out current brand from dropdown list
-  const availableBrands = Array.isArray(brands) ? brands.filter((brand) => brand.id !== currentBrand?.id) : [];
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (brandDropdownRef.current && !brandDropdownRef.current.contains(event.target as Node)) {
-        setIsBrandDropdownOpen(false);
-      }
-    }
-
-    if (isBrandDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [isBrandDropdownOpen]);
 
   // Load all languages on mount
   useEffect(() => {
@@ -491,129 +449,12 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
         <div className={styles.grid}>
           {/* Left Column - Brand Assets */}
           <div className={styles.column}>
-            {/* Brand Name Container */}
-            <div className={styles.brandNameContainer} ref={brandDropdownRef}>
-              <div 
-                className={styles.brandNameInner}
-                onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
-                style={{ cursor: 'pointer' }}
-              >
-                <div className={styles.bunnyWrapper}>
-                  <Image
-                    src="/images/temp/blumpo_sitting.png"
-                    alt="Blumpo"
-                    width={100}
-                    height={100}
-                    className={styles.bunnyImage}
-                  />
-                </div>
-                <span className={styles.brandNameText}>{brandData.name}</span>
-                <div className={`${styles.chevronWrapper} ${isBrandDropdownOpen ? styles.chevronRotated : ''}`}>
-                  <ChevronDown 
-                    size={28} 
-                    strokeWidth={2}
-                  />
-                </div>
-              </div>
-              {isBrandDropdownOpen && (
-                <div className={styles.brandDropdown}>
-                  <BrandDropdownItem
-                    iconSrc="/assets/icons/Add.svg"
-                    iconAlt="New brand"
-                    label="New brand"
-                    onClick={() => {
-                      console.log('New brand clicked');
-                      setIsBrandDropdownOpen(false);
-                      // TODO: Navigate to create new brand page or open modal
-                    }}
-                  />
-                  {isLoadingBrands ? (
-                    <div className={styles.brandDropdownEmpty}>
-                      <span>Loading brands...</span>
-                    </div>
-                  ) : availableBrands.length > 0 ? (
-                    availableBrands.map((brand) => (
-                      <BrandDropdownItem
-                        key={brand.id}
-                        iconSrc="/assets/icons/Rocket_black.svg"
-                        iconAlt={brand.name}
-                        label={brand.name}
-                        onClick={() => {
-                          setCurrentBrand(brand);
-                          setIsBrandDropdownOpen(false);
-                          router.refresh();
-                        }}
-                      />
-                    ))
-                  ) : Array.isArray(brands) && brands.length > 0 ? null : (
-                    <div className={styles.brandDropdownEmpty}>
-                      <span>No brands yet</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Brand Logo */}
-            <div>
-              <div className={styles.logoContainer}>
-                <div className={styles.logoInner}>
-                {logoUrl ? (
-                  <div className={styles.logoDisplay}>
-                    <img
-                      src={logoUrl}
-                      alt="Brand logo"
-                      className={styles.logoImage}
-                    />
-                    {isUploadingLogo && (
-                      <div className={styles.photoLoadingOverlay}>
-                        <Loader2 className={styles.loadingSpinner} />
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className={styles.logoUploadContainer}>
-                    {isUploadingLogo ? (
-                      <Loader2 className={styles.loadingSpinner} />
-                    ) : (
-                      <>
-                        <Upload className={styles.logoUploadIcon} />
-                        <p className={styles.logoUploadText}>Upload your brand logo</p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => logoInputRef.current?.click()}
-                          disabled={isUploadingLogo}
-                        >
-                          Choose File
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                )}
-                </div>
-                {logoUrl && !isUploadingLogo && (
-                  <div 
-                    className={styles.logoEditOverlay}
-                    onClick={() => logoInputRef.current?.click()}
-                  >
-                    <img
-                      src="/assets/icons/edit.svg"
-                      alt="Edit logo"
-                      className={styles.logoEditIcon}
-                    />
-                  </div>
-                )}
-                <input
-                  ref={logoInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleLogoUpload}
-                  className={styles.hiddenInput}
-                  disabled={isUploadingLogo}
-                />
-              </div>
-            </div>
+            <ContentWrapper
+              brandName={brandData.name}
+              logoUrl={logoUrl}
+              onLogoUpload={handleLogoUpload}
+              isUploadingLogo={isUploadingLogo}
+            />
 
             {/* Brand Fonts */}
             <div>
