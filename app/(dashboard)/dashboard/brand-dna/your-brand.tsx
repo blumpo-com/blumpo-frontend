@@ -111,8 +111,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   
   // Form state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [fonts, setFonts] = useState<string[]>([]);
+  const [fonts, setFonts] = useState<Array<{count: number, fontFamily: string}>>([]);
   const [fontInput, setFontInput] = useState('');
+  const [isFontInputFocused, setIsFontInputFocused] = useState(false);
   const [colors, setColors] = useState<string[]>([]);
   const [colorInput, setColorInput] = useState('#000000');
   const [brandVoice, setBrandVoice] = useState('');
@@ -154,18 +155,20 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   useEffect(() => {
     if (brandData) {
       setLogoUrl(brandData.logoUrl || null);
-      // Handle fonts - could be jsonb array of objects or strings
+      // Handle fonts - could be jsonb array of objects or strings (for backward compatibility)
       const fontsArray = Array.isArray(brandData.fonts) ? brandData.fonts : (brandData.fonts ? [brandData.fonts] : []);
-      // Extract fontFamily from objects or use string directly
-      const fontNames = fontsArray.map((f: any) => {
+      // Convert to object format: if string, convert to object; if already object, use as-is
+      const fontsObjects = fontsArray.map((f: any) => {
         if (typeof f === 'string') {
-          return f;
+          // Legacy format: string, convert to object with count 1
+          return { count: 1, fontFamily: f };
         } else if (f && typeof f === 'object' && 'fontFamily' in f) {
-          return f.fontFamily;
+          // Already in object format
+          return { count: f.count || 1, fontFamily: f.fontFamily };
         }
         return null;
-      }).filter((f: any): f is string => f !== null && typeof f === 'string');
-      setFonts(fontNames);
+      }).filter((f): f is {count: number, fontFamily: string} => f !== null);
+      setFonts(fontsObjects);
       setColors(Array.isArray(brandData.colors) ? brandData.colors : []);
       setBrandVoice(brandData.insights?.brandVoice || '');
       setWebsiteUrl(brandData.websiteUrl || '');
@@ -252,17 +255,34 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   // Add font
   const handleAddFont = () => {
     const trimmed = fontInput.trim();
-    if (trimmed && !fonts.includes(trimmed)) {
-      const newFonts = [...fonts, trimmed];
+    if (trimmed) {
+      // Check if font already exists
+      const existingFont = fonts.find(f => f.fontFamily.toLowerCase() === trimmed.toLowerCase());
+      if (existingFont) {
+        // Font already exists, don't add duplicate
+        setFontInput('');
+        setIsFontInputFocused(false);
+        return;
+      }
+      
+      // Find the highest count in existing fonts
+      const highestCount = fonts.length > 0 
+        ? Math.max(...fonts.map(f => f.count || 0))
+        : 0;
+      
+      // Add new font with count = highestCount + 1
+      const newFont = { count: highestCount + 1, fontFamily: trimmed };
+      const newFonts = [...fonts, newFont];
       setFonts(newFonts);
       setFontInput('');
+      setIsFontInputFocused(false);
       saveBrandData({ fonts: newFonts });
     }
   };
 
   // Remove font
-  const handleRemoveFont = (font: string) => {
-    const newFonts = fonts.filter(f => f !== font);
+  const handleRemoveFont = (fontFamily: string) => {
+    const newFonts = fonts.filter(f => f.fontFamily !== fontFamily);
     setFonts(newFonts);
     saveBrandData({ fonts: newFonts });
   };
@@ -484,44 +504,87 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
               <Label className={styles.label}>
                 Brand fonts
               </Label>
-              <div className={styles.fontsList}>
-                {fonts.map((font) => (
-                  <div
-                    key={font}
-                    className={styles.fontChip}
-                  >
-                    <span>{font}</span>
+              <div 
+                className={styles.fontContainer}
+                onClick={(e) => {
+                  // Only focus if clicking on white space, not on chips
+                  const target = e.target as HTMLElement;
+                  const isClickOnChip = target.closest(`.${styles.fontChip}`);
+                  const isClickOnPlaceholder = target.classList.contains(styles.fontPlaceholder);
+                  
+                  // Enter focus mode if clicking on container, fontsList, or placeholder (but not on chips)
+                  if (!isClickOnChip || isClickOnPlaceholder) {
+                    setIsFontInputFocused(true);
+                  }
+                }}
+              >
+                {!isFontInputFocused ? (
+                  <div className={styles.fontsList}>
+                    {fonts.length > 0 ? (
+                      fonts.map((font) => (
+                        <div
+                          key={font.fontFamily}
+                          className={styles.fontChip}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span>{font.fontFamily}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveFont(font.fontFamily);
+                            }}
+                            className={styles.fontRemoveButton}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <span className={styles.fontPlaceholder}>Click to add fonts</span>
+                    )}
+                  </div>
+                ) : (
+                  <div className={styles.fontInputWrapper}>
+                    <input
+                      type="text"
+                      placeholder="Add font name"
+                      value={fontInput}
+                      onChange={(e) => setFontInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddFont();
+                        }
+                        if (e.key === 'Escape') {
+                          setIsFontInputFocused(false);
+                          setFontInput('');
+                        }
+                      }}
+                      onBlur={() => {
+                        // Delay to allow button click
+                        setTimeout(() => {
+                          if (!fontInput.trim()) {
+                            setIsFontInputFocused(false);
+                          }
+                        }, 200);
+                      }}
+                      autoFocus
+                      className={styles.fontInput}
+                    />
                     <button
                       type="button"
-                      onClick={() => handleRemoveFont(font)}
-                      className={styles.fontRemoveButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddFont();
+                      }}
+                      className={styles.fontAddButton}
+                      disabled={!fontInput.trim()}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <Plus className="w-4 h-4" />
                     </button>
                   </div>
-                ))}
-              </div>
-              <div className={styles.fontInputContainer}>
-                <Input
-                  type="text"
-                  placeholder="Add font name"
-                  value={fontInput}
-                  onChange={(e) => setFontInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddFont();
-                    }
-                  }}
-                  className={styles.fontInput}
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddFont}
-                  variant="outline"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+                )}
               </div>
             </div>
 

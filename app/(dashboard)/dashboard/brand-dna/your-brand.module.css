@@ -294,11 +294,40 @@
 }
 
 /* Brand Fonts */
+.fontContainer {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  background-color: white;
+  cursor: text;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fontContainer:focus-within {
+  border-color: #00D9D9;
+  box-shadow: 0 0 0 2px rgba(0, 217, 217, 0.1);
+}
+
 .fontsList {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 0.5rem;
+  width: 100%;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .fontChip {
@@ -306,28 +335,89 @@
   align-items: center;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  background-color: #F3F4F6;
+  background-color: #E5E7EB;
   border-radius: 9999px;
   font-size: 0.875rem;
-  color: #374151;
+  color: #6B7280;
+  cursor: default;
 }
 
 .fontRemoveButton {
   color: #6B7280;
   transition: color 0.2s;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .fontRemoveButton:hover {
   color: #374151;
 }
 
-.fontInputContainer {
+.fontPlaceholder {
+  color: #9CA3AF;
+  font-size: 0.875rem;
+}
+
+.fontInputWrapper {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
+  width: 100%;
+  animation: slideIn 0.2s ease-in;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .fontInput {
   flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.875rem;
+  color: #040404;
+  padding: 0;
+}
+
+.fontInput::placeholder {
+  color: #9CA3AF;
+}
+
+.fontAddButton {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.fontAddButton:hover:not(:disabled) {
+  background-color: #F3F4F6;
+  color: #040404;
+}
+
+.fontAddButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Colors */
