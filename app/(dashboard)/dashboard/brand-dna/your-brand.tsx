@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import { X, Plus, Upload, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import useSWR from 'swr';
+import { HexColorPicker } from 'react-colorful';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { Brand } from '@/lib/db/schema';
 import { useRouter } from 'next/navigation';
@@ -116,6 +118,8 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   const [isFontInputFocused, setIsFontInputFocused] = useState(false);
   const [colors, setColors] = useState<string[]>([]);
   const [colorInput, setColorInput] = useState('#000000');
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [tempColorInput, setTempColorInput] = useState('#000000');
   const [brandVoice, setBrandVoice] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [language, setLanguage] = useState('en');
@@ -287,12 +291,19 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     saveBrandData({ fonts: newFonts });
   };
 
-  // Add color
+  // Open color picker
+  const handleOpenColorPicker = () => {
+    setTempColorInput('#000000');
+    setIsColorPickerOpen(true);
+  };
+
+  // Add color from picker
   const handleAddColor = () => {
-    if (!colors.includes(colorInput)) {
-      const newColors = [...colors, colorInput];
+    if (tempColorInput && !colors.includes(tempColorInput)) {
+      const newColors = [...colors, tempColorInput];
       setColors(newColors);
       saveBrandData({ colors: newColors });
+      setIsColorPickerOpen(false);
     }
   };
 
@@ -614,27 +625,51 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                 ))}
                 <button
                   type="button"
-                  onClick={handleAddColor}
+                  onClick={handleOpenColorPicker}
                   className={styles.colorAddButton}
                 >
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
-              <div className={styles.colorInputContainer}>
-                <Input
-                  type="color"
-                  value={colorInput}
-                  onChange={(e) => setColorInput(e.target.value)}
-                  className={styles.colorPicker}
-                />
-                <Input
-                  type="text"
-                  value={colorInput}
-                  onChange={(e) => setColorInput(e.target.value)}
-                  placeholder="#000000"
-                  className={styles.colorTextInput}
-                />
-              </div>
+              
+              {/* Color Picker Dialog */}
+              <Dialog open={isColorPickerOpen} onClose={() => setIsColorPickerOpen(false)}>
+                <div className={styles.colorPickerDialog}>
+                  <h3 className={styles.colorPickerTitle}>Select Color</h3>
+                  <div className={styles.colorPickerContent}>
+                    <HexColorPicker
+                      color={tempColorInput}
+                      onChange={setTempColorInput}
+                      className={styles.colorPicker}
+                    />
+                    <input
+                      type="text"
+                      value={tempColorInput}
+                      onChange={(e) => setTempColorInput(e.target.value)}
+                      placeholder="#000000"
+                      className={styles.colorTextInput}
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                    <div className={styles.colorPickerActions}>
+                      <Button
+                        type="button"
+                        className={styles.colorPickerCancelButton}
+                        onClick={() => setIsColorPickerOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleAddColor}
+                        disabled={!tempColorInput || colors.includes(tempColorInput)}
+                        className={styles.colorPickerAddButton}
+                      >
+                        Add Color
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Dialog>
             </div>
 
             {/* Brand Voice */}
