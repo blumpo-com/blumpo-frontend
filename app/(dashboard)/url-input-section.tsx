@@ -98,9 +98,9 @@ export function UrlInputSection() {
                 if (data.images && data.images.length > 0) {
                     setImages(data.images);
                 }
-            } else {
+          } else {
                 throw new Error('Unexpected response status');
-            }
+          }
             
             setIsLoading(false);
         } catch (e: any) {

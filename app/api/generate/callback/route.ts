@@ -116,7 +116,7 @@ export async function POST(req: Request) {
 
     // Resolve the pending promise (if exists)
     console.log('[CALLBACK] Resolving pending promise for job:', job_id);
-    resolveCallback(job_id, {
+    await resolveCallback(job_id, {
       status: jobStatus,
       images,
     });
