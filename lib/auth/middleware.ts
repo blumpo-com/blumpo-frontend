@@ -60,7 +60,7 @@ export function withUser(action: UserActionFunction) {
   return async (formData: FormData) => {
     const user = await getUser();
     if (!user) {
-      redirect('/sign-in');
+      redirect('/sign-in?redirect=dashboard');
     }
 
     return action(formData, user);

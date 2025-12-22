@@ -34,9 +34,10 @@ user ────┐
          │
          ├── N:1 ─── ad_archetype
          │
-         └── N:1 ─── ad_workflow (via ad_image)
+         └── N:1 ─── ad_workflow (via ad_image.workflow_id)
 
 ad_archetype ─── 1:N ─── ad_workflow
+ad_image ─── N:1 ─── ad_workflow
 ad_image ─── 1:N ─── ad_event
 generation_job ─── 1:N ─── ad_event
 
@@ -370,7 +371,7 @@ Maintained by N8N workflows.
 # 📂 TABLE: `public.generation_job`
 
 **Purpose:**
-Main container for a whole generation request (campaign, batch of images, multi-archetype generation). Supports the full logged-in ad creation flow with product photos, archetypes, formats, and insights.
+Main container for a whole generation request (campaign, batch of images, multi-archetype generation). Supports the full logged-in ad creation flow with product photos, archetypes, formats, and insights. Can track external workflow execution via `workflow_ctx` for integration with external systems (e.g., n8n workflows).
 
 | Column                | Type                | Description                           |
 | --------------------- | ------------------- | ------------------------------------- |
@@ -396,10 +397,16 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
 | promotion_value_insight | jsonb            | Promotion value configuration (type, time, etc.). Structure: `{ promotionType: { discount?, newPrice?, freeTrial?, promoCode? }, promotionTime: { unlimited?, occasion?, onlyUntil? } }` |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
+| workflow_ctx          | jsonb               | Workflow execution context for external workflows. When not empty, must contain: `execution_id`, `workflow_code`, `callback_url` (default: '{}') |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's job history
 - Index on `status` for job queue queries
+- Index on `(workflow_ctx->>'workflow_code')` for filtering by workflow code
+- Index on `((workflow_ctx->>'execution_id')::bigint)` for filtering by execution ID
+
+**Check Constraints:**
+- `generation_job_workflow_ctx_shape_chk`: Ensures `workflow_ctx` is either empty `{}` or contains all required keys (`execution_id`, `workflow_code`, `callback_url`)
 
 **Example:**
 
@@ -417,7 +424,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
     "cfg": 7.5,
     "seed": 12345
   },
-  "tokens_cost": 20,
+  "tokens_cost": 50,
   "product_photo_urls": ["https://blob.vercel.com/.../photo1.jpg"],
   "product_photo_mode": "brand",
   "archetype_code": "problem_solution",
@@ -438,7 +445,12 @@ Main container for a whole generation request (campaign, batch of images, multi-
       "occasion": "Black Friday"
     }
   },
-  "archetype_inputs": {}
+  "archetype_inputs": {},
+  "workflow_ctx": {
+    "execution_id": 12345,
+    "workflow_code": "n8n_workflow_abc",
+    "callback_url": "https://api.example.com/webhooks/generation-complete"
+  }
 }
 ```
 
@@ -513,7 +525,7 @@ Stores workflow implementations for each archetype. Multiple workflows can exist
 # 📂 TABLE: `public.ad_image`
 
 **Purpose:**
-Stores generated ad images + metadata. Replaces the old `asset_image` table. Each image belongs to a generation job and can be associated with one or more archetypes.
+Stores generated ad images + metadata. Replaces the old `asset_image` table. Each image belongs to a generation job and is associated with a specific workflow via `workflow_id` (replaces the previous `archetypes` array column).
 
 | Column        | Type                | Description                           |
 | ------------- | ------------------- | ------------------------------------- |
@@ -521,6 +533,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | job_id        | uuid FK → generation_job(id) | Parent job |
 | user_id       | uuid FK → user(id)  | Owner                                  |
 | brand_id      | uuid FK → brand(id) | Associated brand (nullable)           |
+| workflow_id   | uuid FK → ad_workflow(id) | Workflow used to generate this image (nullable) |
 | created_at    | timestamptz         | Creation timestamp                     |
 | title         | text                | Optional title                         |
 | storage_key   | text                | Storage key (e.g., "users/{uid}/jobs/{jobId}/{imageId}.webp") |
@@ -529,7 +542,6 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | width         | integer             | Image width in pixels                  |
 | height        | integer             | Image height in pixels                 |
 | format        | text                | Format: WEBP / PNG / JPEG              |
-| archetypes    | text[]              | Array of archetype codes used (for "Random" mode can contain multiple) |
 | ban_flag      | boolean             | Whether image is banned (default: false) |
 | error_flag    | boolean             | Whether image generation had an error (default: false) |
 | error_message | text                | Error message if generation failed (nullable) |
@@ -540,6 +552,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 - Index on `(user_id, created_at DESC)` for user's image history
 - Index on `job_id` for job's images queries
 - Index on `brand_id` for brand's images queries
+- Index on `workflow_id` for workflow-based queries
 
 **Example:**
 
@@ -549,6 +562,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
   "job_id": "0faee3e7-d80f-4cc6-a69a-9034a0af9a41",
   "user_id": "4b0fd8af-638d-4158-92d3-444a90f26417",
   "brand_id": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
+  "workflow_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "title": "Problem-Solution Ad",
   "storage_key": "users/4b0fd8af.../jobs/0faee3e7.../7e02acb2....webp",
   "public_url": "https://cdn.blumpo.com/images/7e02acb2-bf92-4a2e-a153-83e0b1d362c3.webp",
@@ -556,7 +570,6 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
   "width": 1024,
   "height": 1024,
   "format": "WEBP",
-  "archetypes": ["problem_solution"],
   "ban_flag": false,
   "error_flag": false,
   "error_message": null,

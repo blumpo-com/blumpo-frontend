@@ -83,10 +83,10 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       };
     }
 
-    // Create default token account with free tier (10,000 tokens)
+    // Create default token account with free tier (50 tokens)
     await db.insert(tokenAccount).values({
       userId: createdUser.id,
-      balance: 10000,
+      balance: 50,
       planCode: 'FREE',
     });
 
@@ -103,7 +103,20 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   await setSession(foundUser);
 
   const redirectTo = formData.get('redirect') as string | null;
-  redirect(redirectTo === 'checkout' ? '/pricing' : '/dashboard');
+  const websiteUrl = formData.get('website_url') as string | null;
+
+  // Handle generation redirect - redirect to root (/) with website_url
+  if (redirectTo === 'generate' && websiteUrl) {
+    redirect(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
+  }
+
+  // Handle checkout redirect
+  if (redirectTo === 'checkout') {
+    redirect('/pricing');
+  }
+
+  // Default redirect - go to dashboard
+  redirect('/dashboard');
 });
 
 // Legacy exports for backward compatibility (will be removed after UI update)
@@ -114,7 +127,7 @@ export const verifySignUp = verifyOtp;
 
 export async function signOut() {
   (await cookies()).delete('session');
-  redirect('/sign-in');
+  redirect('/sign-in?redirect=dashboard');
 }
 
 // User account management actions

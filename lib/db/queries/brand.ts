@@ -66,6 +66,23 @@ export async function getBrandsWithInsightsByUserId(userId: string) {
   return brandsWithInsights;
 }
 
+// Get brand by user ID and website URL
+export async function getBrandByWebsiteUrl(userId: string, websiteUrl: string) {
+  const result = await db
+    .select()
+    .from(brand)
+    .where(
+      and(
+        eq(brand.userId, userId),
+        eq(brand.websiteUrl, websiteUrl),
+        eq(brand.isDeleted, false)
+      )
+    )
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
+
 // Create brand (core data only)
 export async function createBrand(data: {
   id?: string;

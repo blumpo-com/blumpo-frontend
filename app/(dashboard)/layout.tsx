@@ -116,7 +116,7 @@ function Header() {
         </nav>
         <div className="flex items-center">
           <Button asChild variant="cta">
-            <Link href="/sign-up">Make your first free Ad</Link>
+            <Link href="/dashboard">Make your first free Ad</Link>
           </Button>
         </div>
       </div>

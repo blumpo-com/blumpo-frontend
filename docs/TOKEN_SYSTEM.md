@@ -3,17 +3,17 @@
 ## Overview
 
 This document describes how the token-based billing and consumption system works for the web application.  
-At the current stage, **each ad generation costs a fixed number of tokens (20)**, and users can obtain tokens through a **monthly subscription plan** or **one-time top-ups**.
+At the current stage, **each ad generation costs a fixed number of tokens (50)**, and users can obtain tokens through a **monthly subscription plan** or **one-time top-ups**.
 
 ---
 
 ## 1. Token Cost
 
-- Every ad generation (based only on a submitted website URL) consumes a **fixed cost of 20 tokens**.
+- Every ad generation (based only on a submitted website URL) consumes a **fixed cost of 50 tokens**.
 - If the user does not have enough tokens, the generation request is **rejected immediately** (`status = FAILED`, `error_code = INSUFFICIENT_TOKENS`).
 - Once a job is successfully created:
-  - 20 tokens are **reserved** (deducted from balance).
-  - If the generation **fails**, those 20 tokens are **refunded** automatically.
+  - 50 tokens are **reserved** (deducted from balance).
+  - If the generation **fails**, those 50 tokens are **refunded** automatically.
 
 ---
 
@@ -24,10 +24,10 @@ They differ by the number of monthly tokens, features, and user limits.
 
 | Plan Code | Monthly Tokens | Ads per Month | Price / month | Description |
 |------------|----------------|---------------|----------------|-------------|
-| `FREE`     | 50 tokens      | 2-3 ads       | **Free**       | Trial tier with limited usage. |
-| `STARTER`  | 1,000 tokens   | 50 ads        | **$17 / month** | For individual creators with occasional use. |
-| `GROWTH`   | 3,000 tokens   | 150 ads       | **$39 / month** | For small businesses and marketers. |
-| `TEAM`     | 40,000 tokens  | 2,000 ads     | **$199 / month** | For medium size agencies and marketing teams. |
+| `FREE`     | 50 tokens      | 1 ads no refill       | **Free**       | Trial tier with limited usage. |
+| `STARTER`  | 2,500 tokens   | 50 ads        | **$17 / month** | For individual creators with occasional use. |
+| `GROWTH`   | 7,500 tokens   | 150 ads       | **$39 / month** | For small businesses and marketers. |
+| `TEAM`     | 100,000 tokens  | 2,000 ads     | **$199 / month** | For medium size agencies and marketing teams. |
 
 ### Renewal Behavior
 
@@ -65,8 +65,8 @@ All token changes are tracked in the `token_ledger` table.
 | Action | Ledger Reason | Delta | Description |
 |---------|----------------|--------|--------------|
 | Subscription refill | `SUBS_REFILL` | +X | Monthly refill for plan. |
-| Ad generation (reserve) | `JOB_RESERVE` | −20 | Token cost when job is created. |
-| Failed job refund | `JOB_REFUND` | +20 | Refund when generation fails. |
+| Ad generation (reserve) | `JOB_RESERVE` | −50 | Token cost when job is created. |
+| Failed job refund | `JOB_REFUND` | +50 | Refund when generation fails. |
 | Top-up purchase | `TOPUP_PURCHASE:<id>` | +X | Stripe one-time payment. |
 
 Ledger entries are **idempotent** — each has a unique `(reason, reference_id)` combination.
@@ -92,16 +92,16 @@ No rollover — unused tokens are lost at the end of each month.
 ## 6. SQL / Server Logic Summary
 
 ### Reserve Tokens (when creating a job)
-- Check if `balance >= 20`.
+- Check if `balance >= 50`.
 - If true:
-- Insert `token_ledger` (`delta = -20`, `reason = JOB_RESERVE`).
+- Insert `token_ledger` (`delta = -50`, `reason = JOB_RESERVE`).
 - Update `token_account.balance`.
-- Set `generation_job.tokens_cost = 20`, `status = QUEUED`.
+- Set `generation_job.tokens_cost = 50`, `status = QUEUED`.
 - If false → reject (`INSUFFICIENT_TOKENS`).
 
 ### Refund Tokens (on job failure)
 - Check if a refund entry already exists (idempotency).
-- If not, insert `token_ledger` (`delta = +20`, `reason = JOB_REFUND`) and update balance.
+- If not, insert `token_ledger` (`delta = +50`, `reason = JOB_REFUND`) and update balance.
 
 ### Monthly Refill (cron or webhook)
 - Triggered by `next_refill_at` or Stripe event.
@@ -120,16 +120,16 @@ No rollover — unused tokens are lost at the end of each month.
 
 ## 8. Example Balance Flow
 
-**User on `STARTER` plan (1,000 tokens/month):**
+**User on `STARTER` plan (2,500 tokens/month):**
 
-1. Subscription refill → +1,000 (balance = 1,000)
-2. Generate ad #1 → −20 → (balance = 980)
-3. Generate ad #2 → −20 → (balance = 960)
-4. One job fails → +20 refund → (balance = 980)
-5. Top-up purchase (500 tokens) → +500 → (balance = 1,480)
+1. Subscription refill → +2,500 (balance = 2,500)
+2. Generate ad #1 → −50 → (balance = 2,450)
+3. Generate ad #2 → −50 → (balance = 2,400)
+4. One job fails → +50 refund → (balance = 2,450)
+5. Top-up purchase (500 tokens) → +500 → (balance = 2,950)
 
 Next month:
-- Subscription refill → balance reset to 1,000 (no rollover).
+- Subscription refill → balance reset to 2,500 (no rollover).
 
 ---
 
@@ -142,7 +142,7 @@ Future token cost may depend on:
 - Output resolution
 - Additional AI features
 
-Until then, the cost remains **fixed at 20 tokens per generation** for simplicity and predictability.
+Until then, the cost remains **fixed at 50 tokens per generation** for simplicity and predictability.
 
 ---
 
