@@ -1,5 +1,5 @@
 import { pgTable, uuid, timestamp, text, jsonb, bigint, index } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { jobStatusEnum } from './enums';
 import { user } from './user';
 import { tokenLedger } from './tokens';
@@ -44,9 +44,14 @@ export const generationJob = pgTable('generation_job', {
   promotionValueInsight: jsonb('promotion_value_insight').notNull().default({}), // Promotion value configuration (type, time, etc.)
   
   archetypeInputs: jsonb('archetype_inputs').notNull().default({}),
+  
+  // Workflow context for external workflow execution
+  workflowCtx: jsonb('workflow_ctx').notNull().default({}), // Contains execution_id, workflow_code, callback_url
 }, (table) => ({
   userTimeIdx: index('idx_generation_job_user_time').on(table.userId, table.createdAt.desc()),
   statusIdx: index('idx_generation_job_status').on(table.status),
+  workflowCodeIdx: index('idx_generation_job_workflow_code').on(sql`(${table.workflowCtx}->>'workflow_code')`),
+  executionIdIdx: index('idx_generation_job_execution_id').on(sql`((${table.workflowCtx}->>'execution_id')::bigint)`),
 }));
 
 // Relations (complete relations will be defined in index.ts to avoid circular dependencies)
