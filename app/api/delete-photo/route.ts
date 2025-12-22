@@ -42,7 +42,7 @@ export async function DELETE(req: Request) {
     // Update brand data based on type
     if (type === 'logo') {
       await updateBrand(brandId, {
-        logoUrl: null,
+        logoUrl: undefined,
       });
     } else if (type === 'hero') {
       const currentHeroPhotos = brand.heroPhotos || [];
