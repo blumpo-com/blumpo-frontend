@@ -54,15 +54,9 @@ export default function CustomerVoicePage({
   const [targetCustomers, setTargetCustomers] = useState<string[]>([]);
   const [targetCustomersInput, setTargetCustomersInput] = useState('');
   const [isTargetCustomersFocused, setIsTargetCustomersFocused] = useState(false);
-  const [customerPainPoints, setCustomerPainPoints] = useState<string[]>([]);
-  const [customerPainPointsInput, setCustomerPainPointsInput] = useState('');
-  const [isCustomerPainPointsFocused, setIsCustomerPainPointsFocused] = useState(false);
-  const [purchaseTriggers, setPurchaseTriggers] = useState<string[]>([]);
-  const [purchaseTriggersInput, setPurchaseTriggersInput] = useState('');
-  const [isPurchaseTriggersFocused, setIsPurchaseTriggersFocused] = useState(false);
-  const [customerExpectations, setCustomerExpectations] = useState<string[]>([]);
-  const [customerExpectationsInput, setCustomerExpectationsInput] = useState('');
-  const [isCustomerExpectationsFocused, setIsCustomerExpectationsFocused] = useState(false);
+  const [customerPainPoints, setCustomerPainPoints] = useState<string>('');
+  const [purchaseTriggers, setPurchaseTriggers] = useState<string>('');
+  const [customerExpectations, setCustomerExpectations] = useState<string>('');
   const [insightsLoaded, setInsightsLoaded] = useState(false);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -75,9 +69,13 @@ export default function CustomerVoicePage({
     if (brandData) {
       setLogoUrl(brandData.logoUrl || null);
       setTargetCustomers(Array.isArray(brandData.insights?.targetCustomers) ? brandData.insights.targetCustomers : []);
-      setCustomerPainPoints(Array.isArray(brandData.insights?.redditCustomerPainPoints) ? brandData.insights.redditCustomerPainPoints : []);
-      setPurchaseTriggers(Array.isArray(brandData.insights?.insTriggerEvents) ? brandData.insights.insTriggerEvents : []);
-      setCustomerExpectations(Array.isArray(brandData.insights?.insAspirations) ? brandData.insights.insAspirations : []);
+      // Convert arrays to bullet-pointed text with spacing between items
+      const painPointsArray = Array.isArray(brandData.insights?.redditCustomerPainPoints) ? brandData.insights.redditCustomerPainPoints : [];
+      setCustomerPainPoints(painPointsArray.length > 0 ? painPointsArray.map(p => `• ${p}`).join('\n\n') : '');
+      const triggersArray = Array.isArray(brandData.insights?.insTriggerEvents) ? brandData.insights.insTriggerEvents : [];
+      setPurchaseTriggers(triggersArray.length > 0 ? triggersArray.map(t => `• ${t}`).join('\n\n') : '');
+      const expectationsArray = Array.isArray(brandData.insights?.insAspirations) ? brandData.insights.insAspirations : [];
+      setCustomerExpectations(expectationsArray.length > 0 ? expectationsArray.map(e => `• ${e}`).join('\n\n') : '');
       setInsightsLoaded(brandData.insights !== null);
     }
   }, [brandData]);
@@ -171,82 +169,129 @@ export default function CustomerVoicePage({
     saveBrandData({ targetCustomers: newTargetCustomers });
   };
 
-  // Handle customer pain points - add from textarea (bullet points)
+  // Convert bullet-pointed text to array
+  const textToArray = (text: string): string[] => {
+    return text
+      .split('\n')
+      .map((line: string) => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
+      .filter((line: string) => line.length > 0 && !line.match(/^\s*$/)); // Filter out empty lines
+  };
+
+  // Handle customer pain points change
+  const handleCustomerPainPointsChange = (value: string) => {
+    setCustomerPainPoints(value);
+  };
+
+  // Handle customer pain points blur - save to database
   const handleCustomerPainPointsBlur = () => {
-    if (customerPainPointsInput.trim()) {
-      // Split by newlines and filter empty
-      const painPoints = customerPainPointsInput
-        .split('\n')
-        .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
-        .filter(line => line.length > 0);
+    const painPointsArray = textToArray(customerPainPoints);
+    saveBrandData({ redditCustomerPainPoints: painPointsArray });
+  };
+
+  // Handle customer pain points keydown - auto-add bullet on new line with spacing
+  const handleCustomerPainPointsKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
       
-      if (painPoints.length > 0) {
-        const newPainPoints = [...customerPainPoints, ...painPoints];
-        setCustomerPainPoints(newPainPoints);
-        setCustomerPainPointsInput('');
-        setIsCustomerPainPointsFocused(false);
-        saveBrandData({ customerPainPoints: newPainPoints });
-      }
+      // Get the current line to check if it starts with bullet
+      const textBeforeCursor = value.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      const isBulletLine = currentLine.trim().startsWith('•');
+      
+      // Add bullet point on new line with spacing if previous line was a bullet line
+      const spacing = isBulletLine ? '\n\n• ' : '\n• ';
+      const newValue = value.substring(0, start) + spacing + value.substring(end);
+      setCustomerPainPoints(newValue);
+      
+      // Set cursor position after the bullet
+      setTimeout(() => {
+        const newCursorPos = start + spacing.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
     }
   };
 
-  // Remove customer pain point
-  const handleRemoveCustomerPainPoint = (index: number) => {
-    const newPainPoints = customerPainPoints.filter((_, i) => i !== index);
-    setCustomerPainPoints(newPainPoints);
-    saveBrandData({ customerPainPoints: newPainPoints });
+  // Handle purchase triggers change
+  const handlePurchaseTriggersChange = (value: string) => {
+    setPurchaseTriggers(value);
   };
 
-  // Handle purchase triggers - add from textarea (bullet points)
+  // Handle purchase triggers blur - save to database
   const handlePurchaseTriggersBlur = () => {
-    if (purchaseTriggersInput.trim()) {
-      // Split by newlines and filter empty
-      const triggers = purchaseTriggersInput
-        .split('\n')
-        .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
-        .filter(line => line.length > 0);
+    const triggersArray = textToArray(purchaseTriggers);
+    saveBrandData({ insTriggerEvents: triggersArray });
+  };
+
+  // Handle purchase triggers keydown - auto-add bullet on new line with spacing
+  const handlePurchaseTriggersKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
       
-      if (triggers.length > 0) {
-        const newTriggers = [...purchaseTriggers, ...triggers];
-        setPurchaseTriggers(newTriggers);
-        setPurchaseTriggersInput('');
-        setIsPurchaseTriggersFocused(false);
-        saveBrandData({ insTriggerEvents: newTriggers });
-      }
+      // Get the current line to check if it starts with bullet
+      const textBeforeCursor = value.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      const isBulletLine = currentLine.trim().startsWith('•');
+      
+      // Add bullet point on new line with spacing if previous line was a bullet line
+      const spacing = isBulletLine ? '\n\n• ' : '\n• ';
+      const newValue = value.substring(0, start) + spacing + value.substring(end);
+      setPurchaseTriggers(newValue);
+      
+      // Set cursor position after the bullet
+      setTimeout(() => {
+        const newCursorPos = start + spacing.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
     }
   };
 
-  // Remove purchase trigger
-  const handleRemovePurchaseTrigger = (index: number) => {
-    const newTriggers = purchaseTriggers.filter((_, i) => i !== index);
-    setPurchaseTriggers(newTriggers);
-    saveBrandData({ insTriggerEvents: newTriggers });
+  // Handle customer expectations change
+  const handleCustomerExpectationsChange = (value: string) => {
+    setCustomerExpectations(value);
   };
 
-  // Handle customer expectations - add from textarea (bullet points)
+  // Handle customer expectations blur - save to database
   const handleCustomerExpectationsBlur = () => {
-    if (customerExpectationsInput.trim()) {
-      // Split by newlines and filter empty
-      const expectations = customerExpectationsInput
-        .split('\n')
-        .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
-        .filter(line => line.length > 0);
-      
-      if (expectations.length > 0) {
-        const newExpectations = [...customerExpectations, ...expectations];
-        setCustomerExpectations(newExpectations);
-        setCustomerExpectationsInput('');
-        setIsCustomerExpectationsFocused(false);
-        saveBrandData({ insAspirations: newExpectations });
-      }
-    }
+    const expectationsArray = textToArray(customerExpectations);
+    saveBrandData({ insAspirations: expectationsArray });
   };
 
-  // Remove customer expectation
-  const handleRemoveCustomerExpectation = (index: number) => {
-    const newExpectations = customerExpectations.filter((_, i) => i !== index);
-    setCustomerExpectations(newExpectations);
-    saveBrandData({ insAspirations: newExpectations });
+  // Handle customer expectations keydown - auto-add bullet on new line with spacing
+  const handleCustomerExpectationsKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      // Get the current line to check if it starts with bullet
+      const textBeforeCursor = value.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      const isBulletLine = currentLine.trim().startsWith('•');
+      
+      // Add bullet point on new line with spacing if previous line was a bullet line
+      const spacing = isBulletLine ? '\n\n• ' : '\n• ';
+      const newValue = value.substring(0, start) + spacing + value.substring(end);
+      setCustomerExpectations(newValue);
+      
+      // Set cursor position after the bullet
+      setTimeout(() => {
+        const newCursorPos = start + spacing.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
+    }
   };
 
   if (isLoadingData && !brandData) {
@@ -363,51 +408,25 @@ export default function CustomerVoicePage({
               {!insightsLoaded ? (
                 <div className={styles.skeletonTextarea} />
               ) : (
-                <div className={styles.painPointsContainer}>
-                  {customerPainPoints.length > 0 && (
-                    <div className={styles.painPointsList}>
-                      {customerPainPoints.map((painPoint, index) => (
-                        <div key={index} className={styles.painPointChip}>
-                          <span>{painPoint}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCustomerPainPoint(index)}
-                            className={styles.painPointRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isCustomerPainPointsFocused || customerPainPoints.length === 0 ? (
-                    <textarea
-                      ref={customerPainPointsInputRef}
-                      value={customerPainPointsInput}
-                      onChange={(e) => setCustomerPainPointsInput(e.target.value)}
-                      onBlur={handleCustomerPainPointsBlur}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setIsCustomerPainPointsFocused(false);
-                          setCustomerPainPointsInput('');
-                        }
-                      }}
-                      placeholder="• Enter customer pain points"
-                      className={styles.textarea}
-                      rows={4}
-                    />
-                  ) : (
-                    <div
-                      className={styles.painPointsPlaceholder}
-                      onClick={() => {
-                        setIsCustomerPainPointsFocused(true);
-                        setTimeout(() => customerPainPointsInputRef.current?.focus(), 0);
-                      }}
-                    >
-                      {customerPainPoints.length === 0 ? 'Click to add customer pain points' : 'Click to add more pain points'}
-                    </div>
-                  )}
-                </div>
+                <textarea
+                  ref={customerPainPointsInputRef}
+                  value={customerPainPoints}
+                  onChange={(e) => handleCustomerPainPointsChange(e.target.value)}
+                  onBlur={handleCustomerPainPointsBlur}
+                  onKeyDown={handleCustomerPainPointsKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setCustomerPainPoints('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Enter customer pain points"
+                  className={styles.textarea}
+                  rows={6}
+                />
               )}
             </div>
           </div>
@@ -422,51 +441,25 @@ export default function CustomerVoicePage({
               {!insightsLoaded ? (
                 <div className={styles.skeletonTextarea} />
               ) : (
-                <div className={styles.triggersContainer}>
-                  {purchaseTriggers.length > 0 && (
-                    <div className={styles.triggersList}>
-                      {purchaseTriggers.map((trigger, index) => (
-                        <div key={index} className={styles.triggerChip}>
-                          <span>{trigger}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemovePurchaseTrigger(index)}
-                            className={styles.triggerRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isPurchaseTriggersFocused || purchaseTriggers.length === 0 ? (
-                    <textarea
-                      ref={purchaseTriggersInputRef}
-                      value={purchaseTriggersInput}
-                      onChange={(e) => setPurchaseTriggersInput(e.target.value)}
-                      onBlur={handlePurchaseTriggersBlur}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setIsPurchaseTriggersFocused(false);
-                          setPurchaseTriggersInput('');
-                        }
-                      }}
-                      placeholder="• Tell us why people buy your product"
-                      className={styles.textarea}
-                      rows={4}
-                    />
-                  ) : (
-                    <div
-                      className={styles.triggersPlaceholder}
-                      onClick={() => {
-                        setIsPurchaseTriggersFocused(true);
-                        setTimeout(() => purchaseTriggersInputRef.current?.focus(), 0);
-                      }}
-                    >
-                      {purchaseTriggers.length === 0 ? 'Click to add purchase triggers' : 'Click to add more triggers'}
-                    </div>
-                  )}
-                </div>
+                <textarea
+                  ref={purchaseTriggersInputRef}
+                  value={purchaseTriggers}
+                  onChange={(e) => handlePurchaseTriggersChange(e.target.value)}
+                  onBlur={handlePurchaseTriggersBlur}
+                  onKeyDown={handlePurchaseTriggersKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setPurchaseTriggers('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Tell us why people buy your product"
+                  className={styles.textarea}
+                  rows={6}
+                />
               )}
             </div>
 
@@ -478,51 +471,25 @@ export default function CustomerVoicePage({
               {!insightsLoaded ? (
                 <div className={styles.skeletonTextarea} />
               ) : (
-                <div className={styles.expectationsContainer}>
-                  {customerExpectations.length > 0 && (
-                    <div className={styles.expectationsList}>
-                      {customerExpectations.map((expectation, index) => (
-                        <div key={index} className={styles.expectationChip}>
-                          <span>{expectation}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCustomerExpectation(index)}
-                            className={styles.expectationRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isCustomerExpectationsFocused || customerExpectations.length === 0 ? (
-                    <textarea
-                      ref={customerExpectationsInputRef}
-                      value={customerExpectationsInput}
-                      onChange={(e) => setCustomerExpectationsInput(e.target.value)}
-                      onBlur={handleCustomerExpectationsBlur}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setIsCustomerExpectationsFocused(false);
-                          setCustomerExpectationsInput('');
-                        }
-                      }}
-                      placeholder="• Tell us what customers expect from your product"
-                      className={styles.textarea}
-                      rows={4}
-                    />
-                  ) : (
-                    <div
-                      className={styles.expectationsPlaceholder}
-                      onClick={() => {
-                        setIsCustomerExpectationsFocused(true);
-                        setTimeout(() => customerExpectationsInputRef.current?.focus(), 0);
-                      }}
-                    >
-                      {customerExpectations.length === 0 ? 'Click to add customer expectations' : 'Click to add more expectations'}
-                    </div>
-                  )}
-                </div>
+                <textarea
+                  ref={customerExpectationsInputRef}
+                  value={customerExpectations}
+                  onChange={(e) => handleCustomerExpectationsChange(e.target.value)}
+                  onBlur={handleCustomerExpectationsBlur}
+                  onKeyDown={handleCustomerExpectationsKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setCustomerExpectations('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Tell us what customers expect from your product"
+                  className={styles.textarea}
+                  rows={6}
+                />
               )}
             </div>
           </div>

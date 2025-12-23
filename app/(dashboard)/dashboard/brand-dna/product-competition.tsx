@@ -52,12 +52,8 @@ export default function ProductCompetitionPage({
   // Form state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [productDescription, setProductDescription] = useState('');
-  const [keyFeatures, setKeyFeatures] = useState<string[]>([]);
-  const [keyFeaturesInput, setKeyFeaturesInput] = useState('');
-  const [isKeyFeaturesFocused, setIsKeyFeaturesFocused] = useState(false);
-  const [keyBenefits, setKeyBenefits] = useState<string[]>([]);
-  const [keyBenefitsInput, setKeyBenefitsInput] = useState('');
-  const [isKeyBenefitsFocused, setIsKeyBenefitsFocused] = useState(false);
+  const [keyFeatures, setKeyFeatures] = useState<string>('');
+  const [keyBenefits, setKeyBenefits] = useState<string>('');
   const [industry, setIndustry] = useState<string[]>([]);
   const [industryInput, setIndustryInput] = useState('');
   const [isIndustryFocused, setIsIndustryFocused] = useState(false);
@@ -75,8 +71,11 @@ export default function ProductCompetitionPage({
     if (brandData) {
       setLogoUrl(brandData.logoUrl || null);
       setProductDescription(brandData.insights?.productDescription || '');
-      setKeyFeatures(Array.isArray(brandData.insights?.keyFeatures) ? brandData.insights.keyFeatures : []);
-      setKeyBenefits(Array.isArray(brandData.insights?.keyBenefits) ? brandData.insights.keyBenefits : []);
+      // Convert array to bullet-pointed text with spacing between items
+      const featuresArray = Array.isArray(brandData.insights?.keyFeatures) ? brandData.insights.keyFeatures : [];
+      setKeyFeatures(featuresArray.length > 0 ? featuresArray.map(f => `• ${f}`).join('\n\n') : '');
+      const benefitsArray = Array.isArray(brandData.insights?.keyBenefits) ? brandData.insights.keyBenefits : [];
+      setKeyBenefits(benefitsArray.length > 0 ? benefitsArray.map(b => `• ${b}`).join('\n\n') : '');
       // Handle industry - could be string or array
       const industryValue = brandData.insights?.industry;
       if (industryValue) {
@@ -170,56 +169,90 @@ export default function ProductCompetitionPage({
     setProductDescription(value);
   };
 
-  // Handle key features - add from textarea (bullet points)
+  // Convert bullet-pointed text to array
+  const textToArray = (text: string): string[] => {
+    return text
+      .split('\n')
+      .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
+      .filter(line => line.length > 0 && !line.match(/^\s*$/)); // Filter out empty lines
+  };
+
+  // Handle key features change
+  const handleKeyFeaturesChange = (value: string) => {
+    setKeyFeatures(value);
+  };
+
+  // Handle key features blur - save to database
   const handleKeyFeaturesBlur = () => {
-    if (keyFeaturesInput.trim()) {
-      // Split by newlines and filter empty
-      const features = keyFeaturesInput
-        .split('\n')
-        .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
-        .filter(line => line.length > 0);
+    const featuresArray = textToArray(keyFeatures);
+    saveBrandData({ keyFeatures: featuresArray });
+  };
+
+  // Handle key features keydown - auto-add bullet on new line with spacing
+  const handleKeyFeaturesKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
       
-      if (features.length > 0) {
-        const newFeatures = [...keyFeatures, ...features];
-        setKeyFeatures(newFeatures);
-        setKeyFeaturesInput('');
-        setIsKeyFeaturesFocused(false);
-        saveBrandData({ keyFeatures: newFeatures });
-      }
+      // Get the current line to check if it starts with bullet
+      const textBeforeCursor = value.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      const isBulletLine = currentLine.trim().startsWith('•');
+      
+      // Add bullet point on new line with spacing if previous line was a bullet line
+      const spacing = isBulletLine ? '\n\n• ' : '\n• ';
+      const newValue = value.substring(0, start) + spacing + value.substring(end);
+      setKeyFeatures(newValue);
+      
+      // Set cursor position after the bullet
+      setTimeout(() => {
+        const newCursorPos = start + spacing.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
     }
   };
 
-  // Remove key feature
-  const handleRemoveKeyFeature = (index: number) => {
-    const newFeatures = keyFeatures.filter((_, i) => i !== index);
-    setKeyFeatures(newFeatures);
-    saveBrandData({ keyFeatures: newFeatures });
+  // Handle key benefits change
+  const handleKeyBenefitsChange = (value: string) => {
+    setKeyBenefits(value);
   };
 
-  // Handle key benefits - add from textarea (bullet points)
+  // Handle key benefits blur - save to database
   const handleKeyBenefitsBlur = () => {
-    if (keyBenefitsInput.trim()) {
-      // Split by newlines and filter empty
-      const benefits = keyBenefitsInput
-        .split('\n')
-        .map(line => line.trim().replace(/^[•\-\*]\s*/, '')) // Remove bullet points
-        .filter(line => line.length > 0);
-      
-      if (benefits.length > 0) {
-        const newBenefits = [...keyBenefits, ...benefits];
-        setKeyBenefits(newBenefits);
-        setKeyBenefitsInput('');
-        setIsKeyBenefitsFocused(false);
-        saveBrandData({ keyBenefits: newBenefits });
-      }
-    }
+    const benefitsArray = textToArray(keyBenefits);
+    saveBrandData({ keyBenefits: benefitsArray });
   };
 
-  // Remove key benefit
-  const handleRemoveKeyBenefit = (index: number) => {
-    const newBenefits = keyBenefits.filter((_, i) => i !== index);
-    setKeyBenefits(newBenefits);
-    saveBrandData({ keyBenefits: newBenefits });
+  // Handle key benefits keydown - auto-add bullet on new line with spacing
+  const handleKeyBenefitsKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const value = textarea.value;
+      
+      // Get the current line to check if it starts with bullet
+      const textBeforeCursor = value.substring(0, start);
+      const lines = textBeforeCursor.split('\n');
+      const currentLine = lines[lines.length - 1];
+      const isBulletLine = currentLine.trim().startsWith('•');
+      
+      // Add bullet point on new line with spacing if previous line was a bullet line
+      const spacing = isBulletLine ? '\n\n• ' : '\n• ';
+      const newValue = value.substring(0, start) + spacing + value.substring(end);
+      setKeyBenefits(newValue);
+      
+      // Set cursor position after the bullet
+      setTimeout(() => {
+        const newCursorPos = start + spacing.length;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+      }, 0);
+    }
   };
 
   // Handle industry tags
@@ -305,51 +338,25 @@ export default function ProductCompetitionPage({
               {!insightsLoaded ? (
                 <div className={styles.skeletonTextarea} />
               ) : (
-                <div className={styles.featuresContainer}>
-                  {keyFeatures.length > 0 && (
-                    <div className={styles.featuresList}>
-                      {keyFeatures.map((feature, index) => (
-                        <div key={index} className={styles.featureChip}>
-                          <span>{feature}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveKeyFeature(index)}
-                            className={styles.featureRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isKeyFeaturesFocused || keyFeatures.length === 0 ? (
-                    <textarea
-                      ref={keyFeaturesInputRef}
-                      value={keyFeaturesInput}
-                      onChange={(e) => setKeyFeaturesInput(e.target.value)}
-                      onBlur={handleKeyFeaturesBlur}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setIsKeyFeaturesFocused(false);
-                          setKeyFeaturesInput('');
-                        }
-                      }}
-                      placeholder="• Enter key features"
-                      className={styles.textarea}
-                      rows={4}
-                    />
-                  ) : (
-                    <div
-                      className={styles.featuresPlaceholder}
-                      onClick={() => {
-                        setIsKeyFeaturesFocused(true);
-                        setTimeout(() => keyFeaturesInputRef.current?.focus(), 0);
-                      }}
-                    >
-                      {keyFeatures.length === 0 ? 'Click to add key features' : 'Click to add more features'}
-                    </div>
-                  )}
-                </div>
+                <textarea
+                  ref={keyFeaturesInputRef}
+                  value={keyFeatures}
+                  onChange={(e) => handleKeyFeaturesChange(e.target.value)}
+                  onBlur={handleKeyFeaturesBlur}
+                  onKeyDown={handleKeyFeaturesKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setKeyFeatures('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Enter key features"
+                  className={styles.textarea}
+                  rows={6}
+                />
               )}
             </div>
 
@@ -361,51 +368,25 @@ export default function ProductCompetitionPage({
               {!insightsLoaded ? (
                 <div className={styles.skeletonTextarea} />
               ) : (
-                <div className={styles.benefitsContainer}>
-                  {keyBenefits.length > 0 && (
-                    <div className={styles.benefitsList}>
-                      {keyBenefits.map((benefit, index) => (
-                        <div key={index} className={styles.benefitChip}>
-                          <span>{benefit}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveKeyBenefit(index)}
-                            className={styles.benefitRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isKeyBenefitsFocused || keyBenefits.length === 0 ? (
-                    <textarea
-                      ref={keyBenefitsInputRef}
-                      value={keyBenefitsInput}
-                      onChange={(e) => setKeyBenefitsInput(e.target.value)}
-                      onBlur={handleKeyBenefitsBlur}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Escape') {
-                          setIsKeyBenefitsFocused(false);
-                          setKeyBenefitsInput('');
-                        }
-                      }}
-                      placeholder="• Enter key benefits"
-                      className={styles.textarea}
-                      rows={4}
-                    />
-                  ) : (
-                    <div
-                      className={styles.benefitsPlaceholder}
-                      onClick={() => {
-                        setIsKeyBenefitsFocused(true);
-                        setTimeout(() => keyBenefitsInputRef.current?.focus(), 0);
-                      }}
-                    >
-                      {keyBenefits.length === 0 ? 'Click to add key benefits' : 'Click to add more benefits'}
-                    </div>
-                  )}
-                </div>
+                <textarea
+                  ref={keyBenefitsInputRef}
+                  value={keyBenefits}
+                  onChange={(e) => handleKeyBenefitsChange(e.target.value)}
+                  onBlur={handleKeyBenefitsBlur}
+                  onKeyDown={handleKeyBenefitsKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setKeyBenefits('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Enter key benefits"
+                  className={styles.textarea}
+                  rows={6}
+                />
               )}
             </div>
           </div>
