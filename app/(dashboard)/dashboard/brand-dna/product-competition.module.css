@@ -8,25 +8,47 @@
 .contentWrapper {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 2.2rem;
+  padding: 0 43px;
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15rem;
-}
-
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.column {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 40px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 40px;
+  width: 100%;
+}
+
+.row.first {
+  align-items: flex-end;
+}
+
+/* When row has exactly 2 direct children, space them apart */
+.row:has(> :first-child:nth-last-child(2)) {
+  justify-content: space-between;
+}
+
+/* Single content item - left aligned, max width 463px */
+.row > :only-child {
+  max-width: 463px;
+  width: 100%;
+}
+
+/* rowContent wrapper - max width 463px */
+.rowContent {
+  max-width: 463px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 /* Loading and Error States */
@@ -54,7 +76,7 @@
   color: #000;
   text-align: left;
   display: inline-block;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 /* Textarea */
@@ -114,18 +136,42 @@
 
 /* Features and Benefits - now use simple textarea, removed chip styles */
 
+/* Tags Section (wrapper for Industry/Competitors) */
+.tagsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 /* Tags Container (Industry, Competitors) */
 .tagsContainer {
   width: 100%;
   min-height: 54px;
-  padding: 0.5rem 0.75rem;
+  max-height: 148px;
+  padding: 0.75rem;
   border: 1px solid #888e98;
   border-radius: 10px;
   background-color: #fff;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  box-sizing: border-box;
+}
+
+/* Scrollbar styling */
+.tagsContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tagsContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tagsContainer::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+.tagsContainer::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }
 
 .tagsList {
@@ -165,6 +211,7 @@
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  padding: 0 0.25rem;
 }
 
 .tagInput {

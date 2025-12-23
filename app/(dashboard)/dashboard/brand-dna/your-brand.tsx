@@ -451,341 +451,353 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
         <div className={styles.grid}>
-          {/* Left Column - Brand Assets */}
-          <div className={styles.column}>
-            <ContentWrapper
-              brandName={brandData.name}
-              logoUrl={logoUrl}
-              onLogoUpload={handleLogoUpload}
-              isUploadingLogo={isUploadingLogo}
-            />
-
-            {/* Brand Fonts */}
-            <div>
-              <Label className={styles.label}>
-                Brand fonts
-              </Label>
-              <div 
-                className={styles.fontContainer}
-                onClick={(e) => {
-                  // Only focus if clicking on white space, not on chips
-                  const target = e.target as HTMLElement;
-                  const isClickOnChip = target.closest(`.${styles.fontChip}`);
-                  const isClickOnPlaceholder = target.classList.contains(styles.fontPlaceholder);
-                  
-                  // Enter focus mode if clicking on container, fontsList, or placeholder (but not on chips)
-                  if (!isClickOnChip || isClickOnPlaceholder) {
-                    setIsFontInputFocused(true);
-                  }
-                }}
-              >
-                {!isFontInputFocused ? (
-                  <div className={styles.fontsList}>
-                    {fonts.length > 0 ? (
-                      fonts.map((font) => (
-                        <div
-                          key={font.fontFamily}
-                          className={styles.fontChip}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span>{font.fontFamily}</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveFont(font.fontFamily);
-                            }}
-                            className={styles.fontRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <span className={styles.fontPlaceholder}>Click to add fonts</span>
-                    )}
-                  </div>
-                ) : (
-                  <div className={styles.fontInputWrapper}>
-                    <input
-                      type="text"
-                      placeholder="Add font name"
-                      value={fontInput}
-                      onChange={(e) => setFontInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddFont();
-                        }
-                        if (e.key === 'Escape') {
-                          setIsFontInputFocused(false);
-                          setFontInput('');
-                        }
-                      }}
-                      onBlur={() => {
-                        // Delay to allow button click
-                        setTimeout(() => {
-                          if (!fontInput.trim()) {
-                            setIsFontInputFocused(false);
-                          }
-                        }, 200);
-                      }}
-                      autoFocus
-                      className={styles.fontInput}
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddFont();
-                      }}
-                      className={styles.fontAddButton}
-                      disabled={!fontInput.trim()}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Colors */}
-            <div>
-              <Label className={styles.label}>
-                Colors
-              </Label>
-              <div className={styles.colorsList}>
-                {colors.map((color) => (
-                  <div
-                    key={color}
-                    className={styles.colorSwatchContainer}
-                  >
-                    <div
-                      className={styles.colorSwatch}
-                      style={{ backgroundColor: color }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveColor(color)}
-                      className={styles.colorRemoveButton}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleOpenColorPicker}
-                  className={styles.colorAddButton}
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
-              </div>
-              
-              {/* Color Picker Dialog */}
-              <Dialog open={isColorPickerOpen} onClose={() => setIsColorPickerOpen(false)}>
-                <div className={styles.colorPickerDialog}>
-                  <h3 className={styles.colorPickerTitle}>Select Color</h3>
-                  <div className={styles.colorPickerContent}>
-                    <HexColorPicker
-                      color={tempColorInput}
-                      onChange={setTempColorInput}
-                      className={styles.colorPicker}
-                    />
-                    <input
-                      type="text"
-                      value={tempColorInput}
-                      onChange={(e) => setTempColorInput(e.target.value)}
-                      placeholder="#000000"
-                      className={styles.colorTextInput}
-                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                    />
-                    <div className={styles.colorPickerActions}>
-                      <Button
-                        type="button"
-                        className={styles.colorPickerCancelButton}
-                        onClick={() => setIsColorPickerOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={handleAddColor}
-                        disabled={!tempColorInput || colors.includes(tempColorInput)}
-                        className={styles.colorPickerAddButton}
-                      >
-                        Add Color
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </Dialog>
-            </div>
-
-            {/* Brand Voice */}
-            <div>
-              <Label className={styles.label}>
-                Brand voice
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonTextarea} />
-              ) : (
-                <textarea
-                  value={brandVoice}
-                  onChange={(e) => handleBrandVoiceChange(e.target.value)}
-                  onBlur={handleBlur}
-                  placeholder="Tell us about your brand voice"
-                  className={styles.brandVoiceTextarea}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Right Column - General Information */}
-          <div className={styles.column}>
-            {/* Website URL */}
-            <div>
-              <Label className={styles.label}>
-                Website URL
-              </Label>
-              <input
-                type="url"
-                value={websiteUrl}
-                onChange={(e) => handleWebsiteUrlChange(e.target.value)}
-                onBlur={handleBlur}
-                placeholder="https://www.example.com"
-                className={styles.websiteUrlInput}
+          {/* Row 1: Brand Name/Logo (left) + Website URL/Ads Language (right) */}
+          <div className={`${styles.row} ${styles.first}`}>
+            {/* Left Column: Brand Name and Logo */}
+            <div className={styles.rowContent}>
+              <ContentWrapper
+                brandName={brandData.name}
+                logoUrl={logoUrl}
+                onLogoUpload={handleLogoUpload}
+                isUploadingLogo={isUploadingLogo}
               />
             </div>
 
-            {/* Ads Language */}
-            <div>
-              <Label className={styles.label}>
-                Ads language
-              </Label>
-              <select
-                value={language}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className={styles.languageSelect}
-              >
-                {allLanguages.length > 0 ? (
-                  allLanguages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {lang.name}
-                    </option>
-                  ))
+            {/* Right Column: Website URL and Ads Language */}
+            <div className={styles.rowContent}>
+              {/* Website URL */}
+              <div>
+                <Label className={styles.label}>
+                  Website URL
+                </Label>
+                <input
+                  type="url"
+                  value={websiteUrl}
+                  onChange={(e) => handleWebsiteUrlChange(e.target.value)}
+                  onBlur={handleBlur}
+                  placeholder="https://www.example.com"
+                  className={styles.websiteUrlInput}
+                />
+              </div>
+
+              {/* Ads Language */}
+              <div>
+                <Label className={styles.label}>
+                  Ads language
+                </Label>
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value)}
+                  className={styles.languageSelect}
+                >
+                  {allLanguages.length > 0 ? (
+                    allLanguages.map((lang) => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value={language}>{languageDisplayName}</option>
+                  )}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Brand Fonts/Colors/Voice (left) + Product Photos (right) */}
+          <div className={styles.row}>
+            {/* Left Column: Brand Fonts, Colors, Brand Voice */}
+            <div className={styles.rowContent}>
+              {/* Brand Fonts */}
+              <div>
+                <Label className={styles.label}>
+                  Brand fonts
+                </Label>
+                <div 
+                  className={styles.fontContainer}
+                  onClick={(e) => {
+                    // Only focus if clicking on white space, not on chips
+                    const target = e.target as HTMLElement;
+                    const isClickOnChip = target.closest(`.${styles.fontChip}`);
+                    const isClickOnPlaceholder = target.classList.contains(styles.fontPlaceholder);
+                    
+                    // Enter focus mode if clicking on container, fontsList, or placeholder (but not on chips)
+                    if (!isClickOnChip || isClickOnPlaceholder) {
+                      setIsFontInputFocused(true);
+                    }
+                  }}
+                >
+                  {!isFontInputFocused ? (
+                    <div className={styles.fontsList}>
+                      {fonts.length > 0 ? (
+                        fonts.map((font) => (
+                          <div
+                            key={font.fontFamily}
+                            className={styles.fontChip}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span>{font.fontFamily}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveFont(font.fontFamily);
+                              }}
+                              className={styles.fontRemoveButton}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <span className={styles.fontPlaceholder}>Click to add fonts</span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className={styles.fontInputWrapper}>
+                      <input
+                        type="text"
+                        placeholder="Add font name"
+                        value={fontInput}
+                        onChange={(e) => setFontInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddFont();
+                          }
+                          if (e.key === 'Escape') {
+                            setIsFontInputFocused(false);
+                            setFontInput('');
+                          }
+                        }}
+                        onBlur={() => {
+                          // Delay to allow button click
+                          setTimeout(() => {
+                            if (!fontInput.trim()) {
+                              setIsFontInputFocused(false);
+                            }
+                          }, 200);
+                        }}
+                        autoFocus
+                        className={styles.fontInput}
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddFont();
+                        }}
+                        className={styles.fontAddButton}
+                        disabled={!fontInput.trim()}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Colors */}
+              <div>
+                <Label className={styles.label}>
+                  Colors
+                </Label>
+                <div className={styles.colorsList}>
+                  {colors.map((color) => (
+                    <div
+                      key={color}
+                      className={styles.colorSwatchContainer}
+                    >
+                      <div
+                        className={styles.colorSwatch}
+                        style={{ backgroundColor: color }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveColor(color)}
+                        className={styles.colorRemoveButton}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleOpenColorPicker}
+                    className={styles.colorAddButton}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {/* Color Picker Dialog */}
+                <Dialog open={isColorPickerOpen} onClose={() => setIsColorPickerOpen(false)}>
+                  <div className={styles.colorPickerDialog}>
+                    <h3 className={styles.colorPickerTitle}>Select Color</h3>
+                    <div className={styles.colorPickerContent}>
+                      <HexColorPicker
+                        color={tempColorInput}
+                        onChange={setTempColorInput}
+                        className={styles.colorPicker}
+                      />
+                      <input
+                        type="text"
+                        value={tempColorInput}
+                        onChange={(e) => setTempColorInput(e.target.value)}
+                        placeholder="#000000"
+                        className={styles.colorTextInput}
+                        pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                      />
+                      <div className={styles.colorPickerActions}>
+                        <Button
+                          type="button"
+                          className={styles.colorPickerCancelButton}
+                          onClick={() => setIsColorPickerOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={handleAddColor}
+                          disabled={!tempColorInput || colors.includes(tempColorInput)}
+                          className={styles.colorPickerAddButton}
+                        >
+                          Add Color
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Dialog>
+              </div>
+
+              {/* Brand Voice */}
+              <div>
+                <Label className={styles.label}>
+                  Brand voice
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonTextarea} />
                 ) : (
-                  <option value={language}>{languageDisplayName}</option>
+                  <textarea
+                    value={brandVoice}
+                    onChange={(e) => handleBrandVoiceChange(e.target.value)}
+                    onBlur={handleBlur}
+                    placeholder="Tell us about your brand voice"
+                    className={styles.brandVoiceTextarea}
+                  />
                 )}
-              </select>
+              </div>
             </div>
 
-            {/* Product Photos */}
-            <div>
-              <Label className={styles.label}>
-                Product photos
-              </Label>
-              <div className={styles.photosGrid}>
-                {/* Display product photos */}
-                {photos.map((photo, index) => (
-                  <div
-                    key={`product-${index}`}
-                    className={styles.photoItem}
+            {/* Right Column: Product Photos */}
+            <div className={styles.rowContent}>
+              {/* Product Photos */}
+              <div>
+                <Label className={styles.label}>
+                  Product photos
+                </Label>
+                <div className={styles.photosGrid}>
+                  {/* Display product photos */}
+                  {photos.map((photo, index) => (
+                    <div
+                      key={`product-${index}`}
+                      className={styles.photoItem}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Product photo ${index + 1}`}
+                        className={styles.photoImage}
+                      />
+                      {deletingPhotoUrl === photo && (
+                        <div className={styles.photoLoadingOverlay}>
+                          <Loader2 className={styles.loadingSpinner} />
+                        </div>
+                      )}
+                      {deletingPhotoUrl !== photo && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(photo, 'product')}
+                          className={styles.photoRemoveButton}
+                          disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {/* Display hero photos */}
+                  {heroPhotos.map((photo, index) => (
+                    <div
+                      key={`hero-${index}`}
+                      className={styles.photoItem}
+                    >
+                      <img
+                        src={photo}
+                        alt={`Hero photo ${index + 1}`}
+                        className={styles.photoImage}
+                      />
+                      {deletingPhotoUrl === photo && (
+                        <div className={styles.photoLoadingOverlay}>
+                          <Loader2 className={styles.loadingSpinner} />
+                        </div>
+                      )}
+                      {deletingPhotoUrl !== photo && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(photo, 'hero')}
+                          className={styles.photoRemoveButton}
+                          disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {/* Add Product Photo Button */}
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    className={styles.addPhotoButton}
+                    disabled={isUploadingPhotos || isUploadingHeroPhotos}
                   >
-                    <img
-                      src={photo}
-                      alt={`Product photo ${index + 1}`}
-                      className={styles.photoImage}
-                    />
-                    {deletingPhotoUrl === photo && (
-                      <div className={styles.photoLoadingOverlay}>
-                        <Loader2 className={styles.loadingSpinner} />
-                      </div>
+                    {isUploadingPhotos ? (
+                      <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
+                    ) : (
+                      <Plus className="w-8 h-8" />
                     )}
-                    {deletingPhotoUrl !== photo && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePhoto(photo, 'product')}
-                        className={styles.photoRemoveButton}
-                        disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {/* Display hero photos */}
-                {heroPhotos.map((photo, index) => (
-                  <div
-                    key={`hero-${index}`}
-                    className={styles.photoItem}
+                  </button>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className={styles.hiddenInput}
+                    disabled={isUploadingPhotos || isUploadingHeroPhotos}
+                  />
+                  {/* Add Hero Photo Button */}
+                  {/* <button
+                    type="button"
+                    onClick={() => heroPhotoInputRef.current?.click()}
+                    className={styles.addPhotoButton}
+                    disabled={isUploadingPhotos || isUploadingHeroPhotos}
                   >
-                    <img
-                      src={photo}
-                      alt={`Hero photo ${index + 1}`}
-                      className={styles.photoImage}
-                    />
-                    {deletingPhotoUrl === photo && (
-                      <div className={styles.photoLoadingOverlay}>
-                        <Loader2 className={styles.loadingSpinner} />
-                      </div>
+                    {isUploadingHeroPhotos ? (
+                      <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
+                    ) : (
+                      <Plus className="w-8 h-8" />
                     )}
-                    {deletingPhotoUrl !== photo && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePhoto(photo, 'hero')}
-                        className={styles.photoRemoveButton}
-                        disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {/* Add Product Photo Button */}
-                <button
-                  type="button"
-                  onClick={() => photoInputRef.current?.click()}
-                  className={styles.addPhotoButton}
-                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
-                >
-                  {isUploadingPhotos ? (
-                    <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
-                  ) : (
-                    <Plus className="w-8 h-8" />
-                  )}
-                </button>
-                <input
-                  ref={photoInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handlePhotoUpload}
-                  className={styles.hiddenInput}
-                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
-                />
-                {/* Add Hero Photo Button */}
-                {/* <button
-                  type="button"
-                  onClick={() => heroPhotoInputRef.current?.click()}
-                  className={styles.addPhotoButton}
-                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
-                >
-                  {isUploadingHeroPhotos ? (
-                    <Loader2 className={`w-8 h-8 ${styles.loadingSpinner}`} />
-                  ) : (
-                    <Plus className="w-8 h-8" />
-                  )}
-                </button>
-                <input
-                  ref={heroPhotoInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleHeroPhotoUpload}
-                  className={styles.hiddenInput}
-                  disabled={isUploadingPhotos || isUploadingHeroPhotos}
-                /> */}
+                  </button>
+                  <input
+                    ref={heroPhotoInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleHeroPhotoUpload}
+                    className={styles.hiddenInput}
+                    disabled={isUploadingPhotos || isUploadingHeroPhotos}
+                  /> */}
+                </div>
               </div>
             </div>
           </div>

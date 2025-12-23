@@ -322,240 +322,257 @@ export default function ProductCompetitionPage({
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
         <div className={styles.grid}>
-          {/* Left Column */}
-          <div className={styles.column}>
-            <ContentWrapper
-              brandName={brandData.name}
-              logoUrl={logoUrl}
-              onLogoUpload={handleLogoUpload}
-              isUploadingLogo={isUploadingLogo}
-            />
-            {/* Key Features */}
-            <div>
-              <Label className={styles.label}>
-                Key features
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonTextarea} />
-              ) : (
-                <textarea
-                  ref={keyFeaturesInputRef}
-                  value={keyFeatures}
-                  onChange={(e) => handleKeyFeaturesChange(e.target.value)}
-                  onBlur={handleKeyFeaturesBlur}
-                  onKeyDown={handleKeyFeaturesKeyDown}
-                  onFocus={(e) => {
-                    // If textarea is empty, add bullet point
-                    if (!e.target.value.trim()) {
-                      setKeyFeatures('• ');
-                      setTimeout(() => {
-                        e.target.selectionStart = e.target.selectionEnd = 2;
-                      }, 0);
-                    }
-                  }}
-                  placeholder="• Enter key features"
-                  className={styles.textarea}
-                  rows={6}
-                />
-              )}
+          {/* Row 1: ContentWrapper (left) + Product Description (right) - align-items: end */}
+          <div className={`${styles.row} ${styles.first}`}>
+            {/* Left Column: ContentWrapper */}
+            <div className={styles.rowContent}>
+              <ContentWrapper
+                brandName={brandData.name}
+                logoUrl={logoUrl}
+                onLogoUpload={handleLogoUpload}
+                isUploadingLogo={isUploadingLogo}
+              />
             </div>
 
-            {/* Key Benefits */}
-            <div>
-              <Label className={styles.label}>
-                Key benefits
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonTextarea} />
-              ) : (
-                <textarea
-                  ref={keyBenefitsInputRef}
-                  value={keyBenefits}
-                  onChange={(e) => handleKeyBenefitsChange(e.target.value)}
-                  onBlur={handleKeyBenefitsBlur}
-                  onKeyDown={handleKeyBenefitsKeyDown}
-                  onFocus={(e) => {
-                    // If textarea is empty, add bullet point
-                    if (!e.target.value.trim()) {
-                      setKeyBenefits('• ');
-                      setTimeout(() => {
-                        e.target.selectionStart = e.target.selectionEnd = 2;
-                      }, 0);
-                    }
-                  }}
-                  placeholder="• Enter key benefits"
-                  className={styles.textarea}
-                  rows={6}
-                />
-              )}
+            {/* Right Column: Product Description */}
+            <div className={styles.rowContent}>
+              <div>
+                <Label className={styles.label}>
+                  Product description
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonTextarea} />
+                ) : (
+                  <textarea
+                    value={productDescription}
+                    onChange={(e) => handleProductDescriptionChange(e.target.value)}
+                    onBlur={handleProductDescriptionBlur}
+                    placeholder="Tell us about your brand"
+                    className={styles.textarea}
+                    rows={6}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className={styles.column}>
-            {/* Product Description */}
-            <div>
-              <Label className={styles.label}>
-                Product description
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonTextarea} />
-              ) : (
-                <textarea
-                  value={productDescription}
-                  onChange={(e) => handleProductDescriptionChange(e.target.value)}
-                  onBlur={handleProductDescriptionBlur}
-                  placeholder="Tell us about your brand"
-                  className={styles.textarea}
-                  rows={6}
-                />
-              )}
+          {/* Row 2: Key Features (left) + Industry (right) */}
+          <div className={styles.row}>
+            {/* Left Column: Key Features */}
+            <div className={styles.rowContent}>
+              <div>
+                <Label className={styles.label}>
+                  Key features
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonTextarea} />
+                ) : (
+                  <textarea
+                    ref={keyFeaturesInputRef}
+                    value={keyFeatures}
+                    onChange={(e) => handleKeyFeaturesChange(e.target.value)}
+                    onBlur={handleKeyFeaturesBlur}
+                    onKeyDown={handleKeyFeaturesKeyDown}
+                    onFocus={(e) => {
+                      // If textarea is empty, add bullet point
+                      if (!e.target.value.trim()) {
+                        setKeyFeatures('• ');
+                        setTimeout(() => {
+                          e.target.selectionStart = e.target.selectionEnd = 2;
+                        }, 0);
+                      }
+                    }}
+                    placeholder="• Enter key features"
+                    className={styles.textarea}
+                    rows={6}
+                  />
+                )}
+              </div>
             </div>
 
-            {/* Industry */}
-            <div>
-              <Label className={styles.label}>
-                Industry
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonInput} />
-              ) : (
-                <div className={styles.tagsContainer}>
-                  {industry.length > 0 && (
-                    <div className={styles.tagsList}>
-                      {industry.map((tag, index) => (
-                        <div key={index} className={styles.tagChip}>
-                          <span>{tag}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveIndustry(index)}
-                            className={styles.tagRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isIndustryFocused || industry.length === 0 ? (
-                    <div className={styles.tagInputWrapper}>
-                      <input
-                        type="text"
-                        value={industryInput}
-                        onChange={(e) => setIndustryInput(e.target.value)}
-                        onBlur={() => {
-                          setTimeout(() => {
-                            if (!industryInput.trim()) {
+            {/* Right Column: Industry */}
+            <div className={styles.rowContent}>
+              <div className={styles.tagsSection}>
+                <Label className={styles.label}>
+                  Industry
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonInput} />
+                ) : (
+                  <div className={styles.tagsContainer}>
+                    {industry.length > 0 && (
+                      <div className={styles.tagsList}>
+                        {industry.map((tag, index) => (
+                          <div key={index} className={styles.tagChip}>
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveIndustry(index)}
+                              className={styles.tagRemoveButton}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {isIndustryFocused || industry.length === 0 ? (
+                      <div className={styles.tagInputWrapper}>
+                        <input
+                          type="text"
+                          value={industryInput}
+                          onChange={(e) => setIndustryInput(e.target.value)}
+                          onBlur={() => {
+                            setTimeout(() => {
+                              if (!industryInput.trim()) {
+                                setIsIndustryFocused(false);
+                              }
+                            }, 200);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddIndustry();
+                            }
+                            if (e.key === 'Escape') {
                               setIsIndustryFocused(false);
+                              setIndustryInput('');
                             }
-                          }, 200);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddIndustry();
-                          }
-                          if (e.key === 'Escape') {
-                            setIsIndustryFocused(false);
-                            setIndustryInput('');
-                          }
-                        }}
-                        placeholder="Enter industry"
-                        className={styles.tagInput}
-                        autoFocus={isIndustryFocused}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddIndustry}
-                        className={styles.tagAddButton}
-                        disabled={!industryInput.trim() || industry.includes(industryInput.trim())}
+                          }}
+                          placeholder="Enter industry"
+                          className={styles.tagInput}
+                          autoFocus={isIndustryFocused}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddIndustry}
+                          className={styles.tagAddButton}
+                          disabled={!industryInput.trim() || industry.includes(industryInput.trim())}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className={styles.tagsPlaceholder}
+                        onClick={() => setIsIndustryFocused(true)}
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      className={styles.tagsPlaceholder}
-                      onClick={() => setIsIndustryFocused(true)}
-                    >
-                      Click to add industry
-                    </div>
-                  )}
-                </div>
-              )}
+                        Click to add industry
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Key Benefits (left) + Competitors (right) */}
+          <div className={styles.row}>
+            {/* Left Column: Key Benefits */}
+            <div className={styles.rowContent}>
+              <div>
+                <Label className={styles.label}>
+                  Key benefits
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonTextarea} />
+                ) : (
+                  <textarea
+                    ref={keyBenefitsInputRef}
+                    value={keyBenefits}
+                    onChange={(e) => handleKeyBenefitsChange(e.target.value)}
+                    onBlur={handleKeyBenefitsBlur}
+                    onKeyDown={handleKeyBenefitsKeyDown}
+                    onFocus={(e) => {
+                      // If textarea is empty, add bullet point
+                      if (!e.target.value.trim()) {
+                        setKeyBenefits('• ');
+                        setTimeout(() => {
+                          e.target.selectionStart = e.target.selectionEnd = 2;
+                        }, 0);
+                      }
+                    }}
+                    placeholder="• Enter key benefits"
+                    className={styles.textarea}
+                    rows={6}
+                  />
+                )}
+              </div>
             </div>
 
-            {/* Competitors */}
-            <div>
-              <Label className={styles.label}>
-                Competitors
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonInput} />
-              ) : (
-                <div className={styles.tagsContainer}>
-                  {competitors.length > 0 && (
-                    <div className={styles.tagsList}>
-                      {competitors.map((competitor, index) => (
-                        <div key={index} className={styles.tagChip}>
-                          <span>{competitor}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveCompetitor(index)}
-                            className={styles.tagRemoveButton}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {isCompetitorsFocused || competitors.length === 0 ? (
-                    <div className={styles.tagInputWrapper}>
-                      <input
-                        type="text"
-                        value={competitorsInput}
-                        onChange={(e) => setCompetitorsInput(e.target.value)}
-                        onBlur={() => {
-                          setTimeout(() => {
-                            if (!competitorsInput.trim()) {
-                              setIsCompetitorsFocused(false);
+            {/* Right Column: Competitors */}
+            <div className={styles.rowContent}>
+              <div className={styles.tagsSection}>
+                <Label className={styles.label}>
+                  Competitors
+                </Label>
+                {!insightsLoaded ? (
+                  <div className={styles.skeletonInput} />
+                ) : (
+                  <div className={styles.tagsContainer}>
+                    {competitors.length > 0 && (
+                      <div className={styles.tagsList}>
+                        {competitors.map((competitor, index) => (
+                          <div key={index} className={styles.tagChip}>
+                            <span>{competitor}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCompetitor(index)}
+                              className={styles.tagRemoveButton}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {isCompetitorsFocused || competitors.length === 0 ? (
+                      <div className={styles.tagInputWrapper}>
+                        <input
+                          type="text"
+                          value={competitorsInput}
+                          onChange={(e) => setCompetitorsInput(e.target.value)}
+                          onBlur={() => {
+                            setTimeout(() => {
+                              if (!competitorsInput.trim()) {
+                                setIsCompetitorsFocused(false);
+                              }
+                            }, 200);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddCompetitor();
                             }
-                          }, 200);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddCompetitor();
-                          }
-                          if (e.key === 'Escape') {
-                            setIsCompetitorsFocused(false);
-                            setCompetitorsInput('');
-                          }
-                        }}
-                        placeholder="Enter competitor"
-                        className={styles.tagInput}
-                        autoFocus={isCompetitorsFocused}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddCompetitor}
-                        className={styles.tagAddButton}
-                        disabled={!competitorsInput.trim() || competitors.includes(competitorsInput.trim())}
+                            if (e.key === 'Escape') {
+                              setIsCompetitorsFocused(false);
+                              setCompetitorsInput('');
+                            }
+                          }}
+                          placeholder="Enter competitor"
+                          className={styles.tagInput}
+                          autoFocus={isCompetitorsFocused}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCompetitor}
+                          className={styles.tagAddButton}
+                          disabled={!competitorsInput.trim() || competitors.includes(competitorsInput.trim())}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        className={styles.tagsPlaceholder}
+                        onClick={() => setIsCompetitorsFocused(true)}
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      className={styles.tagsPlaceholder}
-                      onClick={() => setIsCompetitorsFocused(true)}
-                    >
-                      Click to add competitors
-                    </div>
-                  )}
-                </div>
-              )}
+                        Click to add competitors
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

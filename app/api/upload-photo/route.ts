@@ -76,11 +76,11 @@ export async function POST(req: Request) {
       });
     } else {
       // Product photos (default)
-      const currentPhotos = brand.photos || [];
-      const updatedPhotos = [...currentPhotos, blob.url];
-      await updateBrand(brandId, {
-        photos: updatedPhotos,
-      });
+    const currentPhotos = brand.photos || [];
+    const updatedPhotos = [...currentPhotos, blob.url];
+    await updateBrand(brandId, {
+      photos: updatedPhotos,
+    });
     }
 
     return NextResponse.json({ url: blob.url });

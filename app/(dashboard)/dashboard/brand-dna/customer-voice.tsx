@@ -318,17 +318,22 @@ export default function CustomerVoicePage({
     <div className={styles.container}>
       <div className={styles.contentWrapper}>
         <div className={styles.grid}>
-          {/* Left Column */}
-          <div className={styles.column}>
-            <ContentWrapper
-              brandName={brandData.name}
-              logoUrl={logoUrl}
-              onLogoUpload={handleLogoUpload}
-              isUploadingLogo={isUploadingLogo}
-            />
+          {/* Row 1: ContentWrapper only */}
+          <div className={styles.row}>
+            <div className={`${styles.rowContent} ${styles.first}`}>
+              <ContentWrapper
+                brandName={brandData.name}
+                logoUrl={logoUrl}
+                onLogoUpload={handleLogoUpload}
+                isUploadingLogo={isUploadingLogo}
+              />
+            </div>
+          </div>
 
-            {/* Target Customer */}
-            <div>
+          {/* Row 2: Target Customer (left) + Purchase Triggers (right) */}
+          <div className={styles.row}>
+            {/* Left Column: Target Customer */}
+            <div className={styles.rowContent}>
               <Label className={styles.label}>
                 Target customer
               </Label>
@@ -400,41 +405,8 @@ export default function CustomerVoicePage({
               )}
             </div>
 
-            {/* Customer Pain Points */}
-            <div>
-              <Label className={styles.label}>
-                Customer pain points
-              </Label>
-              {!insightsLoaded ? (
-                <div className={styles.skeletonTextarea} />
-              ) : (
-                <textarea
-                  ref={customerPainPointsInputRef}
-                  value={customerPainPoints}
-                  onChange={(e) => handleCustomerPainPointsChange(e.target.value)}
-                  onBlur={handleCustomerPainPointsBlur}
-                  onKeyDown={handleCustomerPainPointsKeyDown}
-                  onFocus={(e) => {
-                    // If textarea is empty, add bullet point
-                    if (!e.target.value.trim()) {
-                      setCustomerPainPoints('• ');
-                      setTimeout(() => {
-                        e.target.selectionStart = e.target.selectionEnd = 2;
-                      }, 0);
-                    }
-                  }}
-                  placeholder="• Enter customer pain points"
-                  className={styles.textarea}
-                  rows={6}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className={styles.column}>
-            {/* Purchase Triggers */}
-            <div>
+            {/* Right Column: Purchase Triggers */}
+            <div className={styles.rowContent}>
               <Label className={styles.label}>
                 Purchase triggers
               </Label>
@@ -462,9 +434,42 @@ export default function CustomerVoicePage({
                 />
               )}
             </div>
+          </div>
 
-            {/* Customer Expectations */}
-            <div>
+          {/* Row 3: Customer Pain Points (left) + Customer Expectations (right) */}
+          <div className={styles.row}>
+            {/* Left Column: Customer Pain Points */}
+            <div className={styles.rowContent}>
+              <Label className={styles.label}>
+                Customer pain points
+              </Label>
+              {!insightsLoaded ? (
+                <div className={styles.skeletonTextarea} />
+              ) : (
+                <textarea
+                  ref={customerPainPointsInputRef}
+                  value={customerPainPoints}
+                  onChange={(e) => handleCustomerPainPointsChange(e.target.value)}
+                  onBlur={handleCustomerPainPointsBlur}
+                  onKeyDown={handleCustomerPainPointsKeyDown}
+                  onFocus={(e) => {
+                    // If textarea is empty, add bullet point
+                    if (!e.target.value.trim()) {
+                      setCustomerPainPoints('• ');
+                      setTimeout(() => {
+                        e.target.selectionStart = e.target.selectionEnd = 2;
+                      }, 0);
+                    }
+                  }}
+                  placeholder="• Enter customer pain points"
+                  className={styles.textarea}
+                  rows={6}
+                />
+              )}
+            </div>
+
+            {/* Right Column: Customer Expectations */}
+            <div className={styles.rowContent}>
               <Label className={styles.label}>
                 Customer expectations
               </Label>
