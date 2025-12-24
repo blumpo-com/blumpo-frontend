@@ -762,6 +762,14 @@
   overflow: hidden;
 }
 
+.skeletonPhotoItem {
+  aspect-ratio: 1;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
 .photoItem[data-loading="true"] {
   opacity: 0.6;
   pointer-events: none;

@@ -34,8 +34,8 @@ interface ContentWrapperProps {
   isUploadingLogo?: boolean;
 }
 
-export default function ContentWrapper({ 
-  brandName, 
+export default function ContentWrapper({
+  brandName,
   logoUrl,
   onLogoUpload,
   isUploadingLogo = false
@@ -70,7 +70,7 @@ export default function ContentWrapper({
     <>
       {/* Brand Name Container */}
       <div className={styles.brandNameContainer} ref={brandDropdownRef}>
-        <div 
+        <div
           className={styles.brandNameInner}
           onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
           style={{ cursor: 'pointer' }}
@@ -86,8 +86,8 @@ export default function ContentWrapper({
           </div>
           <span className={styles.brandNameText}>{brandName}</span>
           <div className={`${styles.chevronWrapper} ${isBrandDropdownOpen ? styles.chevronRotated : ''}`}>
-            <ChevronDown 
-              size={28} 
+            <ChevronDown
+              size={28}
               strokeWidth={2}
             />
           </div>
@@ -141,11 +141,6 @@ export default function ContentWrapper({
                 alt="Brand logo"
                 className={styles.logoImage}
               />
-              {isUploadingLogo && (
-                <div className={styles.photoLoadingOverlay}>
-                  <Loader2 className={styles.loadingSpinner} />
-                </div>
-              )}
             </div>
           ) : (
             <div className={styles.logoUploadContainer}>
@@ -168,7 +163,7 @@ export default function ContentWrapper({
           )}
         </div>
         {logoUrl && !isUploadingLogo && onLogoUpload && (
-          <div 
+          <div
             className={styles.logoEditOverlay}
             onClick={() => logoInputRef.current?.click()}
           >
@@ -188,6 +183,11 @@ export default function ContentWrapper({
             className={styles.hiddenInput}
             disabled={isUploadingLogo}
           />
+        )}
+        {isUploadingLogo && (
+          <div className={styles.photoLoadingOverlay}>
+            <Loader2 className={styles.loadingSpinner} />
+          </div>
         )}
       </div>
     </>
