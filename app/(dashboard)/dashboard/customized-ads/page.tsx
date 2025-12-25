@@ -7,7 +7,6 @@ import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
-import { CreatingProcess } from '../ad-generation/creating-process';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
@@ -344,8 +343,7 @@ function CustomizedAdsPageContent() {
     
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
-      // await handleFinalSubmit();
-      setIsUploaded(true); // For testing purposes
+      await handleFinalSubmit();
       return;
     }
     
@@ -448,17 +446,12 @@ function CustomizedAdsPageContent() {
     };
   }, [jobId, isUploaded]);
 
-  // Show creating process view after upload
-  if (isUploaded) {
-    return (
-      <CreatingProcess 
-        onComplete={() => {
-          // TODO: Navigate to results page when webhook integration is ready
-          console.log('Process completed');
-        }}
-      />
-    );
-  }
+  // Navigate to ad generation page after upload
+  useEffect(() => {
+    if (isUploaded && jobId) {
+      router.push(`/dashboard/ad-generation?job_id=${jobId}`);
+    }
+  }, [isUploaded, jobId, router]);
 
   return (
     <div className={styles.pageContainer}>

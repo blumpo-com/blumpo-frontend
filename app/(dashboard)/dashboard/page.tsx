@@ -172,6 +172,27 @@ export default function DashboardHomePage() {
 
   return (
     <div className={styles.homePage}>
+      {/* TEST: Temporary button to test ad generation page - DELETE THIS BUTTON */}
+      <button
+        onClick={() => router.push('/dashboard/ad-generation?job_id=test-job-123')}
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          padding: '10px 20px',
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        }}
+      >
+        TEST: Ad Generation
+      </button>
       {/* Header Section */}
       <div className={styles.greetingContainer}>
         <h1 className={styles.greeting}>
