@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import styles from './creating-process.module.css';
+import { ReadyAdsView } from './ready-ads-view';
 
 // Icon component that renders the appropriate SVG based on step index
 interface StepIconProps {
@@ -206,6 +207,9 @@ export function CreatingProcess({
 }: CreatingProcessProps) {
   const isControlled = !!externalSteps;
 
+  // TEST: Temporary state for testing ready ads view - DELETE THIS
+  const [showReadyAds, setShowReadyAds] = useState(false);
+
   const [steps, setSteps] = useState<ProcessStep[]>(() => {
     if (externalSteps) {
       return externalSteps;
@@ -362,8 +366,41 @@ export function CreatingProcess({
     }
   }, [startProcess, isControlled]);
 
+  // TEST: Show ready ads view if test button was clicked - DELETE THIS BLOCK
+  if (showReadyAds) {
+    return (
+      <ReadyAdsView 
+        onSeeAds={() => {
+          console.log('See ads clicked');
+          // TODO: Navigate to ads view
+        }}
+      />
+    );
+  }
+
   return (
     <div className={styles.creatingProcessContainer}>
+      {/* TEST: Temporary button to test ready ads view - DELETE THIS BUTTON */}
+      <button
+        onClick={() => setShowReadyAds(true)}
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+          padding: '10px 20px',
+          backgroundColor: '#ff6b6b',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          fontWeight: 'bold',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        }}
+      >
+        TEST: Show Ready Ads
+      </button>
       <LeftPanel />
       <div className={styles.rightPanel}>
         <div className={styles.rightPanelInner}>
