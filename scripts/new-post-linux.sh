@@ -197,7 +197,7 @@ read -p "Enter choice (1, 2, or 3): " COVER_MODE
 COVER_IMAGE=""
 if [ "$COVER_MODE" = "1" ]; then
   # Find first image
-  FIRST_IMAGE=$(find "$IMAGES_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" -o -iname "*.svg" \) | head -n 1)
+  FIRST_IMAGE=$(find "$IMAGES_DIR" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" -o -iname "*.webp" -o -iname "*.svg" -o -iname "*.avif" \) | head -n 1)
   if [ -n "$FIRST_IMAGE" ]; then
     IMAGE_FILENAME=$(basename "$FIRST_IMAGE")
     # Copy to public directory

@@ -124,8 +124,9 @@ function findImageReferences(content) {
     
     for (let i = 0; i < urlSection.length; i++) {
       if (urlSection[i] === ')') {
-        const candidate = urlSection.substring(0, i);
+        const candidate = urlSection.substring(0, i).trim();
         // If it looks like a complete file path, prefer this match
+        // Match image extensions (including .avif) - extension should be at end or followed by query/hash
         if (candidate.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?|#|$)/i)) {
           bestMatch = candidate;
           bestIndex = i;
@@ -534,7 +535,7 @@ function findFirstImage(imagesDir) {
   if (!fs.existsSync(imagesDir)) return null;
   
   const files = fs.readdirSync(imagesDir);
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.avif'];
   
   for (const file of files) {
     const ext = path.extname(file).toLowerCase();
