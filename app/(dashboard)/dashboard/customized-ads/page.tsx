@@ -7,7 +7,7 @@ import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
-import { CreatingProcess } from './creating-process';
+import { CreatingProcess } from '../ad-generation/creating-process';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
