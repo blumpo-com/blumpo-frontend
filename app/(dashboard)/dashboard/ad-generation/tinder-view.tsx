@@ -25,6 +25,9 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
   const [isDragging, setIsDragging] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [leftCardAnimating, setLeftCardAnimating] = useState(false);
+  const [rightCardAnimating, setRightCardAnimating] = useState(false);
+  const [nextCardSide, setNextCardSide] = useState<'left' | 'right'>('left'); // Alternates between left and right
   
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
@@ -38,7 +41,12 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
 
   const currentAd = filteredAds[currentIndex];
   const nextAd = filteredAds[currentIndex + 1];
-  const prevAd = filteredAds[currentIndex - 1];
+  const nextNextAd = filteredAds[currentIndex + 2];
+  const isLastAd = !nextAd;
+  
+  // Determine which card goes on which side based on turn
+  const leftAd = nextCardSide === 'left' ? nextAd : nextNextAd;
+  const rightAd = nextCardSide === 'left' ? nextNextAd : nextAd;
 
   // Get card size based on format
   const getCardSize = (adFormat: '1:1' | '16:9') => {
@@ -55,6 +63,13 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
     setIsAnimating(true);
     setSwipeDirection(direction);
     setSwipeOffset(direction === 'left' ? -1000 : 1000);
+    
+    // Animate the card on the active side to center (alternates)
+    if (nextCardSide === 'left' && leftAd) {
+      setLeftCardAnimating(true);
+    } else if (nextCardSide === 'right' && rightAd) {
+      setRightCardAnimating(true);
+    }
 
     setTimeout(() => {
       if (direction === 'right') {
@@ -66,13 +81,19 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
       setCurrentIndex(prev => prev + 1);
       setSwipeOffset(0);
       setSwipeDirection(null);
+      setLeftCardAnimating(false);
+      setRightCardAnimating(false);
+      // Alternate the side for next turn
+      setNextCardSide(prev => prev === 'left' ? 'right' : 'left');
       setIsAnimating(false);
     }, 300);
-  }, [currentAd, isAnimating, onAddToLibrary, onDelete]);
+  }, [currentAd, isAnimating, onAddToLibrary, onDelete, leftAd, rightAd, nextCardSide]);
 
   const handleUndo = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
+      // Reverse the side alternation when undoing
+      setNextCardSide(prev => prev === 'left' ? 'right' : 'left');
     }
   }, [currentIndex]);
 
@@ -185,20 +206,20 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
         {/* Tinder Cards Area */}
         <div className={styles.cardsContainer}>
           <div className={styles.cardsStack}>
-            {/* Previous card (behind) */}
-            {prevAd && (() => {
-              const size = getCardSize(prevAd.format);
+            {/* Right card (behind on the right) - animates to center on alternating turns */}
+            {rightAd && (() => {
+              const size = getCardSize(rightAd.format);
               return (
                 <div 
-                  key={`prev-${prevAd.id}`}
-                  className={`${styles.card} ${styles.cardPrevious}`}
-                  data-format={prevAd.format}
+                  key={`right-${rightAd.id}`}
+                  className={`${styles.card} ${styles.cardRight} ${rightCardAnimating ? styles.cardRightAnimating : ''}`}
+                  data-format={rightAd.format}
                   style={{ width: size.width, height: size.height }}
                 >
                   <div className={styles.cardImageWrapper}>
                     <Image
-                      src={prevAd.imageUrl}
-                      alt="Previous ad"
+                      src={rightAd.imageUrl}
+                      alt="Right ad"
                       fill
                       className={styles.cardImage}
                       style={{ objectFit: 'cover' }}
@@ -208,20 +229,20 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
               );
             })()}
 
-            {/* Next card (behind) */}
-            {nextAd && (() => {
-              const size = getCardSize(nextAd.format);
+            {/* Left card (behind on the left) - animates to center on alternating turns */}
+            {leftAd && (() => {
+              const size = getCardSize(leftAd.format);
               return (
                 <div 
-                  key={`next-${nextAd.id}`}
-                  className={`${styles.card} ${styles.cardNext}`}
-                  data-format={nextAd.format}
+                  key={`left-${leftAd.id}`}
+                  className={`${styles.card} ${styles.cardLeft} ${leftCardAnimating ? styles.cardLeftAnimating : ''}`}
+                  data-format={leftAd.format}
                   style={{ width: size.width, height: size.height }}
                 >
                   <div className={styles.cardImageWrapper}>
                     <Image
-                      src={nextAd.imageUrl}
-                      alt="Next ad"
+                      src={leftAd.imageUrl}
+                      alt="Left ad"
                       fill
                       className={styles.cardImage}
                       style={{ objectFit: 'cover' }}
@@ -243,9 +264,11 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
                   style={{
                     width: size.width,
                     height: size.height,
-                    transform: `translateX(${swipeOffset}px) rotate(${rotation}deg)`,
+                    transform: `translate(-50%, -50%) translateX(${swipeOffset}px) rotate(${rotation}deg)`,
                     opacity: opacity < 0 ? 0 : opacity,
-                    transition: isDragging || swipeOffset !== 0 ? 'transform 0.1s linear, opacity 0.1s linear' : 'none',
+                    transition: isDragging || swipeOffset !== 0 ? 'transform 0.3s linear, opacity 0.3s linear' : 'none',
+                    left: '50%',
+                    top: '50%',
                   }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
