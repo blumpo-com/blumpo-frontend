@@ -16,9 +16,10 @@ interface TinderViewMixedProps {
   onAddToLibrary?: (adId: string) => void;
   onDelete?: (adId: string) => void;
   onSave?: (adId: string, imageUrl: string) => void;
+  onComplete?: () => void;
 }
 
-export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onSave }: TinderViewMixedProps) {
+export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onSave, onComplete }: TinderViewMixedProps) {
   // State for 1:1 stack
   const [currentIndex1_1, setCurrentIndex1_1] = useState(0);
   const [swipeOffset1_1, setSwipeOffset1_1] = useState(0);
@@ -39,6 +40,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const [rightCardAnimating16_9, setRightCardAnimating16_9] = useState(false);
   const [nextCardSide16_9, setNextCardSide16_9] = useState<'left' | 'right'>('left');
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
+  const hasCompletedRef = useRef(false);
 
   const cardRef1_1 = useRef<HTMLDivElement>(null);
   const cardRef16_9 = useRef<HTMLDivElement>(null);
@@ -306,6 +308,14 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
       };
     }
   }, [isDragging1_1, isDragging16_9, handleMouseMove, handleMouseUp]);
+
+  // Check if all ads are reviewed and trigger onComplete
+  useEffect(() => {
+    if ((!currentAd1_1 || !currentAd16_9) && (ads1_1.length > 0 || ads16_9.length > 0) && onComplete && !hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      onComplete();
+    }
+  }, [currentAd1_1, currentAd16_9, ads1_1.length, ads16_9.length, onComplete]);
 
   if (!currentAd1_1 || !currentAd16_9) {
     return (

@@ -18,9 +18,10 @@ interface TinderViewProps {
   onAddToLibrary?: (adId: string) => void;
   onDelete?: (adId: string) => void;
   onSave?: (adId: string, imageUrl: string) => void;
+  onComplete?: () => void;
 }
 
-export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: TinderViewProps) {
+export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onComplete }: TinderViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -30,6 +31,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
   const [rightCardAnimating, setRightCardAnimating] = useState(false);
   const [nextCardSide, setNextCardSide] = useState<'left' | 'right'>('left'); // Alternates between left and right
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
+  const hasCompletedRef = useRef(false);
   
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
@@ -88,7 +90,8 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
         onDelete?.(currentAd.id);
       }
       
-      setCurrentIndex(prev => prev + 1);
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
       setSwipeOffset(0);
       setSwipeDirection(null);
       setLeftCardAnimating(false);
@@ -97,7 +100,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
       setNextCardSide(prev => prev === 'left' ? 'right' : 'left');
       setIsAnimating(false);
     }, 300);
-  }, [currentAd, isAnimating, onAddToLibrary, onDelete, leftAd, rightAd, nextCardSide]);
+  }, [currentAd, isAnimating, onAddToLibrary, onDelete, leftAd, rightAd, nextCardSide, currentIndex, filteredAds.length]);
 
   const handleUndo = useCallback(() => {
     if (currentIndex > 0) {
@@ -192,6 +195,14 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Check if all ads are reviewed and trigger onComplete
+  useEffect(() => {
+    if (!currentAd && filteredAds.length > 0 && onComplete && !hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      onComplete();
+    }
+  }, [currentAd, filteredAds.length, onComplete]);
 
   if (!currentAd) {
     return (

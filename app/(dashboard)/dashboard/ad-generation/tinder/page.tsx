@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TinderView, AdFormat } from '../tinder-view';
 import { TinderViewMixed } from '../tinder-view-mixed';
+import styles from '../tinder-view.module.css';
 
 // Use NEXT_PUBLIC_ prefix for client-side access
 const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
@@ -39,6 +40,12 @@ function TinderPageContent() {
   const [ads1_1, setAds1_1] = useState(testAds1_1);
   const [ads16_9, setAds16_9] = useState(testAds16_9);
   const [loading, setLoading] = useState(!isTest && !!jobId);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+  const [hasCompleted, setHasCompleted] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   
   const format: AdFormat = (formatParam === '1:1' || formatParam === '16:9' || formatParam === 'mixed') 
     ? formatParam 
@@ -95,16 +102,17 @@ function TinderPageContent() {
   }, [jobId]);
 
   const handleAddToLibrary = (adId: string) => {
+    setSavedIds(prev => new Set(prev).add(adId));
     console.log('Added to library:', adId);
-    // TODO: Implement add to library logic
   };
 
   const handleDelete = (adId: string) => {
+    setDeletedIds(prev => new Set(prev).add(adId));
     console.log('Deleted:', adId);
-    // TODO: Implement delete logic
   };
 
   const handleSave = async (adId: string, imageUrl: string) => {
+    setDownloadedIds(prev => new Set(prev).add(adId));
     try {
       // Fetch the image
       const response = await fetch(imageUrl);
@@ -133,15 +141,65 @@ function TinderPageContent() {
     }
   };
 
-  if (loading) {
+  const handleComplete = () => {
+    setHasCompleted(true);
+  };
+
+  // Trigger API call when hasCompleted is true
+  useEffect(() => {
+    if (!hasCompleted || isTest || !jobId) return;
+
+    const saveActions = async () => {
+      try {
+        setIsCompleting(true);
+
+        // Update database with all actions
+        const response = await fetch('/api/ad-actions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jobId,
+            savedIds: Array.from(savedIds),
+            deletedIds: Array.from(deletedIds),
+            downloadedIds: Array.from(downloadedIds),
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update ad actions');
+        }
+
+        console.log('Ad actions saved successfully');
+        setIsFinished(true);
+      } catch (error) {
+        console.error('Error saving ad actions:', error);
+        setIsFinished(true);
+      } finally {
+        setIsCompleting(false);
+        setLoading(false);
+      }
+    };
+
+    saveActions();
+  }, [hasCompleted, isTest, jobId, savedIds, deletedIds, downloadedIds]);
+
+  // Show completion message if finished
+  if (isFinished) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh'
-      }}>
-        <p>Loading ads...</p>
+      <div className={styles.emptyState}>
+        <h2>No more ads to review</h2>
+        <p>All ads have been reviewed!</p>
+      </div>
+    );
+  }
+
+  if (loading || isCompleting) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>{loading ? 'Loading ads...' : 'Saving your selections...'}</p>
       </div>
     );
   }
@@ -155,6 +213,7 @@ function TinderPageContent() {
         onAddToLibrary={handleAddToLibrary}
         onDelete={handleDelete}
         onSave={handleSave}
+        onComplete={handleComplete}
       />
     );
   }
@@ -169,6 +228,7 @@ function TinderPageContent() {
       onAddToLibrary={handleAddToLibrary}
       onDelete={handleDelete}
       onSave={handleSave}
+      onComplete={handleComplete}
     />
   );
 }
