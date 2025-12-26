@@ -29,10 +29,19 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
   const [leftCardAnimating, setLeftCardAnimating] = useState(false);
   const [rightCardAnimating, setRightCardAnimating] = useState(false);
   const [nextCardSide, setNextCardSide] = useState<'left' | 'right'>('left'); // Alternates between left and right
+  const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
   
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startYRef = useRef<number>(0);
+
+  const handleImageLoadStart = (adId: string) => {
+    setImageLoading(prev => ({ ...prev, [adId]: true }));
+  };
+
+  const handleImageLoad = (adId: string) => {
+    setImageLoading(prev => ({ ...prev, [adId]: false }));
+  };
 
   // Filter ads based on format
   const filteredAds = ads.filter(ad => {
@@ -224,12 +233,17 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
                   style={{ width: size.width, height: size.height }}
                 >
                   <div className={styles.cardImageWrapper}>
+                    {imageLoading[`right-${rightAd.id}`] && (
+                      <div className={styles.imageSkeleton} />
+                    )}
                     <Image
                       src={rightAd.imageUrl}
                       alt="Right ad"
                       fill
                       className={styles.cardImage}
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: 'cover', opacity: imageLoading[`right-${rightAd.id}`] ? 0 : 1 }}
+                      onLoadStart={() => handleImageLoadStart(`right-${rightAd.id}`)}
+                      onLoad={() => handleImageLoad(`right-${rightAd.id}`)}
                     />
                   </div>
                 </div>
@@ -247,12 +261,17 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
                   style={{ width: size.width, height: size.height }}
                 >
                   <div className={styles.cardImageWrapper}>
+                    {imageLoading[`left-${leftAd.id}`] && (
+                      <div className={styles.imageSkeleton} />
+                    )}
                     <Image
                       src={leftAd.imageUrl}
                       alt="Left ad"
                       fill
                       className={styles.cardImage}
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: 'cover', opacity: imageLoading[`left-${leftAd.id}`] ? 0 : 1 }}
+                      onLoadStart={() => handleImageLoadStart(`left-${leftAd.id}`)}
+                      onLoad={() => handleImageLoad(`left-${leftAd.id}`)}
                     />
                   </div>
                 </div>
@@ -283,13 +302,18 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: Ti
                   onMouseDown={handleMouseDown}
                 >
                   <div className={styles.cardImageWrapper}>
+                    {imageLoading[`current-${currentAd.id}`] && (
+                      <div className={styles.imageSkeleton} />
+                    )}
                     <Image
                       src={currentAd.imageUrl}
                       alt="Current ad"
                       fill
                       className={styles.cardImage}
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: 'cover', opacity: imageLoading[`current-${currentAd.id}`] ? 0 : 1 }}
                       priority
+                      onLoadStart={() => handleImageLoadStart(`current-${currentAd.id}`)}
+                      onLoad={() => handleImageLoad(`current-${currentAd.id}`)}
                     />
                     {/* Overlay for swipe feedback */}
                     {swipeDirection === 'left' && (

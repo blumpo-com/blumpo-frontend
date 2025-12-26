@@ -60,6 +60,42 @@
   max-width: 831px;
 }
 
+/* Test Buttons Row */
+.testButtonsRow {
+  position: absolute;
+  top: 330px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 10;
+  width: auto;
+  max-width: 100%;
+  padding: 0 20px;
+}
+
+.testButton {
+  padding: 8px 16px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.testButton:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+.testButton:active {
+  transform: translateY(0);
+}
+
 /* Bottom Section */
 .bottomSection {
   display: flex;
