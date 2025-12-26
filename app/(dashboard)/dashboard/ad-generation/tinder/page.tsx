@@ -1,0 +1,75 @@
+'use client';
+
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { TinderView, AdFormat } from '../tinder-view';
+
+// Test ads data
+const testAds1_1 = [
+  { id: '1', imageUrl: '/images/default_ads/tinder/tinder_test_1-1_1.png', format: '1:1' as const },
+  { id: '2', imageUrl: '/images/default_ads/tinder/tinder_test_1-1_2.png', format: '1:1' as const },
+  { id: '3', imageUrl: '/images/default_ads/tinder/tinder_test_1-1_3.png', format: '1:1' as const },
+];
+
+const testAds16_9 = [
+  { id: '4', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_1.png', format: '16:9' as const },
+  { id: '5', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_2.png', format: '16:9' as const },
+  { id: '6', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_3.png', format: '16:9' as const },
+];
+
+const testAdsMixed = [
+  ...testAds1_1,
+  ...testAds16_9,
+];
+
+function TinderPageContent() {
+  const searchParams = useSearchParams();
+  const formatParam = searchParams.get('format') || '1:1';
+  const format: AdFormat = (formatParam === '1:1' || formatParam === '16:9' || formatParam === 'mixed') 
+    ? formatParam 
+    : '1:1';
+
+  // Get ads based on format
+  const ads = format === '1:1' 
+    ? testAds1_1 
+    : format === '16:9' 
+    ? testAds16_9 
+    : testAdsMixed;
+
+  const handleAddToLibrary = (adId: string) => {
+    console.log('Added to library:', adId);
+    // TODO: Implement add to library logic
+  };
+
+  const handleDelete = (adId: string) => {
+    console.log('Deleted:', adId);
+    // TODO: Implement delete logic
+  };
+
+  return (
+    <TinderView
+      ads={ads}
+      format={format}
+      onAddToLibrary={handleAddToLibrary}
+      onDelete={handleDelete}
+    />
+  );
+}
+
+export default function TinderPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh'
+      }}>
+        <p>Loading...</p>
+      </div>
+    }>
+      <TinderPageContent />
+    </Suspense>
+  );
+}
+
