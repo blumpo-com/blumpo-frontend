@@ -17,9 +17,10 @@ interface TinderViewProps {
   format: AdFormat;
   onAddToLibrary?: (adId: string) => void;
   onDelete?: (adId: string) => void;
+  onSave?: (adId: string, imageUrl: string) => void;
 }
 
-export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderViewProps) {
+export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave }: TinderViewProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -96,6 +97,12 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
       setNextCardSide(prev => prev === 'left' ? 'right' : 'left');
     }
   }, [currentIndex]);
+
+  const handleSave = useCallback(() => {
+    if (currentAd && onSave) {
+      onSave(currentAd.id, currentAd.imageUrl);
+    }
+  }, [currentAd, onSave]);
 
   // Touch handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -287,12 +294,12 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
                     {/* Overlay for swipe feedback */}
                     {swipeDirection === 'left' && (
                       <div className={styles.deleteOverlay}>
-                        <span className={styles.deleteText}>DELETE</span>
+                        <span className={styles.deleteText}>Delete</span>
                       </div>
                     )}
                     {swipeDirection === 'right' && (
                       <div className={styles.addOverlay}>
-                        <span className={styles.addText}>ADD TO LIBRARY</span>
+                        <span className={styles.addText}>Add to library</span>
                       </div>
                     )}
                   </div>
@@ -309,23 +316,30 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
               disabled={isAnimating}
               aria-label="Delete ad"
             >
-              <svg width="86" height="86" viewBox="0 0 86 86" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="43" cy="43" r="38" fill="white" stroke="#D42626" strokeWidth="2"/>
-                <path d="M30 43L56 43" stroke="#D42626" strokeWidth="3" strokeLinecap="round"/>
-              </svg>
+              <div className={styles.deleteButtonIcon}>
+                <Image
+                  src="/assets/icons/delete.svg"
+                  alt="Delete"
+                  width={36}
+                  height={36}
+                />
+              </div>
             </button>
             
             <button
-              className={styles.undoButton}
-              onClick={handleUndo}
-              disabled={currentIndex === 0 || isAnimating}
-              aria-label="Undo"
+              className={styles.saveButton}
+              onClick={handleSave}
+              disabled={isAnimating}
+              aria-label="Save ad"
             >
-              <svg width="71" height="71" viewBox="0 0 71 71" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="35.5" cy="35.5" r="32" fill="white"/>
-                <path d="M30 35.5L25 30.5L30 25.5" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M25 30.5H40C45 30.5 49 34.5 49 39.5" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
+              <div className={styles.saveButtonIcon}>
+                <Image
+                  src="/assets/icons/save.svg"
+                  alt="Save"
+                  width={29}
+                  height={35}
+                />
+              </div>
             </button>
 
             <button
@@ -334,10 +348,14 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete }: TinderView
               disabled={isAnimating}
               aria-label="Add to library"
             >
-              <svg width="86" height="86" viewBox="0 0 86 86" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="43" cy="43" r="38" fill="white" stroke="#00BFA6" strokeWidth="0.84"/>
-                <path d="M33 43L43 33L53 43M43 33V53" stroke="#00BFA6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+              <div className={styles.addButtonIcon}>
+                <Image
+                  src="/assets/icons/heart.svg"
+                  alt="Add to library"
+                  width={36}
+                  height={34}
+                />
+              </div>
             </button>
           </div>
         </div>
