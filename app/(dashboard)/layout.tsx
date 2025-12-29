@@ -113,6 +113,12 @@ function Header() {
           >
             Blog
           </Link>
+          <Link
+            href="/dashboard"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Sign in
+          </Link>
         </nav>
         <div className="flex items-center">
           <Button asChild variant="cta">

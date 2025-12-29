@@ -7,6 +7,7 @@ import { ContentProofSection } from "./content-proof-section";
 import { PricingSection } from "./pricing-section";
 import { OAuthRedirectHandler } from "./oauth-redirect-handler";
 import { Suspense } from "react";
+import { HowItWorksSection } from "./how-it-works-section";
 
 export default function HomePage() {
   return (
@@ -46,6 +47,15 @@ export default function HomePage() {
             You just didn't know it was AI.
           </h1>
           <ContentProofSection />
+        </div>
+      </section>
+
+      <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+          How does our AI marketing solution works?
+          </h1>
+          <HowItWorksSection />
         </div>
       </section>
 
