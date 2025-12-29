@@ -354,6 +354,8 @@
 
 .colorPickerAddButton:hover:not(:disabled) {
   opacity: 0.9;
+  /* transform: translateY(-1px); */
+  box-shadow: 0px 4px 8px rgba(0, 191, 166, 0.3);
 }
 
 .colorPickerAddButton:disabled {
@@ -363,12 +365,20 @@
 
 .colorPickerCancelButton {
   color: #000000;
-  /* black */
   background: #ffffff;
-  /* white */
-  border: 3px solid #000000;
-  /* black */
+  border: 2px solid #000000;
   border-radius: 40px;
+  transition:
+    background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.colorPickerCancelButton:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 0px 4px 16px 0px rgba(0,0,0,0.10);
+  border-color: #000000;
 }
 
 /* Brand Voice */
