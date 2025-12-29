@@ -8,7 +8,7 @@
 .contentWrapper {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 0 43px;
+  padding: 0 43px 80px;
 }
 
 .grid {
