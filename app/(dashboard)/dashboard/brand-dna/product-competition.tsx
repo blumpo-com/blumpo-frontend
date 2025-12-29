@@ -182,10 +182,19 @@ export default function ProductCompetitionPage({
     setKeyFeatures(value);
   };
 
-  // Handle key features blur - save to database
+  // Handle key features blur - save to database only if the value has changed \
   const handleKeyFeaturesBlur = () => {
     const featuresArray = textToArray(keyFeatures);
-    saveBrandData({ keyFeatures: featuresArray });
+    if (featuresArray.length > 0 && featuresArray.join(', ') !== (brandData?.insights?.keyFeatures?.join(', ') || '')) {
+      saveBrandData({ keyFeatures: textToArray(keyFeatures) });
+    }
+    else {
+      // If keyFeatures is only a single bullet or empty, clear it out
+      if (keyFeatures.trim() === '•' || keyFeatures.trim() === '• ' || keyFeatures.trim() === '') {
+        setKeyFeatures('');
+        // Optionally, consider not saving empty data to the backend here.
+      }
+    }
   };
 
   // Handle key features keydown - auto-add bullet on new line with spacing
@@ -221,10 +230,19 @@ export default function ProductCompetitionPage({
     setKeyBenefits(value);
   };
 
-  // Handle key benefits blur - save to database
+  // Handle key benefits blur - save to database only if the value has changed
   const handleKeyBenefitsBlur = () => {
     const benefitsArray = textToArray(keyBenefits);
-    saveBrandData({ keyBenefits: benefitsArray });
+    if (benefitsArray.length > 0 && benefitsArray.join(', ') !== (brandData?.insights?.keyBenefits?.join(', ') || '')) {
+      saveBrandData({ keyBenefits: benefitsArray });
+    }
+    else {
+      // If keyBenefits is only a single bullet or empty, clear it out
+      if (keyBenefits.trim() === '•' || keyBenefits.trim() === '• ' || keyBenefits.trim() === '') {
+        setKeyBenefits('');
+        // Optionally, consider not saving empty data to the backend here.
+      }
+    }
   };
 
   // Handle key benefits keydown - auto-add bullet on new line with spacing
@@ -293,9 +311,11 @@ export default function ProductCompetitionPage({
     saveBrandData({ competitors: newCompetitors });
   };
 
-  // Save product description on blur
+  // Save product description on blur - only if the value has changed
   const handleProductDescriptionBlur = () => {
-    saveBrandData({ productDescription: productDescription });
+    if (productDescription !== (brandData?.insights?.productDescription || '')) {
+      saveBrandData({ productDescription: productDescription });
+    }
   };
 
   if (isLoadingData && !brandData) {

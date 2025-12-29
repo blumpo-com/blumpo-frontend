@@ -401,12 +401,14 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     saveBrandData({ language: displayName });
   };
 
-  // Save brand voice and website URL on blur
+  // Save brand voice and website URL on blur only if the value has changed
   const handleBlur = () => {
-    saveBrandData({
-      websiteUrl: websiteUrl,
-      brandVoice: brandVoice,
-    });
+    if (websiteUrl !== brandData?.websiteUrl || brandVoice !== brandData?.insights?.brandVoice) {
+      saveBrandData({
+        websiteUrl: websiteUrl,
+        brandVoice: brandVoice,
+      });
+    }
   };
 
   // Remove photo (product photos)

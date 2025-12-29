@@ -182,10 +182,19 @@ export default function CustomerVoicePage({
     setCustomerPainPoints(value);
   };
 
-  // Handle customer pain points blur - save to database
+  // Handle customer pain points blur - save to database only if the value has changed
   const handleCustomerPainPointsBlur = () => {
     const painPointsArray = textToArray(customerPainPoints);
-    saveBrandData({ redditCustomerPainPoints: painPointsArray });
+    if (painPointsArray.length > 0 && painPointsArray.join(', ') !== (brandData?.insights?.redditCustomerPainPoints?.join(', ') || '')) {
+      saveBrandData({ redditCustomerPainPoints: painPointsArray });
+    }
+    else {
+      // If customerPainPoints is only a single bullet or empty, clear it out
+      if (customerPainPoints.trim() === '•' || customerPainPoints.trim() === '• ' || customerPainPoints.trim() === '') {
+        setCustomerPainPoints('');
+        // Optionally, consider not saving empty data to the backend here.
+      }
+    }
   };
 
   // Handle customer pain points keydown - auto-add bullet on new line with spacing
@@ -221,10 +230,19 @@ export default function CustomerVoicePage({
     setPurchaseTriggers(value);
   };
 
-  // Handle purchase triggers blur - save to database
+  // Handle purchase triggers blur - save to database only if the value has changed
   const handlePurchaseTriggersBlur = () => {
     const triggersArray = textToArray(purchaseTriggers);
-    saveBrandData({ insTriggerEvents: triggersArray });
+    if (triggersArray.length > 0 && triggersArray.join(', ') !== (brandData?.insights?.insTriggerEvents?.join(', ') || '')) {
+      saveBrandData({ insTriggerEvents: triggersArray });
+    }
+    else {
+      // If purchaseTriggers is only a single bullet or empty, clear it out
+      if (purchaseTriggers.trim() === '•' || purchaseTriggers.trim() === '• ' || purchaseTriggers.trim() === '') {
+        setPurchaseTriggers('');
+        // Optionally, consider not saving empty data to the backend here.
+      }
+    }
   };
 
   // Handle purchase triggers keydown - auto-add bullet on new line with spacing
@@ -260,10 +278,19 @@ export default function CustomerVoicePage({
     setCustomerExpectations(value);
   };
 
-  // Handle customer expectations blur - save to database
+  // Handle customer expectations blur - save to database only if the value has changed
   const handleCustomerExpectationsBlur = () => {
     const expectationsArray = textToArray(customerExpectations);
-    saveBrandData({ insAspirations: expectationsArray });
+    if (expectationsArray.length > 0 && expectationsArray.join(', ') !== (brandData?.insights?.insAspirations?.join(', ') || '')) {
+      saveBrandData({ insAspirations: expectationsArray });
+    }
+    else {
+      // If customerExpectations is only a single bullet or empty, clear it out
+      if (customerExpectations.trim() === '•' || customerExpectations.trim() === '• ' || customerExpectations.trim() === '') {
+        setCustomerExpectations('');
+        // Optionally, consider not saving empty data to the backend here.
+      }
+    }
   };
 
   // Handle customer expectations keydown - auto-add bullet on new line with spacing
