@@ -90,7 +90,7 @@ function AdGenerationPageContent() {
             format = '1:1';
           }
           
-          router.push(`/dashboard/ad-generation/tinder?job_id=${jobId}&format=${format}`);
+          router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${format}`);
         }
       } catch (error) {
         console.error('Error fetching job:', error);
@@ -108,7 +108,7 @@ function AdGenerationPageContent() {
       } else if (hasSquare) {
         format = '1:1';
       }
-      router.push(`/dashboard/ad-generation/tinder?job_id=${jobId}&format=${format}`);
+      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${format}`);
     }
   };
 

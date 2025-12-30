@@ -18,7 +18,7 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
   // Test buttons for different formats - only show in test mode
   const handleTestFormat = (format: '1:1' | '16:9' | 'mixed') => {
     if (IS_TEST_MODE) {
-      router.push(`/dashboard/ad-generation/tinder?format=${format}&test=true`);
+      router.push(`/dashboard/ad-generation/ad-review-view?format=${format}&test=true`);
     }
   };
 
