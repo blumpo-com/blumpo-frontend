@@ -78,10 +78,7 @@ export function HowItWorksSection() {
                 {/* Description */}
                 <div className="w-full md:w-[520px] py-0">
                   <p
-                    className="text-[20px] font-normal leading-[30px]"
-                    style={{
-                      color:  "#4A5565",
-                    }}
+                    className="text-[16px] md:text-[20px] font-normal leading-[30px] text-[#4A5565]"
                   >
                     {step.description}
                   </p>

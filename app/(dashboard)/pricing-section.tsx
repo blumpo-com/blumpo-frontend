@@ -252,7 +252,7 @@ export function PricingSection() {
     : null;
 
   return (
-    <div className="mt-12 max-w-2xl mx-auto">
+    <div className="mt-12 max-w-xl mx-auto ">
       {/* Switch toggle */}
       <div className="flex items-center justify-center gap-[30px] mb-8">
         <button
@@ -298,9 +298,9 @@ export function PricingSection() {
             key={plan.id}
             onClick={() => setSelectedPlan(plan.id)}
             className={cn(
-              "flex-1 h-[50px] flex items-center justify-center rounded-[10px] px-3 py-[10px] transition-all",
+              "flex-1 h-[50px] flex items-center justify-center rounded-[10px] py-[10px] transition-all w-[25%] cursor-pointer",
               selectedPlan === plan.id
-                ? "bg-[#00bfa6] text-[#f9fafb]"
+                ? "bg-[#00bfa6] border border-[#00bfa6] text-[#f9fafb]"
                 : "bg-white border border-[#0a0a0a] text-[#0a0a0a]"
             )}
           >
