@@ -96,7 +96,7 @@ export function ComparisonSection() {
       {/* Comparison Table Container */}
       <div
         className={cn(
-          "bg-[#f9fafb] border-2 border-[#00bfa6] rounded-[25px] shadow-[0px_0px_8px_4px_rgba(0,0,0,0.05)]",
+          "bg-white border-2 border-[#00bfa6] rounded-[25px] shadow-[0px_0px_8px_4px_rgba(0,0,0,0.05)]",
           "px-4 py-4 md:px-6 md:py-5 xl:px-[34px]",
           "w-full"
         )}

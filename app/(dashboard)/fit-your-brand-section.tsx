@@ -76,11 +76,11 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
   return (
     <div
       className={cn(
-        "bg-[#f9fafb] border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]",
+        "bg-white border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]",
         // Mobile
         "w-full",
         // Desktop
-        "md:w-[420px] lg:w-[320px]",
+        "md:w-full lg:w-[320px]",
         // Height for team card is taller
         type === "team" ? "h-[280px] md:h-52" : "h-[228px]"
       )}
@@ -133,7 +133,7 @@ export function FitYourBrandSection() {
   return (
     <div className="mt-12 flex flex-col items-center">
       {/* Mobile: Cards in column with illustration in middle */}
-      <div className="w-full lg:hidden flex flex-col gap-5 items-center">
+      <div className="w-full md:hidden flex flex-col gap-5 items-center">
         {/* First 2 cards */}
         <UnderstandCard
           title={cards[0].title}
@@ -167,6 +167,49 @@ export function FitYourBrandSection() {
           description={cards[4].description}
           type={cards[4].type}
         />
+      </div>
+
+      {/* Medium screens (md to lg): 2 cards per row, image, 2 cards, 1 wide card */}
+      <div className="hidden md:block lg:hidden w-full max-w-[1152px] px-4">
+        <div className="grid grid-cols-2 gap-5">
+          {/* First 2 cards */}
+          <UnderstandCard
+            title={cards[0].title}
+            description={cards[0].description}
+            type={cards[0].type}
+          />
+          <UnderstandCard
+            title={cards[1].title}
+            description={cards[1].description}
+            type={cards[1].type}
+          />
+
+          {/* Central Illustration - full width */}
+          <div className="relative w-full h-[352px] col-span-2 flex justify-center my-5">
+            <img src="/images/blumpo/standing-blumpo.png" alt="Standing Blumpo" className="w-[352px] h-full object-cover" />
+          </div>
+
+          {/* Next 2 cards */}
+          <UnderstandCard
+            title={cards[2].title}
+            description={cards[2].description}
+            type={cards[2].type}
+          />
+          <UnderstandCard
+            title={cards[3].title}
+            description={cards[3].description}
+            type={cards[3].type}
+          />
+
+          {/* Wide team card - full width */}
+          <div className="col-span-2">
+            <UnderstandCard
+              title={cards[4].title}
+              description={cards[4].description}
+              type={cards[4].type}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Desktop: Grid layout with 2x2 + illustration in center + 1 wide card at bottom */}

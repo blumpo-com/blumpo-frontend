@@ -62,7 +62,7 @@ export function ContentProofSection() {
   };
 
   return (
-    <div className="mt-12">
+    <div className="mt-12 flex flex-col items-center">
       <div className="grid grid-cols-2 md:grid-cols-4 md:flex md:flex-row gap-4 max-w-md md:max-w-none md:justify-center">
         {buttons.map((button, index) => (
           <Button
@@ -145,7 +145,7 @@ export function ContentProofSection() {
                   alt={image.alt}
                   width={300}
                   height={300}
-                  className="rounded-lg object-cover shadow-lg w-full h-auto max-h-[350px]"
+                  className="rounded-lg object-cover shadow-lg w-80 h-auto max-h-[350px]"
                 />
               </div>
             ))}
