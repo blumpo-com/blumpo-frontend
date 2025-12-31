@@ -74,14 +74,17 @@ function ComparisonIcon({ checked }: { checked: boolean }) {
   );
 }
 
-function ComparisonImage({ src, alt, width, height }: { src: string, alt: string, width: number, height: number }) {
+function ComparisonImage({ src, alt, width, height, blumpoLogo = false }: { src: string, alt: string, width: number, height: number, blumpoLogo?: boolean }) {
   return (
-    <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20  flex items-center justify-center">
+    <div className="flex items-center justify-center w-8 h-8 md:w-12 md:h-12 xl:w-20">
       <Image
         src={src}
         alt={alt}
         width={width}
         height={height}
+        className={cn(
+          blumpoLogo ? "w-8  md:w-10  xl:w-14" : "w-6 h-6 md:w-8 md:h-8"
+        )}
       />
     </div>
   );
@@ -111,25 +114,19 @@ export function ComparisonSection() {
 
           <div className="flex items-center justify-end w-full md:w-auto flex-1 gap-6 sm:gap-20 xl:gap-30">
             {/* Blumpo */}
-            <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20 xl:h-20 flex items-center justify-center">
-                <ComparisonImage src="/images/blumpo/blumpo-squeezed.png" alt="Blumpo" width={40} height={40} />
-            </div>
+            <ComparisonImage src="/images/blumpo/blumpo-squeezed.png" alt="Blumpo" width={48} height={48} blumpoLogo={true} />
 
             {/* ChatGPT */}
-            <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20 xl:h-20 flex items-center justify-center">
-                <ComparisonImage src="/assets/social/chatgpt-logo.png" alt="ChatGPT" width={40} height={40} />
-            </div>
+                <ComparisonImage src="/assets/social/chatgpt-logo.png" alt="ChatGPT" width={36} height={36} />
 
             {/* Canva */}
-            <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20 xl:h-20 flex items-center justify-center">
-                <ComparisonImage src="/assets/social/canva-logo.png" alt="Canva" width={40} height={40} />
-            </div>
+                <ComparisonImage src="/assets/social/canva-logo.png" alt="Canva" width={36} height={36} />
 
             {/* Other AI tools */}
             <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20 xl:h-20 flex items-center justify-center">
               <span
                 className={cn(
-                  "text-xs md:text-sm xl:text-md font-normal text-[#0a0a0a] text-center",
+                  "text-xs md:text-sm xl:text-md font-medium text-[#0a0a0a] text-center",
                 )}
               >
                 Other AI tools

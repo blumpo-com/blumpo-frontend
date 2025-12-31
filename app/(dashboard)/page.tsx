@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import { HowItWorksSection } from "./how-it-works-section";
 import { FitYourBrandSection } from "./fit-your-brand-section";
 import { ComparisonSection } from "./comparison-section";
+import { TestimonialSection } from "./testimonial-section";
 
 export default function HomePage() {
   return (
@@ -64,15 +65,6 @@ export default function HomePage() {
       <section className="py-16  w-full">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
-            Pick a plan or start creating for free.
-          </h1>
-          <PricingSection />
-        </div>
-      </section>
-
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
             We listened to your customers.
             We understand your style.
           </h1>
@@ -86,6 +78,24 @@ export default function HomePage() {
             One tool to do it all.
           </h1>
           <ComparisonSection />
+        </div>
+      </section>
+
+      <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+            Pick a plan or start creating for free.
+          </h1>
+          <PricingSection />
+        </div>
+      </section>
+
+      <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+          Here from our customers.
+          </h1>
+          <TestimonialSection />
         </div>
       </section>
 
