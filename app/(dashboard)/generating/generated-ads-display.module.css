@@ -1,0 +1,483 @@
+/* Container - Split Layout */
+.container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background-color: #F9FAFB;
+}
+
+/* Left Panel - Generated Ads */
+.leftPanel {
+  width: 60%;
+  min-height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 52px;
+  gap: 18px;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 17px;
+  width: 100%;
+  max-width: 770px;
+}
+
+.title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  background: linear-gradient(94.38deg, #00bfa6 30.18%, #0d3b66 70.71%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 25px;
+  font-weight: 500;
+  color: #888e98;
+  margin: 0;
+}
+
+.imagesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  width: 100%;
+  max-width: 648px;
+  padding: 47px 0;
+}
+
+.imageCard {
+  width: 294px;
+  border-radius: 6.5px;
+  box-shadow: 0px 4.39px 14.13px 0px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.imageCard:hover {
+  transform: translateY(-2px);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.blurredCard {
+  position: relative;
+}
+
+.blurredCard .image {
+  filter: blur(4.67px);
+}
+
+.blurredOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 104px;
+  height: 104px;
+  background: white;
+  border-radius: 57px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4.74px 4.74px 0px rgba(0, 0, 0, 0.25);
+}
+
+.questionMark {
+  font-family: 'Roboto', sans-serif;
+  font-size: 61px;
+  font-weight: 700;
+  color: #0a0a0a;
+}
+
+.downloadButton {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(133.78deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.downloadButton:hover {
+  opacity: 0.9;
+}
+
+/* Right Panel - Insights */
+.rightPanel {
+  flex: 1;
+  min-height: 100vh;
+  background: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 24px;
+  gap: 47px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.insightsSection {
+  width: 100%;
+  max-width: 560px;
+}
+
+.insightsTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 25px;
+  font-weight: 500;
+  color: #888e98;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.section {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: black;
+  margin: 0;
+  text-align: center;
+}
+
+.paidBadge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 4px;
+  border-radius: 6px;
+  background: linear-gradient(106.03deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  height: 22px;
+}
+
+.brandComponents {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+.brandComponent {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+  align-items: center;
+}
+
+.componentLabel {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: black;
+  margin: 0;
+  text-align: center;
+}
+
+.componentBox {
+  background: white;
+  border: 1.79px solid #888e98;
+  border-radius: 5.45px;
+  padding: 14px 10px;
+  box-shadow: 0px 0px 3.59px 0px rgba(0, 0, 0, 0.4);
+  min-height: 57px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 126px;
+}
+
+.logoPlaceholder {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: black;
+}
+
+.colorsBox {
+  width: 59px;
+  height: 57px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorSwatches {
+  display: flex;
+  gap: 8px;
+}
+
+.colorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+}
+
+.fontName {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  color: black;
+  margin: 0;
+}
+
+.divider {
+  width: 100%;
+  max-width: 560px;
+  height: 1px;
+  background: #E5E7EB;
+}
+
+.insightsGrid {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.insightBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+
+.insightLabel {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: black;
+  margin: 0;
+  text-align: center;
+}
+
+.insightContent {
+  background: white;
+  border: 1.79px solid #888e98;
+  border-radius: 4.88px;
+  padding: 14px 10px;
+  box-shadow: 0px 0px 3.59px 0px rgba(0, 0, 0, 0.4);
+  min-height: 180px;
+}
+
+.insightList {
+  list-style: disc;
+  padding-left: 18px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insightList li {
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: black;
+  line-height: 1.4;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border: 1.79px solid #00bfa6;
+  border-radius: 23px;
+  background: linear-gradient(133.78deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  width: 100%;
+  max-width: 376px;
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+}
+
+.actionButton svg {
+  flex-shrink: 0;
+}
+
+.archetypesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 44px;
+  justify-content: center;
+  width: 100%;
+}
+
+.archetypeCard {
+  background: white;
+  border: 1.31px solid #888e98;
+  border-radius: 3.99px;
+  padding: 10px 7px;
+  box-shadow: 0px 0px 2.63px 0px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  color: black;
+  text-align: center;
+  min-width: 102px;
+  height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formatsRow {
+  display: flex;
+  gap: 101px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.formatGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 51px;
+  align-items: center;
+}
+
+.formatBoxes {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+}
+
+.formatBox {
+  background: white;
+  border: 1.97px solid #888e98;
+  border-radius: 5.37px;
+  padding: 15px 29px;
+  box-shadow: 0px 0px 10.09px 0px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(93.54deg, rgba(0, 191, 166, 0.2) 5.13%, rgba(88, 199, 255, 0.2) 51.38%, rgba(13, 59, 102, 0.2) 97.62%);
+  font-family: 'Roboto', sans-serif;
+  font-size: 11px;
+  color: black;
+  text-align: center;
+  width: 48px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formatBox:first-child {
+  height: 48px;
+}
+
+.languageBox {
+  background: white;
+  border: 1.64px solid #888e98;
+  border-radius: 4.47px;
+  padding: 12px 9px;
+  box-shadow: 0px 0px 3.29px 0px rgba(0, 0, 0, 0.4);
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: black;
+  text-align: center;
+  width: 147px;
+  height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .leftPanel {
+    width: 100%;
+  }
+
+  .rightPanel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .imagesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .imageCard {
+    width: 100%;
+    max-width: 294px;
+  }
+
+  .brandComponents {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .insightsGrid {
+    flex-direction: column;
+  }
+
+  .formatsRow {
+    flex-direction: column;
+    gap: 40px;
+  }
+}
+

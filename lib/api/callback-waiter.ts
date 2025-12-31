@@ -1,8 +1,16 @@
-import { Redis } from '@upstash/redis';
-
 // Redis-based callback waiter for serverless environments
 // Uses Upstash Redis (HTTP-based, serverless-friendly) to share state across different serverless function instances
 // Falls back to in-memory storage for local development when Redis is not available
+
+// Conditional import to avoid build errors if package is not installed
+let Redis: any = null;
+try {
+  const redisModule = require('@upstash/redis');
+  Redis = redisModule.Redis;
+} catch (e) {
+  // Package not installed or not available - will use in-memory fallback
+  console.warn('[CALLBACK-WAITER] @upstash/redis not available, using in-memory fallback');
+}
 
 const REDIS_KEY_PREFIX = 'callback:';
 const INITIAL_POLL_DELAY = 60 * 1000; // Wait 1 minute before first poll
@@ -15,10 +23,15 @@ interface CallbackResult {
 }
 
 // Initialize Redis client (lazy initialization)
-let redisClient: Redis | null = null;
+let redisClient: any = null;
 
 // Check if Redis is available and initialize client
-const getRedisClient = (): Redis | null => {
+const getRedisClient = (): any => {
+  // If Redis class is not available, return null
+  if (!Redis) {
+    return null;
+  }
+  
   // Check for Upstash Redis environment variables
   // Support both UPSTASH_* and KV_* naming conventions for compatibility
   const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
@@ -113,7 +126,7 @@ async function waitForCallbackRedis(
     // Poll Redis for callback result
     const poll = async () => {
       try {
-        const resultStr = await redis.get<string>(redisKey);
+        const resultStr = await redis.get(redisKey) as string | null;
         
         if (resultStr) {
           // Parse JSON string to CallbackResult

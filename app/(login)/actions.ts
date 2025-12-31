@@ -105,8 +105,10 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   const redirectTo = formData.get('redirect') as string | null;
   const websiteUrl = formData.get('website_url') as string | null;
 
-  // Handle generation redirect - redirect to root (/) with website_url
+  // Handle generation redirect - start generation and redirect to generating page
   if (redirectTo === 'generate' && websiteUrl) {
+    // Note: We can't call fetch in a server action, so we'll redirect to a page that handles it
+    // The oauth-redirect-handler will handle the actual generation start
     redirect(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
   }
 

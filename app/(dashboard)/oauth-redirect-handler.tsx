@@ -28,7 +28,8 @@ export function OAuthRedirectHandler() {
         // Clear the cookie
         document.cookie = 'oauth_redirect=; path=/; max-age=0';
         
-        // Redirect with generation params if needed - redirect to root (/)
+        // Redirect with generation params if needed - redirect to root with params
+        // The url-input-section component will handle starting the generation
         if (redirect === 'generate' && websiteUrl) {
           router.replace(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
         }
