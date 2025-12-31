@@ -11,6 +11,7 @@ import { HowItWorksSection } from "./how-it-works-section";
 import { FitYourBrandSection } from "./fit-your-brand-section";
 import { ComparisonSection } from "./comparison-section";
 import { TestimonialSection } from "./testimonial-section";
+import { FaqSection } from "./faq-section";
 
 export default function HomePage() {
   return (
@@ -96,6 +97,15 @@ export default function HomePage() {
           Here from our customers.
           </h1>
           <TestimonialSection />
+        </div>
+      </section>
+
+      <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+          Answers you’re loooking for.
+          </h1>
+          <FaqSection />
         </div>
       </section>
 

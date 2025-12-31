@@ -58,6 +58,42 @@ const testimonials: Testimonial[] = [
   },
 ];
 
+
+function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
+    return (
+      <div className="rounded-[20px] p-[2px] gradient-primary h-full">
+        <div className="bg-white rounded-[18px] p-6 h-full shadow-lg pb-12 sm:pb-20">
+          {/* Avatar and name */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+              <Image
+                src={testimonial.avatar}
+                alt={testimonial.name}
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h3 className="font-bold text-[#0a0a0a] text-base">
+                {testimonial.name}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {testimonial.role}
+              </p>
+            </div>
+          </div>
+  
+          {/* Testimonial text */}
+          <p className="text-[#0a0a0a] text-base leading-relaxed">
+            {testimonial.text}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+
 export function TestimonialSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
@@ -138,35 +174,7 @@ export function TestimonialSection() {
                   className="flex-shrink-0"
                   style={{ width: "calc(33.333% - 1rem)" }}
                 >
-                  <div className="rounded-[20px] p-[2px] gradient-primary h-full">
-                    <div className="relative bg-white rounded-[18px] p-6 h-full shadow-lg">
-                      {/* Avatar and name */}
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
-                          <Image
-                            src={testimonial.avatar}
-                            alt={testimonial.name}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-[#0a0a0a] text-base">
-                            {testimonial.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {testimonial.role}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Testimonial text */}
-                      <p className="text-[#0a0a0a] text-base leading-relaxed">
-                        {testimonial.text}
-                      </p>
-                    </div>
-                  </div>
+                  <TestimonialCard testimonial={testimonial} />
                 </div>
               );
             })}
@@ -232,35 +240,7 @@ export function TestimonialSection() {
                   key={testimonial.id}
                   className="w-full flex-shrink-0"
                 >
-                  <div className="rounded-[20px] p-[2px] gradient-primary">
-                    <div className="relative bg-white rounded-[18px] p-6 shadow-lg">
-                      {/* Avatar and name */}
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
-                          <Image
-                            src={testimonial.avatar}
-                            alt={testimonial.name}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-[#0a0a0a] text-base">
-                            {testimonial.name}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {testimonial.role}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Testimonial text */}
-                      <p className="text-[#0a0a0a] text-base leading-relaxed">
-                        {testimonial.text}
-                      </p>
-                    </div>
-                  </div>
+                  <TestimonialCard testimonial={testimonial} />
                 </div>
               ))}
             </div>
