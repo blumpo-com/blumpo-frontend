@@ -38,7 +38,7 @@ const steps: Step[] = [
 
 export function HowItWorksSection() {
   return (
-    <div className="mt-[35px] flex flex-col gap-[35px]">
+    <div className="mt-9 flex flex-col gap-9 md:gap-16">
       {steps.map((step, index) => (
         <div
           key={index}
@@ -49,7 +49,7 @@ export function HowItWorksSection() {
           )}
         >
           {/* Content area */}
-          <div className="flex gap-[26px] w-full md:w-auto md:flex-1">
+          <div className="flex gap-[26px] w-full md:w-auto md:flex-1 md:px-4">
             {/* Left: Number and long gradient line */}
             <div className="flex flex-col items-center ">
               {/* Number */}
@@ -59,22 +59,22 @@ export function HowItWorksSection() {
               {/* Long vertical line with gradient - directly below number, extends down */}
               <div className="md:px-0">
                 <div
-                  className={`h-[249px] md:h-[199px] ${
+                  className={`h-[380px] sm:h-[300px] md:h-[240px] ${
                     step.number === "05" ? "w-0" : "w-[3px]"
-                  } bg-gradient-to-b from-brand-secondary via-brand-tertiary to-brand-primary`}
+                  } bg-gradient-to-${index % 2 === 0 ? "b" : "t"} from-brand-secondary via-brand-tertiary to-brand-primary`}
                 />
               </div>
             </div>
 
             {/* Right: Title, description, and image */}
-            <div className="flex flex-col items-start flex-1">
+            <div className="flex flex-col items-start flex-1 ">
               {/* Title */}
               <p className="text-[30px] font-bold text-[#0a0a0a] leading-[50px]">
                 {step.title}
               </p>
 
               {/* Description and Image wrapper */}
-              <div className="flex flex-col md:flex-row gap-4 md:gap-[66px] w-full md:items-start">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-[66px] w-full md:items-start justify-between">
                 {/* Description */}
                 <div className="w-full md:w-[520px] py-0">
                   <p
