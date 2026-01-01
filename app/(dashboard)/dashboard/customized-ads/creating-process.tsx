@@ -155,6 +155,7 @@ interface CreatingProcessProps {
   onComplete?: () => void;
   // For future webhook integration
   onStepUpdate?: (stepId: string, status: StepStatus, progress?: number) => void;
+  stepTimings?: Partial<typeof STEP_TIMINGS>;
 }
 
 // Default steps configuration
@@ -202,9 +203,13 @@ const PROGRESS_UPDATE_INTERVAL = 50;
 export function CreatingProcess({
   steps: externalSteps,
   onComplete,
-  onStepUpdate
+  onStepUpdate,
+  stepTimings: customStepTimings
 }: CreatingProcessProps) {
   const isControlled = !!externalSteps;
+
+  // Merge custom step timings with defaults
+  const effectiveStepTimings = customStepTimings || STEP_TIMINGS;
 
   const [steps, setSteps] = useState<ProcessStep[]>(() => {
     if (externalSteps) {
@@ -260,7 +265,7 @@ export function CreatingProcess({
     if (!stepInfo) return;
 
     const stepId = stepInfo.id;
-    const stepDuration = STEP_TIMINGS[stepId as keyof typeof STEP_TIMINGS] || 3000;
+    const stepDuration = effectiveStepTimings[stepId as keyof typeof effectiveStepTimings] || 3000;
 
     // Initialize start time only once per step
     if (startTimeRef.current === null) {

@@ -1,9 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from '../dashboard/customized-ads/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
+
+const STEP_TIMINGS = {
+  'analyze-website': 10000,      // 10 seconds
+  'capture-tone': 12000,         // 12 seconds
+  'review-social': 15000,        // 15 seconds (longer, with progress bar)
+  'benchmark-competitors': 20000, // 20 seconds
+  'craft-cta': 60000,            // 60 seconds
+}; // Total time: 117 seconds
 
 interface AdImage {
   id: string;
@@ -31,10 +39,23 @@ export default function GeneratingPage() {
   const [status, setStatus] = useState<JobStatus | null>(null);
   const [images, setImages] = useState<AdImage[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [actualJobId, setActualJobId] = useState<string | null>(null);
+  const hasInitiatedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Create a unique key for this effect run based on dependencies
+    const effectKey = `${websiteUrl || ''}-${jobId || ''}`;
+    
+    // Prevent duplicate calls (React Strict Mode runs effects twice in development)
+    // Only prevent if we've already initiated for this exact combination
+    if (hasInitiatedRef.current === effectKey) {
+      return;
+    }
+    
+    // Mark this combination as initiated
+    hasInitiatedRef.current = effectKey;
+
     // If we have a job_id, we're already done and displayed the ads
     const fetchImagesForJob = async () => {
       if (jobId && !websiteUrl) {
@@ -51,6 +72,7 @@ export default function GeneratingPage() {
         } catch (err) {
           setError('Failed to get images');
         }
+        return;
       }
     };
 
@@ -103,6 +125,8 @@ export default function GeneratingPage() {
         // Store job_id from response
         if (data.job_id) {
           setActualJobId(data.job_id);
+          // Change search params to include the job_id
+          router.replace(`/generating?job_id=${data.job_id}`);
         }
         
         if (data.status === 'SUCCEEDED') {
@@ -129,7 +153,7 @@ export default function GeneratingPage() {
 
   // Show loading/creating process while API call is in progress
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
-    return <CreatingProcess />;
+    return <CreatingProcess stepTimings={STEP_TIMINGS} />;
   }
 
   // Show error if generation failed
@@ -161,6 +185,8 @@ export default function GeneratingPage() {
   }
 
   // Default: still loading
-  return <CreatingProcess />;
+  return <CreatingProcess 
+  stepTimings={STEP_TIMINGS}
+  />;
 }
 

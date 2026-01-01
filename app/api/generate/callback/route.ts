@@ -23,11 +23,38 @@ export async function POST(req: Request) {
     // Parse result if it's a JSON string
     if (typeof result === 'string') {
       try {
+        // Try to parse as-is first
         result = JSON.parse(result);
         console.log('[CALLBACK] Parsed result string:', result);
       } catch (e) {
-        console.warn('[CALLBACK] Failed to parse result string:', e);
-        // Keep result as string if parsing fails
+        console.warn('[CALLBACK] Failed to parse result string, attempting to fix quotes:', e);
+        try {
+          // Try to fix common JSON issues: replace single quotes with double quotes
+          // But be careful not to replace quotes inside already-quoted strings
+          // This is a simple fix for cases like: {"error_message": 'text'} -> {"error_message": "text"}
+          let fixedResult = result.trim();
+          
+          // Replace single quotes around string values (but not around keys which should already be double-quoted)
+          // Pattern: match : '...' and replace with : "..."
+          fixedResult = fixedResult.replace(/:\s*'([^']*)'/g, ': "$1"');
+          
+          // Also handle single quotes around keys if present
+          fixedResult = fixedResult.replace(/'([^']+)':/g, '"$1":');
+          
+          result = JSON.parse(fixedResult);
+          console.log('[CALLBACK] Successfully parsed after fixing quotes:', result);
+        } catch (e2) {
+          console.warn('[CALLBACK] Failed to parse even after fixing quotes:', e2);
+          // If parsing still fails, try to extract error message manually
+          const errorMatch = result.match(/error_message['":\s]*[:=]\s*['"]([^'"]+)['"]/i);
+          if (errorMatch) {
+            result = { error_message: errorMatch[1] };
+            console.log('[CALLBACK] Extracted error message manually:', result);
+          } else {
+            // Keep result as string if all parsing attempts fail
+            console.warn('[CALLBACK] Keeping result as string:', result);
+          }
+        }
       }
     }
 

@@ -30,7 +30,18 @@ export function UrlInputSection() {
         setErrorMsg(null);
     
         try {
-          // Navigate to generating page immediately - it will handle the API call
+          // Check if user is authenticated before proceeding
+          const userRes = await fetch('/api/user');
+          const userData = await userRes.json();
+          
+          if (!userData || !userRes.ok) {
+            // User not authenticated - redirect to sign-in
+            const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(url)}`;
+            window.location.href = signInUrl;
+            return;
+          }
+          
+          // User is authenticated - navigate to generating page
           router.push(`/generating?website_url=${encodeURIComponent(url)}`);
         } catch (e: any) {
           setErrorMsg(e?.message || 'Request failed');
