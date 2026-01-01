@@ -244,6 +244,14 @@
   animation: scrollDown 20s linear infinite;
 }
 
+@keyframes scrollRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-scroll-right {
+  animation: scrollRight 20s linear infinite;
+}
+
 @keyframes floatUpDown {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-15px); }

@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CreditCard, Database } from "lucide-react";
 import { Terminal } from "./terminal";
-import { UrlInputSection } from "./url-input-section";
-import { HeroPhotoWall } from "@/components/hero-photo-wall";
+import { HeroSection } from "./hero-section";
 import { ContentProofSection } from "./content-proof-section";
 import { PricingSection } from "./pricing-section";
 import { OAuthRedirectHandler } from "./oauth-redirect-handler";
@@ -13,105 +12,71 @@ import { ComparisonSection } from "./comparison-section";
 import { TestimonialSection } from "./testimonial-section";
 import { FaqSection } from "./faq-section";
 
+function HeaderSection({ title, children }: { title: React.ReactNode, children: React.ReactNode }) {
+  return (
+    <section className="py-16  w-full">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="header-gradient">
+            {title}
+          </h1>
+          {children}
+        </div>
+      </section>
+  );
+}
+
 export default function HomePage() {
   return (
     <>
       <Suspense fallback={null}>
         <OAuthRedirectHandler />
       </Suspense>
-    <main>
-      <section className="py-10 md:py-20">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:flex justify-between">
-            <div className="sm:text-center md:max-w-2xl lg:col-span-6 lg:text-left">
-              <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl">
-                Create AI B2B SaaS
-                <span className="block gradient-secondary bg-clip-text text-transparent">
-                  ads that win
-                </span>
-              </h1>
-              <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
-                Blumpo turns customer insights from Reddit,<br></br>
-                YT, and your website into +$500 worth ads.<br></br>
-                No credit card.
-              </p>
-              <Suspense fallback={<div className="mt-5">Loading...</div>}>
-              <UrlInputSection />
-              </Suspense>
-            </div>
-            <HeroPhotoWall />
-          </div>
-        </div>
-      </section>
+    <main className="relative">
+      {/* Colored circular shadows on the left - positioned relative to main to be visible under header */}
+      <div className="absolute left-[-310px] top-[400px] w-[687px] h-[654px] pointer-events-none z-0 ">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/30 via-brand-tertiary/20 to-transparent rounded-full blur-[100px]" />
+      </div>
+      <div className="absolute left-[-329px] top-[-100px] w-[629px] h-[620px] pointer-events-none z-0 ">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/25 via-brand-tertiary/15 to-transparent rounded-full blur-[100px]" />
+      </div>
+      
+      <HeroSection />
 
-      <section className="py-16  w-full h-8xl">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-            You've probably seen our work.<br></br>
-            You just didn't know it was AI.
-          </h1>
-          <ContentProofSection />
-        </div>
-      </section>
+      <HeaderSection 
+        title={<>You've probably seen our work.<br />You just didn't know it was AI.</>}>
+        <ContentProofSection />
+      </HeaderSection>
 
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-          How does our AI marketing solution works?
-          </h1>
+
+        <HeaderSection 
+          title="How does our AI marketing solution works?">
           <HowItWorksSection />
-        </div>
-      </section>
+        </HeaderSection>
 
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-            We listened to your customers.
-            We understand your style.
-          </h1>
-          <FitYourBrandSection />
-        </div>
-      </section>
+      <HeaderSection 
+        title={<>We listened to your customers.<br />We understand your style.</>}>
+        <FitYourBrandSection />
+      </HeaderSection>
 
-      <section className="py-16 w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-            One tool to do it all.
-          </h1>
-          <ComparisonSection />
-        </div>
-      </section>
+      <HeaderSection 
+        title="One tool to do it all.">
+        <ComparisonSection />
+      </HeaderSection>
 
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-            Pick a plan or start creating for free.
-          </h1>
-          <PricingSection />
-        </div>
-      </section>
+      <HeaderSection 
+        title="Pick a plan or start creating for free.">
+        <PricingSection />
+      </HeaderSection>
 
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-          Here from our customers.
-          </h1>
-          <TestimonialSection />
-        </div>
-      </section>
+      <HeaderSection 
+        title="Here from our customers.">
+        <TestimonialSection />
+      </HeaderSection>
 
-      <section className="py-16  w-full">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="header-gradient">
-          Answers you’re loooking for.
-          </h1>
-          <FaqSection />
-        </div>
-      </section>
-
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"></div>
-      </section>
+      <HeaderSection 
+        title="Answers you’re loooking for.">
+        <FaqSection />
+      </HeaderSection>
     </main>
     </>
   );
