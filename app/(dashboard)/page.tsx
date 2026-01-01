@@ -12,9 +12,9 @@ import { ComparisonSection } from "./comparison-section";
 import { TestimonialSection } from "./testimonial-section";
 import { FaqSection } from "./faq-section";
 
-function HeaderSection({ title, children }: { title: React.ReactNode, children: React.ReactNode }) {
+function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
   return (
-    <section className="py-16  w-full">
+    <section className="py-16  w-full scroll-mt-24 md:scroll-mt-32" id={id}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
             {title}
@@ -42,14 +42,15 @@ export default function HomePage() {
       
       <HeroSection />
 
-      <HeaderSection 
-        title={<>You've probably seen our work.<br />You just didn't know it was AI.</>}>
-        <ContentProofSection />
-      </HeaderSection>
-
+        <HeaderSection 
+          title={<>You've probably seen our work.<br />You just didn't know it was AI.</>}
+          id="use-cases">
+          <ContentProofSection />
+        </HeaderSection>
 
         <HeaderSection 
-          title="How does our AI marketing solution works?">
+          title="How does our AI marketing solution works?"
+          id="product">
           <HowItWorksSection />
         </HeaderSection>
 
@@ -64,7 +65,8 @@ export default function HomePage() {
       </HeaderSection>
 
       <HeaderSection 
-        title="Pick a plan or start creating for free.">
+        title="Pick a plan or start creating for free."
+        id="pricing">
         <PricingSection />
       </HeaderSection>
 

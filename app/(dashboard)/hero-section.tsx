@@ -19,7 +19,7 @@ export function HeroSection() {
             <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-xl">
               Blumpo turns customer insights from Reddit,<br></br>
               YT, and your website into +$500 worth ads.<br></br>
-              No credit card.
+              No credit card needed.
             </p>
             <Suspense fallback={<div className="mt-5">Loading...</div>}>
               <UrlInputSection />

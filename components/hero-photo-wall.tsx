@@ -9,7 +9,7 @@ export function HeroPhotoWall() {
     { filename: "1.png", alt: "Hero Photo Wall" },
   ];
 
-  const duplicatedImages = [...images, ...images];
+  const duplicatedImages = [...images, ...images, ...images];
 
   return (
     <>
@@ -19,7 +19,7 @@ export function HeroPhotoWall() {
         <div className="absolute top-0 bottom-0 right-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-[#D3F1FA] to-transparent z-10 pointer-events-none" />
         {/* Container with 2 rows */}
-        <div className="flex flex-col gap-[15px] h-full mx-10">
+        <div className="flex flex-col gap-[15px] h-full mx-2">
           {/* Top row */}
           <div className="relative w-full h-[119px] overflow-hidden">
             <div className="absolute flex gap-[15px] animate-scroll-right" style={{ width: "max-content" }}>
