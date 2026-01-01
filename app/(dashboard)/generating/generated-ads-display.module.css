@@ -15,7 +15,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 50px 52px;
+  padding: 50px 42px;
   gap: 18px;
   overflow-y: auto;
 }
@@ -27,19 +27,31 @@
   text-align: center;
   gap: 17px;
   width: 100%;
-  max-width: 770px;
+  max-width: 428px;
 }
 
 .title {
   font-family: 'Roboto', sans-serif;
   font-size: 40px;
   font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.titleText {
   background: linear-gradient(94.38deg, #00bfa6 30.18%, #0d3b66 70.71%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0;
-  line-height: 1.2;
+}
+
+.titleEmoji {
+  -webkit-text-fill-color: initial;
+  color: initial;
 }
 
 .subtitle {
@@ -54,14 +66,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 18px;
-  justify-content: center;
+  justify-content: start;
   width: 100%;
   max-width: 648px;
   padding: 47px 0;
 }
 
 .imageCard {
-  width: 294px;
+  width: 267px;
   border-radius: 6.5px;
   box-shadow: 0px 4.39px 14.13px 0px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -118,25 +130,56 @@
   color: #0a0a0a;
 }
 
+.hoverOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.3) 0%, rgba(10, 10, 10, 0.8) 100%);
+  z-index: 1;
+}
+
 .downloadButton {
   position: absolute;
-  bottom: 16px;
+  top: calc(50% + 6.85px);
   left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(133.78deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
+  transform: translate(-50%, -50%);
+  background: transparent;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10.2px 67.58px;
+  border-radius: 28.137px;
+  box-shadow: 0px 0px 4.078px 0px rgba(0, 0, 0, 0.2);
   font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 310px;
 }
 
 .downloadButton:hover {
   opacity: 0.9;
+}
+
+.downloadText {
+  font-family: 'Roboto', sans-serif;
+  font-size: 15.431px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+  line-height: normal;
+}
+
+.downloadIcon {
+  width: 16.719px;
+  height: 20.301px;
+  flex-shrink: 0;
 }
 
 /* Right Panel - Insights */
@@ -249,6 +292,12 @@
   color: black;
 }
 
+.logoImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .colorsBox {
   width: 59px;
   height: 57px;
@@ -258,15 +307,28 @@
 }
 
 .colorSwatches {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-items: center;
 }
 
 .colorSwatch {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid #ddd;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+/* Hover effect */
+.colorSwatch:hover {
+  transform: scale(1.1);
 }
 
 .fontName {
@@ -311,7 +373,8 @@
   border-radius: 4.88px;
   padding: 14px 10px;
   box-shadow: 0px 0px 3.59px 0px rgba(0, 0, 0, 0.4);
-  min-height: 180px;
+  height: 180px;
+  overflow-y: auto;
 }
 
 .insightList {
@@ -334,8 +397,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 14px;
-  border: 1.79px solid #00bfa6;
+  padding: 0 14px;
   border-radius: 23px;
   background: linear-gradient(133.78deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
   color: white;
@@ -346,6 +408,7 @@
   transition: opacity 0.2s ease;
   width: 100%;
   max-width: 376px;
+  height: 40px;
 }
 
 .actionButton:hover {
@@ -357,24 +420,28 @@
 }
 
 .archetypesGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 44px;
-  justify-content: center;
   width: 100%;
+  height: 100px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 9px 44px;
+  padding: 0 44px;
 }
 
 .archetypeCard {
   background: white;
   border: 1.31px solid #888e98;
   border-radius: 3.99px;
-  padding: 10px 7px;
   box-shadow: 0px 0px 2.63px 0px rgba(0, 0, 0, 0.4);
   font-family: 'Roboto', sans-serif;
   font-size: 11px;
   color: black;
   text-align: center;
-  min-width: 102px;
+  width: 102px;
   height: 33px;
   display: flex;
   align-items: center;
@@ -441,6 +508,78 @@
   justify-content: center;
 }
 
+/* Skeleton Loading Styles */
+.skeletonLogo {
+  width: 60px;
+  height: 30px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonColorSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+}
+
+.skeletonFont {
+  width: 70px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonLanguage {
+  width: 80px;
+  height: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonInsightList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.skeletonInsightItem {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeletonInsightItem:nth-child(2) {
+  width: 85%;
+}
+
+.skeletonInsightItem:nth-child(3) {
+  width: 90%;
+}
+
+@keyframes skeletonLoading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .container {
@@ -480,4 +619,3 @@
     gap: 40px;
   }
 }
-

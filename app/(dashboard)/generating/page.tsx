@@ -32,12 +32,30 @@ export default function GeneratingPage() {
   const [images, setImages] = useState<AdImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [actualJobId, setActualJobId] = useState<string | null>(null);
 
   useEffect(() => {
-    // If we have a job_id, we're already done - this shouldn't happen with callback-based flow
-    // But handle it for backwards compatibility
+    // If we have a job_id, we're already done and displayed the ads
+    const fetchImagesForJob = async () => {
+      if (jobId && !websiteUrl) {
+        setIsLoading(false);
+        setStatus('SUCCEEDED');
+        try {
+          const imagesRes = await fetch(`/api/generate/job-images?jobId=${jobId}`);
+          if (imagesRes.ok) {
+            const imagesData = await imagesRes.json();
+            setImages(imagesData);
+          } else {
+            setError('Failed to get images');
+          }
+        } catch (err) {
+          setError('Failed to get images');
+        }
+      }
+    };
+
     if (jobId && !websiteUrl) {
-      router.replace('/');
+      fetchImagesForJob();
       return;
     }
 
@@ -81,6 +99,11 @@ export default function GeneratingPage() {
 
         const data = await res.json();
         setStatus(data.status);
+        
+        // Store job_id from response
+        if (data.job_id) {
+          setActualJobId(data.job_id);
+        }
         
         if (data.status === 'SUCCEEDED') {
           setImages(data.images || []);
@@ -134,7 +157,7 @@ export default function GeneratingPage() {
 
   // Show generated ads
   if (status === 'SUCCEEDED' && images.length > 0) {
-    return <GeneratedAdsDisplay images={images} jobId={jobId!} />;
+    return <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} />;
   }
 
   // Default: still loading

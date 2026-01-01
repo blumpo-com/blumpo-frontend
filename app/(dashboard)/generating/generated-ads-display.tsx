@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './generated-ads-display.module.css';
 
@@ -20,14 +20,97 @@ interface AdImage {
   createdAt: string;
 }
 
+interface BrandData {
+  id: string;
+  name: string;
+  websiteUrl: string;
+  language: string;
+  fonts: any;
+  colors: string[];
+  logoUrl: string | null;
+}
+
+interface BrandInsights {
+  customerPainPoints: string[];
+  targetCustomers: string[];
+  customerGroups: string[];
+  redditCustomerPainPoints: any;
+  redditCustomerDesires: any;
+}
+
 interface GeneratedAdsDisplayProps {
   images: AdImage[];
   jobId: string;
 }
 
+const archetypes = [
+  {
+    code: 'problem_solution',
+    displayName: 'Problem-Solution',
+    description: 'Show user\'s pain point and how your product resolves it',
+  },
+  {
+    code: 'testimonial',
+    displayName: 'Testimonial',
+    description: 'Build the ad around a customer review or quote',
+  },
+  {
+    code: 'meme',
+    displayName: 'Meme',
+    description: 'Create a meme ad',
+  },
+  {
+    code: 'competitor_comparison',
+    displayName: 'Competitor Comparison',
+    description: 'Visually present how the product works vs competitors',
+  },
+  {
+    code: 'promotion_offer',
+    displayName: 'Promotion (Offer)',
+    description: 'Communicate a clear, time-limited deal to prompt immediate action',
+  },
+  {
+    code: 'value_proposition',
+    displayName: 'Value Proposition',
+    description: 'Highlight the core benefit and what sets the product apart',
+  },
+];
+
 export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps) {
   const router = useRouter();
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
+  const [brandData, setBrandData] = useState<BrandData | null>(null);
+  const [insights, setInsights] = useState<BrandInsights | null>(null);
+  const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
+
+  // Fetch brand data and insights
+  useEffect(() => {
+    if (!jobId) {
+      setIsLoadingBrandData(false);
+      return;
+    }
+
+    const fetchBrandData = async () => {
+      try {
+        const res = await fetch(`/api/generate/brand-data?job_id=${jobId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.brand) {
+            setBrandData(data.brand);
+          }
+          if (data.insights) {
+            setInsights(data.insights);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching brand data:', error);
+      } finally {
+        setIsLoadingBrandData(false);
+      }
+    };
+
+    fetchBrandData();
+  }, [jobId]);
 
   const handleDownload = async (imageUrl: string, imageId: string) => {
     try {
@@ -47,11 +130,17 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
   };
 
   const handleGenerateMore = () => {
-    router.push('/');
+    console.log('handleGenerateMore');
   };
 
   const handleRegenerate = () => {
-    router.push('/');
+    console.log('handleRegenerate');
+  };
+
+  const handlePaidSectionClick = (sectionName: string) => {
+    console.log('Paid section clicked:', sectionName);
+    // TODO: Navigate to upgrade/payment page or show upgrade modal
+    // router.push('/upgrade');
   };
 
   // Show first 5 images, 6th is blurred with "?" overlay (if more than 5 images)
@@ -64,7 +153,9 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
       <div className={styles.leftPanel}>
         <div className={styles.header}>
           <h1 className={styles.title}>
-            Ads crafted for your brand are here 👋
+            <span className={styles.titleText}>
+              Ads crafted for your brand are here <span className={styles.titleEmoji}>👋</span>
+            </span>
           </h1>
           <p className={styles.subtitle}>
             Hover over and download them for free!
@@ -93,13 +184,19 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
                     </div>
                   )}
                   {!isBlurred && hoveredImageId === image.id && (
-                    <button
-                      className={styles.downloadButton}
-                      onClick={() => handleDownload(image.publicUrl, image.id)}
-                      aria-label="Download image"
-                    >
-                      Download
-                    </button>
+                    <>
+                      <div className={styles.hoverOverlay} />
+                      <button
+                        className={styles.downloadButton}
+                        onClick={() => handleDownload(image.publicUrl, image.id)}
+                        aria-label="Download image"
+                      >
+                        <p className={styles.downloadText}>Download image</p>
+                        <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
+                          <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -123,24 +220,68 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Logo</p>
               <div className={styles.componentBox}>
-                {/* Logo placeholder - would be populated from brand data */}
-                <div className={styles.logoPlaceholder}>Logo</div>
+                {isLoadingBrandData ? (
+                  <div className={styles.skeletonLogo} />
+                ) : brandData?.logoUrl ? (
+                  <img 
+                    src={brandData.logoUrl} 
+                    alt={`${brandData.name} logo`}
+                    className={styles.logoImage}
+                  />
+                ) : null}
               </div>
             </div>
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Colors</p>
               <div className={styles.colorsBox}>
-                {/* Color swatches placeholder */}
-                <div className={styles.colorSwatches}>
-                  <div className={styles.colorSwatch} style={{ backgroundColor: '#00BFA6' }} />
-                  <div className={styles.colorSwatch} style={{ backgroundColor: '#0D3B66' }} />
-                </div>
+                {isLoadingBrandData ? (
+                  <div className={styles.colorSwatches}>
+                    <div className={styles.skeletonColorSwatch} />
+                    <div className={styles.skeletonColorSwatch} />
+                    <div className={styles.skeletonColorSwatch} />
+                    <div className={styles.skeletonColorSwatch} />
+                  </div>
+                ) : brandData?.colors && brandData.colors.length > 0 ? (
+                  <div className={styles.colorSwatches}>
+                    {brandData.colors.slice(0, 4).map((color, index) => (
+                      <div 
+                        key={index} 
+                        className={styles.colorSwatch} 
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Font</p>
               <div className={styles.componentBox}>
-                <p className={styles.fontName}>Poppins</p>
+                {isLoadingBrandData ? (
+                  <div className={styles.skeletonFont} />
+                ) : (
+                  <p className={styles.fontName}>
+                    {(() => {
+                      if (!brandData?.fonts) return null;
+                      if (typeof brandData.fonts === 'string') return brandData.fonts;
+                      if (Array.isArray(brandData.fonts) && brandData.fonts.length > 0) {
+                        // Sort by count (descending) to get most popular font
+                        const sortedFonts = [...brandData.fonts].sort((a, b) => {
+                          const countA = typeof a === 'object' && a !== null ? (a.count || 0) : 0;
+                          const countB = typeof b === 'object' && b !== null ? (b.count || 0) : 0;
+                          return countB - countA;
+                        });
+                        const mostPopularFont = sortedFonts[0];
+                        if (typeof mostPopularFont === 'string') return mostPopularFont;
+                        if (typeof mostPopularFont === 'object' && mostPopularFont !== null) {
+                          return mostPopularFont.fontFamily || mostPopularFont.family || null;
+                        }
+                      }
+                      return null;
+                    })()}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -155,21 +296,49 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
             <div className={styles.insightBox}>
               <p className={styles.insightLabel}>Customer pain points</p>
               <div className={styles.insightContent}>
-                <ul className={styles.insightList}>
-                  <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sem urna. Integer luctus, turpis non pharetra porttitor</li>
-                  <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sem urna. Integer luctus, turpis non pharetra porttitor</li>
-                  <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sem urna. Integer luctus, turpis non pharetra porttitor</li>
-                </ul>
+                {isLoadingBrandData ? (
+                  <div className={styles.skeletonInsightList}>
+                    <div className={styles.skeletonInsightItem} />
+                    <div className={styles.skeletonInsightItem} />
+                    <div className={styles.skeletonInsightItem} />
+                  </div>
+                ) : insights?.customerPainPoints && insights.customerPainPoints.length > 0 ? (
+                  <ul className={styles.insightList}>
+                    {insights.customerPainPoints.slice(0, 5).map((point, index) => (
+                      <li key={index}>{point}</li>
+                    ))}
+                  </ul>
+                ) : insights?.redditCustomerPainPoints && Array.isArray(insights.redditCustomerPainPoints) && insights.redditCustomerPainPoints.length > 0 ? (
+                  <ul className={styles.insightList}>
+                    {insights.redditCustomerPainPoints.slice(0, 5).map((point: any, index: number) => (
+                      <li key={index}>{typeof point === 'string' ? point : point?.text || point?.point || JSON.stringify(point)}</li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </div>
             <div className={styles.insightBox}>
               <p className={styles.insightLabel}>Customer groups</p>
               <div className={styles.insightContent}>
-                <ul className={styles.insightList}>
-                  <li>Group First</li>
-                  <li>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae sem urna. Integer luctus, turpis non pharetra porttitor</li>
-                  <li>Group number 3</li>
-                </ul>
+                {isLoadingBrandData ? (
+                  <div className={styles.skeletonInsightList}>
+                    <div className={styles.skeletonInsightItem} />
+                    <div className={styles.skeletonInsightItem} />
+                    <div className={styles.skeletonInsightItem} />
+                  </div>
+                ) : insights?.targetCustomers && insights.targetCustomers.length > 0 ? (
+                  <ul className={styles.insightList}>
+                    {insights.targetCustomers.slice(0, 5).map((group, index) => (
+                      <li key={index}>{group}</li>
+                    ))}
+                  </ul>
+                ) : insights?.customerGroups && insights.customerGroups.length > 0 ? (
+                  <ul className={styles.insightList}>
+                    {insights.customerGroups.slice(0, 5).map((group, index) => (
+                      <li key={index}>{group}</li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             </div>
           </div>
@@ -185,7 +354,7 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
         <div className={styles.divider} />
 
         {/* Ad Types Section */}
-        <div className={styles.section}>
+        <div className={styles.section} onClick={() => handlePaidSectionClick('ad-types')} style={{ cursor: 'pointer' }}>
           <div className={styles.sectionHeader}>
             <div className={styles.paidBadge}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -196,13 +365,10 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
             <h2 className={styles.sectionTitle}>Ad types</h2>
           </div>
           <div className={styles.archetypesGrid}>
-            {images
-              .map(img => img.archetype)
-              .filter((arch, index, self) => arch && self.findIndex(a => a?.code === arch.code) === index)
-              .slice(0, 6)
+            {archetypes
               .map((archetype) => (
-                <div key={archetype?.code} className={styles.archetypeCard}>
-                  {archetype?.displayName || 'Unknown'}
+                <div key={archetype.code} className={styles.archetypeCard}>
+                  {archetype.displayName}
                 </div>
               ))}
           </div>
@@ -213,7 +379,7 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
         {/* Ad Formats Section */}
         <div className={styles.section}>
           <div className={styles.formatsRow}>
-            <div className={styles.formatGroup}>
+            <div className={styles.formatGroup} onClick={() => handlePaidSectionClick('ad-formats')} style={{ cursor: 'pointer' }}>
               <div className={styles.sectionHeader}>
                 <div className={styles.paidBadge}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -228,7 +394,7 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
                 <div className={styles.formatBox}>16:9</div>
               </div>
             </div>
-            <div className={styles.formatGroup}>
+            <div className={styles.formatGroup} onClick={() => handlePaidSectionClick('language')} style={{ cursor: 'pointer' }}>
               <div className={styles.sectionHeader}>
                 <div className={styles.paidBadge}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -239,7 +405,18 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
                 <h2 className={styles.sectionTitle}>Language</h2>
               </div>
               <div className={styles.languageBox}>
-                <span>🇬🇧 English</span>
+                {isLoadingBrandData ? (
+                  <div className={styles.skeletonLanguage} />
+                ) : brandData?.language ? (
+                  <span>
+                    {brandData.language === 'en' || brandData.language === 'English' ? '🇬🇧 English' 
+                      : brandData.language === 'pl' || brandData.language === 'Polish' ? '🇵🇱 Polish'
+                      : brandData.language === 'de' || brandData.language === 'German' ? '🇩🇪 German'
+                      : brandData.language === 'fr' || brandData.language === 'French' ? '🇫🇷 French'
+                      : brandData.language === 'es' || brandData.language === 'Spanish' ? '🇪🇸 Spanish'
+                      : `🌐 ${brandData.language.toUpperCase()}`}
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
