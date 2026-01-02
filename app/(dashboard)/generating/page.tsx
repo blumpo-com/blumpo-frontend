@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreatingProcess } from '../dashboard/customized-ads/creating-process';
+import { CreatingProcess } from '../dashboard/ad-generation/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
 
 const STEP_TIMINGS = {

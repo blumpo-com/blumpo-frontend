@@ -83,6 +83,8 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [brandData, setBrandData] = useState<BrandData | null>(null);
   const [insights, setInsights] = useState<BrandInsights | null>(null);
   const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
 
   // Fetch brand data and insights
   useEffect(() => {
@@ -114,19 +116,70 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   }, [jobId]);
 
   const handleDownload = async (imageUrl: string, imageId: string) => {
+    // Prevent multiple simultaneous downloads of the same image
+    if (downloadingIds.has(imageId)) {
+      return;
+    }
+    
+    // Set downloading state
+    setDownloadingIds(prev => new Set(prev).add(imageId));
+    
     try {
+      // Fetch the image
       const response = await fetch(imageUrl);
       const blob = await response.blob();
+      
+      // Create a download link
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ad-${imageId}.png`;
-      document.body.appendChild(a);
-      a.click();
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Extract filename from URL or use adId
+      const filename = imageUrl.split('/').pop() || `ad-${imageId}.png`;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Track download in state
+      setDownloadedIds(prev => new Set(prev).add(imageId));
+      
+      // Log download event to analytics
+      try {
+        const analyticsResponse = await fetch('/api/ad-actions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jobId,
+            downloadedIds: [imageId],
+          }),
+        });
+        
+        if (!analyticsResponse.ok) {
+          console.error('Failed to log download event');
+        }
+      } catch (analyticsError) {
+        console.error('Error logging download event:', analyticsError);
+        // Don't fail the download if analytics fails
+      }
+      
+      console.log('Downloaded ad:', imageId);
     } catch (error) {
       console.error('Error downloading image:', error);
+    } finally {
+      // Clear downloading state
+      setDownloadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(imageId);
+        return newSet;
+      });
     }
   };
 
@@ -194,14 +247,24 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     <>
                       <div className={styles.hoverOverlay} />
                       <button
-                        className={styles.downloadButton}
+                        className={`${styles.downloadButton} ${downloadingIds.has(image.id) ? styles.downloadButtonLoading : ''}`}
                         onClick={() => handleDownload(image.publicUrl, image.id)}
-                        aria-label="Download image"
+                        disabled={downloadingIds.has(image.id)}
+                        aria-label={downloadingIds.has(image.id) ? 'Downloading...' : 'Download image'}
                       >
-                        <p className={styles.downloadText}>Download image</p>
-                        <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
-                          <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        {downloadingIds.has(image.id) ? (
+                          <>
+                            <p className={styles.downloadText}>Downloading...</p>
+                            <div className={styles.downloadSpinner}></div>
+                          </>
+                        ) : (
+                          <>
+                            <p className={styles.downloadText}>Download image</p>
+                            <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
+                              <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </>
+                        )}
                       </button>
                     </>
                   )}
