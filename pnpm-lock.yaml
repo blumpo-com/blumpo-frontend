@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@cospired/i18n-iso-languages':
+        specifier: ^4.2.0
+        version: 4.2.0
       '@mdx-js/loader':
         specifier: ^3.1.1
         version: 3.1.1
@@ -83,6 +86,9 @@ importers:
       react:
         specifier: 19.2.1
         version: 19.2.1
+      react-colorful:
+        specifier: ^5.6.1
+        version: 5.6.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       react-dom:
         specifier: 19.2.1
         version: 19.2.1(react@19.2.1)
@@ -149,6 +155,10 @@ packages:
   '@babel/runtime@7.28.4':
     resolution: {integrity: sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==}
     engines: {node: '>=6.9.0'}
+
+  '@cospired/i18n-iso-languages@4.2.0':
+    resolution: {integrity: sha512-vy8cq1176MTxVwB1X9niQjcIYOH29F8Huxtx8hLmT5Uz3l1ztGDGri8KN/4zE7LV2mCT7JrcAoNV/I9yb+lNUw==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -2526,6 +2536,12 @@ packages:
       '@types/react-dom':
         optional: true
 
+  react-colorful@5.6.1:
+    resolution: {integrity: sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
   react-dom@19.2.1:
     resolution: {integrity: sha512-ibrK8llX2a4eOskq1mXKu/TGZj9qzomO+sNfO98M6d9zIPOEhlBkMkBUBLd1vgS0gQsLDBzA+8jJBVXDnfHmJg==}
     peerDependencies:
@@ -2894,6 +2910,8 @@ snapshots:
       '@jridgewell/trace-mapping': 0.3.25
 
   '@babel/runtime@7.28.4': {}
+
+  '@cospired/i18n-iso-languages@4.2.0': {}
 
   '@drizzle-team/brocli@0.10.2': {}
 
@@ -5442,6 +5460,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.4
       '@types/react-dom': 19.1.5(@types/react@19.1.4)
+
+  react-colorful@5.6.1(react-dom@19.2.1(react@19.2.1))(react@19.2.1):
+    dependencies:
+      react: 19.2.1
+      react-dom: 19.2.1(react@19.2.1)
 
   react-dom@19.2.1(react@19.2.1):
     dependencies:
