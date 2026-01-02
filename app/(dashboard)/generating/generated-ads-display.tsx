@@ -41,6 +41,7 @@ interface BrandInsights {
 interface GeneratedAdsDisplayProps {
   images: AdImage[];
   jobId: string;
+  isPaidUser?: boolean;
 }
 
 const archetypes = [
@@ -76,7 +77,7 @@ const archetypes = [
   },
 ];
 
-export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps) {
+export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: GeneratedAdsDisplayProps) {
   const router = useRouter();
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
   const [brandData, setBrandData] = useState<BrandData | null>(null);
@@ -134,7 +135,12 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
   };
 
   const handleRegenerate = () => {
-    console.log('handleRegenerate');
+    if (isPaidUser) {
+      // Navigate to dashboard for paid users
+      router.push('/dashboard');
+    } else {
+      console.log('handleRegenerate');
+    }
   };
 
   const handlePaidSectionClick = (sectionName: string) => {
@@ -143,9 +149,10 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
     // router.push('/upgrade');
   };
 
-  // Show first 5 images, 6th is blurred with "?" overlay (if more than 5 images)
+  // Show first 5 images, 6th is blurred with "?" overlay (if more than 5 images and not paid user)
+  // Paid users see all images without blur
   const displayImages = images.slice(0, 6);
-  const hasMore = images.length > 5;
+  const hasMore = images.length > 5 && !isPaidUser;
 
   return (
     <div className={styles.container}>
@@ -354,14 +361,16 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
         <div className={styles.divider} />
 
         {/* Ad Types Section */}
-        <div className={styles.section} onClick={() => handlePaidSectionClick('ad-types')} style={{ cursor: 'pointer' }}>
+        <div className={styles.section} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-types') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
           <div className={styles.sectionHeader}>
-            <div className={styles.paidBadge}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-              </svg>
-              <span>Paid only</span>
-            </div>
+            {!isPaidUser && (
+              <div className={styles.paidBadge}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
+                </svg>
+                <span>Paid only</span>
+              </div>
+            )}
             <h2 className={styles.sectionTitle}>Ad types</h2>
           </div>
           <div className={styles.archetypesGrid}>
@@ -379,14 +388,16 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
         {/* Ad Formats Section */}
         <div className={styles.section}>
           <div className={styles.formatsRow}>
-            <div className={styles.formatGroup} onClick={() => handlePaidSectionClick('ad-formats')} style={{ cursor: 'pointer' }}>
+            <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-formats') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
               <div className={styles.sectionHeader}>
-                <div className={styles.paidBadge}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                  </svg>
-                  <span>Paid only</span>
-                </div>
+                {!isPaidUser && (
+                  <div className={styles.paidBadge}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
+                    </svg>
+                    <span>Paid only</span>
+                  </div>
+                )}
                 <h2 className={styles.sectionTitle}>Different ad formats</h2>
               </div>
               <div className={styles.formatBoxes}>
@@ -394,14 +405,16 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
                 <div className={styles.formatBox}>16:9</div>
               </div>
             </div>
-            <div className={styles.formatGroup} onClick={() => handlePaidSectionClick('language')} style={{ cursor: 'pointer' }}>
+            <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
               <div className={styles.sectionHeader}>
-                <div className={styles.paidBadge}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                  </svg>
-                  <span>Paid only</span>
-                </div>
+                {!isPaidUser && (
+                  <div className={styles.paidBadge}>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
+                    </svg>
+                    <span>Paid only</span>
+                  </div>
+                )}
                 <h2 className={styles.sectionTitle}>Language</h2>
               </div>
               <div className={styles.languageBox}>
@@ -425,7 +438,7 @@ export function GeneratedAdsDisplay({ images, jobId }: GeneratedAdsDisplayProps)
         <div className={styles.divider} />
 
         <button className={styles.actionButton} onClick={handleRegenerate}>
-          <span>Regenerate ads</span>
+          <span>{isPaidUser ? 'Login to main platform' : 'Regenerate ads'}</span>
           <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
             <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

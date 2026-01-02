@@ -31,6 +31,16 @@ interface AdImage {
 
 type JobStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED';
 
+interface UserWithTokenAccount {
+  id: string;
+  email: string;
+  displayName: string | null;
+  tokenAccount: {
+    planCode: string;
+    balance: number;
+  } | null;
+}
+
 export default function GeneratingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -41,7 +51,27 @@ export default function GeneratingPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [actualJobId, setActualJobId] = useState<string | null>(null);
+  const [isPaidUser, setIsPaidUser] = useState(false);
   const hasInitiatedRef = useRef<string | null>(null);
+
+  // Fetch user subscription status
+  useEffect(() => {
+    const fetchUserSubscription = async () => {
+      try {
+        const userRes = await fetch('/api/user');
+        if (userRes.ok) {
+          const userData: UserWithTokenAccount = await userRes.json();
+          if (userData?.tokenAccount?.planCode && userData.tokenAccount.planCode !== 'FREE') {
+            setIsPaidUser(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user subscription:', error);
+      }
+    };
+
+    fetchUserSubscription();
+  }, []);
 
   useEffect(() => {
     // Create a unique key for this effect run based on dependencies
@@ -181,7 +211,7 @@ export default function GeneratingPage() {
 
   // Show generated ads
   if (status === 'SUCCEEDED' && images.length > 0) {
-    return <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} />;
+    return <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />;
   }
 
   // Default: still loading
