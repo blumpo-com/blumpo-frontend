@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get('file') as File;
     const brandId = formData.get('brandId') as string;
+    const type = (formData.get('type') as string) || 'product'; // 'product', 'hero', or 'logo'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -40,27 +41,47 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Brand not found' }, { status: 404 });
     }
 
-    // Generate unique filename
-    const timestamp = Date.now();
+    // Generate unique filename with timestamp
+    const timestamp = new Date().toISOString();
     const randomStr = Math.random().toString(36).substring(2, 15);
     const extension = file.name.split('.').pop() || 'jpg';
     const filename = `${timestamp}-${randomStr}.${extension}`;
     
-    // Upload to Vercel Blob at brand-assets path
-    const path = `brand-assets/${brandId}/photos/${filename}`;
+    // Determine path based on type
+    let path: string;
+    if (type === 'logo') {
+      path = `brand-assets/${brandId}/logo/${filename}`;
+    } else if (type === 'hero') {
+      path = `brand-assets/${brandId}/hero/${filename}`;
+    } else {
+      // Default to product photos
+      path = `brand-assets/${brandId}/photos/${filename}`;
+    }
 
     const blob = await put(path, file, {
       access: 'public',
       contentType: file.type,
     });
 
-    // Add photo URL to brand's photos array
+    // Update brand data based on type
+    if (type === 'logo') {
+      await updateBrand(brandId, {
+        logoUrl: blob.url,
+      });
+    } else if (type === 'hero') {
+      const currentHeroPhotos = brand.heroPhotos || [];
+      const updatedHeroPhotos = [...currentHeroPhotos, blob.url];
+      await updateBrand(brandId, {
+        heroPhotos: updatedHeroPhotos,
+      });
+    } else {
+      // Product photos (default)
     const currentPhotos = brand.photos || [];
     const updatedPhotos = [...currentPhotos, blob.url];
-    
     await updateBrand(brandId, {
       photos: updatedPhotos,
     });
+    }
 
     return NextResponse.json({ url: blob.url });
   } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 import { ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 type DialogProps = {
   open: boolean;
@@ -18,9 +19,9 @@ export function Dialog({ open, onClose, children }: DialogProps) {
 
   if (!open) return null;
 
-  return (
+  const dialogContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -31,4 +32,11 @@ export function Dialog({ open, onClose, children }: DialogProps) {
       </div>
     </div>
   );
+
+  // Render dialog at document root level using portal
+  if (typeof window !== "undefined") {
+    return createPortal(dialogContent, document.body);
+  }
+
+  return null;
 }
