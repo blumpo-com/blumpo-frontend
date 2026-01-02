@@ -170,8 +170,34 @@ export default function DashboardHomePage() {
   // Example: Access current brand data
   // console.log('Current brand:', currentBrand);
 
-  return (
+  // Use NEXT_PUBLIC_ prefix for client-side access
+  const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
+
+ return (
     <div className={styles.homePage}>
+      {/* Test button - only show in test mode */}
+      {IS_TEST_MODE && (
+        <button
+          onClick={() => router.push('/dashboard/ad-generation?job_id=ed0166d8-4530-48ef-b0e0-69d183cd0477')}
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 9999,
+            padding: '10px 20px',
+            backgroundColor: '#ff6b6b',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          }}
+        >
+          TEST: Ad Generation
+        </button>
+      )}
       {/* Header Section */}
       <div className={styles.greetingContainer}>
         <h1 className={styles.greeting}>

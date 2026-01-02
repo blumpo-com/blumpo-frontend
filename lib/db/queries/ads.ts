@@ -159,9 +159,21 @@ export async function markAdImageAsDeleted(adImageId: string, deleteAt?: Date) {
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: deleteAt || null,
+      deleteAt: deleteAt || new Date(),
     })
     .where(eq(adImage.id, adImageId));
+}
+
+export async function markAdImagesAsDeleted(adImageIds: string[]) {
+  if (adImageIds.length === 0) return;
+  
+  await db
+    .update(adImage)
+    .set({
+      isDeleted: true,
+      deleteAt: new Date(),
+    })
+    .where(inArray(adImage.id, adImageIds));
 }
 
 export async function restoreAdImage(adImageId: string) {
