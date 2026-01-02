@@ -176,7 +176,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               <div
                 key={image.id}
                 className={`${styles.imageCard} ${isBlurred ? styles.blurredCard : ''}`}
-                onMouseEnter={() => !isBlurred && setHoveredImageId(image.id)}
+                onMouseEnter={() => setHoveredImageId(image.id)}
                 onMouseLeave={() => setHoveredImageId(null)}
               >
                 <div className={styles.imageWrapper}>
@@ -186,11 +186,11 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     className={styles.image}
                   />
                   {isBlurred && (
-                    <div className={styles.blurredOverlay}>
+                    <div className={`${styles.blurredOverlay} ${hoveredImageId === image.id ? styles.blurredOverlayHidden : ''}`}>
                       <span className={styles.questionMark}>?</span>
                     </div>
                   )}
-                  {!isBlurred && hoveredImageId === image.id && (
+                  {hoveredImageId === image.id && (
                     <>
                       <div className={styles.hoverOverlay} />
                       <button

@@ -65,15 +65,20 @@
 .imagesGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  justify-content: start;
+  gap: 50px 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+  align-content: flex-start;
+  height: 1103px;
+  overflow-y: auto;
   width: 100%;
   max-width: 648px;
   padding: 47px 0;
 }
 
 .imageCard {
-  width: 267px;
+  width: 268px;
+  height: 268px;
   border-radius: 6.5px;
   box-shadow: 0px 4.39px 14.13px 0px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -105,7 +110,7 @@
 }
 
 .blurredCard .image {
-  filter: blur(4.67px);
+  filter: blur(4.25px);
 }
 
 .blurredOverlay {
@@ -113,21 +118,28 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 104px;
-  height: 104px;
-  background: white;
-  border-radius: 57px;
+  width: 95px;
+  height: 95px;
+  background: transparent;
+  border-radius: 57.216px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0px 4.74px 4.74px 0px rgba(0, 0, 0, 0.25);
+  z-index: 3;
+  transition: opacity 0.2s ease;
+}
+
+.blurredOverlayHidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .questionMark {
   font-family: 'Roboto', sans-serif;
-  font-size: 61px;
-  font-weight: 700;
+  font-size: 55.724px;
+  font-weight: 600;
   color: #0a0a0a;
+  line-height: normal;
 }
 
 .hoverOverlay {
