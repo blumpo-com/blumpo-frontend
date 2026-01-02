@@ -1,0 +1,597 @@
+.container {
+  width: 100%;
+  height: 100%;
+  background-color: #F9FAFB;
+  border: none;
+}
+
+.contentWrapper {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 43px 80px;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.row{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 40px;
+  width: 100%;
+}
+
+.row.first {
+  align-items: center;
+}
+
+
+/* When row has exactly 2 direct children, space them apart */
+.row:has(> :first-child:nth-last-child(2)) {
+  justify-content: space-between;
+}
+
+/* Single content item - left aligned, max width 463px */
+.row > :only-child {
+  max-width: 463px;
+  width: 100%;
+}
+
+/* rowContent wrapper - max width 463px, stack items vertically */
+.rowContent {
+  max-width: 463px;
+  width: 100%;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+/* Loading and Error States */
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.loadingText {
+  color: #4B5563;
+}
+
+.errorText {
+  color: #DC2626;
+}
+
+/* Label */
+.label {
+  font-size: 24px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #000;
+  text-align: left;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Brand Fonts */
+.fontContainer {
+  width: 100%;
+  min-height: 54px;
+  max-height: 95px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #888e98;
+  border-radius: 8px;
+  background-color: white;
+  cursor: text;
+  transition: all 0.2s;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for font container */
+.fontContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fontContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fontContainer::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+
+.fontContainer::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+.fontContainer:focus-within {
+  border-color: #00D9D9;
+  box-shadow: 0 0 0 2px rgba(0, 217, 217, 0.1);
+}
+
+.fontsList {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+  animation: fadeIn 0.2s ease-in;
+  align-items: flex-start;
+  min-height: 34px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fontChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background-color: #E5E7EB;
+  border-radius: 9999px;
+  font-size: 18px;
+  color: #6B7280;
+  cursor: default;
+}
+
+.fontRemoveButton {
+  color: #6B7280;
+  transition: color 0.2s;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.fontRemoveButton:hover {
+  color: #374151;
+}
+
+.fontPlaceholder {
+  color: #9CA3AF;
+  font-size: 18px;
+}
+
+.fontInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  animation: slideIn 0.2s ease-in;
+  min-height: 34px;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.fontInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  color: #040404;
+  padding: 0;
+}
+
+.fontInput::placeholder {
+  color: #9CA3AF;
+}
+
+.fontAddButton {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.fontAddButton:hover:not(:disabled) {
+  background-color: #F3F4F6;
+  color: #040404;
+}
+
+.fontAddButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Colors */
+.colorsList {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.colorSwatchContainer {
+  position: relative;
+}
+
+.colorSwatchContainer:hover .colorRemoveButton {
+  opacity: 1;
+}
+
+.colorSwatch {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 2px solid #D1D5DB;
+  cursor: pointer;
+}
+
+.colorRemoveButton {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: #EF4444;
+  color: white;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorAddButton {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 2px dashed #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  transition: all 0.2s;
+  background: transparent;
+  cursor: pointer;
+}
+
+.colorAddButton:hover {
+  border-color: #9CA3AF;
+  color: #4B5563;
+}
+
+/* Color Picker Dialog */
+.colorPickerDialog {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.colorPickerTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #040404;
+  margin: 0;
+}
+
+.colorPickerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.colorPicker {
+  width: 100%;
+  height: 250px;
+}
+
+.colorTextInput {
+  flex: 1;
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 18px;
+  width: 100%;
+  font-family: monospace;
+}
+
+.colorTextInput:focus {
+  outline: none;
+  border-color: #00D9D9;
+  box-shadow: 0 0 0 2px rgba(0, 217, 217, 0.1);
+}
+
+.colorPickerActions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.colorPickerAddButton {
+  background: linear-gradient(95.82deg, #00bfa6, #58c7ff 50%, #0d3b66);
+  color: white;
+  border: none;
+  border-radius: 40px;
+}
+
+.colorPickerAddButton:hover:not(:disabled) {
+  opacity: 0.9;
+  /* transform: translateY(-1px); */
+  box-shadow: 0px 4px 8px rgba(0, 191, 166, 0.3);
+}
+
+.colorPickerAddButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.colorPickerCancelButton {
+  color: #000000;
+  background: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 40px;
+  transition:
+    background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.colorPickerCancelButton:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 0px 4px 16px 0px rgba(0,0,0,0.10);
+  border-color: #000000;
+}
+
+/* Brand Voice */
+.brandVoiceTextarea {
+  width: 100%;
+  height: 135px;
+  position: relative;
+  border-radius: 10px;
+  background-color: #fff;
+  border: 1px solid #888e98;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  padding: 15px 20px 8px 14px;
+  text-align: left;
+  font-size: 18px;
+  color: #888e98;
+}
+
+.brandVoiceTextarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #00D9D9;
+  border-color: transparent;
+}
+
+.skeletonTextarea {
+  width: 100%;
+  min-height: 120px;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  border-radius: 0.375rem;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Website URL */
+.websiteUrlInput {
+  width: 100%;
+  height: 54px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #6B7280;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.websiteUrlInput:focus {
+  outline: none;
+  border-color: #00D9D9;
+  box-shadow: 0 0 0 2px rgba(0, 217, 217, 0.1);
+}
+
+.websiteUrlInput::placeholder {
+  color: #9CA3AF;
+}
+
+/* Ads Language */
+.languageSelect {
+  width: 100%;
+  height: 54px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #6B7280;
+  background-color: white;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.languageSelect:focus {
+  outline: none;
+  border-color: #00D9D9;
+  box-shadow: 0 0 0 2px rgba(0, 217, 217, 0.1);
+}
+
+.languageSelect option {
+  color: #040404;
+  background-color: white;
+}
+
+/* Product Photos */
+.photosGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoRemoveButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem;
+  background-color: #EF4444;
+  color: white;
+  border-radius: 9999px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photoItem:hover .photoRemoveButton {
+  opacity: 1;
+}
+
+.addPhotoButton {
+  aspect-ratio: 1;
+  border: 2px dashed #D1D5DB;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  transition: all 0.2s;
+}
+
+.addPhotoButton:hover:not(:disabled) {
+  border-color: #9CA3AF;
+  color: #4B5563;
+}
+
+.addPhotoButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading States */
+.photoLoadingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  z-index: 10;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  color: white;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.photoItem {
+  position: relative;
+  aspect-ratio: 1;
+  background-color: #F3F4F6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.skeletonPhotoItem {
+  aspect-ratio: 1;
+  background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+.photoRemoveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Messages */
+.errorMessage {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 0.375rem;
+  color: #991B1B;
+  font-size: 18px;
+}
+
+.savingMessage {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 0.375rem;
+  color: #1E40AF;
+  font-size: 18px;
+}
