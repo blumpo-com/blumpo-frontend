@@ -4,7 +4,19 @@ import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 
 const nextConfig: NextConfig = {
-  pageExtensions: ['ts', 'tsx', 'md', 'mdx']
+  pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
+  },
 };
 
 // Configure MDX with plugins

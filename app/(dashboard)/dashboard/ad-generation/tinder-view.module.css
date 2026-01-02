@@ -1,0 +1,460 @@
+/* Tinder View Container */
+.container {
+  width: 100%;
+  height: 100vh;
+  background-color: #F9FAFB;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 32px 52px;
+  gap: 0;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0;
+  width: 100%;
+  max-width: 1145px;
+  color: #040404;
+}
+
+.titleText {
+  background: linear-gradient(112.28deg, #00bfa6 30.18%, #0d3b66 70.71%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #888e98;
+  margin: 0;
+  width: 100%;
+  max-width: 831px;
+}
+
+.subtitle p {
+  margin: 0;
+}
+
+/* Cards Container */
+.cardsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-bottom: 23px;
+  min-height: 0;
+}
+
+.cardsStack {
+  position: relative;
+  width: 100%;
+  max-width: 872px;
+  height: 585px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 552px;
+}
+
+/* Card Styles */
+.card {
+  position: absolute;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+  transition: none;
+}
+
+.card:active {
+  cursor: grabbing;
+}
+
+.cardImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.cardImage {
+  object-fit: cover;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.imageSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 0%,
+    #f3f4f6 50%,
+    #e5e7eb 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Card Positions */
+.cardCurrent {
+  z-index: 3;
+  box-shadow: 0px 18px 20px 0px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%) translateX(0) rotate(0deg) scale(1);
+  opacity: 1;
+  left: 50%;
+  top: 50%;
+}
+
+.cardLeft {
+  z-index: 2;
+  opacity: 0.4;
+  transform: translate(-50%, -50%) translateX(-92px) rotate(-8deg) scale(0.91);
+  box-shadow: 0px 0px 9.107px 0px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+
+.cardLeftAnimating {
+  transform: translate(-50%, -50%) translateX(0) rotate(0deg) scale(1);
+  opacity: 1;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.cardRight {
+  z-index: 1;
+  opacity: 0.4;
+  transform: translate(-50%, -50%) translateX(92px) rotate(8deg) scale(0.91);
+  box-shadow: 0px 0px 9.107px 0px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+
+.cardRightAnimating {
+  transform: translate(-50%, -50%) translateX(0) rotate(0deg) scale(1);
+  opacity: 1;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* Format-specific sizes */
+.card[data-format="1:1"] {
+  width: 374px;
+  height: 374px;
+}
+
+.card[data-format="16:9"] {
+  width: 252px;
+  height: 448px;
+}
+
+/* Default 1:1 size - will be overridden by inline styles */
+.cardCurrent {
+  width: 374px;
+  height: 374px;
+}
+
+/* Swipe States */
+.cardSwipeLeft {
+  background: rgba(255, 5, 5, 0.3);
+}
+
+.cardSwipeRight {
+  background: linear-gradient(95.82deg, rgba(0, 191, 166, 0.3) 5.13%, rgba(88, 199, 255, 0.3) 51.38%, rgba(13, 59, 102, 0.3) 97.62%);
+}
+
+/* Overlays */
+.deleteOverlay,
+.addOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.deleteOverlay {
+  background: rgba(255, 5, 5, 0.3);
+}
+
+.addOverlay {
+  background: linear-gradient(95.82deg, rgba(0, 191, 166, 0.3) 5.13%, rgba(88, 199, 255, 0.3) 51.38%, rgba(13, 59, 102, 0.3) 97.62%);
+}
+
+.deleteText,
+.addText {
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 0;
+}
+
+.deleteButton,
+.saveButton,
+.addButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.deleteButton:hover:not(:disabled),
+.saveButton:hover:not(:disabled),
+.addButton:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.deleteButton:active:not(:disabled),
+.saveButton:active:not(:disabled),
+.addButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.deleteButton:disabled,
+.saveButton:disabled,
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  width: 86px;
+  height: 86px;
+}
+
+.deleteButtonIcon {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #D42626;
+}
+
+.saveButton {
+  width: 71px;
+  height: 71px;
+  border-radius: 50%;
+  background: white;
+}
+
+.saveButtonIcon {
+  width: 71px;
+  height: 71px;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.addButton {
+  width: 86px;
+  height: 86px;
+}
+
+.addButtonIcon {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2px;
+  background: linear-gradient(95.82deg, #00BFA6 5.13%, #58C7FF 51.38%, #0D3B66 97.62%);
+}
+
+.addButtonIcon::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: white;
+  z-index: 0;
+}
+
+.addButtonIcon > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 20px;
+  text-align: center;
+}
+
+.emptyState h2 {
+  font-family: 'Roboto', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0a0a0a;
+  margin: 0;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #00bfa6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+.loadingContainer p {
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
+  color: #888e98;
+  margin: 0;
+}
+
+/* Mixed Format Styles */
+.mixedContainer {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  max-width: 1025px;
+}
+
+.mixedColumn {
+  position: relative;
+  width: 412px;
+  height: 515px;
+}
+
+.mixedColumn[data-format="16:9"] {
+  width: 521px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .content {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 20px;
+  }
+
+  .cardsStack {
+    height: 400px;
+    max-width: 100%;
+  }
+
+  .cardCurrent {
+    width: 280px;
+    height: 280px;
+  }
+
+  .cardNext,
+  .cardPrevious {
+    transform: rotate(5deg) scale(0.85);
+  }
+
+  .actionButtons {
+    gap: 15px;
+  }
+
+  .deleteButton,
+  .addButton {
+    width: 70px;
+    height: 70px;
+  }
+
+  .undoButton {
+    width: 60px;
+    height: 60px;
+  }
+}
+
