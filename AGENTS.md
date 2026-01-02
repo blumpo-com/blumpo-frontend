@@ -38,3 +38,6 @@
 
 ## Security & Configuration Tips
 - Store secrets in `.env`; mirror keys from `.env.example`. For deploys (e.g., Vercel), set env vars and Stripe webhook secrets per environment.
+
+## Figma and Designs
+- Round px values eg. 23.453px becomes 23px
