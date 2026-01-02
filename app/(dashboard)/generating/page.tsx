@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from '../dashboard/ad-generation/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
@@ -42,7 +42,7 @@ interface UserWithTokenAccount {
   } | null;
 }
 
-export default function GeneratingPage() {
+function GeneratingPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const websiteUrl = searchParams.get('website_url');
@@ -238,5 +238,17 @@ export default function GeneratingPage() {
   return <div className="flex flex-col items-center justify-center min-h-screen p-6">
     <div className="spinner"></div>
   </div>;
+}
+
+export default function GeneratingPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <div className="spinner"></div>
+      </div>
+    }>
+      <GeneratingPageContent />
+    </Suspense>
+  );
 }
 
