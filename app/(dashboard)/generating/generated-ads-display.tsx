@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Dialog } from '@/components/ui/dialog';
 import styles from './generated-ads-display.module.css';
 
 interface AdImage {
@@ -85,6 +86,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
+  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
 
   // Fetch brand data and insights
   useEffect(() => {
@@ -198,8 +200,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
   const handlePaidSectionClick = (sectionName: string) => {
     console.log('Paid section clicked:', sectionName);
-    // TODO: Navigate to upgrade/payment page or show upgrade modal
-    // router.push('/upgrade');
+    setShowComingSoonDialog(true);
   };
 
   // Show first 5 images, 6th is blurred with "?" overlay (if more than 5 images and not paid user)
@@ -507,6 +508,30 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           </svg>
         </button>
       </div>
+
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoonDialog} onClose={() => setShowComingSoonDialog(false)}>
+        <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '16px', color: '#000' }}>Coming soon</h2>
+        <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
+          This feature will be available soon. Stay tuned!
+        </p>
+        <button
+          onClick={() => setShowComingSoonDialog(false)}
+          style={{
+            backgroundColor: '#f97316',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            width: '100%',
+          }}
+        >
+          OK
+        </button>
+      </Dialog>
     </div>
   );
 }
