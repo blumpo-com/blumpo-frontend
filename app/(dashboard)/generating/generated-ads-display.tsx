@@ -107,6 +107,10 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             setInsights(data.insights);
           }
         }
+        // If get 401 unathorized user navigate to sign in page
+        if (res.status === 401) {
+          router.push('/sign-in');
+        }
       } catch (error) {
         console.error('Error fetching brand data:', error);
       } finally {
