@@ -233,7 +233,9 @@ export function DashboardSidebar() {
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              // TODO: Handle add coins
+              // Navigate to your credits page
+              window.location.assign('/dashboard/your-credits');
+
             }}
             type="button"
             aria-label="Add coins"

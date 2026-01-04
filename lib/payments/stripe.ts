@@ -47,7 +47,7 @@ export async function createCheckoutSession({
     ],
     mode: isTopup ? 'payment' : 'subscription',
     success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/pricing`,
+    cancel_url: `${process.env.BASE_URL}/dashboard/your-credits`,
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
     allow_promotion_codes: true,
@@ -64,7 +64,7 @@ export async function createCustomerPortalSession(userId: string) {
   const tokenAccount = userWithAccount?.tokenAccount;
 
   if (!tokenAccount?.stripeCustomerId || !tokenAccount?.stripeProductId) {
-    redirect('/pricing');
+    redirect('/dashboard/your-credits');
   }
 
   let configuration: Stripe.BillingPortal.Configuration;
