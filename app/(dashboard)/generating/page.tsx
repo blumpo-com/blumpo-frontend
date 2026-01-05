@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from '../dashboard/ad-generation/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
 import { ReadyAdsView } from '../dashboard/ad-generation/ready-ads-view';
+import { shuffle } from '@/lib/utils';
 
 const STEP_TIMINGS = {
   'analyze-website': 10000,      // 10 seconds
@@ -101,11 +102,13 @@ function GeneratingPageContent() {
           const imagesRes = await fetch(`/api/generate/job-images?jobId=${jobId}`);
           if (imagesRes.ok) {
             const imagesData = await imagesRes.json();
-            setImages(imagesData);
+            setImages(shuffle(imagesData)); // Set images in random order
           } else {
+            console.log('Failed to get images', imagesRes);
             setError('Failed to get images');
           }
         } catch (err) {
+          console.log('Failed to get images', err);
           setError('Failed to get images');
         }
         return;
@@ -114,6 +117,10 @@ function GeneratingPageContent() {
 
     if (jobId && !websiteUrl && !showReadyAds) {
       fetchImagesForJob();
+      return;
+    }
+
+    if(jobId && !websiteUrl){
       return;
     }
 
@@ -166,7 +173,7 @@ function GeneratingPageContent() {
         }
 
         if (data.status === 'SUCCEEDED') {
-          setImages(data.images || []);
+          setImages(shuffle(data.images || []));
           if (!data.images || data.images.length === 0) {
             setError('Generation completed but no images were created.');
           } else {
@@ -176,7 +183,7 @@ function GeneratingPageContent() {
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
           setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
           if (data.images && data.images.length > 0) {
-            setImages(data.images);
+            setImages(shuffle(data.images));
           }
         }
       } catch (e: any) {
