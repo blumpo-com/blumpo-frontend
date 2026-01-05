@@ -634,6 +634,78 @@ export function writePostFiles({ mdxPath, mdxContent }) {
   fs.writeFileSync(mdxPath, mdxContent, 'utf8');
 }
 
+/**
+ * Validate MDX file for unconverted image links
+ * Checks for markdown links or images that should have been converted to imports
+ */
+export function validateImageLinks(mdxPath) {
+  const content = fs.readFileSync(mdxPath, 'utf8');
+  let parsed;
+  try {
+    parsed = matter(content);
+  } catch (error) {
+    // If YAML parsing fails, try to extract content manually
+    const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+    if (frontmatterMatch) {
+      parsed = { content: frontmatterMatch[2] };
+    } else {
+      // No frontmatter, use entire content
+      parsed = { content };
+    }
+  }
+  const bodyContent = parsed.content;
+  
+  const issues = [];
+  const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|avif)(\?|#|$)/i;
+  
+  // Check for markdown links that look like images (have image extensions)
+  // Pattern: [text](path.extension)
+  const markdownLinkPattern = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+  
+  while ((match = markdownLinkPattern.exec(bodyContent)) !== null) {
+    const linkText = match[1];
+    const linkPath = match[2];
+    
+    // Check if the link text or path contains an image extension
+    if (imageExtensions.test(linkText) || imageExtensions.test(linkPath)) {
+      // Skip if it's already a URL (http/https)
+      if (!/^https?:\/\//i.test(linkPath)) {
+        issues.push({
+          type: 'unconverted_link',
+          line: bodyContent.substring(0, match.index).split('\n').length,
+          text: match[0],
+          message: `Found unconverted image link: ${match[0]}. Should be converted to <Image> component with import.`
+        });
+      }
+    }
+  }
+  
+  // Check for markdown images that weren't converted (shouldn't happen, but check anyway)
+  const markdownImagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  while ((match = markdownImagePattern.exec(bodyContent)) !== null) {
+    const imagePath = match[2];
+    
+    // Skip if it's a URL
+    if (!/^https?:\/\//i.test(imagePath)) {
+      // Check if it's a relative path that should have been converted
+      if (imagePath.startsWith('./') || !imagePath.startsWith('/')) {
+        issues.push({
+          type: 'unconverted_image',
+          line: bodyContent.substring(0, match.index).split('\n').length,
+          text: match[0],
+          message: `Found unconverted markdown image: ${match[0]}. Should be converted to <Image> component with import.`
+        });
+      }
+    }
+  }
+  
+  return {
+    valid: issues.length === 0,
+    issues
+  };
+}
+
 
 /**
  * CLI entry point
@@ -708,14 +780,23 @@ async function main() {
         // Write files
         writePostFiles({ mdxPath, mdxContent: mdxWithFm });
 
+        // Validate for unconverted image links
+        const validation = validateImageLinks(mdxPath);
+        
         // Output result
-        console.log(JSON.stringify({
+        const result = {
           success: true,
           mdxPath,
           imagesDir,
           meta,
           frontmatter
-        }));
+        };
+        
+        if (!validation.valid) {
+          result.warnings = validation.issues;
+        }
+        
+        console.log(JSON.stringify(result));
         break;
       }
 
@@ -744,6 +825,24 @@ async function main() {
         const content = fs.readFileSync(mdxPath, 'utf8');
         const parsed = matter(content);
         console.log(parsed.data.excerpt || '');
+        break;
+      }
+
+      case 'validate-images': {
+        // Usage: node blog-utils.mjs validate-images <mdxPath>
+        const mdxPath = args[1];
+        if (!mdxPath) {
+          console.error('Error: MDX path required');
+          process.exit(1);
+        }
+        
+        if (!fs.existsSync(mdxPath)) {
+          console.error(`Error: File not found: ${mdxPath}`);
+          process.exit(1);
+        }
+        
+        const validation = validateImageLinks(mdxPath);
+        console.log(JSON.stringify(validation));
         break;
       }
 

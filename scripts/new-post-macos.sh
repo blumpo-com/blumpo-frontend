@@ -146,6 +146,25 @@ IMAGES_COPIED=$(echo "$RESULT" | grep -o '"imagesCopied":[0-9]*' | cut -d':' -f2
 success "Created: $MDX_PATH"
 success "Images directory: $IMAGES_DIR"
 
+# Check for validation warnings
+if echo "$RESULT" | grep -q '"warnings"'; then
+  echo ""
+  warn "⚠️  Validation warnings detected:"
+  # Extract and display warnings (simplified - full JSON parsing would be better)
+  WARNINGS=$(echo "$RESULT" | grep -o '"warnings":\[.*\]' || echo "")
+  if [ -n "$WARNINGS" ]; then
+    echo "$RESULT" | node -e "
+      const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+      if (data.warnings && data.warnings.length > 0) {
+        data.warnings.forEach(w => {
+          console.log('  ⚠ Line ' + w.line + ': ' + w.message);
+        });
+      }
+    " 2>/dev/null || warn "Found unconverted image links. Please check the MDX file manually."
+  fi
+  echo ""
+fi
+
 if [ -n "$IMPORTS_ADDED" ] && [ "$IMPORTS_ADDED" -gt 0 ]; then
   info "Added $IMPORTS_ADDED static image imports for Next.js optimization"
 fi
@@ -326,6 +345,27 @@ success "Committed: $COMMIT_MSG"
 # Push
 git push -u origin "$BRANCH_NAME" || error "Failed to push branch"
 success "Pushed to origin/$BRANCH_NAME"
+
+# Final validation check
+echo ""
+info "🔍 Running final validation check..."
+VALIDATION_RESULT=$(node "$SCRIPT_DIR/blog-utils.mjs" validate-images "$MDX_PATH" 2>&1)
+if echo "$VALIDATION_RESULT" | grep -q '"valid":false'; then
+  warn "⚠️  Validation issues found:"
+  echo "$VALIDATION_RESULT" | node -e "
+    try {
+      const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+      if (data.issues && data.issues.length > 0) {
+        data.issues.forEach(issue => {
+          console.log('  ⚠ Line ' + issue.line + ': ' + issue.message);
+        });
+      }
+    } catch(e) {
+      console.log('  ⚠ Could not parse validation results');
+    }
+  " 2>/dev/null || warn "  ⚠ Found unconverted image links. Please review the MDX file."
+  echo ""
+fi
 
 # Success message
 echo ""
