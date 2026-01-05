@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
-    <section className="py-10 md:py-20 relative z-10">
+    <section className="py-10 md:pt-16 md:pb-14 relative z-10">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between flex-col lg:flex-row  items-center lg:items-start">
           <div className="text-center md:max-w-2xl lg:col-span-6 lg:text-left relative z-10">

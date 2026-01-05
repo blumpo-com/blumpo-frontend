@@ -20,7 +20,7 @@ function HeaderSection({ title, children, id }: { title: React.ReactNode, childr
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-    className="py-16  w-full scroll-mt-24 md:scroll-mt-32" id={id}>
+    className="py-14  w-full scroll-mt-24 md:scroll-mt-32" id={id}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
             {title}

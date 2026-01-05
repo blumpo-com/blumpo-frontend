@@ -37,7 +37,7 @@ function PricingCard({
   };
 
   const IconComponent = iconMap[icon];
-  const cardHeight = isPopular ? "h-[600px] min-[1301px]:h-[660px]" : "h-[600px] min-[1301px]:h-[620px]";
+  const cardHeight = isPopular ? "h-160 min-[1301px]:h-165" : "h-160 min-[1301px]:h-155";
   const shadow = isPopular
     ? "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]"
     : "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.05)]";
@@ -54,14 +54,14 @@ function PricingCard({
         // Desktop sizes (above 1300px)
         "min-[1301px]:pb-5 min-[1301px]:px-[15px]",
         // Padding top - different for popular
-        isPopular ? "pt-[60px] min-[1301px]:pt-[73px]" : "pt-[29px]",
+        isPopular ? "pt-18" : "pt-8",
         shadow
       )}
     >
       {/* Most Popular banner - only for popular cards */}
       {isPopular && (
         <div
-          className="absolute left-0 top-0 w-full min-[1301px]:w-[313px] flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary"
+          className="absolute left-0 top-0 w-full min-[1301px]:w-[313px] flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary h-11"
         >
           <span className="text-base font-normal text-[#f9fafb] leading-[24px]">
             Most Popular
@@ -80,45 +80,41 @@ function PricingCard({
       </div>
 
       {/* Description */}
-      <p className="text-base font-normal text-[#888e98] leading-normal w-full">
+      <p className="text-base font-normal text-[#888e98] leading-normal w-full h-16 mb-4">
         {description}
       </p>
+      <div className="h-17">
+        {/* Price */}
+        {price !== null ? (
+          <div className="flex gap-[10px] items-center w-full">
+            <span className="text-[38px] font-bold text-[#00bfa6]">${price}</span>
+            <span className="text-[24px] font-semibold text-[#0a0a0a]">/month</span>
+          </div>
+        ) : (
+          <div className="h-17" />
+        )}
 
-      {/* Spacer */}
-      <div className="h-[14px] w-full" />
+        {/* Credits */}
+        {credits && (
+          <p className="text-base font-semibold text-[#0a0a0a] leading-normal">
+            {credits}
+          </p>
+        )}
+      </div>
+      
 
-      {/* Price */}
-      {price !== null ? (
-        <div className="flex gap-[10px] items-center w-full">
-          <span className="text-[38px] font-bold text-[#00bfa6]">${price}</span>
-          <span className="text-[24px] font-semibold text-[#0a0a0a]">/month</span>
-        </div>
-      ) : (
-        <div className="h-[88px] w-full" />
-      )}
-
-      {/* Credits */}
-      {credits && (
-        <p className="text-base font-semibold text-[#0a0a0a] leading-normal">
-          {credits}
-        </p>
-      )}
-
-      {/* Spacer */}
-      {price !== null && <div className="h-[14px] w-full" />}
-
+     
       {/* Button */}
-      <button className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full">
+      <button className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer">
         <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
           {buttonText}
         </span>
       </button>
 
       {/* Separator */}
-      <div className="bg-[#d9d9d9] h-px w-full" />
+      <div className="bg-[#d9d9d9] h-px w-full mb-4" />
 
-      {/* Spacer */}
-      <div className="h-[14px] w-full" />
+    
 
       {/* Features */}
       <div className="flex flex-col gap-[14px] items-start w-full">
@@ -143,7 +139,7 @@ function PricingCard({
     return (
       <div
         className={cn(
-          "rounded-[20px] p-[2px] gradient-primary",
+          "rounded-[20px] p-[2px] gradient-primary pricing-card-hover",
           // Mobile sizes
           "w-full",
           // Desktop sizes (above 1300px)
@@ -160,7 +156,7 @@ function PricingCard({
   return (
     <div
       className={cn(
-        "border-2 border-solid border-[#d8d8db] rounded-[20px]",
+        "border-2 border-solid border-[#d8d8db] rounded-[20px] pricing-card-hover pricing-card-hover-border",
         // Mobile sizes
         "w-full",
         // Desktop sizes (above 1300px)
@@ -240,7 +236,7 @@ const mobilePlans: Array<{
 ];
 
 
-export function PricingSection() {
+export function PricingSection() { 
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
@@ -265,8 +261,6 @@ export function PricingSection() {
               "flex items-center overflow-hidden relative transition-colors duration-200",
               // Mobile sizes - proporcjonalnie mniejsze niż desktop
               "p-1 rounded-[6px] w-[37px] h-[23px]",
-              // Desktop sizes (above 1300px)
-              "min-[1301px]:p-1 min-[1301px]:rounded-[9px] min-[1301px]:w-[53px] min-[1301px]:h-[33px]",
               isAnnual ? "bg-[#0a0a0a]" : "bg-gray-400"
             )}
           >
@@ -276,16 +270,11 @@ export function PricingSection() {
                 // Mobile sizes - proporcjonalnie mniejsze
                 "h-[15px] rounded-[4px] w-[17px]",
                 isAnnual ? "left-[17px]" : "left-1",
-                // Desktop sizes (above 1300px)
-                "min-[1301px]:h-[22px] min-[1301px]:rounded-[5px] min-[1301px]:w-[24px]",
-                isAnnual ? "min-[1301px]:left-[24px]" : "min-[1301px]:left-[5px]"
               )}
             />
           </div>
-          <span className="text-[23px] font-bold text-[#0a0a0a] hidden min-[1301px]:block">
-            Save 50% on annual plan
-          </span>
-          <span className="text-[16px] font-bold text-[#0a0a0a] max-[1300px]:block min-[1301px]:hidden">
+        
+          <span className="text-[16px] font-bold text-[#0a0a0a]">
             Save 50% on annual plan
           </span>
         </button>

@@ -16,45 +16,45 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     id: 1,
-    name: "John D.",
-    role: "B2B start-up founder",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Ed Park",
+    role: "Founder",
+    text: "Honestly didn't expect much, but Blumpo saves hours for us. Not every ad is perfect, but it's so easy to regenerate that it's not an issue. We move from 10 to 100 ads on Meta and volume makes a difference.",
+    avatar: "/images/testimonial/ed-park.png",
   },
   {
     id: 2,
-    name: "Sarah M.",
-    role: "Marketing Director",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Thomas Sanders",
+    role: "Head of Growth",
+    text: "Agencies were taking forever and costing a fortune. Blumpo's faster and honestly just as good for most of our campaigns.",
+    avatar: "/images/testimonial/t-sanders.webp",
   },
   {
     id: 3,
-    name: "Michael R.",
-    role: "CEO",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Sarah Norman",
+    role: "Agency Owner",
+    text: "Client turnaround time went from weeks to days. The research and variety are solid, and we're delivering way more concepts per campaign now",
+    avatar: "/images/testimonial/sarah-norman.webp",
   },
   {
     id: 4,
-    name: "Emily K.",
-    role: "Product Manager",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Natalia Wojnarowicz",
+    role: "Head of Marketing",
+    text: "The variety of ad archetypes is amazing. We've tested over 100 Blumpo creatives on average they have 12% higher ROAS than the ones from the agency!",
+    avatar: "/images/testimonial/n-wojnarowicz.webp",
   },
   {
     id: 5,
-    name: "David L.",
-    role: "CTO",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Monica Bessant",
+    role: "Graphic Designer",
+    text: "Automates the research, ideation, and creation. We still make some ads manually, but it's dropped from 100% to under 30% of our work",
+    avatar: "/images/testimonial/monica-bessant.png",
   },
   {
     id: 6,
-    name: "Lisa W.",
-    role: "VP of Sales",
-    text: "We learn what makes your product unique- its benefits, use cases so every ad speaks directly to its real value.",
-    avatar: "/images/temp/avatar-placeholder.png",
+    name: "Igor Uchnast",
+    role: "Start-up founder",
+    text: "Blumpo's customer research from Reddit and social media is incredible. Super easy to use. Zero prompts required to create +20 ads every day.",
+    avatar: "/images/testimonial/igor-uchnast.webp",
   },
 ];
 
@@ -153,7 +153,7 @@ export function TestimonialSection() {
           {/* Left arrow */}
           <button
             onClick={() => goToPrevious({mobile: false})}
-            className="z-10 bg-black hover:bg-gray-800 rounded-full p-3 shadow-lg transition-colors flex-shrink-0"
+            className="z-10 bg-black hover:bg-gray-800 rounded-full p-3 shadow-lg transition-colors flex-shrink-0 cursor-pointer"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-6 h-6 text-white" />
@@ -184,7 +184,7 @@ export function TestimonialSection() {
           {/* Right arrow */}
           <button
             onClick={() => goToNext({mobile: false})}
-            className="z-10 bg-black hover:bg-gray-800 rounded-full p-3 shadow-lg transition-colors flex-shrink-0"
+            className="z-10 bg-black hover:bg-gray-800 rounded-full p-3 shadow-lg transition-colors flex-shrink-0 cursor-pointer"
             aria-label="Next testimonial"
           >
             <ChevronRight className="w-6 h-6 text-white" />

@@ -14,12 +14,12 @@ const faqItems: FaqItem[] = [
   {
     id: 1,
     question: "What is Blumpo?",
-    answer: "We offer flexible pricing plans to suit businesses of all sizes. You can start with our free tier to create your first ad, then upgrade to premium plans starting at $29/month for advanced features and unlimited campaigns.",
+    answer: "Blumpo is an AI-powered ad generator specialized in B2B ads that creates high-performing advertisements by analyzing your product, website data, and customer insights from Reddit and social media. It studies successful ad campaigns and automatically generates creative content tailored to your specific audience and marketing goals.",
   },
   {
     id: 2,
     question: "How much does it cost?",
-    answer: "We offer flexible pricing plans to suit businesses of all sizes. You can start with our free tier to create your first ad, then upgrade to premium plans starting at $29/month for advanced features and unlimited campaigns.",
+    answer: "We offer flexible pricing plans to suit businesses of all sizes. You can start with our free tier to create your first ad, then upgrade to premium plans starting at $17/month for advanced features and additional ads credits.",
   },
   {
     id: 3,
@@ -29,17 +29,22 @@ const faqItems: FaqItem[] = [
   {
     id: 4,
     question: "What types of ads can I create?",
-    answer: "You can create various types of ads including problem-solution ads, testimonial ads, promotion ads, and product demonstration ads.",
+    answer: "Currently, we offer creation of static ads and social posts, with video ads coming soon. We deeply understand what makes B2B ads perform well and offer multiple proven archetypes to ensure diversity, including problem-solution formats, testimonial, memes, product showcases, and competitor comparisons.",
   },
   {
     id: 5,
-    question: "Do I need design experience?",
-    answer: "No design experience is required! Blumpo uses AI to automatically create high-performing ads based on your product and customer insights.",
+    question: "Do I need design or marketing experience?",
+    answer: "Zero design experience necessary! Blumpo's AI does the heavy lifting, automatically creating diverse high-performing ads based on your product details and authentic customer insights from Reddit and social media.",
   },
   {
     id: 6,
-    question: "Can I try it for free?",
-    answer: "Yes, you can start with our free tier to create your first ad without any credit card required.",
+    question: "Can I make ads in multiple languages?",
+    answer: "Yes, you can make ads in more than +100 languages. You can select language of your ads in the brand settings!",
+  },
+  {
+    id: 7,
+    question: "How is Blumpo different from other AI ad generators and general AI tools like ChatGPT?",
+    answer: "Our team of ex-founders from marketing-driven businesses has spent thousands of hours analyzing top-performing ads and fine-tuning our AI models so you don't have to. General tools are fine if you want to create a few images, but Blumpo offers much deeper customer research and generates diverse ads using proven high-performing archetypes—all while being incredibly easy to use. We're also the only platform specifically optimized for B2B advertising.",
   },
 ];
 
@@ -72,12 +77,12 @@ export function FaqSection() {
                 <button
                   onClick={() => toggleItem(index)}
                   className={cn(
-                    "bg-[#f9fafb] rounded-[17px] h-[56px] px-[26px] py-[13px] w-full",
+                    "bg-[#f9fafb] rounded-[17px]  px-[26px] py-[13px] w-full cursor-pointer",
                     "flex items-center justify-between",
                     "transition-all duration-300 ease-in-out"
                   )}
                 >
-                  <p className="font-bold text-[16px] sm:text-[20px] text-[#0a0a0a] text-left mr-4 flex-1 min-w-0">
+                  <p className="font-bold text-[16px] sm:text-[20px] text-[#0a0a0a] text-left mr-4 flex-1 min-w-0 leading-snug">
                     {item.question}
                   </p>
                   <div
