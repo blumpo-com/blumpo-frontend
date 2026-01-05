@@ -37,7 +37,7 @@ export function UrlInputSection() {
           if (!userData || !userRes.ok) {
             // User not authenticated - redirect to sign-in
             const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(url)}`;
-            window.location.href = signInUrl;
+                        window.location.href = signInUrl;
             return;
           }
           
@@ -77,10 +77,10 @@ export function UrlInputSection() {
 
             {errorMsg && (
                 <div className="flex flex-col gap-4 p-6 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-600 font-semibold">Error</p>
-                    <p className="text-gray-600">{errorMsg}</p>
-                </div>
-            )}
+                        <p className="text-red-600 font-semibold">Error</p>
+                        <p className="text-gray-600">{errorMsg}</p>
+                    </div>
+                )}
             
         </section>
        

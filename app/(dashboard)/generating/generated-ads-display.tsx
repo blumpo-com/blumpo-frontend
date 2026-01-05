@@ -191,6 +191,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
   const handleGenerateMore = () => {
     console.log('handleGenerateMore');
+    setShowComingSoonDialog(true);
   };
 
   const handleRegenerate = () => {
@@ -199,6 +200,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
       router.push('/dashboard');
     } else {
       console.log('handleRegenerate');
+      setShowComingSoonDialog(true);
     }
   };
 
@@ -207,10 +209,28 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
     setShowComingSoonDialog(true);
   };
 
-  // Show first 5 images, 6th is blurred with "?" overlay (if more than 5 images and not paid user)
-  // Paid users see all images without blur
-  const displayImages = images.slice(0, 6);
-  const hasMore = images.length > 5 && !isPaidUser;
+  // Display logic:
+  // - If 5 or fewer images for non-paid user: show images 2-5 (skip first), then show first image as blurred at the end
+  // - If 6 or more images for non-paid user: show first 5 images, then 6th image as blurred
+  // - Paid users see all images without blur
+  const hasFiveOrLess = images.length <= 5 && !isPaidUser;
+  const hasSixOrMore = images.length >= 6 && !isPaidUser;
+  
+  let displayImages: AdImage[] = [];
+  let blurredImage: AdImage | null = null;
+  
+  if (hasFiveOrLess && images.length > 0) {
+    // Show images (1-5), then add blurred first image at the end
+    displayImages = images.slice(0, 5);
+    blurredImage = images[0];
+  } else if (hasSixOrMore) {
+    // Show first 5 images, then add blurred 6th image at the end
+    displayImages = images.slice(0, 5);
+    blurredImage = images[5];
+  } else {
+    // Paid users or edge cases: show all images
+    displayImages = images.slice(0, 6);
+  }
 
   return (
     <div className={styles.container}>
@@ -228,13 +248,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
         </div>
         
         <div className={styles.imagesGrid}>
-          {displayImages.map((image, index) => {
-            const isBlurred = index === 5 && hasMore;
+          {/* Display non-blurred images first */}
+          {displayImages.map((image) => {
             return (
               <div
                 key={image.id}
-                className={`${styles.imageCard} ${isBlurred ? styles.blurredCard : ''}`}
-                onMouseEnter={() => setHoveredImageId(image.id)}
+                className={styles.imageCard}
+                onMouseEnter={() => setHoveredImageId(image.id)} // Image id with flag if it is blurred
                 onMouseLeave={() => setHoveredImageId(null)}
               >
                 <div className={styles.imageWrapper}>
@@ -243,11 +263,6 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     alt={image.title || 'Generated ad'}
                     className={styles.image}
                   />
-                  {isBlurred && (
-                    <div className={`${styles.blurredOverlay} ${hoveredImageId === image.id ? styles.blurredOverlayHidden : ''}`}>
-                      <span className={styles.questionMark}>?</span>
-                    </div>
-                  )}
                   {hoveredImageId === image.id && (
                     <>
                       <div className={styles.hoverOverlay} />
@@ -277,6 +292,43 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               </div>
             );
           })}
+          
+          {/* Display blurred image at the end if applicable */}
+          {blurredImage && (
+            <div
+              key={blurredImage.id + '-blurred'}
+              className={`${styles.imageCard} ${styles.blurredCard}`}
+              onMouseEnter={() => setHoveredImageId(blurredImage!.id + '-blurred')}
+              onMouseLeave={() => setHoveredImageId(null)}
+            >
+              <div className={styles.imageWrapper}>
+                <img
+                  src={blurredImage.publicUrl}
+                  alt={blurredImage.title || 'Generated ad'}
+                  className={styles.image}
+                />
+                <div className={`${styles.blurredOverlay} ${hoveredImageId === (blurredImage.id + '-blurred') ? styles.blurredOverlayHidden : ''}`}>
+                  <span className={styles.questionMark}>?</span>
+                </div>
+                {hoveredImageId === (blurredImage.id + '-blurred') && (
+                  <>
+                    <div className={styles.hoverOverlay} />
+                    <button
+                      className={`${styles.downloadButton} ${downloadingIds.has(blurredImage.id) ? styles.downloadButtonLoading : ''}`}
+                      onClick={() => handlePaidSectionClick('blurred-ad-download')}
+                      disabled={downloadingIds.has(blurredImage.id)}
+                      aria-label="Upgrade to download"
+                    >
+                      <p className={styles.downloadText}>Download image</p>
+                      <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
+                        <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
