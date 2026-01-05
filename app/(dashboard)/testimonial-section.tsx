@@ -160,7 +160,7 @@ export function TestimonialSection() {
           </button>
 
           {/* Cards container */}
-          <div className="flex gap-6 flex-1 max-w-5xl overflow-hidden relative">
+          <div className="flex gap-6 flex-1 max-w-8xl overflow-hidden relative">
             <div
               className="flex gap-6 transition-transform duration-300 ease-in-out"
               style={{

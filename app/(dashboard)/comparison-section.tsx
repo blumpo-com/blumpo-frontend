@@ -45,7 +45,7 @@ const comparisonData: ComparisonRow[] = [
     feature: "Multi-language support",
     blumpo: true,
     chatgpt: true,
-    canva: true,
+    canva: false,
     otherAiTools: true,
   },
 ];

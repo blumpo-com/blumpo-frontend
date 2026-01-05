@@ -147,7 +147,7 @@ export function FitYourBrandSection() {
         />
 
         {/* Central Illustration */}
-        <div className="relative w-[352px] h-[352px] my-5">
+        <div className="relative w-[260px] h-[260px] my-5">
           <img src="/images/blumpo/standing-blumpo.png" alt="Standing Blumpo" className="w-full h-full object-cover" />
         </div>
 

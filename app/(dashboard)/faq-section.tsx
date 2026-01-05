@@ -77,13 +77,13 @@ export function FaqSection() {
                     "transition-all duration-300 ease-in-out"
                   )}
                 >
-                  <p className="font-bold text-[16px] sm:text-[20px] text-[#0a0a0a] text-left mr-4">
+                  <p className="font-bold text-[16px] sm:text-[20px] text-[#0a0a0a] text-left mr-4 flex-1 min-w-0">
                     {item.question}
                   </p>
                   <div
                     className={cn(
                       "w-[26px] h-[26px] bg-[#0a0a0a] rounded-full",
-                      "flex items-center justify-center",
+                      "flex items-center justify-center flex-shrink-0",
                       "transition-transform duration-300 ease-in-out",
                       isOpen && "rotate-180"
                     )}

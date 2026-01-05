@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Home, LogOut, X } from "lucide-react";
+import { Home, LogOut, X, Menu, ArrowRight } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -103,20 +103,21 @@ function Header() {
     <>
       <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent">
         <div className="w-full max-w-8xl bg-white/80 backdrop-blur-sm rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
-          {/* Mobile: button to open menu, Desktop: link */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="lg:hidden flex items-center cursor-pointer"
-          >
-            <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
-              blumpo.com
-            </span>
-          </button>
-          <Link href="/" className="hidden lg:flex items-center">
+          {/* Logo - always a link */}
+          <Link href="/" className="flex items-center">
             <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
               blumpo.com
             </span>
           </Link>
+          
+          {/* Mobile: Burger menu button */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="lg:hidden flex items-center justify-center cursor-pointer p-2"
+            aria-label="Open menu"
+          >
+            <Menu className="w-6 h-6 text-[#4a5565]" />
+          </button>
           <nav className="hidden lg:flex items-center space-x-8">
             {menuItems.map((item) => (
               <Link
@@ -128,7 +129,7 @@ function Header() {
               </Link>
             ))}
           </nav>
-          <div className="flex items-center">
+          <div className="hidden lg:flex items-center ">
             <Button asChild variant="cta">
               <Link href="/dashboard">Make your first free Ad</Link>
             </Button>
@@ -143,7 +144,7 @@ function Header() {
             isClosing ? 'animate-slide-up-to-top' : 'animate-slide-down-from-top'
           }`}
         >
-          <div className="flex flex-col gap-[36px] h-full px-[26px] py-[17px]">
+          <div className="flex flex-col gap-[36px] h-full px-[40px] py-[17px]">
             {/* Header with logo and close button */}
             <div className="flex items-center justify-between mt-4">
               <Link href="/" className="flex items-center">
@@ -172,6 +173,12 @@ function Header() {
                   {item.label}
                 </Link>
               ))}
+                <Button asChild variant="cta">
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    Make your first free Ad
+                    <ArrowRight className="w-6 h-6" />
+                  </Link>
+                </Button>
             </div>
           </div>
         </div>

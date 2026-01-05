@@ -9,7 +9,10 @@ export function HeroPhotoWall() {
     { filename: "1.png", alt: "Hero Photo Wall" },
   ];
 
-  const duplicatedImages = [...images, ...images, ...images];
+  // Duplicate images twice for seamless loop
+  // One set = 3 images (117px each) + 2 gaps (15px each) = 381px total
+  // Animation moves exactly -381px, so when it loops, the second set is in the same position
+  const duplicatedImages = [...images, ...images];
 
   return (
     <>
@@ -22,7 +25,7 @@ export function HeroPhotoWall() {
         <div className="flex flex-col gap-[15px] h-full mx-2">
           {/* Top row */}
           <div className="relative w-full h-[119px] overflow-hidden">
-            <div className="absolute flex gap-[15px] animate-scroll-right" style={{ width: "max-content" }}>
+            <div className="absolute flex gap-[15px] animate-scroll-right" style={{ width: "calc(381px * 2)" }}>
               {duplicatedImages.map((img, index) => (
                 <div key={`top-${index}`} className="shrink-0 w-[117px] h-[119px]">
                   <WallImage
@@ -40,7 +43,7 @@ export function HeroPhotoWall() {
           <div className="relative w-full h-[119px] overflow-hidden">
             <div 
               className="absolute flex gap-[15px] animate-scroll-right"
-              style={{ width: "max-content", animationDelay: "-10s" }}
+              style={{ width: "calc(381px * 2)", animationDelay: "-10s" }}
             >
               {duplicatedImages.map((img, index) => (
                 <div key={`bottom-${index}`} className="shrink-0 w-[117px] h-[119px]">

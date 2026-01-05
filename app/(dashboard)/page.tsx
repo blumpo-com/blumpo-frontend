@@ -1,8 +1,5 @@
 'use client'
 
-import { Button } from "@/components/ui/button";
-import { ArrowRight, CreditCard, Database } from "lucide-react";
-import { Terminal } from "./terminal";
 import { HeroSection } from "./hero-section";
 import { ContentProofSection } from "./content-proof-section";
 import { PricingSection } from "./pricing-section";
@@ -22,7 +19,7 @@ function HeaderSection({ title, children, id }: { title: React.ReactNode, childr
     initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6,delay: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     className="py-16  w-full scroll-mt-24 md:scroll-mt-32" id={id}>
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="header-gradient">
