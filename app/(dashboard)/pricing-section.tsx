@@ -65,7 +65,7 @@ function PricingCard({
       {/* Most Popular banner - only for popular cards */}
       {isPopular && (
         <div
-          className="absolute left-0 top-0 w-full min-[1301px]:w-[313px] flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary h-11"
+          className="absolute left-0 top-0 w-full  flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary h-11"
         >
           <span className="text-base font-normal text-[#f9fafb] leading-[24px]">
             Most Popular
@@ -147,7 +147,7 @@ function PricingCard({
           // Mobile sizes
           "w-full",
           // Desktop sizes (above 1300px)
-          "min-[1301px]:w-[309px] min-[1301px]:shrink-0",
+         
           cardHeight
         )}
       >
@@ -164,7 +164,7 @@ function PricingCard({
         // Mobile sizes
         "w-full",
         // Desktop sizes (above 1300px)
-        "min-[1301px]:w-[309px] min-[1301px]:shrink-0",
+        
         cardHeight
       )}
     >
@@ -173,7 +173,7 @@ function PricingCard({
   );
 }
 
-const mobilePlans: Array<{
+const subscriptionPlans: Array<{
   id: string;
   name: string;
   icon: "bolt" | "star" | "team" | "enterprise";
@@ -244,7 +244,7 @@ export function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
-  const currentPlan = mobilePlans.find((p) => p.id === selectedPlan)!;
+  const currentPlan = subscriptionPlans.find((p) => p.id === selectedPlan)!;
   const currentPrice = currentPlan.price
     ? isAnnual
       ? currentPlan.price.annual
@@ -286,7 +286,7 @@ export function PricingSection() {
 
       {/* Mobile: Tabs navigation */}
       <div className="max-[1300px]:flex min-[1301px]:hidden gap-[7px] mb-5 px-0 py-[27px] justify-center overflow-clip">
-        {mobilePlans.map((plan) => (
+        {subscriptionPlans.map((plan) => (
           <button
             key={plan.id}
             onClick={() => setSelectedPlan(plan.id)}
@@ -317,70 +317,21 @@ export function PricingSection() {
       </div>
 
       {/* Desktop: Pricing cards - 4 cards in a row */}
-      <div className="hidden min-[1301px]:flex  justify-between items-end px-0">
+      <div className="hidden min-[1301px]:flex  justify-between items-end px-0 gap-5">
+        {subscriptionPlans.map((plan) => (
+          <PricingCard
+            key={plan.id}
+            name={plan.name}
+            icon={plan.icon}
+            price={isAnnual ? plan?.price?.annual || null : plan?.price?.monthly || null}
+            credits={plan.credits}
+            description={plan.description}
+            features={plan.features}
+            buttonText={plan.id === "enterprise" ? "Let's talk" : "Select plan"}
+            isPopular={plan.id === "growth"}
+          />
+        ))}
         {/* Starter */}
-        <PricingCard
-          name="Starter"
-          icon="bolt"
-          price={isAnnual ? 17 : 34}
-          credits={isAnnual ? "500 credits (50 ads) / month" : "500 credits (50 ads) / month"}
-          description="For individual creators"
-          features={[
-            "Ads creation in 10+ archetypes",
-            "Various sizes and formats\n(1:1, 9:16)",
-            "1 Brand",
-          ]}
-          buttonText="Select plan"
-        />
-        
-        {/* Growth - Most Popular */}
-        <PricingCard
-          name="Growth"
-          icon="star"
-          price={isAnnual ? 39 : 79}
-          credits={isAnnual ? "1500 credits (150 ads) / month" : "1500 credits (150 ads) / month"}
-          description="For small businesses and marketers"
-          features={[
-            "Ads creation in 10+ archetypes",
-            "Various sizes and formats\n(1:1, 9:16)",
-            "Customer & competitor insight\naccess",
-            "Up to 3 brands",
-          ]}
-          buttonText="Select plan"
-          isPopular={true}
-        />
-        
-        {/* Team Plan */}
-        <PricingCard
-          name="Team Plan"
-          icon="team"
-          price={isAnnual ? 199 : 399}
-          credits={isAnnual ? "20,000 credits (2000 ads) / month" : "20,000 credits (2000 ads) / month"}
-          description="Ideal for medium size agencies and marketing teams"
-          features={[
-            "Ads creation in 10+ archetypes",
-            "Various sizes and formats\n(1:1, 9:16)",
-            "Customer & competitor insight\naccess",
-            "Unlimited number of brands",
-            "Up to 5 users",
-          ]}
-          buttonText="Select plan"
-        />
-        
-        {/* Enterprise */}
-        <PricingCard
-          name="Enterprise"
-          icon="enterprise"
-          price={null}
-          credits={null}
-          description="For big agencies and internal marketing teams - custom integrations"
-          features={[
-            "Everything from Team plan",
-            "10+ users",
-            "Custom integrations",
-          ]}
-          buttonText="Let's talk"
-        />
       </div>
     </div>
   );

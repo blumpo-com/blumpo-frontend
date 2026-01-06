@@ -77,7 +77,7 @@ export default function HomePage() {
       </HeaderSection>
 
       <HeaderSection 
-        title="Here from our customers.">
+        title="What our customers say.">
         <TestimonialSection />
       </HeaderSection>
 

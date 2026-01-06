@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { UrlInput } from "@/components/url-input";
 import { UrlInputSection } from "./url-input-section";
+import { Button } from "@/components/ui/button";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -21,11 +22,11 @@ export function Footer() {
   return (
     <footer className="w-full bg-gradient-to-b from-[rgba(249,250,251,0.5)] to-[rgba(198,240,234,0.5)] mt-20">
       {/* CTA Section */}
-      <div className="flex flex-col gap-30 items-center justify-center px-4 py-[25px]">
+      <div className="flex flex-col gap-5 lg:gap-30 items-center justify-center px-4 py-[25px]">
         <h2 className="header-black">
           Ready to try Blumpo in action?
         </h2>
-        <div className="w-full max-w-[712px] relative">
+        <div className="w-full max-w-[712px] relative hidden lg:block">
             <Image src="/images/temp/Blumpo01.png" alt="Footer CTA" width={160} height={140} className="hidden lg:block lg:absolute -top-28 right-10 z-10" />
           <div className="hidden lg:block">
             <Suspense fallback={<div>Loading...</div>}>
@@ -33,6 +34,16 @@ export function Footer() {
             </Suspense>
           </div>
         </div>
+
+        <div className="flex flex-col items-center lg:hidden">
+                <Button asChild variant="cta">
+                  <Link href="/dashboard" className="flex items-center gap-2">
+                    Make your first free Ad
+                    <ArrowRight className="w-6 h-6" />
+                  </Link>
+                </Button>
+                {/* Benefits list */}
+              </div>
       </div>
 
       {/* Footer Content */}

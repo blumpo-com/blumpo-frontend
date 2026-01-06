@@ -22,7 +22,7 @@ const steps: Step[] = [
   {
     number: "03",
     title: "Create high-converting ads",
-    description: "Turn real customer insights into a set of high-performing static ads — crafted using proven creative strategies that consistently drive conversions",
+    description: "Turn real customer insights into a set of high-performing static ads — crafted using proven creative strategies that consistently drive conversions.",
   },
   {
     number: "04",
