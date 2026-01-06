@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, X, Menu, ArrowRight } from "lucide-react";
+import { Footer } from "./footer-section";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -196,6 +197,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <section className="flex flex-col min-h-screen">
       {!isDashboardRoute && <Header />}
       {children}
+      {!isDashboardRoute && <Footer />}
     </section>
   );
 }

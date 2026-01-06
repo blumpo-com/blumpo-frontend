@@ -44,7 +44,7 @@ const faqItems: FaqItem[] = [
   {
     id: 7,
     question: "How is Blumpo different from other AI ad generators and general AI tools like ChatGPT?",
-    answer: "Our team of ex-founders from marketing-driven businesses has spent thousands of hours analyzing top-performing ads and fine-tuning our AI models so you don't have to. General tools are fine if you want to create a few images, but Blumpo offers much deeper customer research and generates diverse ads using proven high-performing archetypes—all while being incredibly easy to use. We're also the only platform specifically optimized for B2B advertising.",
+    answer: "Our team of ex-founders from marketing-driven businesses has spent hundreds of hours analyzing top-performing ads and fine-tuning our AI models so you don't have to. General tools are fine if you want to create a few images, but Blumpo offers much deeper customer research and generates diverse ads using proven high-performing archetypes—all while being incredibly easy to use. We're also the only platform specifically optimized for B2B advertising.",
   },
 ];
 
@@ -101,11 +101,11 @@ export function FaqSection() {
                 <div
                   className={cn(
                     "overflow-hidden transition-all duration-300 ease-in-out",
-                    isOpen ? "max-h-[200px] opacity-100 mt-[22px]" : "max-h-0 opacity-0"
+                    isOpen ? "max-h-[400px] opacity-100 mt-[22px]" : "max-h-0 opacity-0"
                   )}
                 >
                   <div className="px-[26px] py-0">
-                    <p className="font-medium text-[15px] text-[#888e98] leading-normal">
+                    <p className="font-medium text[16px] sm:text-[18px] text-[#888e98] leading-normal">
                       {item.answer}
                     </p>
                   </div>

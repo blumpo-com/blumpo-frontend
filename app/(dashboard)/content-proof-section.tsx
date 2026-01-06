@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -13,11 +13,27 @@ const buttons = [
   { id: "orange", label: "Product demonstration", gradient: "gradient-orange" },
 ];
 
-const images = [
+// 14 images total - 3-4 per section
+// Each image can be individually customized
+const allImages = [
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/hero/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
   { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
   { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
   { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/hero/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/hero/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
 ];
+
+// Images per section: 3, 4, 3, 4 = 14 total
+const imagesPerSection = [3, 4, 3, 4];
 
 export function ContentProofSection() {
   const [activeButton, setActiveButton] = useState(0);
@@ -25,6 +41,26 @@ export function ContentProofSection() {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Get images for current section
+  const getImagesForSection = (sectionIndex: number) => {
+    let startIndex = 0;
+    for (let i = 0; i < sectionIndex; i++) {
+      startIndex += imagesPerSection[i];
+    }
+    const count = imagesPerSection[sectionIndex];
+    return allImages.slice(startIndex, startIndex + count);
+  };
+
+  const images = getImagesForSection(activeButton);
+
+  // Get first 3 images for desktop display, memoized to prevent unnecessary re-renders
+  const displayImages = useMemo(() => images.slice(0, 3), [images]);
+
+  // Reset image index when section changes
+  useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [activeButton]);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -81,7 +117,7 @@ export function ContentProofSection() {
       </div>
 
       {/* Desktop: Stacked images */}
-      <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center transition-all duration-500 ease-in-out">
+      <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center transition-all duration-500 ease-in-out px-8">
         {/* Gradient backgrounds with opacity transition */}
         {buttons.map((button, index) => (
           <div
@@ -93,22 +129,33 @@ export function ContentProofSection() {
             }`}
           />
         ))}
-        {images.map((image, index) => (
-          <Image
-            key={index}
-            src={image.src}
-            alt={image.alt}
-            width={300}
-            height={300}
-            className={cn(
-              "absolute rounded-lg object-cover shadow-lg animate-float-up-down",
-              index === 0 && "left-[10%] -rotate-5",
-              index === 1 && "left-1/2 -translate-x-1/2 rotate-0",
-              index === 2 && "right-[10%] rotate-5"
-            )}
-            style={{ animationDelay: image.delay }}
-          />
-        ))}
+        <div className="flex gap-6 lg:gap-12 items-center justify-center relative z-10 transition-all duration-500 ease-in-out">
+          {displayImages.map((image, index) => {
+            // Fixed delays for each position to prevent animation reset
+            const fixedDelays = ["0s", "0.5s", "1s"];
+            return (
+              <div
+                key={index}
+                className={cn(
+                  "relative rounded-lg shadow-lg animate-float-up-down",
+                  index === 0 && "-rotate-5",
+                  index === 1 && "rotate-0",
+                  index === 2 && "rotate-5"
+                )}
+                style={{ animationDelay: fixedDelays[index] }}
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  width={300}
+                  height={300}
+                  className="rounded-lg object-cover"
+                  priority={index === 1}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Mobile: Swipeable carousel */}

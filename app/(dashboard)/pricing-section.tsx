@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Check, Zap, Star, Users, Briefcase } from "lucide-react";
+import { useAnimatedNumber } from "@/lib/hooks/use-animated-number";
 
 interface PricingCardProps {
   name: string;
@@ -41,6 +42,9 @@ function PricingCard({
   const shadow = isPopular
     ? "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]"
     : "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.05)]";
+
+  // Animate price changes
+  const animatedPrice = useAnimatedNumber({ target: price });
 
   // Card content component - shared between popular and regular cards
   const cardContent = (
@@ -85,9 +89,9 @@ function PricingCard({
       </p>
       <div className="h-17">
         {/* Price */}
-        {price !== null ? (
+        {animatedPrice !== null ? (
           <div className="flex gap-[10px] items-center w-full">
-            <span className="text-[38px] font-bold text-[#00bfa6]">${price}</span>
+            <span className="text-[38px] font-bold text-[#00bfa6]">${animatedPrice}</span>
             <span className="text-[24px] font-semibold text-[#0a0a0a]">/month</span>
           </div>
         ) : (
@@ -248,12 +252,12 @@ export function PricingSection() {
     : null;
 
   return (
-    <div className="mt-12 max-w-xl mx-auto ">
+    <div className="mt-12 max-w-xl min-[1301px]:max-w-full mx-auto ">
       {/* Switch toggle */}
       <div className="flex items-center justify-center gap-[30px] mb-8">
         <button
           onClick={() => setIsAnnual(!isAnnual)}
-          className="flex items-center gap-[30px] transition-colors"
+          className="cursor-pointer"
         >
           {/* Toggle switch - responsive */}
           <div
@@ -273,11 +277,11 @@ export function PricingSection() {
               )}
             />
           </div>
-        
+          </button>
           <span className="text-[16px] font-bold text-[#0a0a0a]">
             Save 50% on annual plan
           </span>
-        </button>
+       
       </div>
 
       {/* Mobile: Tabs navigation */}
@@ -313,7 +317,7 @@ export function PricingSection() {
       </div>
 
       {/* Desktop: Pricing cards - 4 cards in a row */}
-      <div className="hidden min-[1301px]:flex gap-[28px] justify-center items-end px-0 py-[25px]">
+      <div className="hidden min-[1301px]:flex  justify-between items-end px-0">
         {/* Starter */}
         <PricingCard
           name="Starter"

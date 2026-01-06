@@ -26,21 +26,21 @@ const testimonials: Testimonial[] = [
     name: "Thomas Sanders",
     role: "Head of Growth",
     text: "Agencies were taking forever and costing a fortune. Blumpo's faster and honestly just as good for most of our campaigns.",
-    avatar: "/images/testimonial/t-sanders.webp",
+    avatar: "/images/testimonial/t-sanders.png",
   },
   {
     id: 3,
     name: "Sarah Norman",
     role: "Agency Owner",
     text: "Client turnaround time went from weeks to days. The research and variety are solid, and we're delivering way more concepts per campaign now",
-    avatar: "/images/testimonial/sarah-norman.webp",
+    avatar: "/images/testimonial/sarah-norman.png",
   },
   {
     id: 4,
     name: "Natalia Wojnarowicz",
     role: "Head of Marketing",
     text: "The variety of ad archetypes is amazing. We've tested over 100 Blumpo creatives on average they have 12% higher ROAS than the ones from the agency!",
-    avatar: "/images/testimonial/n-wojnarowicz.webp",
+    avatar: "/images/testimonial/n-wojnarowicz.png",
   },
   {
     id: 5,
@@ -54,7 +54,7 @@ const testimonials: Testimonial[] = [
     name: "Igor Uchnast",
     role: "Start-up founder",
     text: "Blumpo's customer research from Reddit and social media is incredible. Super easy to use. Zero prompts required to create +20 ads every day.",
-    avatar: "/images/testimonial/igor-uchnast.webp",
+    avatar: "/images/testimonial/igor-uchnast.png",
   },
 ];
 
@@ -86,7 +86,7 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   
           {/* Testimonial text */}
           <p className="text-[#0a0a0a] text-base leading-relaxed">
-            {testimonial.text}
+            "{testimonial.text}"
           </p>
         </div>
       </div>

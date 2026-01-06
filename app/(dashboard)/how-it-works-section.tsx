@@ -42,51 +42,49 @@ export function HowItWorksSection() {
       {steps.map((step, index) => (
         <div
           key={index}
-          className={cn(
-            "flex flex-col md:flex-row items-start justify-between w-full",
-            "gap-4 md:gap-0",
-            "min-h-[249px] md:h-[249px]"
-          )}
         >
           {/* Content area */}
-          <div className="flex gap-[26px] w-full md:w-auto md:flex-1 md:px-4">
+          <div className="flex gap-[26px] w-full md:w-auto md:flex-1  relative">
             {/* Left: Number and long gradient line */}
-            <div className="flex flex-col items-center ">
+            <div className="flex flex-col items-center relative w-[78px] shrink-0 self-stretch">
               {/* Number */}
               <p className="text-[30px] font-bold text-[#0a0a0a] w-[78px] shrink-0 leading-[50px] text-center">
                 {step.number}
               </p>
               {/* Long vertical line with gradient - directly below number, extends down */}
-              <div className="md:px-0">
+              {step.number !== "05" && (
                 <div
-                  className={`h-[380px] sm:h-[300px] md:h-[240px] ${
-                    step.number === "05" ? "w-0" : "w-[3px]"
-                  } bg-gradient-to-${index % 2 === 0 ? "b" : "t"} from-brand-secondary via-brand-tertiary to-brand-primary`}
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute bottom-0 left-1/2 top-[50px] w-[3px] -translate-x-1/2",
+                    index % 2 === 0 ? "bg-gradient-to-b" : "bg-gradient-to-t",
+                    "from-brand-secondary via-brand-tertiary to-brand-primary"
+                  )}
                 />
-              </div>
+              )}
             </div>
 
             {/* Right: Title, description, and image */}
-            <div className="flex flex-col items-start flex-1 ">
-              {/* Title */}
-              <p className="text-[30px] font-bold text-[#0a0a0a] leading-[50px]">
-                {step.title}
-              </p>
+            <div className="flex flex-col md:flex-row items-start gap-4 md:gap-[66px]  w-full">
+              {/* Left side: Title and description */}
+              <div className="flex flex-col items-start flex-1">
+                {/* Title */}
+                <p className="text-[30px] font-bold text-[#0a0a0a] leading-[50px]">
+                  {step.title}
+                </p>
 
-              {/* Description and Image wrapper */}
-              <div className="flex flex-col md:flex-row gap-4 md:gap-[66px] w-full md:items-start justify-between">
                 {/* Description */}
-                <div className="w-full md:w-[520px] py-0">
+                <div className="w-full md:w-fill py-0">
                   <p
                     className="text-[16px] md:text-[20px] font-normal leading-[30px] text-[#4A5565]"
                   >
                     {step.description}
                   </p>
                 </div>
-
-                {/* Image placeholder - to the right of line, below text */}
-                <div className="bg-[#c8c8c8] h-[200px] md:h-[249px] rounded-[20px] w-full md:flex-1 md:max-w-[450px]" />
               </div>
+
+              {/* Right side: Image placeholder - aligned to top with title */}
+              <div className="bg-[#c8c8c8] h-[200px] md:h-[249px] rounded-[20px] w-full md:w-auto md:flex-1 md:max-w-[450px] self-start" />
             </div>
           </div>
         </div>
