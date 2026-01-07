@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="bg-white dark:bg-gray-950 text-black dark:text-white font-sans"
+      className="bg-white dark:bg-gray-950 text-black dark:text-white font-sans scroll-smooth"
     >
       <head>
         {/* GTM - HEAD */}
