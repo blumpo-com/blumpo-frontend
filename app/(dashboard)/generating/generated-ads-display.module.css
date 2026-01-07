@@ -345,7 +345,7 @@
 
 .brandComponents {
   display: flex;
-  align-items: end;
+  align-items: start;
   justify-content: space-between;
   width: 100%;
   gap: 16px;
@@ -378,6 +378,12 @@
   align-items: center;
   justify-content: center;
   width: 126px;
+  box-sizing: border-box;
+}
+
+.componentBox.font {
+  /* Height will be set dynamically via inline style */
+  min-height: 57px;
 }
 
 .logoPlaceholder {
@@ -393,11 +399,12 @@
 }
 
 .colorsBox {
-  width: 59px;
-  height: 57px;
+  min-width: 59px;
+  min-height: 57px;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Height will be set dynamically via inline style */
 }
 
 .colorSwatches {
@@ -412,12 +419,28 @@
 }
 
 .colorSwatch {
-  width: 24px;
-  height: 24px;
+  /* Size will be set dynamically via inline style */
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 35px;
+  max-height: 35px;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
+}
+
+.skeletonColorSwatch {
+  /* Size will be set dynamically via inline style */
+  min-width: 24px;
+  min-height: 24px;
+  max-width: 35px;
+  max-height: 35px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
 }
 
 /* Hover effect */
@@ -628,15 +651,6 @@
   border-radius: 4px;
 }
 
-.skeletonColorSwatch {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeletonLoading 1.5s ease-in-out infinite;
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-}
 
 .skeletonFont {
   width: 70px;

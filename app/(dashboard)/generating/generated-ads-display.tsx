@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './generated-ads-display.module.css';
@@ -87,6 +87,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
+  const [fontBoxHeight, setFontBoxHeight] = useState<number | null>(null);
+  const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
+  
+  // Refs for logo, font, and colors boxes
+  const logoBoxRef = useRef<HTMLDivElement>(null);
+  const fontBoxRef = useRef<HTMLDivElement>(null);
+  const colorsBoxRef = useRef<HTMLDivElement>(null);
 
   // Fetch brand data and insights
   useEffect(() => {
@@ -120,6 +127,50 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
     fetchBrandData();
   }, [jobId]);
+
+  // Sync font and colors box heights with logo box height
+  useEffect(() => {
+    const updateBoxHeights = () => {
+      if (logoBoxRef.current) {
+        const logoHeight = logoBoxRef.current.offsetHeight;
+        if (fontBoxRef.current) {
+          setFontBoxHeight(logoHeight);
+        }
+        if (colorsBoxRef.current) {
+          setColorsBoxHeight(logoHeight);
+        }
+      }
+    };
+
+    // Initial measurement
+    updateBoxHeights();
+
+    // Use ResizeObserver to watch for logo box size changes
+    const resizeObserver = new ResizeObserver(() => {
+      updateBoxHeights();
+    });
+
+    if (logoBoxRef.current) {
+      resizeObserver.observe(logoBoxRef.current);
+    }
+
+    // Also check when brand data loads (logo image might change size)
+    if (!isLoadingBrandData && logoBoxRef.current) {
+      // Small delay to ensure image has loaded
+      const timeoutId = setTimeout(() => {
+        updateBoxHeights();
+      }, 100);
+      
+      return () => {
+        resizeObserver.disconnect();
+        clearTimeout(timeoutId);
+      };
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isLoadingBrandData, brandData?.logoUrl]);
 
   const handleDownload = async (imageUrl: string, imageId: string) => {
     // Prevent multiple simultaneous downloads of the same image
@@ -353,7 +404,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           <div className={styles.brandComponents}>
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Logo</p>
-              <div className={styles.componentBox}>
+              <div ref={logoBoxRef} className={styles.componentBox}>
                 {isLoadingBrandData ? (
                   <div className={styles.skeletonLogo} />
                 ) : brandData?.logoUrl ? (
@@ -361,19 +412,59 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     src={brandData.logoUrl} 
                     alt={`${brandData.name} logo`}
                     className={styles.logoImage}
+                    onLoad={() => {
+                      // Update font and colors box heights when logo image loads
+                      if (logoBoxRef.current) {
+                        const logoHeight = logoBoxRef.current.offsetHeight;
+                        if (fontBoxRef.current) {
+                          setFontBoxHeight(logoHeight);
+                        }
+                        if (colorsBoxRef.current) {
+                          setColorsBoxHeight(logoHeight);
+                        }
+                      }
+                    }}
                   />
                 ) : null}
               </div>
             </div>
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Colors</p>
-              <div className={styles.colorsBox}>
+              <div 
+                ref={colorsBoxRef}
+                className={styles.colorsBox}
+                style={colorsBoxHeight !== null ? { height: `${colorsBoxHeight}px`, width: `${colorsBoxHeight}px` } : undefined}
+              >
                 {isLoadingBrandData ? (
                   <div className={styles.colorSwatches}>
-                    <div className={styles.skeletonColorSwatch} />
-                    <div className={styles.skeletonColorSwatch} />
-                    <div className={styles.skeletonColorSwatch} />
-                    <div className={styles.skeletonColorSwatch} />
+                    <div 
+                      className={styles.skeletonColorSwatch}
+                      style={colorsBoxHeight !== null ? {
+                        width: `${(colorsBoxHeight - 4) / 2}px`,
+                        height: `${(colorsBoxHeight - 4) / 2}px`,
+                      } : undefined}
+                    />
+                    <div 
+                      className={styles.skeletonColorSwatch}
+                      style={colorsBoxHeight !== null ? {
+                        width: `${(colorsBoxHeight - 4) / 2}px`,
+                        height: `${(colorsBoxHeight - 4) / 2}px`,
+                      } : undefined}
+                    />
+                    <div 
+                      className={styles.skeletonColorSwatch}
+                      style={colorsBoxHeight !== null ? {
+                        width: `${(colorsBoxHeight - 4) / 2}px`,
+                        height: `${(colorsBoxHeight - 4) / 2}px`,
+                      } : undefined}
+                    />
+                    <div 
+                      className={styles.skeletonColorSwatch}
+                      style={colorsBoxHeight !== null ? {
+                        width: `${(colorsBoxHeight - 4) / 2}px`,
+                        height: `${(colorsBoxHeight - 4) / 2}px`,
+                      } : undefined}
+                    />
                   </div>
                 ) : brandData?.colors && brandData.colors.length > 0 ? (
                   <div className={styles.colorSwatches}>
@@ -381,7 +472,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                       <div 
                         key={index} 
                         className={styles.colorSwatch} 
-                        style={{ backgroundColor: color }}
+                        style={{
+                          backgroundColor: color,
+                          ...(colorsBoxHeight !== null ? {
+                            width: `${(colorsBoxHeight - 4) / 2}px`,
+                            height: `${(colorsBoxHeight - 4) / 2}px`,
+                          } : {}),
+                        }}
                         title={color}
                       />
                     ))}
@@ -391,7 +488,11 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             </div>
             <div className={styles.brandComponent}>
               <p className={styles.componentLabel}>Font</p>
-              <div className={styles.componentBox}>
+              <div 
+                ref={fontBoxRef}
+                className={`${styles.componentBox} ${styles.font}`}
+                style={fontBoxHeight !== null ? { height: `${fontBoxHeight}px` } : undefined}
+              >
                 {isLoadingBrandData ? (
                   <div className={styles.skeletonFont} />
                 ) : (
