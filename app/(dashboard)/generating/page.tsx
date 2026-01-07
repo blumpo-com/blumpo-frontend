@@ -10,12 +10,12 @@ import { ErrorDialog } from '@/components/error-dialog';
 import { shuffle } from '@/lib/utils';
 
 const STEP_TIMINGS = {
-  'analyze-website': 10000,      // 10 seconds
-  'capture-tone': 15000,         // 15 seconds
-  'review-social': 20000,        // 20 seconds (longer, with progress bar)
+  'analyze-website': 15000,      // 15 seconds
+  'capture-tone': 20000,         // 20 seconds
+  'review-social': 25000,        // 25 seconds (longer, with progress bar)
   'benchmark-competitors': 30000, // 30 seconds
   'craft-cta': 70000,            // 70 seconds
-}; // Total time: 140 seconds
+}; // Total time: 160 seconds
 
 interface AdImage {
   id: string;
@@ -264,7 +264,17 @@ function GeneratingPageContent() {
             setShowReadyAds(true);
           }
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
-          setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
+          const errorMessage = data.error_message || `Generation ${data.status.toLowerCase()}`;
+          setError(errorMessage);
+          
+          // Show error dialog for failed/canceled status
+          setErrorDialog({
+            open: true,
+            title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
+            message: errorMessage,
+            errorCode: data.error_code || null,
+          });
+          
           if (data.images && data.images.length > 0) {
             setImages(shuffle(data.images));
           }

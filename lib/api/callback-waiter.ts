@@ -20,6 +20,8 @@ interface CallbackResult {
   status: string;
   images: any[];
   error?: string;
+  error_message?: string;
+  error_code?: string;
 }
 
 // Initialize Redis client (lazy initialization)
@@ -86,7 +88,7 @@ const pendingCallbacks =
 export async function waitForCallback(
   jobId: string,
   maxWaitTime: number = 7 * 60 * 1000
-): Promise<{ status: string; images: any[] }> {
+): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
   console.log('[CALLBACK-WAITER] waitForCallback called for job:', jobId, 'maxWaitTime:', maxWaitTime, 'ms');
   console.log('[CALLBACK-WAITER] Redis available:', isRedisAvailable());
   
@@ -103,7 +105,7 @@ export async function waitForCallback(
 async function waitForCallbackRedis(
   jobId: string,
   maxWaitTime: number
-): Promise<{ status: string; images: any[] }> {
+): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
   const redis = getRedisClient();
   if (!redis) {
     throw new Error('Redis client not available');
@@ -156,6 +158,8 @@ async function waitForCallbackRedis(
             resolve({
               status: result.status,
               images: result.images || [],
+              error_message: result.error_message,
+              error_code: result.error_code,
             });
           }
           return;
@@ -183,7 +187,7 @@ async function waitForCallbackRedis(
 function waitForCallbackMemory(
   jobId: string,
   maxWaitTime: number
-): Promise<{ status: string; images: any[] }> {
+): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
   return new Promise((resolve, reject) => {
     // Check if callback already arrived (race condition protection)
     const existing = pendingCallbacks.get(jobId);
@@ -231,7 +235,7 @@ function waitForCallbackMemory(
 
 // Function to resolve callback (called from callback route)
 // Uses Redis in production, falls back to in-memory storage for local development
-export async function resolveCallback(jobId: string, data: { status: string; images: any[] }) {
+export async function resolveCallback(jobId: string, data: { status: string; images: any[]; error_message?: string; error_code?: string }) {
   console.log('[CALLBACK-WAITER] resolveCallback called for job:', jobId);
   console.log('[CALLBACK-WAITER] Redis available:', isRedisAvailable());
   
@@ -243,7 +247,7 @@ export async function resolveCallback(jobId: string, data: { status: string; ima
 }
 
 // Redis-based implementation
-async function resolveCallbackRedis(jobId: string, data: { status: string; images: any[] }) {
+async function resolveCallbackRedis(jobId: string, data: { status: string; images: any[]; error_message?: string; error_code?: string }) {
   const redis = getRedisClient();
   if (!redis) {
     throw new Error('Redis client not available');
@@ -260,6 +264,8 @@ async function resolveCallbackRedis(jobId: string, data: { status: string; image
     await redis.set(redisKey, JSON.stringify({
       status: data.status,
       images: data.images || [],
+      error_message: data.error_message,
+      error_code: data.error_code,
     }), {
       ex: ttl, // Expire after TTL seconds
     });
@@ -272,7 +278,7 @@ async function resolveCallbackRedis(jobId: string, data: { status: string; image
 }
 
 // In-memory implementation (for local development)
-function resolveCallbackMemory(jobId: string, data: { status: string; images: any[] }) {
+function resolveCallbackMemory(jobId: string, data: { status: string; images: any[]; error_message?: string; error_code?: string }) {
   const pending = pendingCallbacks.get(jobId);
   if (pending) {
     console.log('[CALLBACK-WAITER] Found pending callback for job:', jobId);
