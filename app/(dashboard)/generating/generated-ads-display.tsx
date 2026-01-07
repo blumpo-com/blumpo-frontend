@@ -334,6 +334,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
       {/* Right Panel - Insights & Details */}
       <div className={styles.rightPanel}>
+        {/* Decorative Circles Background */}
+        <div className={styles.decorativeCircles}>
+          <div className={styles.circleLeft} />
+          <div className={styles.circleTopRight} />
+          <div className={styles.circleBottomRight} />
+        </div>
+        
         <div className={styles.insightsSection}>
           <p className={styles.insightsTitle}>
             Insights & components based on your website, Reddit and social media research
