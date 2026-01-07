@@ -6,6 +6,7 @@ import { CreatingProcess } from '../dashboard/ad-generation/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
 import { ReadyAdsView } from '../dashboard/ad-generation/ready-ads-view';
 import { LoggedInDialog } from '@/components/logged-in-dialog';
+import { ErrorDialog } from '@/components/error-dialog';
 import { shuffle } from '@/lib/utils';
 
 const STEP_TIMINGS = {
@@ -60,6 +61,17 @@ function GeneratingPageContent() {
   const [showGeneratedAds, setShowGeneratedAds] = useState(false);
   const [showLoggedInDialog, setShowLoggedInDialog] = useState(false);
   const [hasBrands, setHasBrands] = useState<boolean | null>(null);
+  const [errorDialog, setErrorDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    errorCode: string | null;
+  }>({
+    open: false,
+    title: 'Error',
+    message: '',
+    errorCode: null,
+  });
   const hasInitiatedRef = useRef<string | null>(null);
 
   // Fetch user subscription status
@@ -184,6 +196,15 @@ function GeneratingPageContent() {
 
             if (errorCode === 'INSUFFICIENT_TOKENS') {
               msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
+              // Show error dialog for insufficient tokens
+              setErrorDialog({
+                open: true,
+                title: 'Insufficient Tokens',
+                message: msg,
+                errorCode: 'INSUFFICIENT_TOKENS',
+              });
+              setIsLoading(false);
+              return;
             } else if (errorCode === 'AUTH_REQUIRED') {
               // Redirect to sign-in
               const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(websiteUrl)}`;
@@ -191,9 +212,37 @@ function GeneratingPageContent() {
               return;
             } else if (errorCode === 'TIMEOUT') {
               msg = 'Generation is taking longer than expected. Please try again later.';
+              // Show error dialog for timeout
+              setErrorDialog({
+                open: true,
+                title: 'Generation Timeout',
+                message: msg,
+                errorCode: 'TIMEOUT',
+              });
+              setIsLoading(false);
+              return;
+            } else {
+              // Show error dialog for other errors
+              setErrorDialog({
+                open: true,
+                title: 'Generation Failed',
+                message: msg,
+                errorCode: errorCode || 'UNKNOWN',
+              });
+              setIsLoading(false);
+              return;
             }
-          } catch { }
-          throw new Error(msg);
+          } catch {
+            // Show error dialog for parse errors
+            setErrorDialog({
+              open: true,
+              title: 'Generation Failed',
+              message: msg,
+              errorCode: 'UNKNOWN',
+            });
+            setIsLoading(false);
+            return;
+          }
         }
 
         const data = await res.json();
@@ -222,7 +271,15 @@ function GeneratingPageContent() {
         }
       } catch (e: any) {
         console.error('Error generating ads:', e);
-        setError(e?.message || 'Failed to generate ads');
+        const errorMessage = e?.message || 'Failed to generate ads';
+        setError(errorMessage);
+        // Show error dialog for catch block errors
+        setErrorDialog({
+          open: true,
+          title: 'Generation Failed',
+          message: errorMessage,
+          errorCode: null,
+        });
       } finally {
         setIsLoading(false);
       }
@@ -249,18 +306,26 @@ function GeneratingPageContent() {
             router.push('/');
           }} 
         />
+        <ErrorDialog
+          open={errorDialog.open}
+          onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+          title={errorDialog.title}
+          message={errorDialog.message}
+          errorCode={errorDialog.errorCode}
+        />
       </>
     );
   }
 
   // Show error if generation failed
   if (status === 'FAILED' || status === 'CANCELED' || error) {
+    const errorMessage = error || 'Generation failed. Please try again.';
     return (
       <>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h2>
-            <p className="text-gray-600 mb-4">{error || 'Generation failed. Please try again.'}</p>
+            <p className="text-gray-600 mb-4">{errorMessage}</p>
             {images.length > 0 && (
               <p className="text-sm text-gray-500 mb-4">
                 {images.length} image(s) were created before the failure.
@@ -281,6 +346,13 @@ function GeneratingPageContent() {
             router.push('/');
           }} 
         />
+        <ErrorDialog
+          open={errorDialog.open}
+          onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+          title={errorDialog.title}
+          message={errorDialog.message}
+          errorCode={errorDialog.errorCode}
+        />
       </>
     );
   }
@@ -296,6 +368,13 @@ function GeneratingPageContent() {
             setShowLoggedInDialog(false);
             router.push('/');
           }} 
+        />
+        <ErrorDialog
+          open={errorDialog.open}
+          onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+          title={errorDialog.title}
+          message={errorDialog.message}
+          errorCode={errorDialog.errorCode}
         />
       </>
     );
@@ -313,6 +392,13 @@ function GeneratingPageContent() {
             router.push('/');
           }} 
         />
+        <ErrorDialog
+          open={errorDialog.open}
+          onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+          title={errorDialog.title}
+          message={errorDialog.message}
+          errorCode={errorDialog.errorCode}
+        />
       </>
     );
   }
@@ -329,6 +415,13 @@ function GeneratingPageContent() {
           setShowLoggedInDialog(false);
           router.push('/');
         }} 
+      />
+      <ErrorDialog
+        open={errorDialog.open}
+        onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+        title={errorDialog.title}
+        message={errorDialog.message}
+        errorCode={errorDialog.errorCode}
       />
     </>
   );
