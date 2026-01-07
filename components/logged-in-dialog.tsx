@@ -13,7 +13,7 @@ export function LoggedInDialog({ open, onClose }: LoggedInDialogProps) {
   const router = useRouter();
 
   const handleGoToMainPlatform = () => {
-    onClose();
+    // onClose();
     router.push('/dashboard');
   };
 

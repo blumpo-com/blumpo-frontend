@@ -10,21 +10,21 @@ export function UrlInputSection() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
-    const [autoGenerateUrl, setAutoGenerateUrl] = useState<string | null>(null);
+    // const [autoGenerateUrl, setAutoGenerateUrl] = useState<string | null>(null);
     const [showLoggedInDialog, setShowLoggedInDialog] = useState(false);
 
-    // Check for auto-generation params (after login redirect)
-    useEffect(() => {
-        const websiteUrl = searchParams.get('website_url');
-        const shouldGenerate = searchParams.get('generate') === 'true';
+    // // Check for auto-generation params (after login redirect)
+    // useEffect(() => {
+    //     const websiteUrl = searchParams.get('website_url');
+    //     const shouldGenerate = searchParams.get('generate') === 'true';
         
-        if (shouldGenerate && websiteUrl) {
-            // Clear the query params but stay on the same page (root /)
-            router.replace('/', { scroll: false });
-            // Set state to trigger generation
-            setAutoGenerateUrl(websiteUrl);
-        }
-    }, [searchParams, router]);
+    //     if (shouldGenerate && websiteUrl) {
+    //         // Clear the query params but stay on the same page (root /)
+    //         router.replace('/', { scroll: false });
+    //         // Set state to trigger generation
+    //         setAutoGenerateUrl(websiteUrl);
+    //     }
+    // }, [searchParams, router]);
 
     const handleSubmit = async (url: string) => {
         if(isLoading) return;
@@ -52,7 +52,7 @@ export function UrlInputSection() {
             }
           } else {
             // User not authenticated - redirect to sign-in
-            const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(url)}`;
+            const signInUrl = `/sign-in?redirect=generate&website_url=${encodeURIComponent(url)}&login=true`;
             window.location.href = signInUrl;
             setIsLoading(false);
             return;
@@ -64,16 +64,16 @@ export function UrlInputSection() {
       };
 
 
-    // Auto-trigger generation if we have a pending auto-generate request
-    useEffect(() => {
-        if (autoGenerateUrl) {
-            const url = autoGenerateUrl;
-            setAutoGenerateUrl(null); // Clear the state
-            // Navigate to generating page - it will handle the API call
-            router.push(`/generating?website_url=${encodeURIComponent(url)}`);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoGenerateUrl, router]); // Trigger when autoGenerateUrl is set
+    // // Auto-trigger generation if we have a pending auto-generate request
+    // useEffect(() => {
+    //     if (autoGenerateUrl) {
+    //         const url = autoGenerateUrl;
+    //         setAutoGenerateUrl(null); // Clear the state
+    //         // Navigate to generating page - it will handle the API call
+    //         router.push(`/generating?website_url=${encodeURIComponent(url)}&login=true`);
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [autoGenerateUrl, router]); // Trigger when autoGenerateUrl is set
 
     return (
         <section className="flex flex-col gap-4">

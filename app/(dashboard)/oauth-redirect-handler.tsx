@@ -31,7 +31,7 @@ export function OAuthRedirectHandler() {
         // Redirect with generation params if needed - redirect to root with params
         // The url-input-section component will handle starting the generation
         if (redirect === 'generate' && websiteUrl) {
-          router.replace(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
+          router.replace(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
         }
       }
     }

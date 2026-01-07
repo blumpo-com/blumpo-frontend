@@ -5,15 +5,16 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from '../dashboard/ad-generation/creating-process';
 import { GeneratedAdsDisplay } from './generated-ads-display';
 import { ReadyAdsView } from '../dashboard/ad-generation/ready-ads-view';
+import { LoggedInDialog } from '@/components/logged-in-dialog';
 import { shuffle } from '@/lib/utils';
 
 const STEP_TIMINGS = {
   'analyze-website': 10000,      // 10 seconds
-  'capture-tone': 12000,         // 12 seconds
-  'review-social': 15000,        // 15 seconds (longer, with progress bar)
-  'benchmark-competitors': 20000, // 20 seconds
-  'craft-cta': 60000,            // 60 seconds
-}; // Total time: 117 seconds
+  'capture-tone': 15000,         // 15 seconds
+  'review-social': 20000,        // 20 seconds (longer, with progress bar)
+  'benchmark-competitors': 30000, // 30 seconds
+  'craft-cta': 70000,            // 70 seconds
+}; // Total time: 140 seconds
 
 interface AdImage {
   id: string;
@@ -48,6 +49,7 @@ function GeneratingPageContent() {
   const router = useRouter();
   const websiteUrl = searchParams.get('website_url');
   const jobId = searchParams.get('job_id');
+  const login = searchParams.get('login') === 'true'; // get login flag, when null false
   const [status, setStatus] = useState<JobStatus | null>(null);
   const [images, setImages] = useState<AdImage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,8 @@ function GeneratingPageContent() {
   const [isPaidUser, setIsPaidUser] = useState(false);
   const [showReadyAds, setShowReadyAds] = useState(false);
   const [showGeneratedAds, setShowGeneratedAds] = useState(false);
+  const [showLoggedInDialog, setShowLoggedInDialog] = useState(false);
+  const [hasBrands, setHasBrands] = useState<boolean | null>(null);
   const hasInitiatedRef = useRef<string | null>(null);
 
   // Fetch user subscription status
@@ -77,7 +81,37 @@ function GeneratingPageContent() {
     fetchUserSubscription();
   }, []);
 
+  // Check for login parameter and show dialog if user has brands
   useEffect(() => {
+    if (login) {
+      const checkBrands = async () => {
+        try {
+          const brandsRes = await fetch('/api/brands');
+          if (brandsRes.ok) {
+            const brands = await brandsRes.json();
+            if (brands && brands.length > 0) {
+              // User has brands - show dialog
+              setShowLoggedInDialog(true);
+              setHasBrands(true);
+            }
+            else {
+              setHasBrands(false);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking brands:', error);
+          setHasBrands(false);
+        }
+      };
+
+      checkBrands();
+    }
+  }, [login]);
+
+  useEffect(() => {
+    if (login && (hasBrands === true || hasBrands === null)) {
+      return;
+    }
     // Create a unique key for this effect run based on dependencies
     const effectKey = `${websiteUrl || ''}-${jobId || ''}`;
 
@@ -195,7 +229,7 @@ function GeneratingPageContent() {
     };
 
     generateAds();
-  }, [websiteUrl, jobId, router]);
+  }, [websiteUrl, jobId, router, hasBrands]);
 
   // Handle "See ads" button click
   const handleSeeAds = () => {
@@ -205,46 +239,99 @@ function GeneratingPageContent() {
 
   // Show loading/creating process while API call is in progress
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
-    return <CreatingProcess stepTimings={STEP_TIMINGS} />;
+    return (
+      <>
+        <CreatingProcess stepTimings={STEP_TIMINGS} />
+        <LoggedInDialog 
+          open={showLoggedInDialog} 
+          onClose={() => {
+            setShowLoggedInDialog(false);
+            router.push('/');
+          }} 
+        />
+      </>
+    );
   }
 
   // Show error if generation failed
   if (status === 'FAILED' || status === 'CANCELED' || error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-6">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h2>
-          <p className="text-gray-600 mb-4">{error || 'Generation failed. Please try again.'}</p>
-          {images.length > 0 && (
-            <p className="text-sm text-gray-500 mb-4">
-              {images.length} image(s) were created before the failure.
-            </p>
-          )}
-          <button
-            onClick={() => router.push('/')}
-            className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600"
-          >
-            Go Back
-          </button>
+      <>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
+          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h2>
+            <p className="text-gray-600 mb-4">{error || 'Generation failed. Please try again.'}</p>
+            {images.length > 0 && (
+              <p className="text-sm text-gray-500 mb-4">
+                {images.length} image(s) were created before the failure.
+              </p>
+            )}
+            <button
+              onClick={() => router.push('/')}
+              className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600"
+            >
+              Go Back
+            </button>
+          </div>
         </div>
-      </div>
+        <LoggedInDialog 
+          open={showLoggedInDialog} 
+          onClose={() => {
+            setShowLoggedInDialog(false);
+            router.push('/');
+          }} 
+        />
+      </>
     );
   }
 
   // Show ReadyAdsView when generation succeeds (first time)
   if (status === 'SUCCEEDED' && showReadyAds && !showGeneratedAds) {
-    return <ReadyAdsView onSeeAds={handleSeeAds} jobId={actualJobId || jobId || undefined} />;
+    return (
+      <>
+        <ReadyAdsView onSeeAds={handleSeeAds} jobId={actualJobId || jobId || undefined} />
+        <LoggedInDialog 
+          open={showLoggedInDialog} 
+          onClose={() => {
+            setShowLoggedInDialog(false);
+            router.push('/');
+          }} 
+        />
+      </>
+    );
   }
 
   // Show generated ads when user clicks "See ads" or when coming back with job_id
   if (status === 'SUCCEEDED' && images.length > 0 && showGeneratedAds) {
-    return <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />;
+    return (
+      <>
+        <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />
+        <LoggedInDialog 
+          open={showLoggedInDialog} 
+          onClose={() => {
+            setShowLoggedInDialog(false);
+            router.push('/');
+          }} 
+        />
+      </>
+    );
   }
 
   // Default: still loading
-  return <div className="flex flex-col items-center justify-center min-h-screen p-6">
-    <div className="spinner"></div>
-  </div>;
+  return (
+    <>
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <div className="spinner"></div>
+      </div>
+      <LoggedInDialog 
+        open={showLoggedInDialog} 
+        onClose={() => {
+          setShowLoggedInDialog(false);
+          router.push('/');
+        }} 
+      />
+    </>
+  );
 }
 
 export default function GeneratingPage() {

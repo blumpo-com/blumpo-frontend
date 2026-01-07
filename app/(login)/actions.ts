@@ -109,7 +109,7 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   if (redirectTo === 'generate' && websiteUrl) {
     // Note: We can't call fetch in a server action, so we'll redirect to a page that handles it
     // The oauth-redirect-handler will handle the actual generation start
-    redirect(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
+    redirect(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
   }
 
   // Handle checkout redirect

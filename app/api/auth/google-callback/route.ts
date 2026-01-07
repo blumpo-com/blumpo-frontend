@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       redirectUrl = priceId ? `/pricing?priceId=${priceId}` : '/pricing';
     } else if (redirect === 'generate' && websiteUrl) {
       // Redirect to root with params - oauth-redirect-handler will start generation
-      redirectUrl = `/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+      redirectUrl = `/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`;
     } else if (redirect) {
       redirectUrl = redirect;
     }
