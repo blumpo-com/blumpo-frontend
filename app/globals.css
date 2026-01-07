@@ -241,20 +241,13 @@
 }
 
 @keyframes scrollDown {
-  from { transform: translateY(0); }
+  from { transform: translateY(0%); }
   to { transform: translateY(-50%); }
 }
 .animate-scroll-down  {
-  animation: scrollDown 20s linear infinite;
+  animation: scrollDown 100s linear infinite;
 }
 
-@keyframes scrollRight {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-381px); }
-}
-.animate-scroll-right {
-  animation: scrollRight 12.7s linear infinite;
-}
 
 @keyframes floatUpDown {
   0%, 100% { transform: translateY(0); }

@@ -7,59 +7,18 @@ export function HeroPhotoWall() {
     { filename: "1.png", alt: "Hero Photo Wall" },
     { filename: "2.png", alt: "Hero Photo Wall" },
     { filename: "1.png", alt: "Hero Photo Wall" },
+    { filename: "2.png", alt: "Hero Photo Wall" },
+    { filename: "1.png", alt: "Hero Photo Wall" },
+    
   ];
 
   // Duplicate images twice for seamless loop
   // One set = 3 images (117px each) + 2 gaps (15px each) = 381px total
   // Animation moves exactly -381px, so when it loops, the second set is in the same position
-  const duplicatedImages = [...images, ...images];
+  const duplicatedImages = [...images, ...images,  ...images,  ...images];
 
   return (
     <>
-      {/* Mobile: Horizontal wall with 2 rows */}
-      <div className="lg:hidden w-full overflow-hidden relative mt-8">
-        {/* Gradient mask from right */}
-        <div className="absolute top-0 bottom-0 right-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-        <div className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-[#D3F1FA] to-transparent z-10 pointer-events-none" />
-        {/* Container with 2 rows */}
-        <div className="flex flex-col gap-[15px] h-full mx-2">
-          {/* Top row */}
-          <div className="relative w-full h-[119px] overflow-hidden">
-            <div className="absolute flex gap-[15px] animate-scroll-right" style={{ width: "calc(381px * 2)" }}>
-              {duplicatedImages.map((img, index) => (
-                <div key={`top-${index}`} className="shrink-0 w-[117px] h-[119px]">
-                  <WallImage
-                    filename={img.filename}
-                    alt={img.alt}
-                    width={117}
-                    height={119}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Bottom row with delay */}
-          <div className="relative w-full h-[119px] overflow-hidden">
-            <div 
-              className="absolute flex gap-[15px] animate-scroll-right"
-              style={{ width: "calc(381px * 2)", animationDelay: "-10s" }}
-            >
-              {duplicatedImages.map((img, index) => (
-                <div key={`bottom-${index}`} className="shrink-0 w-[117px] h-[119px]">
-                  <WallImage
-                    filename={img.filename}
-                    alt={img.alt}
-                    width={117}
-                    height={119}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Desktop: Vertical columns (2 columns) */}
       <div className="hidden lg:flex gap-4">
         <div className="w-1/2 h-[600px] overflow-hidden relative">

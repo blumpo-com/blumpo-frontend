@@ -42,7 +42,7 @@ export default function HomePage() {
       <div className="absolute left-[-310px] top-[400px] w-[687px] h-[654px] pointer-events-none z-0 ">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/30 via-brand-tertiary/20 to-transparent rounded-full blur-[100px]" />
       </div>
-      <div className="absolute left-[-329px] top-[-100px] w-[629px] h-[620px] pointer-events-none z-0 ">
+      <div className="absolute left-[-329px] top-[-100px] w-[629px] h-[620px] pointer-events-none z-0 hidden lg:block">
         <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/25 via-brand-tertiary/15 to-transparent rounded-full blur-[100px]" />
       </div>
       
