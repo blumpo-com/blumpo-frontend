@@ -1,15 +1,15 @@
 'use client'
 
-import { HeroSection } from "./hero-section";
-import { ContentProofSection } from "./content-proof-section";
-import { PricingSection } from "./pricing-section";
+import { HeroSection } from "./_sections/hero-section";
+import { ContentProofSection } from "./_sections/content-proof-section";
+import { PricingSection } from "./_sections/pricing-section";
 import { OAuthRedirectHandler } from "./oauth-redirect-handler";
 import { Suspense } from "react";
-import { HowItWorksSection } from "./how-it-works-section";
-import { FitYourBrandSection } from "./fit-your-brand-section";
-import { ComparisonSection } from "./comparison-section";
-import { TestimonialSection } from "./testimonial-section";
-import { FaqSection } from "./faq-section";
+import { HowItWorksSection } from "./_sections/how-it-works-section";
+import { FitYourBrandSection } from "./_sections/fit-your-brand-section";
+import { ComparisonSection } from "./_sections/comparison-section";
+import { TestimonialSection } from "./_sections/testimonial-section";
+import { FaqSection } from "./_sections/faq-section";
 import { motion } from "framer-motion"
 
 
