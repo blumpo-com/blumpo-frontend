@@ -6,6 +6,7 @@ import { Zap, Briefcase, Check } from 'lucide-react';
 import useSWR from 'swr';
 import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
+import { BuyCreditsDialog } from './buy-credits-dialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -57,13 +58,14 @@ export default function YourCreditsPage() {
   const { data: stripePrices = [] } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
   const { data: stripeTopupPrices = [] } = useSWR<StripePrice[]>('/api/stripe-topup-prices', fetcher);
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogData, setDialogData] = useState<{
+  const [save50DialogOpen, setSave50DialogOpen] = useState(false);
+  const [save50DialogData, setSave50DialogData] = useState<{
     monthlyPrice: number;
     annualPrice: number;
     annualPriceId: string;
     monthlyPriceId: string;
   } | null>(null);
+  const [buyCreditsDialogOpen, setBuyCreditsDialogOpen] = useState(false);
 
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
@@ -80,8 +82,6 @@ export default function YourCreditsPage() {
   const renewalDate = nextRefillAt 
     ? new Date(nextRefillAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
-
-  console.log('renewalDate', renewalDate);
 
   // Map subscription plans to Stripe price IDs
   const planPrices: Record<string, { monthly: string | null; annual: string | null }> = {};
@@ -157,13 +157,13 @@ export default function YourCreditsPage() {
         const annualTotalInDollars = Math.round(annualAmount / 100);
         const annualMonthlyEquivalent = Math.round(annualTotalInDollars / 12);
 
-        setDialogData({
+        setSave50DialogData({
           monthlyPrice: monthlyPriceInDollars,
           annualPrice: annualMonthlyEquivalent, // Show monthly equivalent (what they'd pay per month with annual)
           annualPriceId: annualPrice.id,
           monthlyPriceId: priceId,
         });
-        setDialogOpen(true);
+        setSave50DialogOpen(true);
       } else {
         // If no annual price found, proceed with monthly checkout
         await originalCheckoutAction(formData);
@@ -171,21 +171,44 @@ export default function YourCreditsPage() {
     }
   };
 
-  // Handle dialog confirm - proceed with annual checkout
-  const handleDialogConfirm = async () => {
-    if (dialogData) {
+  // Handle Save 50% dialog confirm - proceed with annual checkout
+  const handleSave50DialogConfirm = async () => {
+    if (save50DialogData) {
       const formData = new FormData();
-      formData.append('priceId', dialogData.annualPriceId);
+      formData.append('priceId', save50DialogData.annualPriceId);
       await originalCheckoutAction(formData);
-      setDialogOpen(false);
-      setDialogData(null);
+      setSave50DialogOpen(false);
+      setSave50DialogData(null);
     }
   };
 
-  // Handle dialog close
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setDialogData(null);
+  // Handle Save 50% dialog close
+  const handleSave50DialogClose = () => {
+    setSave50DialogOpen(false);
+    setSave50DialogData(null);
+  };
+
+  // Handle Buy Credits dialog - open when button is clicked
+  const handleBuyMoreCreditsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setBuyCreditsDialogOpen(true);
+  };
+
+  // Handle Buy Credits purchase
+  const handleBuyCredits = async (priceId: string) => {
+    const formData = new FormData();
+    formData.append('priceId', priceId);
+    await topupCheckoutAction(formData);
+    setBuyCreditsDialogOpen(false);
+  };
+
+  // Handle Upgrade Plan from Buy Credits dialog
+  const handleUpgradePlanFromDialog = () => {
+    setBuyCreditsDialogOpen(false);
+    const pricingSection = document.getElementById('pricing-section');
+    if (pricingSection) {
+      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -244,21 +267,19 @@ export default function YourCreditsPage() {
 
           {/* Buy More Credits Button - Right */}
           <div className={styles.buyCreditsSection}>
-            {validatedTopupPlans.length > 0 && validatedTopupPlans[0].stripePrice ? (
-              <form action={topupCheckoutAction}>
-                <input type="hidden" name="priceId" value={validatedTopupPlans[0].stripePrice.id} />
-                <button
-                  type="submit"
-                  className={styles.buyCreditsButton}
-                >
-                  <svg className={styles.buyCreditsIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className={styles.buyCreditsText}>
-                    Buy more credits
-                  </span>
-                </button>
-              </form>
+            {validatedTopupPlans.length > 0 ? (
+              <button
+                type="button"
+                onClick={handleBuyMoreCreditsClick}
+                className={styles.buyCreditsButton}
+              >
+                <svg className={styles.buyCreditsIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span className={styles.buyCreditsText}>
+                  Buy more credits
+                </span>
+              </button>
             ) : (
               <button
                 disabled
@@ -401,16 +422,25 @@ export default function YourCreditsPage() {
       </div>
 
       {/* Save 50% Dialog */}
-      {dialogData && (
+      {save50DialogData && (
         <Save50Dialog
-          open={dialogOpen}
-          onClose={handleDialogClose}
-          onConfirm={handleDialogConfirm}
-          monthlyPrice={dialogData.monthlyPrice}
-          annualPrice={dialogData.annualPrice}
-          annualPriceId={dialogData.annualPriceId}
+          open={save50DialogOpen}
+          onClose={handleSave50DialogClose}
+          onConfirm={handleSave50DialogConfirm}
+          monthlyPrice={save50DialogData.monthlyPrice}
+          annualPrice={save50DialogData.annualPrice}
+          annualPriceId={save50DialogData.annualPriceId}
         />
       )}
+
+      {/* Buy Credits Dialog */}
+      <BuyCreditsDialog
+        open={buyCreditsDialogOpen}
+        onClose={() => setBuyCreditsDialogOpen(false)}
+        onBuyCredits={handleBuyCredits}
+        onUpgradePlan={handleUpgradePlanFromDialog}
+        topupPlans={validatedTopupPlans}
+      />
     </div>
   );
 }

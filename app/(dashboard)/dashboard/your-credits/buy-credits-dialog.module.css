@@ -1,0 +1,409 @@
+.dialogContent {
+  background-color: white;
+  border: 2px solid #d8d8db;
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  align-items: center;
+  padding-bottom: 268px;
+  padding-top: 60px;
+  padding-left: 0;
+  padding-right: 0;
+  position: relative;
+  border-radius: 19.932px;
+  box-shadow: 0px 1.993px 7.275px 0px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+  animation: fadeIn 0.2s ease-in;
+  overflow: visible;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  min-height: 288px;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 929px;
+  max-width: 100%;
+}
+
+/* Title */
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+  width: 929px;
+  max-width: 100%;
+}
+
+.title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  height: 41px;
+  line-height: 1.4;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 29.467px;
+  color: #1e1e1e;
+  width: 717px;
+  max-width: 100%;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Packages Container */
+.packagesContainer {
+  display: flex;
+  gap: 0;
+  height: 144px;
+  align-items: center;
+  justify-content: space-between;
+  overflow: clip;
+  padding: 10px;
+  position: relative;
+  flex-shrink: 0;
+  width: 950px;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 1301px) {
+  .packagesContainer {
+    justify-content: space-between;
+    flex-wrap: nowrap;
+  }
+}
+
+/* Credit Package */
+.creditPackage {
+  display: flex;
+  height: 115px;
+  align-items: center;
+  overflow: clip;
+  padding-left: 23px;
+  padding-right: 23px;
+  padding-top: 7.971px;
+  padding-bottom: 7.971px;
+  position: relative;
+  border-radius: 8px;
+  flex-shrink: 0;
+  width: 225px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 29px;
+}
+
+@media (min-width: 1301px) {
+  .creditPackage {
+    margin-bottom: 0;
+  }
+}
+
+.creditPackageSelected {
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  background-image: linear-gradient(101.27902281656125deg, rgba(0, 191, 166, 1) 5.1344%, rgba(88, 199, 255, 1) 51.376%, rgba(13, 59, 102, 1) 97.617%);
+}
+
+.creditPackageUnselected {
+  background-color: rgba(255, 255, 255, 0.49);
+  border: 1px solid #00bfa6;
+}
+
+.creditPackage:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 6px 8px 0px rgba(0, 0, 0, 0.15);
+}
+
+.packageContent {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.packagePrice {
+  position: relative;
+  flex-shrink: 0;
+  font-size: 34.402px;
+  text-align: center;
+  width: 100%;
+  margin: 0;
+}
+
+.creditPackageSelected .packagePrice {
+  color: #f9fafb;
+}
+
+.creditPackageUnselected .packagePrice {
+  color: #0a0a0a;
+}
+
+.packageDetails {
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15.942px;
+  text-align: left;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.creditPackageSelected .packageDetails {
+  color: #f9fafb;
+}
+
+.creditPackageUnselected .packageDetails {
+  color: #0a0a0a;
+}
+
+.packageDetails p {
+  margin: 0;
+}
+
+/* Discount Badge */
+.discountBadge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 146.16px;
+  width: 93.202px;
+  height: 93.202px;
+  top: -15.84px;
+  pointer-events: none;
+}
+
+.discountBadgeRotated {
+  display: flex;
+  flex-shrink: 0;
+  transform: rotate(45deg);
+}
+
+.discountBadgeContent {
+  display: flex;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  position: relative;
+  width: 109.808px;
+  background-image: linear-gradient(116.96642386949902deg, rgba(0, 191, 166, 1) 5.1344%, rgba(88, 199, 255, 1) 51.376%, rgba(13, 59, 102, 1) 97.617%);
+}
+
+.discountBadgeText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #f9fafb;
+  font-size: 12px;
+  text-align: left;
+  text-transform: lowercase;
+}
+
+/* Buy Credits Button */
+.buyCreditsButton {
+  background-color: #0a0a0a;
+  display: flex;
+  gap: 9.966px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding-left: 11.959px;
+  padding-right: 11.959px;
+  padding-top: 9.966px;
+  padding-bottom: 9.966px;
+  position: relative;
+  border-radius: 9.966px;
+  flex-shrink: 0;
+  width: 929px;
+  max-width: 100%;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.buyCreditsButton:hover:not(:disabled) {
+  background-color: rgba(10, 10, 10, 0.9);
+}
+
+.buyCreditsButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buyCreditsIcon {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: #f9fafb;
+}
+
+.buyCreditsButtonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #f9fafb;
+  font-size: 19.932px;
+  text-align: center;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+  width: 929px;
+  max-width: 100%;
+}
+
+.actionButtonsRow {
+  display: flex;
+  gap: 20px;
+  height: 69px;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 929px;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (min-width: 1301px) {
+  .actionButtonsRow {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+}
+
+.upgradeButton {
+  background-color: #0a0a0a;
+  border: 1.993px solid #0a0a0a;
+  display: flex;
+  flex: 1 0 0;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  overflow: clip;
+  padding-left: 11.959px;
+  padding-right: 11.959px;
+  padding-top: 9.966px;
+  padding-bottom: 9.966px;
+  position: relative;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.upgradeButton:hover {
+  background-color: rgba(10, 10, 10, 0.9);
+}
+
+.upgradeButtonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #f9fafb;
+  font-size: 19.93px;
+  text-align: center;
+}
+
+.cancelButton {
+  background-color: white;
+  border: 1.993px solid #0a0a0a;
+  display: flex;
+  flex: 1 0 0;
+  height: 49px;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  overflow: clip;
+  padding-left: 11.959px;
+  padding-right: 11.959px;
+  padding-top: 9.966px;
+  padding-bottom: 9.966px;
+  position: relative;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #f9fafb;
+}
+
+.cancelButtonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #0a0a0a;
+  font-size: 19.93px;
+  text-align: center;
+}
+
+/* Illustration */
+.illustration {
+  height: 248px;
+  position: absolute;
+  flex-shrink: 0;
+  width: 337px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.illustrationImage {
+  position: absolute;
+  height: 135.99%;
+  left: -0.04%;
+  max-width: none;
+  top: -20.48%;
+  width: 100.08%;
+  object-fit: contain;
+}
+
