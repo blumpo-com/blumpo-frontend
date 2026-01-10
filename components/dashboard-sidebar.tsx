@@ -36,7 +36,7 @@ function SidebarItem({
   const content = (
     <>
       <img src={iconSrc} alt={iconAlt} className={styles.sidebarItemIcon} />
-      <span>{label}</span>
+      <span className={styles.sidebarItemLabel}>{label}</span>
     </>
   );
 

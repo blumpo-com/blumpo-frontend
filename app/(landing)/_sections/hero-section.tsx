@@ -50,7 +50,7 @@ export function HeroSection() {
             </h1>
             <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-xl lg:text-lg xl:text-2xl text-center lg:text-left">
               Blumpo turns customer insights from Reddit,<br></br>
-              YT, and your website into +$500 worth ads.<br></br>
+              YT, and your website into $500+ worth ads.<br></br>
             </p>
             <p className="mt-5 text-base font-bold sm:mt-14 sm:text-xl lg:text-lg xl:text-xl">
                 Start for free now and create ads in 90s.

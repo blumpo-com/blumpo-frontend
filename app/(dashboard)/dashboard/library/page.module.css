@@ -1,0 +1,340 @@
+.container {
+  padding: 32px 40px;
+  max-width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  background: #F9FAFB;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #00BFA6;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.2;
+}
+
+.errorMessage {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #00bfa6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Filters Bar */
+.filtersBar {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  font-family: 'Roboto', sans-serif;
+}
+
+.filterInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+  color: #111827;
+  min-width: 200px;
+  transition: border-color 0.2s;
+}
+
+.filterInput:hover {
+  border-color: #9CA3AF;
+}
+
+.filterIcon {
+  color: #6B7280;
+  flex-shrink: 0;
+}
+
+.filterValue {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  color: #6B7280;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.filterInput[data-state="open"] .chevronIcon {
+  transform: rotate(180deg);
+}
+
+.dropdownContent {
+  min-width: 200px;
+  padding: 4px;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.dropdownItem:hover {
+  background: #F3F4F6;
+}
+
+.unsavedButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #D1D5DB;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+  color: #374151;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.unsavedButton:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.unsavedButtonActive {
+  background: #00BFA6;
+  border-color: #00BFA6;
+  color: white;
+}
+
+.unsavedButtonActive:hover {
+  background: #00A893;
+  border-color: #00A893;
+}
+
+.unsavedIcon {
+  flex-shrink: 0;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding-bottom: 40px;
+}
+
+/* Create New Card */
+.createCard {
+  background: white;
+  border: 2px solid #00BFA6;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 360px;
+}
+
+.createCard:hover {
+  border-color: #00A893;
+  background: #F0FDFA;
+  transform: translateY(-2px);
+}
+
+.createCardIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #00BFA6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.createCardText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+}
+
+/* Image Cards */
+.imageCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.imageCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brandOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+  display: flex;
+  align-items: center;
+}
+
+.brandName {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.actionBar {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  background: white;
+  border-top: 1px solid #E5E7EB;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6B7280;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.emptyState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.emptyStateText {
+  font-size: 16px;
+  color: #6b7280;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .filtersBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterInput {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .unsavedButton {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+}

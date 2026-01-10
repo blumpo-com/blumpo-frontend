@@ -7,8 +7,8 @@ import { SWRConfig } from 'swr';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: 'Blumpo - AI-powered ad generator',
+  description: 'Blumpo turns customer insights from Reddit, YT, and your website into $500+ worth ads.'
 };
 
 export const viewport: Viewport = {
