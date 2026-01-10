@@ -121,18 +121,13 @@ export function UrlInputSection() {
 
     return (
         <section className="flex flex-col gap-4">
-             <p className="mt-5 text-base font-bold sm:mt-10 sm:text-xl lg:text-lg xl:text-xl">
-                Start for free now and create ads in 30s.
-              </p>
+             
             <UrlInput
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
                 placeholder="https://example.com/my-webpage"
             />
-            <p className="text-base font-bold
-             sm:text-xl lg:text-lg xl:text-xl">
-                Yes, it is that simple.
-              </p>
+           
 
             <Dialog open={isOpen} onClose={() => setIsOpen(false)}>
                 {isLoading ? (
