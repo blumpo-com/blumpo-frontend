@@ -577,3 +577,17 @@
   line-height: normal;
 }
 
+/* Divider vertical*/
+.enterpriseDivider {
+  border-right: 1px solid #cfd3d8;
+  height: auto;
+  align-self: stretch;
+  margin: 0 30px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1300px) {
+  .enterpriseDivider {
+    display: none;
+  }
+}

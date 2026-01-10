@@ -1,9 +1,11 @@
 'use client';
 
-import { checkoutAction, topupCheckoutAction } from '@/lib/payments/actions';
+import { useState } from 'react';
+import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import { Zap, Briefcase, Check } from 'lucide-react';
 import useSWR from 'swr';
 import { PricingSection } from '../../pricing-section';
+import { Save50Dialog } from './save-50-dialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -55,6 +57,14 @@ export default function YourCreditsPage() {
   const { data: stripePrices = [] } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
   const { data: stripeTopupPrices = [] } = useSWR<StripePrice[]>('/api/stripe-topup-prices', fetcher);
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogData, setDialogData] = useState<{
+    monthlyPrice: number;
+    annualPrice: number;
+    annualPriceId: string;
+    monthlyPriceId: string;
+  } | null>(null);
+
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
   const nextRefillAt = user?.tokenAccount?.nextRefillAt;
@@ -70,6 +80,8 @@ export default function YourCreditsPage() {
   const renewalDate = nextRefillAt 
     ? new Date(nextRefillAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
+
+  console.log('renewalDate', renewalDate);
 
   // Map subscription plans to Stripe price IDs
   const planPrices: Record<string, { monthly: string | null; annual: string | null }> = {};
@@ -106,6 +118,75 @@ export default function YourCreditsPage() {
     })
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
+  // Wrapper checkoutAction that checks if price is annual or monthly
+  const checkoutAction = async (formData: FormData) => {
+    const priceId = formData.get('priceId') as string;
+    
+    if (!priceId) {
+      console.error('No price ID provided');
+      return;
+    }
+
+    // Find the price in stripePrices to check if it's annual or monthly
+    const price = stripePrices.find(p => p.id === priceId);
+    
+    if (!price) {
+      console.error('Price not found');
+      return;
+    }
+
+    // Check if it's annual (interval === 'year' and intervalCount === 1)
+    const isAnnual = price.interval === 'year' && price.intervalCount === 1;
+    
+    if (isAnnual) {
+      // If annual, proceed with checkout directly
+      await originalCheckoutAction(formData);
+    } else {
+      // If monthly, show dialog to suggest annual plan
+      // Find the annual price for the same product
+      const annualPrice = stripePrices.find(
+        p => p.productId === price.productId && p.interval === 'year' && p.intervalCount === 1
+      );
+
+      if (annualPrice && annualPrice.unitAmount) {
+        const monthlyAmount = price.unitAmount || 0;
+        const annualAmount = annualPrice.unitAmount;
+        // Calculate monthly equivalent (annual total / 12) for display
+        // Convert from cents to dollars first, then calculate
+        const monthlyPriceInDollars = Math.round(monthlyAmount / 100);
+        const annualTotalInDollars = Math.round(annualAmount / 100);
+        const annualMonthlyEquivalent = Math.round(annualTotalInDollars / 12);
+
+        setDialogData({
+          monthlyPrice: monthlyPriceInDollars,
+          annualPrice: annualMonthlyEquivalent, // Show monthly equivalent (what they'd pay per month with annual)
+          annualPriceId: annualPrice.id,
+          monthlyPriceId: priceId,
+        });
+        setDialogOpen(true);
+      } else {
+        // If no annual price found, proceed with monthly checkout
+        await originalCheckoutAction(formData);
+      }
+    }
+  };
+
+  // Handle dialog confirm - proceed with annual checkout
+  const handleDialogConfirm = async () => {
+    if (dialogData) {
+      const formData = new FormData();
+      formData.append('priceId', dialogData.annualPriceId);
+      await originalCheckoutAction(formData);
+      setDialogOpen(false);
+      setDialogData(null);
+    }
+  };
+
+  // Handle dialog close
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setDialogData(null);
+  };
 
   return (
     <div className={styles.container}>
@@ -275,6 +356,7 @@ export default function YourCreditsPage() {
                       For big agencies and internal marketing teams - custom integrations
                     </p>
                   </div>
+                  
                 </div>
                 
                 {/* Let's talk button in left section */}
@@ -290,6 +372,9 @@ export default function YourCreditsPage() {
                   </span>
                 </button>
               </div>
+
+              {/* Divider */}
+              <div className={styles.enterpriseDivider} />
 
               {/* Right Section - Features in Column */}
               <div className={styles.enterpriseRightSection}>
@@ -314,6 +399,18 @@ export default function YourCreditsPage() {
           </div>
         </div>
       </div>
+
+      {/* Save 50% Dialog */}
+      {dialogData && (
+        <Save50Dialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          onConfirm={handleDialogConfirm}
+          monthlyPrice={dialogData.monthlyPrice}
+          annualPrice={dialogData.annualPrice}
+          annualPriceId={dialogData.annualPriceId}
+        />
+      )}
     </div>
   );
 }

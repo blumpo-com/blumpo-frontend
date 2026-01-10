@@ -6,9 +6,10 @@ type DialogProps = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  contentClassName?: string;
 };
 
-export function Dialog({ open, onClose, children }: DialogProps) {
+export function Dialog({ open, onClose, children, contentClassName }: DialogProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -19,13 +20,16 @@ export function Dialog({ open, onClose, children }: DialogProps) {
 
   if (!open) return null;
 
+  const defaultClassName = "bg-white rounded-2xl shadow-xl p-8 w-[90%] max-w-md text-center animate-fadeIn";
+  const className = contentClassName || defaultClassName;
+
   const dialogContent = (
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl p-8 w-[90%] max-w-md text-center animate-fadeIn"
+        className={className}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
