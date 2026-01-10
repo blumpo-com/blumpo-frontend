@@ -118,8 +118,8 @@ function PricingCard({
           </span>
         </button>
       ) : canCheckout ? (
-        <form action={checkoutAction}>
-          <input type="hidden" name="priceId" value={priceId || ""} />
+        <form action={checkoutAction} className="w-full flex items-center justify-center">
+          <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
           <button 
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
