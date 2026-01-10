@@ -11,6 +11,7 @@ import { ComparisonSection } from "./comparison-section";
 import { TestimonialSection } from "./testimonial-section";
 import { FaqSection } from "./faq-section";
 import { motion } from "framer-motion"
+import { checkoutAction } from "@/lib/payments/actions";
 
 
 function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
@@ -73,7 +74,10 @@ export default function HomePage() {
       <HeaderSection 
         title="Pick a plan or start creating for free."
         id="pricing">
-        <PricingSection />
+        <PricingSection 
+          checkoutAction={checkoutAction}
+          showEnterprise={true}
+        />
       </HeaderSection>
 
       <HeaderSection 

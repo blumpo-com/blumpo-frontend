@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  PrimaryPricingCard,
-  SecondaryPricingCard,
-} from "@/components/ui/pricing-card";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Check, Zap, Star, Users, Briefcase } from "lucide-react";
@@ -18,6 +14,12 @@ interface PricingCardProps {
   features: string[];
   buttonText: string;
   isPopular?: boolean;
+  isCurrentPlan?: boolean;
+  checkoutAction?: (formData: FormData) => Promise<void>;
+  planId?: string;
+  monthlyPriceId?: string | null;
+  annualPriceId?: string | null;
+  isAnnual?: boolean;
 }
 
 function PricingCard({
@@ -29,6 +31,12 @@ function PricingCard({
   features,
   buttonText,
   isPopular = false,
+  isCurrentPlan = false,
+  checkoutAction,
+  planId,
+  monthlyPriceId,
+  annualPriceId,
+  isAnnual = true,
 }: PricingCardProps) {
   const iconMap = {
     bolt: Zap,
@@ -46,34 +54,30 @@ function PricingCard({
   // Animate price changes
   const animatedPrice = useAnimatedNumber({ target: price });
 
+  // Get the appropriate price ID based on annual/monthly
+  const priceId = isAnnual ? annualPriceId : monthlyPriceId;
+  const canCheckout = checkoutAction && priceId && !isCurrentPlan && buttonText !== "Let's talk";
+
   // Card content component - shared between popular and regular cards
   const cardContent = (
     <div
       className={cn(
         "bg-white flex flex-col gap-[10px] items-start overflow-clip relative h-full",
-        // Border radius - different for popular (18px) vs regular (20px)
         isPopular ? "rounded-[18px]" : "rounded-[20px]",
-        // Mobile sizes
         "pb-5 px-[18px] w-full",
-        // Desktop sizes (above 1300px)
         "min-[1301px]:pb-5 min-[1301px]:px-[15px]",
-        // Padding top - different for popular
         isPopular ? "pt-18" : "pt-8",
         shadow
       )}
     >
-      {/* Most Popular banner - only for popular cards */}
       {isPopular && (
-        <div
-          className="absolute left-0 top-0 w-full  flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary h-11"
-        >
+        <div className="absolute left-0 top-0 w-full flex flex-col items-center justify-center py-[10px] overflow-clip gradient-primary h-11">
           <span className="text-base font-normal text-[#f9fafb] leading-[24px]">
             Most Popular
           </span>
         </div>
       )}
 
-      {/* Icon and Title */}
       <div className="flex gap-[10px] items-center w-full">
         <div className="bg-[#00bfa6] p-3 rounded-[8px] size-[38px] flex items-center justify-center">
           <IconComponent className="w-6 h-6 text-white" />
@@ -83,12 +87,10 @@ function PricingCard({
         </h2>
       </div>
 
-      {/* Description */}
       <p className="text-base font-normal text-[#888e98] leading-normal w-full h-16 mb-4">
         {description}
       </p>
       <div className="h-17">
-        {/* Price */}
         {animatedPrice !== null ? (
           <div className="flex gap-[10px] items-center w-full">
             <span className="text-[38px] font-bold text-[#00bfa6]">${animatedPrice}</span>
@@ -98,29 +100,59 @@ function PricingCard({
           <div className="h-17" />
         )}
 
-        {/* Credits */}
         {credits && (
           <p className="text-base font-semibold text-[#0a0a0a] leading-normal">
             {credits}
           </p>
         )}
       </div>
-      
 
-     
-      {/* Button */}
-      <button className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer">
-        <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
-          {buttonText}
-        </span>
-      </button>
+      {isCurrentPlan ? (
+        <button 
+          disabled
+          className="bg-[#0a0a0a] h-[45px] flex items-center justify-center gap-2 rounded-[8px] w-full my-4 cursor-not-allowed opacity-70"
+        >
+          <Check className="w-5 h-5 text-white" />
+          <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
+            Current plan
+          </span>
+        </button>
+      ) : canCheckout ? (
+        <form action={checkoutAction}>
+          <input type="hidden" name="priceId" value={priceId || ""} />
+          <button 
+            type="submit"
+            className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
+          >
+            <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
+              {buttonText}
+            </span>
+          </button>
+        </form>
+      ) : buttonText === "Let's talk" ? (
+        <button 
+          className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
+          onClick={() => {
+            console.log('Enterprise contact requested');
+          }}
+        >
+          <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
+            {buttonText}
+          </span>
+        </button>
+      ) : (
+        <button 
+          disabled
+          className="bg-gray-300 h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-not-allowed"
+        >
+          <span className="text-[22px] font-bold text-gray-500 leading-normal">
+            {buttonText}
+          </span>
+        </button>
+      )}
 
-      {/* Separator */}
       <div className="bg-[#d9d9d9] h-px w-full mb-4" />
 
-    
-
-      {/* Features */}
       <div className="flex flex-col gap-[14px] items-start w-full">
         {features.map((feature, index) => (
           <div key={index} className="flex gap-[10px] items-center w-full">
@@ -138,36 +170,16 @@ function PricingCard({
     </div>
   );
 
-  // Popular cards use gradient border wrapper
   if (isPopular) {
     return (
-      <div
-        className={cn(
-          "rounded-[20px] p-[2px] gradient-primary pricing-card-hover",
-          // Mobile sizes
-          "w-full",
-          // Desktop sizes (above 1300px)
-         
-          cardHeight
-        )}
-      >
+      <div className={cn("rounded-[20px] p-[2px] gradient-primary pricing-card-hover", "w-full", cardHeight)}>
         {cardContent}
       </div>
     );
   }
 
-  // Regular cards without gradient border
   return (
-    <div
-      className={cn(
-        "border-2 border-solid border-[#d8d8db] rounded-[20px] pricing-card-hover pricing-card-hover-border",
-        // Mobile sizes
-        "w-full",
-        // Desktop sizes (above 1300px)
-        
-        cardHeight
-      )}
-    >
+    <div className={cn("border-2 border-solid border-[#d8d8db] rounded-[20px] pricing-card-hover pricing-card-hover-border", "w-full", cardHeight)}>
       {cardContent}
     </div>
   );
@@ -181,6 +193,7 @@ const subscriptionPlans: Array<{
   credits: string | null;
   description: string;
   features: string[];
+  planCode?: string;
 }> = [
   {
     id: "starter",
@@ -194,6 +207,7 @@ const subscriptionPlans: Array<{
       "Various sizes and formats\n(1:1, 9:16)",
       "1 Brand",
     ],
+    planCode: "STARTER",
   },
   {
     id: "growth",
@@ -208,6 +222,7 @@ const subscriptionPlans: Array<{
       "Customer & competitor insight\naccess",
       "Up to 3 brands",
     ],
+    planCode: "GROWTH",
   },
   {
     id: "team",
@@ -223,6 +238,7 @@ const subscriptionPlans: Array<{
       "Unlimited number of brands",
       "Up to 5 users",
     ],
+    planCode: "TEAM",
   },
   {
     id: "enterprise",
@@ -239,12 +255,27 @@ const subscriptionPlans: Array<{
   },
 ];
 
+interface PricingSectionProps {
+  checkoutAction?: (formData: FormData) => Promise<void>;
+  currentPlanCode?: string;
+  showEnterprise?: boolean;
+  planPrices?: Record<string, { monthly: string | null; annual: string | null }>;
+}
 
-export function PricingSection() { 
+export function PricingSection({ 
+  checkoutAction,
+  currentPlanCode,
+  showEnterprise = false,
+  planPrices = {}
+}: PricingSectionProps = {}) { 
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
-  const currentPlan = subscriptionPlans.find((p) => p.id === selectedPlan)!;
+  const displayPlans = showEnterprise 
+    ? subscriptionPlans 
+    : subscriptionPlans.filter(p => p.id !== "enterprise");
+
+  const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
   const currentPrice = currentPlan.price
     ? isAnnual
       ? currentPlan.price.annual
@@ -253,17 +284,14 @@ export function PricingSection() {
 
   return (
     <div className="mt-12 max-w-xl min-[1301px]:max-w-full mx-auto ">
-      {/* Switch toggle */}
       <div className="flex items-center justify-center gap-[30px] mb-8">
         <button
           onClick={() => setIsAnnual(!isAnnual)}
           className="cursor-pointer"
         >
-          {/* Toggle switch - responsive */}
           <div
             className={cn(
               "flex items-center overflow-hidden relative transition-colors duration-200",
-              // Mobile sizes - proporcjonalnie mniejsze niż desktop
               "p-1 rounded-[6px] w-[37px] h-[23px]",
               isAnnual ? "bg-[#0a0a0a]" : "bg-gray-400"
             )}
@@ -271,22 +299,19 @@ export function PricingSection() {
             <div
               className={cn(
                 "bg-[#f9fafb] transition-all duration-200 absolute",
-                // Mobile sizes - proporcjonalnie mniejsze
                 "h-[15px] rounded-[4px] w-[17px]",
                 isAnnual ? "left-[17px]" : "left-1",
               )}
             />
           </div>
-          </button>
-          <span className="text-[16px] font-bold text-[#0a0a0a]">
-            Save 50% on annual plan
-          </span>
-       
+        </button>
+        <span className="text-[16px] font-bold text-[#0a0a0a]">
+          Save 50% on annual plan
+        </span>
       </div>
 
-      {/* Mobile: Tabs navigation */}
       <div className="max-[1300px]:flex min-[1301px]:hidden gap-[7px] mb-5 px-0 py-[27px] justify-center overflow-clip">
-        {subscriptionPlans.map((plan) => (
+        {displayPlans.map((plan) => (
           <button
             key={plan.id}
             onClick={() => setSelectedPlan(plan.id)}
@@ -302,7 +327,6 @@ export function PricingSection() {
         ))}
       </div>
 
-      {/* Mobile: Single card view */}
       <div className="max-[1300px]:block min-[1301px]:hidden">
         <PricingCard
           name={currentPlan.name}
@@ -311,27 +335,42 @@ export function PricingSection() {
           credits={currentPlan.credits}
           description={currentPlan.description}
           features={currentPlan.features}
-          buttonText={currentPlan.id === "enterprise" ? "Let's talk" : "Select plan"}
+          buttonText={currentPlan.id === "enterprise" ? "Let's talk" : (currentPlanCode && currentPlan.planCode === currentPlanCode ? "Current plan" : "Select plan")}
           isPopular={currentPlan.id === "growth"}
+          isCurrentPlan={currentPlanCode ? currentPlan.planCode === currentPlanCode : false}
+          checkoutAction={checkoutAction}
+          planId={currentPlan.id}
+          monthlyPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.monthly || null : null}
+          annualPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.annual || null : null}
+          isAnnual={isAnnual}
         />
       </div>
 
-      {/* Desktop: Pricing cards - 4 cards in a row */}
-      <div className="hidden min-[1301px]:flex  justify-between items-end px-0 gap-5">
-        {subscriptionPlans.map((plan) => (
-          <PricingCard
-            key={plan.id}
-            name={plan.name}
-            icon={plan.icon}
-            price={isAnnual ? plan?.price?.annual || null : plan?.price?.monthly || null}
-            credits={plan.credits}
-            description={plan.description}
-            features={plan.features}
-            buttonText={plan.id === "enterprise" ? "Let's talk" : "Select plan"}
-            isPopular={plan.id === "growth"}
-          />
-        ))}
-        {/* Starter */}
+      <div className="hidden min-[1301px]:flex justify-between items-end px-0 gap-5">
+        {displayPlans.map((plan) => {
+          const planPriceMap = plan.planCode ? planPrices[plan.planCode] : null;
+          const isCurrent = currentPlanCode ? plan.planCode === currentPlanCode : false;
+          
+          return (
+            <PricingCard
+              key={plan.id}
+              name={plan.name}
+              icon={plan.icon}
+              price={isAnnual ? plan?.price?.annual || null : plan?.price?.monthly || null}
+              credits={plan.credits}
+              description={plan.description}
+              features={plan.features}
+              buttonText={plan.id === "enterprise" ? "Let's talk" : (isCurrent ? "Current plan" : "Select plan")}
+              isPopular={plan.id === "growth"}
+              isCurrentPlan={isCurrent}
+              checkoutAction={checkoutAction}
+              planId={plan.id}
+              monthlyPriceId={planPriceMap?.monthly || null}
+              annualPriceId={planPriceMap?.annual || null}
+              isAnnual={isAnnual}
+            />
+          );
+        })}
       </div>
     </div>
   );

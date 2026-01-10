@@ -4,6 +4,7 @@ import { checkoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import { Zap } from 'lucide-react';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
+import { PricingSection } from '../../pricing-section';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -61,10 +62,8 @@ export default function YourCreditsPage() {
   // Get current plan details
   const currentPlan = subscriptionPlans.find(p => p.planCode === currentPlanCode);
   const planTokens = currentPlan?.monthlyTokens || 0;
-  const adsUsed = Math.floor((planTokens - userBalance) / 50); // Each ad costs 50 tokens
-  const adsTotal = Math.floor(planTokens / 50);
-  const creditsUsed = Math.max(planTokens - userBalance, userBalance); // Can't be negative
-  const creditsTotal = planTokens;
+  const creditsUsed = Math.max(planTokens - userBalance, 0); // Can't be negative
+  const creditsTotal = planTokens || 1;
   const progressPercentage = planTokens > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
 
   // Format renewal date
@@ -72,17 +71,20 @@ export default function YourCreditsPage() {
     ? new Date(nextRefillAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
 
-  // Get Stripe prices for current plan
-  let monthlyPriceId: string | null = null;
-  let annualPriceId: string | null = null;
-
-  if (currentPlan?.stripeProductId) {
-    const prices = stripePrices.filter(sp => sp.productId === currentPlan.stripeProductId);
-    const monthly = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
-    const annual = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
-    monthlyPriceId = monthly?.id || null;
-    annualPriceId = annual?.id || null;
-  }
+  // Map subscription plans to Stripe price IDs
+  const planPrices: Record<string, { monthly: string | null; annual: string | null }> = {};
+  
+  subscriptionPlans.forEach(plan => {
+    if (plan.stripeProductId) {
+      const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
+      const monthly = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
+      const annual = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
+      planPrices[plan.planCode] = {
+        monthly: monthly?.id || null,
+        annual: annual?.id || null
+      };
+    }
+  });
 
   // Get topup plans for "Buy more credits"
   const validatedTopupPlans = topupPlans
@@ -197,52 +199,13 @@ export default function YourCreditsPage() {
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-[122px] h-[69px] items-end justify-center relative w-full">
-          {/* Get Annual Plan Button */}
-          {annualPriceId && (
-            <form action={checkoutAction}>
-              <input type="hidden" name="priceId" value={annualPriceId} />
-              <Button
-                type="submit"
-                className="bg-[#0a0a0a] flex h-[50px] items-center justify-center overflow-clip px-[12px] py-[10px] rounded-[10px] w-[223px]"
-              >
-                <p className="font-semibold leading-[normal] text-[#f9fafb] text-[20px] text-center">
-                  Get annual plan
-                </p>
-              </Button>
-            </form>
-          )}
-
-          {/* Upgrade Plan Button - Test button */}
-          <Button
-            onClick={() => {
-              console.log('Upgrade plan clicked - test functionality');
-              // TODO: Implement upgrade plan logic
-            }}
-            className="bg-white border-2 border-[#0a0a0a] flex h-[50px] items-center justify-center overflow-clip px-[12px] py-[10px] rounded-[10px] w-[223px]"
-          >
-            <p className="font-semibold leading-[normal] text-[#0a0a0a] text-[20px] text-center">
-              Upgrade plan
-            </p>
-          </Button>
-
-          {/* Save 50% Badge */}
-          {annualPriceId && (
-            <div className="absolute bg-[#f9fafb] border border-[#0a0a0a] flex h-[25px] items-center justify-center left-[323px] overflow-clip px-[5.973px] py-[4.978px] rounded-[25px] top-[59px] w-[75px]">
-              <p className="font-semibold leading-[normal] text-[#0a0a0a] text-[12px] text-center">
-                Save 50%
-              </p>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Upgrade Section - Just buttons for testing as requested */}
-      <div className="flex flex-col gap-[27px] items-center">
-        <div className="flex flex-col gap-[26px] items-start">
+      {/* Upgrade Section */}
+      <div className="flex flex-col gap-[27px] items-center w-full">
+        <div className="flex flex-col gap-[26px] items-start w-full">
           <p 
-            className="font-bold h-[47px] leading-[normal] text-[40px] text-center w-[1145px]"
+            className="font-bold h-[47px] leading-[normal] text-[40px] text-center w-full"
             style={{
               background: 'linear-gradient(111.47deg, rgba(0, 191, 166, 1) 2.43%, rgba(13, 59, 102, 1) 99.10%)',
               WebkitBackgroundClip: 'text',
@@ -252,36 +215,14 @@ export default function YourCreditsPage() {
           >
             Upgrade your plan to create more ads
           </p>
-          <div className="flex gap-[30px] h-[32.47px] items-center justify-center w-[1145px]">
-            <div className="bg-[#0a0a0a] flex items-start overflow-clip p-[5.31px] rounded-[9.104px]">
-              <div className="bg-[#0a0a0a] h-[21.849px] rounded-[5.202px] w-[24.45px]" />
-              <div className="bg-[#f9fafb] h-[21.849px] rounded-[5.31px] w-[23.93px]" />
-            </div>
-            <p className="font-bold leading-[normal] text-[#0a0a0a] text-[23.981px] text-center">
-              Save 50% on annual plan
-            </p>
-          </div>
         </div>
-
-        {/* Test Buttons Section */}
-        <div className="flex gap-4 items-center justify-center">
-          <Button
-            onClick={() => {
-              console.log('Test button 1 clicked');
-            }}
-            className="bg-[#0a0a0a] text-white px-6 py-3 rounded-lg"
-          >
-            Test Button 1
-          </Button>
-          <Button
-            onClick={() => {
-              console.log('Test button 2 clicked');
-            }}
-            className="bg-white border-2 border-[#0a0a0a] text-[#0a0a0a] px-6 py-3 rounded-lg"
-          >
-            Test Button 2
-          </Button>
-        </div>
+        
+        <PricingSection 
+          checkoutAction={checkoutAction}
+          currentPlanCode={currentPlanCode}
+          showEnterprise={false}
+          planPrices={planPrices}
+        />
       </div>
     </div>
   );
