@@ -134,28 +134,28 @@ export function BuyCreditsDialog({
             <span className={styles.buyCreditsButtonText}>Buy credits</span>
           </button>
         )}
+      </div>
 
-        {/* Action Buttons */}
-        <div className={styles.actionButtons}>
-          <div className={styles.actionButtonsRow}>
-            <button
-              className={styles.upgradeButton}
-              onClick={() => {
-                onClose();
-                onUpgradePlan();
-              }}
-            >
-              <span className={styles.upgradeButtonText}>
-                Upgrade plan to get more credits each month
-              </span>
-            </button>
-            <button
-              className={styles.cancelButton}
-              onClick={onClose}
-            >
-              <span className={styles.cancelButtonText}>Cancel</span>
-            </button>
-          </div>
+      {/* Action Buttons - separate section with gap */}
+      <div className={styles.actionButtonsWrapper}>
+        <div className={styles.actionButtonsRow}>
+          <button
+            className={styles.upgradeButton}
+            onClick={() => {
+              onClose();
+              onUpgradePlan();
+            }}
+          >
+            <span className={styles.upgradeButtonText}>
+              Upgrade plan to get more credits each month
+            </span>
+          </button>
+          <button
+            className={styles.cancelButton}
+            onClick={onClose}
+          >
+            <span className={styles.cancelButtonText}>Cancel</span>
+          </button>
         </div>
       </div>
 

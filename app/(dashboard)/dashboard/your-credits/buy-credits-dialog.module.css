@@ -5,10 +5,10 @@
   flex-direction: column;
   min-height: auto;
   align-items: center;
-  padding-bottom: 268px;
+  padding-bottom: 20px;
   padding-top: 60px;
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 50px;
+  padding-right: 50px;
   position: relative;
   border-radius: 19.932px;
   box-shadow: 0px 1.993px 7.275px 0px rgba(0, 0, 0, 0.12);
@@ -17,6 +17,7 @@
   margin: 0 auto;
   animation: fadeIn 0.2s ease-in;
   overflow: visible;
+  gap: 20px;
 }
 
 @keyframes fadeIn {
@@ -40,6 +41,7 @@
   flex-shrink: 0;
   width: 929px;
   max-width: 100%;
+  padding: 0;
 }
 
 /* Title */
@@ -282,8 +284,8 @@
   text-align: center;
 }
 
-/* Action Buttons */
-.actionButtons {
+/* Action Buttons Wrapper */
+.actionButtonsWrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -345,8 +347,11 @@
   position: relative;
   flex-shrink: 0;
   color: #f9fafb;
-  font-size: 19.93px;
+  font-size: 16.93px;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cancelButton {
@@ -388,13 +393,11 @@
 /* Illustration */
 .illustration {
   height: 248px;
-  position: absolute;
+  position: relative;
   flex-shrink: 0;
   width: 337px;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
   pointer-events: none;
+  margin-top: 0;
 }
 
 .illustrationImage {
