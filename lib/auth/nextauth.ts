@@ -128,9 +128,9 @@ export const authOptions: NextAuthOptions = {
           return `${baseUrl}/dashboard`;
         }
         
-        // Handle generation redirect - redirect to root with params
+        // Handle generation redirect - redirect to root with params (oauth-redirect-handler will start generation)
         if (redirectParam === 'generate' && websiteUrl) {
-          return `${baseUrl}/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+          return `${baseUrl}/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`; // oauth-redirect-handler will start generation with flag that is after login
         }
         // For auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
         if (urlObj.pathname.startsWith('/api/auth/callback') || urlObj.pathname === '/api/auth/google-callback') {

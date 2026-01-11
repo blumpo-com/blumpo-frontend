@@ -49,18 +49,6 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-MPCVHHVPKR"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-MPCVHHVPKR');
-          `}
-        </Script>
         <Providers>
           <SWRConfig
             value={{

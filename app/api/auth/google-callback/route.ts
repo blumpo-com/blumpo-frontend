@@ -21,11 +21,12 @@ export async function GET(request: NextRequest) {
     }
     
     // Determine redirect URL (same logic as OTP)
-    let redirectUrl = '/'; // Default to root instead of dashboard
+    let redirectUrl = '/dashboard'; // Default to root instead of dashboard
     if (redirect === 'checkout') {
       redirectUrl = priceId ? `/pricing?priceId=${priceId}` : '/pricing';
     } else if (redirect === 'generate' && websiteUrl) {
-      redirectUrl = `/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+      // Redirect to root with params - oauth-redirect-handler will start generation
+      redirectUrl = `/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`;
     } else if (redirect) {
       redirectUrl = redirect;
     }

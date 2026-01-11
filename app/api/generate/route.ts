@@ -191,13 +191,25 @@ export async function POST(req: Request) {
             tokens_used: TOKENS_COST_PER_GENERATION
           });
         } else {
-          // FAILED or CANCELED
-          console.log('[GENERATE] Returning', callbackResult.status, 'response');
+          // FAILED or CANCELED - refund tokens
+          console.log('[GENERATE] Returning', callbackResult.status, 'response - refunding tokens');
+          
+          // Refund tokens for failed/canceled jobs
+          try {
+            await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
+            console.log('[GENERATE] Tokens refunded for', callbackResult.status, 'job:', jobId);
+          } catch (refundError) {
+            console.error('[GENERATE] Error refunding tokens:', refundError);
+            // Continue even if refund fails - we still want to return the error to the user
+          }
+          
           return NextResponse.json({
             job_id: jobId,
             status: callbackResult.status,
             images: callbackResult.images, // May be empty
-            tokens_used: TOKENS_COST_PER_GENERATION
+            error_message: callbackResult.error_message,
+            error_code: callbackResult.error_code,
+            tokens_refunded: TOKENS_COST_PER_GENERATION
           }, { status: callbackResult.status === 'FAILED' ? 500 : 200 });
         }
       } catch (callbackError) {
