@@ -76,7 +76,7 @@ export default function YourCreditsPage() {
   const planTokens = currentPlan?.monthlyTokens || 0;
   const creditsUsed = Math.max(planTokens - userBalance, 0); // Can't be negative
   const creditsTotal = planTokens || 1;
-  const progressPercentage = planTokens > 0 ? (creditsUsed / creditsTotal) * 100 : 0;
+  const progressPercentage = planTokens > 0 ? (userBalance / creditsTotal) * 100 : 0;
 
   // Format renewal date
   const renewalDate = nextRefillAt 
@@ -91,6 +91,7 @@ export default function YourCreditsPage() {
       const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
       const monthly = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
       const annual = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
+
       planPrices[plan.planCode] = {
         monthly: monthly?.id || null,
         annual: annual?.id || null
@@ -98,11 +99,13 @@ export default function YourCreditsPage() {
     }
   });
 
+
   // Get Stripe prices for current plan (for action buttons)
   const currentPlanPrices = currentPlanCode && planPrices[currentPlanCode] 
     ? planPrices[currentPlanCode] 
     : { monthly: null, annual: null };
   const annualPriceId = currentPlanPrices.annual;
+
 
   // Get topup plans for "Buy more credits"
   const validatedTopupPlans = topupPlans
@@ -183,9 +186,14 @@ export default function YourCreditsPage() {
   };
 
   // Handle Save 50% dialog close
-  const handleSave50DialogClose = () => {
-    setSave50DialogOpen(false);
-    setSave50DialogData(null);
+  const handleSave50DialogClose = async () => {
+    if (save50DialogData) {
+      const formData = new FormData();
+      formData.append('priceId', save50DialogData.monthlyPriceId);
+      await originalCheckoutAction(formData);
+      setSave50DialogOpen(false);
+      setSave50DialogData(null);
+    }
   };
 
   // Handle Buy Credits dialog - open when button is clicked
@@ -251,7 +259,7 @@ export default function YourCreditsPage() {
                 Ad credits
               </p>
               <p className={styles.creditsCount}>
-                {creditsUsed}/{creditsTotal}
+                {userBalance}/{creditsTotal}
               </p>
             </div>
             <div className={styles.progressBarContainer}>
