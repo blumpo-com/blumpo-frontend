@@ -66,6 +66,7 @@ export default function YourCreditsPage() {
     monthlyPriceId: string;
   } | null>(null);
   const [buyCreditsDialogOpen, setBuyCreditsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
@@ -143,7 +144,12 @@ export default function YourCreditsPage() {
     
     if (isAnnual) {
       // If annual, proceed with checkout directly
-      await originalCheckoutAction(formData);
+      setIsLoading(true);
+      try {
+        await originalCheckoutAction(formData);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       // If monthly, show dialog to suggest annual plan
       // Find the annual price for the same product
@@ -169,7 +175,12 @@ export default function YourCreditsPage() {
         setSave50DialogOpen(true);
       } else {
         // If no annual price found, proceed with monthly checkout
-        await originalCheckoutAction(formData);
+        setIsLoading(true);
+        try {
+          await originalCheckoutAction(formData);
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
   };
@@ -179,9 +190,14 @@ export default function YourCreditsPage() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.annualPriceId);
-      await originalCheckoutAction(formData);
       setSave50DialogOpen(false);
       setSave50DialogData(null);
+      setIsLoading(true);
+      try {
+        await originalCheckoutAction(formData);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -190,9 +206,14 @@ export default function YourCreditsPage() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.monthlyPriceId);
-      await originalCheckoutAction(formData);
       setSave50DialogOpen(false);
       setSave50DialogData(null);
+      setIsLoading(true);
+      try {
+        await originalCheckoutAction(formData);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -206,8 +227,13 @@ export default function YourCreditsPage() {
   const handleBuyCredits = async (priceId: string) => {
     const formData = new FormData();
     formData.append('priceId', priceId);
-    await topupCheckoutAction(formData);
     setBuyCreditsDialogOpen(false);
+    setIsLoading(true);
+    try {
+      await topupCheckoutAction(formData);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle Upgrade Plan from Buy Credits dialog
@@ -221,6 +247,13 @@ export default function YourCreditsPage() {
 
   return (
     <div className={styles.container}>
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className={styles.loadingOverlay}>
+          <div className="spinner"></div>
+        </div>
+      )}
+
       {/* Current Plan Section */}
       <div className={styles.currentPlanSection}>
         {/* Header */}
