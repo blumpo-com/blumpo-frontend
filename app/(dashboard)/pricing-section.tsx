@@ -125,6 +125,7 @@ function PricingCard({
         <form action={checkoutAction} className="w-full flex items-center justify-center">
           <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
           {planCode && <input type="hidden" name="planCode" value={planCode} className="hidden" />}
+          <input type="hidden" name="interval" value={isAnnual ? "annual" : "monthly"} className="hidden" />
           <button 
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"

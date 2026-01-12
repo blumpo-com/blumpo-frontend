@@ -36,27 +36,35 @@ export default function HomePage() {
   // Wrapper checkout action that checks authentication
   const checkoutAction = async (formData: FormData) => {
     const planCode = formData.get('planCode') as string;
+    const interval = formData.get('interval') as string;
     
     if (!planCode) {
       console.error('No plan code provided');
       return;
     }
 
+    // Build URL params
+    const params = new URLSearchParams();
+    params.set('plan', planCode);
+    if (interval) {
+      params.set('interval', interval);
+    }
+
     // Check if user is authenticated by trying to fetch user data
     try {
       const userRes = await fetch('/api/user');
       if (userRes.ok) {
-        // User is authenticated - navigate to your-credits page with plan code
-        window.location.href = `/dashboard/your-credits?plan=${encodeURIComponent(planCode)}`;
+        // User is authenticated - navigate to your-credits page with plan code and interval
+        window.location.href = `/dashboard/your-credits?${params.toString()}`;
       } else {
         // User not authenticated - redirect to sign-in with checkout params
-        const signInUrl = `/sign-in?redirect=checkout&plan=${encodeURIComponent(planCode)}`;
+        const signInUrl = `/sign-in?redirect=checkout&${params.toString()}`;
         window.location.href = signInUrl;
       }
     } catch (error) {
       console.error('Error checking authentication:', error);
       // On error, redirect to sign-in
-      const signInUrl = `/sign-in?redirect=checkout&plan=${encodeURIComponent(planCode)}`;
+      const signInUrl = `/sign-in?redirect=checkout&${params.toString()}`;
       window.location.href = signInUrl;
     }
   };

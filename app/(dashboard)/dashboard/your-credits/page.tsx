@@ -261,18 +261,25 @@ export default function YourCreditsPage() {
       // Find the plan by planCode
       const plan = subscriptionPlans.find(p => p.planCode === planCode);
       if (plan && plan.stripeProductId) {
-        // Get the annual price for this plan (default to annual)
+        // Get the interval preference from URL (default to annual if not specified)
+        const intervalParam = searchParams.get('interval');
+        const preferAnnual = intervalParam !== 'monthly';
+        
+        // Get the prices for this plan
         const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
         const annualPrice = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
         const monthlyPrice = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
         
-        // Prefer annual, fallback to monthly
-        const selectedPrice = annualPrice || monthlyPrice;
+        // Select price based on interval preference
+        const selectedPrice = preferAnnual 
+          ? (annualPrice || monthlyPrice)  // Prefer annual, fallback to monthly
+          : (monthlyPrice || annualPrice); // Prefer monthly, fallback to annual
         
         if (selectedPrice) {
-          // Remove plan param from URL
+          // Remove plan and interval params from URL
           const newSearchParams = new URLSearchParams(searchParams.toString());
           newSearchParams.delete('plan');
+          newSearchParams.delete('interval');
           router.replace(`/dashboard/your-credits${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`, { scroll: false });
           
           // Trigger checkout with the selected price

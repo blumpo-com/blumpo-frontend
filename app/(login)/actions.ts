@@ -115,9 +115,16 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   // Handle checkout redirect
   if (redirectTo === 'checkout') {
     const planCode = formData.get('plan') as string | null;
+    const interval = formData.get('interval') as string | null;
+    
     if (planCode) {
-      // Redirect to your-credits page with plan code
-      redirect(`/dashboard/your-credits?plan=${encodeURIComponent(planCode)}`);
+      // Redirect to your-credits page with plan code and interval
+      const params = new URLSearchParams();
+      params.set('plan', planCode);
+      if (interval) {
+        params.set('interval', interval);
+      }
+      redirect(`/dashboard/your-credits?${params.toString()}`);
     } else {
       redirect('/dashboard/your-credits');
     }

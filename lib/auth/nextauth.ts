@@ -113,12 +113,18 @@ export const authOptions: NextAuthOptions = {
         // Only parse as URL if it's absolute
         const redirectParam = urlObj.searchParams.get('redirect');
         const plan = urlObj.searchParams.get('plan');
+        const interval = urlObj.searchParams.get('interval');
         const websiteUrl = urlObj.searchParams.get('website_url');
         
         // Handle checkout redirect
         if (redirectParam === 'checkout') {
           if (plan) {
-            return `${baseUrl}/dashboard/your-credits?plan=${encodeURIComponent(plan)}`;
+            const params = new URLSearchParams();
+            params.set('plan', plan);
+            if (interval) {
+              params.set('interval', interval);
+            }
+            return `${baseUrl}/dashboard/your-credits?${params.toString()}`;
           } else {
             return `${baseUrl}/dashboard/your-credits`;
           }

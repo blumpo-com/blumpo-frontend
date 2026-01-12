@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
     if (redirect === 'checkout') {
       // Redirect to your-credits page after login for checkout
       if (plan) {
-        redirectUrl = `/dashboard/your-credits?plan=${encodeURIComponent(plan)}`;
+        const params = new URLSearchParams();
+        params.set('plan', plan);
+        const interval = searchParams.get('interval');
+        if (interval) {
+          params.set('interval', interval);
+        }
+        redirectUrl = `/dashboard/your-credits?${params.toString()}`;
       } else {
         redirectUrl = '/dashboard/your-credits';
       }
