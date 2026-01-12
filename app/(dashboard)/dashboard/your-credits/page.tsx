@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import { Zap, Briefcase, Check } from 'lucide-react';
 import useSWR from 'swr';
@@ -52,6 +53,8 @@ interface UserWithTokenAccount {
 }
 
 export default function YourCreditsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
   const { data: subscriptionPlans = [] } = useSWR<SubscriptionPlan[]>('/api/subscription-plans', fetcher);
   const { data: topupPlans = [] } = useSWR<TopupPlan[]>('/api/topup-plans', fetcher);
@@ -67,6 +70,7 @@ export default function YourCreditsPage() {
   } | null>(null);
   const [buyCreditsDialogOpen, setBuyCreditsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasProcessedPlan, setHasProcessedPlan] = useState(false);
 
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
@@ -106,7 +110,6 @@ export default function YourCreditsPage() {
     ? planPrices[currentPlanCode] 
     : { monthly: null, annual: null };
   const annualPriceId = currentPlanPrices.annual;
-
 
   // Get topup plans for "Buy more credits"
   const validatedTopupPlans = topupPlans
@@ -244,6 +247,46 @@ export default function YourCreditsPage() {
       pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Auto-trigger checkout when plan code is in URL params
+  useEffect(() => {
+    const planCode = searchParams.get('plan');
+    if (!planCode) return;
+    setIsLoading(true);
+    
+    // Only process if we have all required data and haven't processed yet
+    if (planCode && subscriptionPlans.length > 0 && stripePrices.length > 0 && !hasProcessedPlan) {
+      setHasProcessedPlan(true);
+      
+      // Find the plan by planCode
+      const plan = subscriptionPlans.find(p => p.planCode === planCode);
+      if (plan && plan.stripeProductId) {
+        // Get the annual price for this plan (default to annual)
+        const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
+        const annualPrice = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
+        const monthlyPrice = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
+        
+        // Prefer annual, fallback to monthly
+        const selectedPrice = annualPrice || monthlyPrice;
+        
+        if (selectedPrice) {
+          // Remove plan param from URL
+          const newSearchParams = new URLSearchParams(searchParams.toString());
+          newSearchParams.delete('plan');
+          router.replace(`/dashboard/your-credits${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`, { scroll: false });
+          
+          // Trigger checkout with the selected price
+          const formData = new FormData();
+          formData.append('priceId', selectedPrice.id);
+          
+          // Use the checkoutAction logic to handle annual/monthly dialog
+          checkoutAction(formData);
+        }
+        setIsLoading(false);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, subscriptionPlans, stripePrices, hasProcessedPlan, router]);
 
   return (
     <div className={styles.container}>

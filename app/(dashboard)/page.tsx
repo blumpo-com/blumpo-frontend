@@ -11,7 +11,7 @@ import { ComparisonSection } from "./comparison-section";
 import { TestimonialSection } from "./testimonial-section";
 import { FaqSection } from "./faq-section";
 import { motion } from "framer-motion"
-import { checkoutAction } from "@/lib/payments/actions";
+import { checkoutAction as originalCheckoutAction } from "@/lib/payments/actions";
 
 
 function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
@@ -33,6 +33,34 @@ function HeaderSection({ title, children, id }: { title: React.ReactNode, childr
 }
 
 export default function HomePage() {
+  // Wrapper checkout action that checks authentication
+  const checkoutAction = async (formData: FormData) => {
+    const planCode = formData.get('planCode') as string;
+    
+    if (!planCode) {
+      console.error('No plan code provided');
+      return;
+    }
+
+    // Check if user is authenticated by trying to fetch user data
+    try {
+      const userRes = await fetch('/api/user');
+      if (userRes.ok) {
+        // User is authenticated - navigate to your-credits page with plan code
+        window.location.href = `/dashboard/your-credits?plan=${encodeURIComponent(planCode)}`;
+      } else {
+        // User not authenticated - redirect to sign-in with checkout params
+        const signInUrl = `/sign-in?redirect=checkout&plan=${encodeURIComponent(planCode)}`;
+        window.location.href = signInUrl;
+      }
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      // On error, redirect to sign-in
+      const signInUrl = `/sign-in?redirect=checkout&plan=${encodeURIComponent(planCode)}`;
+      window.location.href = signInUrl;
+    }
+  };
+
   return (
     <>
       <Suspense fallback={null}>
@@ -77,6 +105,7 @@ export default function HomePage() {
         <PricingSection 
           checkoutAction={checkoutAction}
           showEnterprise={true}
+          allowCheckoutWithoutPriceId={true}
         />
       </HeaderSection>
 
@@ -86,7 +115,7 @@ export default function HomePage() {
       </HeaderSection>
 
       <HeaderSection 
-        title="Answers you’re loooking for.">
+        title="Answers you're loooking for.">
         <FaqSection />
       </HeaderSection>
     </main>

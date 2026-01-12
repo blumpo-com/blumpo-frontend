@@ -114,7 +114,13 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
 
   // Handle checkout redirect
   if (redirectTo === 'checkout') {
-    redirect('/pricing');
+    const planCode = formData.get('plan') as string | null;
+    if (planCode) {
+      // Redirect to your-credits page with plan code
+      redirect(`/dashboard/your-credits?plan=${encodeURIComponent(planCode)}`);
+    } else {
+      redirect('/dashboard/your-credits');
+    }
   }
 
   // Default redirect - go to dashboard

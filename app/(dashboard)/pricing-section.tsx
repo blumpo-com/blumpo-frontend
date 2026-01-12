@@ -17,9 +17,11 @@ interface PricingCardProps {
   isCurrentPlan?: boolean;
   checkoutAction?: (formData: FormData) => Promise<void>;
   planId?: string;
+  planCode?: string | null;
   monthlyPriceId?: string | null;
   annualPriceId?: string | null;
   isAnnual?: boolean;
+  allowCheckoutWithoutPriceId?: boolean;
 }
 
 function PricingCard({
@@ -34,9 +36,11 @@ function PricingCard({
   isCurrentPlan = false,
   checkoutAction,
   planId,
+  planCode,
   monthlyPriceId,
   annualPriceId,
   isAnnual = true,
+  allowCheckoutWithoutPriceId = false,
 }: PricingCardProps) {
   const iconMap = {
     bolt: Zap,
@@ -56,7 +60,7 @@ function PricingCard({
 
   // Get the appropriate price ID based on annual/monthly
   const priceId = isAnnual ? annualPriceId : monthlyPriceId;
-  const canCheckout = checkoutAction && priceId && !isCurrentPlan && buttonText !== "Let's talk";
+  const canCheckout = checkoutAction && (priceId || (allowCheckoutWithoutPriceId && planCode)) && !isCurrentPlan && buttonText !== "Let's talk";
 
   // Card content component - shared between popular and regular cards
   const cardContent = (
@@ -120,6 +124,7 @@ function PricingCard({
       ) : canCheckout ? (
         <form action={checkoutAction} className="w-full flex items-center justify-center">
           <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
+          {planCode && <input type="hidden" name="planCode" value={planCode} className="hidden" />}
           <button 
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
@@ -260,13 +265,15 @@ interface PricingSectionProps {
   currentPlanCode?: string;
   showEnterprise?: boolean;
   planPrices?: Record<string, { monthly: string | null; annual: string | null }>;
+  allowCheckoutWithoutPriceId?: boolean;
 }
 
 export function PricingSection({ 
   checkoutAction,
   currentPlanCode,
   showEnterprise = false,
-  planPrices = {}
+  planPrices = {},
+  allowCheckoutWithoutPriceId = false,
 }: PricingSectionProps = {}) { 
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("starter");
@@ -340,9 +347,11 @@ export function PricingSection({
           isCurrentPlan={currentPlanCode ? currentPlan.planCode === currentPlanCode : false}
           checkoutAction={checkoutAction}
           planId={currentPlan.id}
+          planCode={currentPlan.planCode || null}
           monthlyPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.monthly || null : null}
           annualPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.annual || null : null}
           isAnnual={isAnnual}
+          allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
         />
       </div>
 
@@ -365,9 +374,11 @@ export function PricingSection({
               isCurrentPlan={isCurrent}
               checkoutAction={checkoutAction}
               planId={plan.id}
+              planCode={plan.planCode || null}
               monthlyPriceId={planPriceMap?.monthly || null}
               annualPriceId={planPriceMap?.annual || null}
               isAnnual={isAnnual}
+              allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
             />
           );
         })}
