@@ -72,11 +72,14 @@ interface UserWithTokenAccount {
 function YourCreditsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const { data: subscriptionPlans = [] } = useSWR<SubscriptionPlan[]>('/api/subscription-plans', fetcher);
-  const { data: topupPlans = [] } = useSWR<TopupPlan[]>('/api/topup-plans', fetcher);
-  const { data: stripePrices = [] } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
-  const { data: stripeTopupPrices = [] } = useSWR<StripePrice[]>('/api/stripe-topup-prices', fetcher);
+  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const { data: subscriptionPlans = [], isLoading: isLoadingPlans } = useSWR<SubscriptionPlan[]>('/api/subscription-plans', fetcher);
+  const { data: topupPlans = [], isLoading: isLoadingTopups } = useSWR<TopupPlan[]>('/api/topup-plans', fetcher);
+  const { data: stripePrices = [], isLoading: isLoadingStripePrices } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
+  const { data: stripeTopupPrices = [], isLoading: isLoadingTopupPrices } = useSWR<StripePrice[]>('/api/stripe-topup-prices', fetcher);
+
+  // Check if any critical data is still loading
+  const isLoadingData = isLoadingUser || isLoadingPlans || isLoadingStripePrices;
 
   const [save50DialogOpen, setSave50DialogOpen] = useState(false);
   const [save50DialogData, setSave50DialogData] = useState<{
@@ -384,151 +387,233 @@ function YourCreditsPageContent() {
       )}
 
       {/* Current Plan Section */}
-      <div className={styles.currentPlanSection}>
-        {/* Header */}
-        <div className={styles.header}>
-          <p className={styles.currentPlanTitle}>
-            Current plan
-          </p>
-          <div className={styles.billingInfo}>
-            <p className={styles.billedMonthly}>
-              Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
-            </p>
-            {renewalDate && (
-              <p className={styles.renewalDate}>
-                Renews {renewalDate}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Plan Details - Middle Section with Border */}
-        <div className={styles.planDetails}>
-          {/* Plan Icon and Name - Left */}
-          <div className={styles.planIconName}>
-            <div className={styles.planIcon}>
-              <img 
-                src={getPlanIcon(currentPlanCode)} 
-                alt={`${currentPlan?.displayName || 'Free'} plan icon`}
-                className={styles.planIconImage}
-              />
-            </div>
-            <p className={styles.planName}>
-              {currentPlan?.displayName || 'Free'}
-            </p>
-          </div>
-
-          {/* Credits Progress - Center */}
-          <div className={styles.creditsProgress}>
-            <div className={styles.creditsHeader}>
-              <p className={styles.creditsLabel}>
-                Ad credits
-              </p>
-              <p className={styles.creditsCount}>
-                {userBalance}/{creditsTotal}
-              </p>
-            </div>
-            <div className={styles.progressBarContainer}>
-              <div 
-                className={styles.progressBarFill}
-                style={{
-                  width: `${Math.min(Math.max(progressPercentage, 0), 100)}%`,
-                  minWidth: progressPercentage > 0 ? '4px' : '0px',
-                }}
-              />
+      {isLoadingData ? (
+        <div className={styles.currentPlanSection}>
+          {/* Header Skeleton */}
+          <div className={styles.header}>
+            <div className={styles.skeletonText} style={{ width: '120px', height: '24px' }} />
+            <div className={styles.billingInfo}>
+              <div className={styles.skeletonText} style={{ width: '100px', height: '16px' }} />
+              <div className={styles.skeletonText} style={{ width: '120px', height: '16px', marginTop: '4px' }} />
             </div>
           </div>
 
-          {/* Buy More Credits Button - Right */}
-          <div className={styles.buyCreditsSection}>
-            {validatedTopupPlans.length > 0 && currentPlan?.planCode != 'FREE' ? (
-              <button
-                type="button"
-                onClick={handleBuyMoreCreditsClick}
-                className={styles.buyCreditsButton}
-              >
-                <svg className={styles.buyCreditsIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className={styles.buyCreditsText}>
-                  Buy more credits
-                </span>
-              </button>
-            ) : (
-              <button
-                disabled
-                className={styles.buyCreditsButtonDisabled}
-              >
-                <svg className={styles.buyCreditsIconDisabled} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className={styles.buyCreditsTextDisabled}>
-                  Buy more credits
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+          {/* Plan Details Skeleton */}
+          <div className={styles.planDetails}>
+            {/* Plan Icon and Name Skeleton */}
+            <div className={styles.planIconName}>
+              <div className={styles.skeletonIcon} />
+              <div className={styles.skeletonText} style={{ width: '80px', height: '20px', marginTop: '8px' }} />
+            </div>
 
-        {/* Action Buttons - Bottom Section */}
-        <div className={`${styles.actionButtons} ${!annualPriceId || period !== SubscriptionPeriod.MONTHLY ? styles.actionButtonsCentered : ''}`}>
-          {/* Get Annual Plan Button */}
-          {annualPriceId && period === SubscriptionPeriod.MONTHLY ? (
-            <form action={checkoutAction} className={styles.annualPlanForm}>
-              <input type="hidden" name="priceId" value={annualPriceId} />
-              <button
-                type="submit"
-                className={styles.annualPlanButton}
-              >
-                <span className={styles.annualPlanButtonText}>
-                  Get annual plan
-                </span>
-              </button>
-              {/* Save 50% Badge - positioned over the button */}
-              <div className={styles.saveBadge}>
-                <span className={styles.saveBadgeText}>
-                  Save 50%
-                </span>
+            {/* Credits Progress Skeleton */}
+            <div className={styles.creditsProgress}>
+              <div className={styles.creditsHeader}>
+                <div className={styles.skeletonText} style={{ width: '90px', height: '16px' }} />
+                <div className={styles.skeletonText} style={{ width: '60px', height: '16px' }} />
               </div>
-            </form>
-          ) : null}
+              <div className={styles.progressBarContainer}>
+                <div className={styles.skeletonProgressBar} style={{ width: '60%' }} />
+              </div>
+            </div>
 
-          {/* Upgrade Plan Button */}
-          <button
-            onClick={() => {
-              // Scroll to pricing section
-              const pricingSection = document.getElementById('pricing-section');
-              if (pricingSection) {
-                pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }
-            }}
-            className={styles.upgradePlanButton}
-          >
-            <span className={styles.upgradePlanButtonText}>
-              Upgrade plan
-            </span>
-          </button>
+            {/* Buy More Credits Button Skeleton */}
+            <div className={styles.buyCreditsSection}>
+              <div className={styles.skeletonButton} style={{ width: '180px', height: '50px' }} />
+            </div>
+          </div>
+
+          {/* Action Buttons Skeleton */}
+          <div className={styles.actionButtons}>
+            <div className={styles.skeletonButton} style={{ width: '223px', height: '50px' }} />
+            <div className={styles.skeletonButton} style={{ width: '223px', height: '50px' }} />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className={styles.currentPlanSection}>
+          {/* Header */}
+          <div className={styles.header}>
+            <p className={styles.currentPlanTitle}>
+              Current plan
+            </p>
+            <div className={styles.billingInfo}>
+              <p className={styles.billedMonthly}>
+                Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
+              </p>
+              {renewalDate && (
+                <p className={styles.renewalDate}>
+                  Renews {renewalDate}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Plan Details - Middle Section with Border */}
+          <div className={styles.planDetails}>
+            {/* Plan Icon and Name - Left */}
+            <div className={styles.planIconName}>
+              <div className={styles.planIcon}>
+                <img 
+                  src={getPlanIcon(currentPlanCode)} 
+                  alt={`${currentPlan?.displayName || 'Free'} plan icon`}
+                  className={styles.planIconImage}
+                />
+              </div>
+              <p className={styles.planName}>
+                {currentPlan?.displayName || 'Free'}
+              </p>
+            </div>
+
+            {/* Credits Progress - Center */}
+            <div className={styles.creditsProgress}>
+              <div className={styles.creditsHeader}>
+                <p className={styles.creditsLabel}>
+                  Ad credits
+                </p>
+                <p className={styles.creditsCount}>
+                  {userBalance}/{creditsTotal}
+                </p>
+              </div>
+              <div className={styles.progressBarContainer}>
+                <div 
+                  className={styles.progressBarFill}
+                  style={{
+                    width: `${Math.min(Math.max(progressPercentage, 0), 100)}%`,
+                    minWidth: progressPercentage > 0 ? '4px' : '0px',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Buy More Credits Button - Right */}
+            <div className={styles.buyCreditsSection}>
+              {validatedTopupPlans.length > 0 && currentPlan?.planCode != 'FREE' ? (
+                <button
+                  type="button"
+                  onClick={handleBuyMoreCreditsClick}
+                  className={styles.buyCreditsButton}
+                >
+                  <svg className={styles.buyCreditsIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className={styles.buyCreditsText}>
+                    Buy more credits
+                  </span>
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className={styles.buyCreditsButtonDisabled}
+                >
+                  <svg className={styles.buyCreditsIconDisabled} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className={styles.buyCreditsTextDisabled}>
+                    Buy more credits
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons - Bottom Section */}
+          <div className={`${styles.actionButtons} ${!annualPriceId || period !== SubscriptionPeriod.MONTHLY ? styles.actionButtonsCentered : ''}`}>
+            {/* Get Annual Plan Button */}
+            {annualPriceId && period === SubscriptionPeriod.MONTHLY ? (
+              <form action={checkoutAction} className={styles.annualPlanForm}>
+                <input type="hidden" name="priceId" value={annualPriceId} />
+                <button
+                  type="submit"
+                  className={styles.annualPlanButton}
+                >
+                  <span className={styles.annualPlanButtonText}>
+                    Get annual plan
+                  </span>
+                </button>
+                {/* Save 50% Badge - positioned over the button */}
+                <div className={styles.saveBadge}>
+                  <span className={styles.saveBadgeText}>
+                    Save 50%
+                  </span>
+                </div>
+              </form>
+            ) : null}
+
+            {/* Upgrade Plan Button */}
+            <button
+              onClick={() => {
+                // Scroll to pricing section
+                const pricingSection = document.getElementById('pricing-section');
+                if (pricingSection) {
+                  pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              }}
+              className={styles.upgradePlanButton}
+            >
+              <span className={styles.upgradePlanButtonText}>
+                Upgrade plan
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Section */}
-      <div id="pricing-section" className={styles.upgradeSection}>
-        <div className={styles.upgradeTitleContainer}>
-          <p className={styles.upgradeTitle}>
-            Upgrade your plan to create more ads
-          </p>
+      {isLoadingData ? (
+        <div id="pricing-section" className={styles.upgradeSection}>
+          <div className={styles.upgradeTitleContainer}>
+            <div className={styles.skeletonText} style={{ width: '300px', height: '28px', margin: '0 auto' }} />
+          </div>
+          <div className={styles.skeletonPricingCards}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={styles.skeletonPricingCard} />
+            ))}
+          </div>
         </div>
-        
-        <PricingSection 
-          checkoutAction={checkoutAction}
-          currentPlanCode={currentPlanCode}
-          showEnterprise={false}
-          planPrices={planPrices}
-        />
-      </div>
+      ) : (
+        <div id="pricing-section" className={styles.upgradeSection}>
+          <div className={styles.upgradeTitleContainer}>
+            <p className={styles.upgradeTitle}>
+              Upgrade your plan to create more ads
+            </p>
+          </div>
+          
+          <PricingSection 
+            checkoutAction={checkoutAction}
+            currentPlanCode={currentPlanCode}
+            showEnterprise={false}
+            planPrices={planPrices}
+          />
+        </div>
+      )}
 
       {/* Enterprise Section */}
-      <div className={styles.enterpriseSection}>
+      {isLoadingData ? (
+        <div className={styles.enterpriseSection}>
+          <div className={styles.enterpriseCardContainer}>
+            <div className={styles.enterpriseCard}>
+              <div className={styles.enterpriseCardContent}>
+                <div className={styles.skeletonEnterpriseLeft}>
+                  <div className={styles.skeletonEnterpriseIcon} />
+                  <div className={styles.skeletonText} style={{ width: '150px', height: '24px', marginTop: '12px' }} />
+                  <div className={styles.skeletonText} style={{ width: '250px', height: '16px', marginTop: '8px' }} />
+                  <div className={styles.skeletonButton} style={{ width: '150px', height: '50px', marginTop: '20px' }} />
+                </div>
+                <div className={styles.enterpriseDivider} />
+                <div className={styles.skeletonEnterpriseRight}>
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className={styles.skeletonEnterpriseFeature}>
+                      <div className={styles.skeletonCheckCircle} />
+                      <div className={styles.skeletonText} style={{ width: `${180 + i * 20}px`, height: '16px' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className={styles.enterpriseSection}>
         <div className={styles.enterpriseCardContainer}>
           <div className={styles.enterpriseCard}>
             <div className={styles.enterpriseCardContent}>
@@ -589,6 +674,7 @@ function YourCreditsPageContent() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Save 50% Dialog */}
       {save50DialogData && (
