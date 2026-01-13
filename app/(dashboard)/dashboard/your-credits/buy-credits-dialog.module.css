@@ -153,7 +153,7 @@
   position: relative;
   flex-shrink: 0;
   font-size: 34.402px;
-  text-align: center;
+  text-align: start;
   width: 100%;
   margin: 0;
 }

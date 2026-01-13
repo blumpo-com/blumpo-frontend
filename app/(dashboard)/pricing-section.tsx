@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Check, Zap, Star, Users, Briefcase } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/hooks/use-animated-number";
 
 interface PricingCardProps {
@@ -43,13 +43,13 @@ function PricingCard({
   allowCheckoutWithoutPriceId = false,
 }: PricingCardProps) {
   const iconMap = {
-    bolt: Zap,
-    star: Star,
-    team: Users,
-    enterprise: Briefcase,
+    bolt: '/assets/icons/bolt.svg',
+    star: '/assets/icons/star.svg',
+    team: '/assets/icons/people.svg',
+    enterprise: '/assets/icons/briefcase.svg',
   };
 
-  const IconComponent = iconMap[icon];
+  const IconComponent = iconMap[icon as keyof typeof iconMap];
   const cardHeight = isPopular ? "h-160 min-[1301px]:h-165" : "h-160 min-[1301px]:h-155";
   const shadow = isPopular
     ? "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]"
@@ -83,8 +83,8 @@ function PricingCard({
       )}
 
       <div className="flex gap-[10px] items-center w-full">
-        <div className="bg-[#00bfa6] p-3 rounded-[8px] size-[38px] flex items-center justify-center">
-          <IconComponent className="w-6 h-6 text-white" />
+        <div className="bg-[#00bfa6] p-2 rounded-[8px] size-[38px] flex items-center justify-center">
+          <img src={IconComponent} alt={name} className="w-10 h-10 text-white" />
         </div>
         <h2 className="text-[22px] font-bold text-[#0a0a0a] leading-normal">
           {name}
@@ -114,9 +114,9 @@ function PricingCard({
       {isCurrentPlan ? (
         <button 
           disabled
-          className="bg-[#0a0a0a] h-[45px] flex items-center justify-center gap-2 rounded-[8px] w-full my-4 cursor-not-allowed opacity-70"
+          className="bg-[#0a0a0a] h-[45px] flex items-center justify-center gap-2 rounded-[8px] w-full my-4 cursor-not-allowed"
         >
-          <Check className="w-5 h-5 text-white" />
+          <img src="/assets/icons/Check_2.svg" alt="Current Plan" className="w-5 h-5" />
           <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
             Current plan
           </span>

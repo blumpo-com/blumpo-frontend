@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
-import { Zap, Briefcase, Check } from 'lucide-react';
+import {Check } from 'lucide-react';
 import useSWR from 'swr';
 import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
@@ -11,6 +11,20 @@ import { BuyCreditsDialog } from './buy-credits-dialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+// Icon mapping for plans
+const iconMap: Record<string, string> = {
+  STARTER: '/assets/icons/bolt.svg',
+  GROWTH: '/assets/icons/star.svg',
+  TEAM: '/assets/icons/people.svg',
+  ENTERPRISE: '/assets/icons/briefcase.svg',
+  FREE: '/assets/icons/Rocket.svg',
+};
+
+// Get icon path based on plan code
+const getPlanIcon = (planCode: string): string => {
+  return iconMap[planCode] || iconMap.FREE;
+};
 
 interface StripePrice {
   id: string;
@@ -328,7 +342,11 @@ export default function YourCreditsPage() {
           {/* Plan Icon and Name - Left */}
           <div className={styles.planIconName}>
             <div className={styles.planIcon}>
-              <Zap className="size-[44px] text-white shrink-0" />
+              <img 
+                src={getPlanIcon(currentPlanCode)} 
+                alt={`${currentPlan?.displayName || 'Free'} plan icon`}
+                className={styles.planIconImage}
+              />
             </div>
             <p className={styles.planName}>
               {currentPlan?.displayName || 'Free'}
@@ -391,7 +409,7 @@ export default function YourCreditsPage() {
         <div className={styles.actionButtons}>
           {/* Get Annual Plan Button */}
           {annualPriceId ? (
-            <form action={checkoutAction}>
+            <form action={checkoutAction} className={styles.annualPlanForm}>
               <input type="hidden" name="priceId" value={annualPriceId} />
               <button
                 type="submit"
@@ -401,6 +419,12 @@ export default function YourCreditsPage() {
                   Get annual plan
                 </span>
               </button>
+              {/* Save 50% Badge - positioned over the button */}
+              <div className={styles.saveBadge}>
+                <span className={styles.saveBadgeText}>
+                  Save 50%
+                </span>
+              </div>
             </form>
           ) : (
             <div className="w-[223px]" />
@@ -421,15 +445,6 @@ export default function YourCreditsPage() {
               Upgrade plan
             </span>
           </button>
-
-          {/* Save 50% Badge - positioned relative to action buttons container */}
-          {annualPriceId && (
-            <div className={styles.saveBadge}>
-              <span className={styles.saveBadgeText}>
-                Save 50%
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -458,7 +473,7 @@ export default function YourCreditsPage() {
               <div className={styles.enterpriseLeftSection}>
                 <div className={styles.enterpriseHeader}>
                   <div className={styles.enterpriseIcon}>
-                    <Briefcase className={styles.enterpriseIconWhite} />
+                    <img src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} />
                   </div>
                   <div className={styles.enterpriseInfo}>
                     <h2 className={styles.enterpriseTitle}>

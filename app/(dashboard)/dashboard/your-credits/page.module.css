@@ -83,7 +83,6 @@
 
 .renewalDate {
   color: #0a0a0a;
-  width: 160.833px;
 }
 
 /* Plan Details Section */
@@ -113,12 +112,18 @@
   align-items: center;
   justify-content: center;
   overflow: clip;
-  padding: 23px;
+  padding: 15px;
   border-radius: 14px;
   width: 70px;
   height: 70px;
   flex-shrink: 0;
   background-image: linear-gradient(95.82deg, rgba(0, 191, 166, 1) 5.13%, rgba(88, 199, 255, 1) 51.38%, rgba(13, 59, 102, 1) 97.62%);
+}
+
+.planIconImage {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
 }
 
 .planName {
@@ -275,6 +280,11 @@
   padding-top: 16px;
 }
 
+.annualPlanForm {
+  position: relative;
+  display: inline-block;
+}
+
 .annualPlanButton {
   background-color: #0a0a0a;
   display: flex;
@@ -347,8 +357,9 @@
   padding-top: 4.978px;
   padding-bottom: 4.978px;
   border-radius: 25px;
-  left: 283px;
-  top: 59px;
+  left: 50%;
+  bottom: -12.5px;
+  transform: translateX(-50%);
   width: 75px;
 }
 
@@ -402,7 +413,7 @@
 
 .enterpriseCardContainer {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1030px;
 }
 
 .enterpriseCard {
