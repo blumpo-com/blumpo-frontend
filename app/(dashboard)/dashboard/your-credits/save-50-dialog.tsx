@@ -7,6 +7,7 @@ interface Save50DialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  onContinue: () => void;
   monthlyPrice: number;
   annualPrice: number;
   annualPriceId: string;
@@ -16,6 +17,7 @@ export function Save50Dialog({
   open,
   onClose,
   onConfirm,
+  onContinue,
   monthlyPrice,
   annualPrice,
 }: Save50DialogProps) {
@@ -32,22 +34,14 @@ export function Save50Dialog({
             <span className={styles.oldPrice}>${monthlyPrice}</span>
           </div>
           <div className={styles.arrowContainer}>
-            <svg
+            <img
+              src="/assets/icons/arrow.svg"
+              alt="Arrow"
               className={styles.arrow}
-              width="41"
-              height="25"
-              viewBox="0 0 41 25"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10.5 12.5L30.5 12.5M30.5 12.5L25 7M30.5 12.5L25 18"
-                stroke="#0a0a0a"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+              width={41}
+              height={25}
+              draggable={false}
+            />
           </div>
           <span className={styles.newPrice}>${annualPrice}</span>
           {/* Save 50% Badge */}
@@ -71,9 +65,9 @@ export function Save50Dialog({
             </button>
             <button
               className={styles.cancelButton}
-              onClick={onClose}
+              onClick={onContinue}
             >
-              <span className={styles.cancelButtonText}>Cancel</span>
+              <span className={styles.cancelButtonText}>Continue</span>
             </button>
           </div>
 

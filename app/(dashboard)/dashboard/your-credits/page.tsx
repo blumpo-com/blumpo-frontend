@@ -9,6 +9,7 @@ import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import styles from './page.module.css';
+import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -63,6 +64,7 @@ interface UserWithTokenAccount {
     planCode: string;
     nextRefillAt: string | null;
     subscriptionStatus: string | null;
+    period: string | null;
   } | null;
 }
 
@@ -96,6 +98,7 @@ export default function YourCreditsPage() {
   const creditsUsed = Math.max(planTokens - userBalance, 0); // Can't be negative
   const creditsTotal = planTokens || 1;
   const progressPercentage = planTokens > 0 ? (userBalance / creditsTotal) * 100 : 0;
+  const period = user?.tokenAccount?.period || 'MONTHLY';
 
   // Format renewal date
   const renewalDate = nextRefillAt 
@@ -219,7 +222,7 @@ export default function YourCreditsPage() {
   };
 
   // Handle Save 50% dialog close
-  const handleSave50DialogClose = async () => {
+  const handleSave50DialogContinue = async () => {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.monthlyPriceId);
@@ -231,6 +234,13 @@ export default function YourCreditsPage() {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleSave50DialogClose = async () => {
+    if (save50DialogData) {
+      setSave50DialogOpen(false);
+      setSave50DialogData(null);
     }
   };
 
@@ -327,7 +337,7 @@ export default function YourCreditsPage() {
           </p>
           <div className={styles.billingInfo}>
             <p className={styles.billedMonthly}>
-              Billed monthly
+              Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
             </p>
             {renewalDate && (
               <p className={styles.renewalDate}>
@@ -376,7 +386,7 @@ export default function YourCreditsPage() {
 
           {/* Buy More Credits Button - Right */}
           <div className={styles.buyCreditsSection}>
-            {validatedTopupPlans.length > 0 ? (
+            {validatedTopupPlans.length > 0 && currentPlan?.planCode != 'FREE' ? (
               <button
                 type="button"
                 onClick={handleBuyMoreCreditsClick}
@@ -406,9 +416,9 @@ export default function YourCreditsPage() {
         </div>
 
         {/* Action Buttons - Bottom Section */}
-        <div className={styles.actionButtons}>
+        <div className={`${styles.actionButtons} ${!annualPriceId || period !== SubscriptionPeriod.MONTHLY ? styles.actionButtonsCentered : ''}`}>
           {/* Get Annual Plan Button */}
-          {annualPriceId ? (
+          {annualPriceId && period === SubscriptionPeriod.MONTHLY ? (
             <form action={checkoutAction} className={styles.annualPlanForm}>
               <input type="hidden" name="priceId" value={annualPriceId} />
               <button
@@ -426,9 +436,7 @@ export default function YourCreditsPage() {
                 </span>
               </div>
             </form>
-          ) : (
-            <div className="w-[223px]" />
-          )}
+          ) : null}
 
           {/* Upgrade Plan Button */}
           <button
@@ -533,6 +541,7 @@ export default function YourCreditsPage() {
           open={save50DialogOpen}
           onClose={handleSave50DialogClose}
           onConfirm={handleSave50DialogConfirm}
+          onContinue={handleSave50DialogContinue}
           monthlyPrice={save50DialogData.monthlyPrice}
           annualPrice={save50DialogData.annualPrice}
           annualPriceId={save50DialogData.annualPriceId}
