@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import {Check } from 'lucide-react';
@@ -69,7 +69,7 @@ interface UserWithTokenAccount {
   } | null;
 }
 
-export default function YourCreditsPage() {
+function YourCreditsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: user } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
@@ -623,6 +623,20 @@ export default function YourCreditsPage() {
         onPrimaryAction={() => setErrorDialog({ ...errorDialog, open: false })}
       />
     </div>
+  );
+}
+
+export default function YourCreditsPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+          <div className="spinner"></div>
+        </div>
+      </div>
+    }>
+      <YourCreditsPageContent />
+    </Suspense>
   );
 }
 
