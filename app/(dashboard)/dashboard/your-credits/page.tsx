@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
+import { ErrorDialog } from '@/components/error-dialog';
 import styles from './page.module.css';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
@@ -87,6 +88,17 @@ export default function YourCreditsPage() {
   const [buyCreditsDialogOpen, setBuyCreditsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasProcessedPlan, setHasProcessedPlan] = useState(false);
+  const [errorDialog, setErrorDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    errorCode: string | null;
+  }>({
+    open: false,
+    title: 'Error',
+    message: '',
+    errorCode: null,
+  });
 
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
@@ -271,6 +283,49 @@ export default function YourCreditsPage() {
       pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Check for error in URL params and display error dialog
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      // Map error codes to user-friendly messages
+      const errorMessages: Record<string, { title: string; message: string }> = {
+        checkout_failed: {
+          title: 'Checkout Failed',
+          message: 'There was an error processing your payment. Please try again or contact support if the problem persists.',
+        },
+        payment_failed: {
+          title: 'Payment Failed',
+          message: 'Your payment could not be processed. Please check your payment method and try again.',
+        },
+        subscription_failed: {
+          title: 'Subscription Failed',
+          message: 'There was an error setting up your subscription. Please try again or contact support.',
+        },
+        topup_failed: {
+          title: 'Top-up Failed',
+          message: 'There was an error processing your credit purchase. Please try again.',
+        },
+      };
+
+      const errorInfo = errorMessages[errorParam] || {
+        title: 'Error',
+        message: 'An unexpected error occurred. Please try again or contact support.',
+      };
+
+      setErrorDialog({
+        open: true,
+        title: errorInfo.title,
+        message: errorInfo.message,
+        errorCode: errorParam,
+      });
+
+      // Remove error param from URL
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('error');
+      router.replace(`/dashboard/your-credits${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`, { scroll: false });
+    }
+  }, [searchParams, router]);
 
   // Auto-trigger checkout when plan code is in URL params
   useEffect(() => {
@@ -555,6 +610,17 @@ export default function YourCreditsPage() {
         onBuyCredits={handleBuyCredits}
         onUpgradePlan={handleUpgradePlanFromDialog}
         topupPlans={validatedTopupPlans}
+      />
+
+      {/* Error Dialog */}
+      <ErrorDialog
+        open={errorDialog.open}
+        onClose={() => setErrorDialog({ ...errorDialog, open: false })}
+        title={errorDialog.title}
+        message={errorDialog.message}
+        errorCode={errorDialog.errorCode}
+        primaryActionLabel="OK"
+        onPrimaryAction={() => setErrorDialog({ ...errorDialog, open: false })}
       />
     </div>
   );

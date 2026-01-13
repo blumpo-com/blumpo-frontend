@@ -135,9 +135,14 @@ export async function GET(request: NextRequest) {
     }
 
     await setSession(userRecord[0]);
-    return NextResponse.redirect(new URL('/dashboard/dashboard/your-credits', request.url));
+    return NextResponse.redirect(new URL('/dashboard/your-credits', request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
-    return NextResponse.redirect(new URL('/dashboard/your-credits?error=checkout_failed', request.url));
+    const errorCode = error instanceof Error && error.message.includes('subscription') 
+      ? 'subscription_failed' 
+      : error instanceof Error && error.message.includes('payment')
+      ? 'payment_failed'
+      : 'checkout_failed';
+    return NextResponse.redirect(new URL(`/dashboard/your-credits?error=${errorCode}`, request.url));
   }
 }
