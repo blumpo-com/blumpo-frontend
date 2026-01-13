@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { redirect } from 'next/navigation';
-import { TokenAccount } from '@/lib/db/schema';
+import { SubscriptionPeriod, TokenAccount } from '@/lib/db/schema';
 import {
   getTokenAccountByStripeCustomerId,
   getUser,
@@ -151,6 +151,11 @@ export async function handleSubscriptionChange(
     const plan = subscription.items.data[0]?.price;
     const stripePriceId = plan?.id!;
     const stripeProductId = plan?.product as string;
+    const interval = plan?.recurring?.interval;
+    if (!interval) {
+      throw new Error('No interval found for this subscription.');
+    }
+    const period = interval === 'year' ? SubscriptionPeriod.YEARLY : SubscriptionPeriod.MONTHLY;
 
     // Find matching subscription plan by Stripe product ID
     const matchingPlan = await getSubscriptionPlanByStripeProductId(stripeProductId);
@@ -174,6 +179,7 @@ export async function handleSubscriptionChange(
       stripePriceId: stripePriceId,
       subscriptionStatus: status,
       planCode: planCode,
+      period: period,
       // If subscription is active/trialing, ensure any scheduled cancellation is cleared
       cancellationTime: null
     };
@@ -186,13 +192,23 @@ export async function handleSubscriptionChange(
       await updateUserSubscription(userId, subscriptionData);
     }
   } else if (status === 'canceled' || status === 'unpaid') {
+    // await updateUserSubscription(userId, {
+    //   stripeSubscriptionId: null,
+    //   stripeProductId: null,
+    //   stripePriceId: null,
+    //   subscriptionStatus: status,
+    //   planCode: 'FREE', // Reset to free plan
+    //   cancellationTime: null
+    // });
+    const cancellationTime = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : 
+    // Now plus 1 day
+    new Date( Date.now() + 1 * 24 * 60 * 60 * 1000);
     await updateUserSubscription(userId, {
+      cancellationTime,
+      subscriptionStatus: 'cancel_at_period_end',
       stripeSubscriptionId: null,
       stripeProductId: null,
       stripePriceId: null,
-      subscriptionStatus: status,
-      planCode: 'FREE', // Reset to free plan
-      cancellationTime: null
     });
   }
 }

@@ -337,6 +337,7 @@ export async function activateSubscription(
     subscriptionStatus?: string | null;
     planCode: string;
     cancellationTime?: Date | null;
+    period?: string | null;
   },
   planTokens: number
 ) {

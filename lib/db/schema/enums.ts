@@ -1,14 +1,13 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
 
 // PostgreSQL enums
-export const tokenPeriodEnum = pgEnum('token_period', ['DAY', 'WEEK', 'MONTH']);
+export const subscriptionPeriodEnum = pgEnum('subscription_period', ['MONTHLY', 'YEARLY']);
 export const jobStatusEnum = pgEnum('job_status', ['QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELED']);
 
 // TypeScript enums mirroring DB enums
-export enum TokenPeriod {
-  DAY = 'DAY',
-  WEEK = 'WEEK',
-  MONTH = 'MONTH',
+export enum SubscriptionPeriod {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
 }
 
 export enum JobStatus {
