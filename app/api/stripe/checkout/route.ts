@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     }
 
     await setSession(userRecord[0]);
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard/dashboard/your-credits', request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
     return NextResponse.redirect(new URL('/dashboard/your-credits?error=checkout_failed', request.url));
