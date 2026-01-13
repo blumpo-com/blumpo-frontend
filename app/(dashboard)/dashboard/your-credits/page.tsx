@@ -20,7 +20,7 @@ const iconMap: Record<string, string> = {
   GROWTH: '/assets/icons/star.svg',
   TEAM: '/assets/icons/people.svg',
   ENTERPRISE: '/assets/icons/briefcase.svg',
-  FREE: '/assets/icons/Rocket.svg',
+  FREE: '/assets/icons/leaf.svg',
 };
 
 // Get icon path based on plan code
