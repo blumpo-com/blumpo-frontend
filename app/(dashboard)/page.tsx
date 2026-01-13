@@ -53,8 +53,8 @@ export default function HomePage() {
     // Check if user is authenticated by trying to fetch user data
     try {
       const userRes = await fetch('/api/user');
-      if (userRes.ok) {
-        // User is authenticated - navigate to your-credits page with plan code and interval
+      const user = await userRes.json();
+      if (userRes.ok && user) { // User is authenticated - navigate to your-credits page with plan code and interval
         window.location.href = `/dashboard/your-credits?${params.toString()}`;
       } else {
         // User not authenticated - redirect to sign-in with checkout params

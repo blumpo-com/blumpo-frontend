@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname.startsWith(protectedRoutes2);
 
   if (isProtectedRoute && !sessionCookie) {
+    console.log('User is not authenticated - redirecting to sign-in with dashboard');
     return NextResponse.redirect(new URL('/sign-in?redirect=dashboard', request.url));
   }
 
