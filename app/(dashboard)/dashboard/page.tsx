@@ -213,7 +213,7 @@ export default function DashboardHomePage() {
           gradientClass={styles.cardImageGradient1}
           frontImage={imgImage2}
           backImage={imgImage1}
-          onButtonClick={() => console.log('Quick Ads clicked')}
+          onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
         />
         <FeatureCard
           title="Customized Ads Generation"
