@@ -26,6 +26,7 @@ export const adImage = pgTable('ad_image', {
   errorMessage: text('error_message'),
   isDeleted: boolean('is_deleted').notNull().default(false),
   deleteAt: timestamp('delete_at', { withTimezone: true }),
+  readyToDisplay: boolean('ready_to_display').notNull().default(false), // Flag for quick ads - determines if ad is ready to display
 }, (table) => ({
   userTimeIdx: index('idx_ad_image_user_time').on(table.userId, table.createdAt.desc()),
   jobIdx: index('idx_ad_image_job').on(table.jobId),
