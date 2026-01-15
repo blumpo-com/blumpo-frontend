@@ -27,13 +27,13 @@ export function Footer() {
           Ready to try Blumpo in action?
         </h2>
         <div className="w-full max-w-[712px] relative hidden lg:block">
-            <Image
-                src="/images/temp/Blumpo01.png"
-                alt="Footer CTA"
+              <Image
+                src="/animations/pointing-blumpo.webp"
+                alt="Pointing Blumpo"
                 width={180}
                 height={140}
                 className="absolute -top-32 right-10 z-10"
-            />
+              />
           <div className="hidden lg:block">
             <Suspense fallback={<div>Loading...</div>}>
               <UrlInputSection />
