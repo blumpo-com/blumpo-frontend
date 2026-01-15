@@ -440,11 +440,13 @@ function YourCreditsPageContent() {
               <p className={styles.billedMonthly}>
                 Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
               </p>
-              {renewalDate && (
+              {currentPlanCode === 'FREE' ? (
+                <p className={styles.renewalDate}>Free trial</p>
+              ) : renewalDate ? (
                 <p className={styles.renewalDate}>
                   Renews {renewalDate}
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
 
