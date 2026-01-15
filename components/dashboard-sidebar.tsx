@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { User, TokenAccount, Brand } from '@/lib/db/schema';
 import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './dashboard-sidebar.module.css';
+import Wand from '@/assets/icons/Wand.svg';
 
 type UserWithTokenAccount = User & {
   tokenAccount: TokenAccount | null;
@@ -137,11 +138,7 @@ export function DashboardSidebar() {
           href="/dashboard"
           className={`${styles.createNewButton} ${isCreateNewActive ? styles.createNewButtonActive : ''}`}
         >
-          <img 
-            src="/assets/icons/Wand.svg" 
-            alt="Create new" 
-            className={styles.createNewButtonIcon}
-          />
+          <Wand className={`${styles.createNewButtonIcon} ${isCreateNewActive ? styles.createNewButtonIconActive : ''}`} />
           <span className={isCreateNewActive ? styles.createNewButtonTextActive : styles.createNewButtonText}>
             Create new
           </span>

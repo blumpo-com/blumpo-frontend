@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const brandId = searchParams.get('brandId');
-    const archetypeCode = searchParams.get('archetype');
+    const archetypeCodes = searchParams.getAll('archetype');
     const format = searchParams.get('format');
     const includeUnsaved = searchParams.get('unsaved') === 'true';
     const limit = parseInt(searchParams.get('limit') || '100');
@@ -44,10 +44,10 @@ export async function GET(req: Request) {
         job: item.job,
       }));
 
-    // Filter by archetype
-    if (archetypeCode && archetypeCode !== 'all') {
+    // Filter by archetype(s)
+    if (archetypeCodes.length > 0) {
       validImages = validImages.filter(
-        (img) => img.job?.archetypeCode === archetypeCode
+        (img) => img.job?.archetypeCode && archetypeCodes.includes(img.job.archetypeCode)
       );
     }
 

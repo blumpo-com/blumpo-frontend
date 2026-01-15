@@ -1,35 +1,51 @@
-import type { NextConfig } from 'next';
-import createMDX from '@next/mdx';
-import remarkFrontmatter from 'remark-frontmatter';
-import remarkGfm from 'remark-gfm';
+import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
 
 const nextConfig: NextConfig = {
-  pageExtensions: ['ts', 'tsx', 'md', 'mdx'],
+  pageExtensions: ["ts", "tsx", "md", "mdx"],
+
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**.public.blob.vercel-storage.com',
+        protocol: "https",
+        hostname: "**.public.blob.vercel-storage.com",
       },
       {
-        protocol: 'https',
-        hostname: '*.public.blob.vercel-storage.com',
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },
+
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/,
+      issuer: /\.[jt]sx?$/,
+      use: [
+        {
+          loader: '@svgr/webpack',
+          options: {
+            svgo: false,
+          },
+        },
+      ],
+    });
+
+    return config;
+  },
 };
 
-// Configure MDX with plugins
-// remarkFrontmatter: Strips YAML frontmatter from MDX before rendering
-// remarkGfm: Enables GitHub Flavored Markdown (tables, task lists, strikethrough, etc.)
+// MDX config
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
-    remarkPlugins: [remarkFrontmatter, remarkGfm]
-  }
+    remarkPlugins: [remarkFrontmatter, remarkGfm],
+  },
 });
 
-// Apply MDX config
+// Apply MDX + Next config
 const config = withMDX(nextConfig);
 
 export default config;

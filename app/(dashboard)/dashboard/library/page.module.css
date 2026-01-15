@@ -1,5 +1,5 @@
 .container {
-  padding: 32px 40px;
+  padding: 60px 50px;
   max-width: 100%;
   height: 100vh;
   overflow-y: auto;
@@ -15,7 +15,6 @@
   font-weight: 700;
   color: #00BFA6;
   margin: 0;
-  font-family: 'Roboto', sans-serif;
   line-height: 1.2;
 }
 
@@ -66,7 +65,6 @@
   font-size: 14px;
   font-weight: 500;
   color: #374151;
-  font-family: 'Roboto', sans-serif;
 }
 
 .filterInput {
@@ -79,9 +77,9 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-family: 'Roboto', sans-serif;
   color: #111827;
   min-width: 200px;
+  min-height: 44px;
   transition: border-color 0.2s;
 }
 
@@ -89,9 +87,12 @@
   border-color: #9CA3AF;
 }
 
-.filterIcon {
-  color: #6B7280;
+.tabIcon {
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(45%) sepia(8%) saturate(469%) hue-rotate(182deg) brightness(93%) contrast(88%);
 }
 
 .filterValue {
@@ -100,6 +101,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .chevronIcon {
@@ -122,11 +124,50 @@
   cursor: pointer;
   border-radius: 4px;
   font-size: 14px;
-  font-family: 'Roboto', sans-serif;
 }
 
 .dropdownItem:hover {
   background: #F3F4F6;
+}
+
+.dropdownItemText {
+  flex: 1;
+}
+
+/* Custom checkbox style - solid square with white checkmark */
+.dropdownContent :global([data-slot="dropdown-menu-checkbox-item"]) {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px !important;
+}
+
+.dropdownContent :global([data-slot="dropdown-menu-checkbox-item"] > span:first-child) {
+  position: static !important;
+  left: auto !important;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 2px solid #6B7280;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.dropdownContent :global([data-slot="dropdown-menu-checkbox-item"][data-state="checked"] > span:first-child) {
+  background: #111827;
+  border-color: #111827;
+}
+
+.dropdownContent :global([data-slot="dropdown-menu-checkbox-item"][data-state="checked"] > span:first-child svg) {
+  color: white !important;
+  width: 12px;
+  height: 12px;
 }
 
 .unsavedButton {
@@ -140,10 +181,10 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Roboto', sans-serif;
   color: #374151;
   transition: all 0.2s;
-  margin-left: auto;
+  min-width: 200px;
+  min-height: 44px;
 }
 
 .unsavedButton:hover {
@@ -160,10 +201,6 @@
 .unsavedButtonActive:hover {
   background: #00A893;
   border-color: #00A893;
-}
-
-.unsavedIcon {
-  flex-shrink: 0;
 }
 
 /* Grid */
@@ -210,7 +247,6 @@
   font-size: 14px;
   font-weight: 500;
   color: #111827;
-  font-family: 'Roboto', sans-serif;
   margin: 0;
 }
 
@@ -262,7 +298,6 @@
   font-size: 14px;
   font-weight: 500;
   color: white;
-  font-family: 'Roboto', sans-serif;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -305,7 +340,6 @@
 .emptyStateText {
   font-size: 16px;
   color: #6b7280;
-  font-family: 'Roboto', sans-serif;
 }
 
 /* Responsive design */
@@ -329,8 +363,8 @@
   }
 
   .unsavedButton {
-    margin-left: 0;
-    justify-content: center;
+    width: 100%;
+    min-width: auto;
   }
 
   .grid {

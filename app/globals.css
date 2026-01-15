@@ -207,6 +207,11 @@
     @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-5xl;
     line-height: 1.3;
   }
+
+  .header-gradient-dashboard {
+    @apply text-2xl w-fit text-left font-bold bg-gradient-to-r from-brand-secondary via-brand-tertiary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-4xl;
+    line-height: 1.3;
+  }
   .header-black {
     @apply text-4xl text-center font-bold text-black tracking-tight md:text-5xl;
     line-height: 1.3;

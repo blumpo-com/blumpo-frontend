@@ -13,10 +13,6 @@
   overflow-y: auto;
 }
 
-.sidebarItemLabel {
-  text-align: left;
-}
-
 .logoContainer {
   height: 64.033px;
   width: 160px;
@@ -133,9 +129,16 @@
   width: 22px;
   position: relative;
   flex-shrink: 0;
-  object-fit: contain;
 }
 
+.createNewButtonIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.createNewButtonIconActive path {
+  fill: #F9FAFB !important;
+}
 .createNewButtonText {
   position: relative;
   line-height: 20px;

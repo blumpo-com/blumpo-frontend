@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -12,14 +12,10 @@ import {
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
 import { 
-  MessageSquare, 
-  Ruler, 
   ChevronDown, 
-  Trash2, 
   Plus, 
   FileText, 
   Download,
-  X
 } from 'lucide-react';
 import styles from './page.module.css';
 
@@ -57,7 +53,6 @@ const archetypes = [
   { code: 'competitor_comparison', name: 'Competitor Comparison' },
   { code: 'promotion_offer', name: 'Promotion (Offer)' },
   { code: 'value_proposition', name: 'Value Proposition' },
-  { code: 'random', name: 'Random' },
 ];
 
 const formats = [
@@ -66,13 +61,135 @@ const formats = [
   { code: '16:9', name: '16:9' },
 ];
 
+interface FilterTabProps {
+  label: string;
+  iconSrc: string;
+  iconAlt: string;
+  value: string;
+  options: Array<{ code: string; name: string }>;
+  onSelect: (code: string) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function FilterTab({ label, iconSrc, iconAlt, value, options, onSelect, isOpen, onOpenChange }: FilterTabProps) {
+  const selectedOption = options.find(opt => opt.code === value);
+  const displayValue = selectedOption?.name || 'All';
+
+  return (
+    <div className={styles.filterGroup}>
+      <label className={styles.filterLabel}>{label}</label>
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger className={styles.filterInput}>
+          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <span className={styles.filterValue}>{displayValue}</span>
+          <ChevronDown className={styles.chevronIcon} size={16} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className={styles.dropdownContent}>
+          {options.map((option) => (
+            <DropdownMenuItem
+              key={option.code}
+              onClick={() => {
+                onSelect(option.code);
+                onOpenChange(false);
+              }}
+              className={styles.dropdownItem}
+            >
+              {option.name}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+interface ArchetypeFilterTabProps {
+  label: string;
+  iconSrc: string;
+  iconAlt: string;
+  selectedValues: string[];
+  options: Array<{ code: string; name: string }>;
+  onToggle: (code: string) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function ArchetypeFilterTab({ label, iconSrc, iconAlt, selectedValues, options, onToggle, isOpen, onOpenChange }: ArchetypeFilterTabProps) {
+  const isAllSelected = selectedValues.includes('all');
+  const otherOptions = options.filter(opt => opt.code !== 'all');
+
+  const getDisplayValue = () => {
+    if (isAllSelected || selectedValues.length === 0) {
+      return 'All';
+    }
+    const selectedNames = selectedValues
+      .map(code => options.find(opt => opt.code === code)?.name)
+      .filter(Boolean)
+      .join(', ');
+    return selectedNames || 'All';
+  };
+
+  const handleToggle = (code: string) => {
+    onToggle(code);
+  };
+
+  return (
+    <div className={styles.filterGroup}>
+      <label className={styles.filterLabel}>{label}</label>
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger className={styles.filterInput}>
+          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <span className={styles.filterValue}>{getDisplayValue()}</span>
+          <ChevronDown className={styles.chevronIcon} size={16} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className={styles.dropdownContent}>
+          {options.map((option) => {
+            // Jeśli "all" jest wybrane, pokazuj tylko "all" jako zaznaczone
+            const isChecked = isAllSelected 
+              ? option.code === 'all'
+              : selectedValues.includes(option.code);
+            return (
+              <DropdownMenuCheckboxItem
+                key={option.code}
+                checked={isChecked}
+                onCheckedChange={() => handleToggle(option.code)}
+                className={styles.dropdownItem}
+              >
+                <span className={styles.dropdownItemText}>{option.name}</span>
+              </DropdownMenuCheckboxItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+interface UnsavedButtonTabProps {
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
+  return (
+    <button
+      className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ''}`}
+      onClick={onClick}
+    >
+      <img src="/assets/icons/Trash.svg" alt="Trash" className={styles.tabIcon} />
+      Unsaved ads
+    </button>
+  ); 
+}
+
 export default function ContentLibraryPage() {
   const router = useRouter();
   const { currentBrand, isInitialized } = useBrand();
   const [images, setImages] = useState<AdImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedArchetype, setSelectedArchetype] = useState<string>('all');
+  const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [selectedFormat, setSelectedFormat] = useState<string>('all');
   const [showUnsaved, setShowUnsaved] = useState(false);
   const [isArchetypeOpen, setIsArchetypeOpen] = useState(false);
@@ -91,9 +208,13 @@ export default function ContentLibraryPage() {
         if (brandId) {
           params.append('brandId', brandId);
         }
-        if (selectedArchetype !== 'all') {
-          params.append('archetype', selectedArchetype);
+        // Jeśli "all" nie jest wybrane i są wybrane jakieś opcje, dodaj je do parametrów
+        if (!selectedArchetypes.includes('all') && selectedArchetypes.length > 0) {
+          selectedArchetypes.forEach(archetype => {
+            params.append('archetype', archetype);
+          });
         }
+        // Jeśli "all" jest wybrane lub nic nie jest wybrane, nie dodawaj parametru archetype (pokazuj wszystkie)
         if (selectedFormat !== 'all') {
           params.append('format', selectedFormat);
         }
@@ -118,7 +239,7 @@ export default function ContentLibraryPage() {
     }
 
     fetchImages();
-  }, [currentBrand?.id, isInitialized, selectedArchetype, selectedFormat, showUnsaved]);
+  }, [currentBrand?.id, isInitialized, selectedArchetypes, selectedFormat, showUnsaved]);
 
   const handleDownload = async (image: AdImage) => {
     try {
@@ -141,155 +262,132 @@ export default function ContentLibraryPage() {
     router.push('/dashboard/customized-ads');
   };
 
-  const selectedArchetypeName = archetypes.find(a => a.code === selectedArchetype)?.name || 'All';
-  const selectedFormatName = formats.find(f => f.code === selectedFormat)?.name || 'All';
-
-  if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Content library</h1>
-        </div>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Content library</h1>
-          <p className={styles.errorMessage}>{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const handleArchetypeToggle = (code: string) => {
+    setSelectedArchetypes(prev => {
+      if (code === 'all') {
+        // Jeśli wybieramy "all", zaznacz tylko "all" i odznacz resztę
+        if (prev.includes('all')) {
+          return []; // Odznacz wszystko
+        } else {
+          return ['all']; // Zaznacz tylko "all"
+        }
+      } else {
+        // Jeśli wybieramy inną opcję, odznacz "all" i dodaj/usuń tę opcję
+        const withoutAll = prev.filter(c => c !== 'all');
+        if (withoutAll.includes(code)) {
+          return withoutAll.filter(c => c !== code);
+        } else {
+          return [...withoutAll, code];
+        }
+      }
+    });
+  };
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Content library</h1>
+        <h1 className={`header-gradient-dashboard`}>Content library</h1>
+        {error && <p className={styles.errorMessage}>{error}</p>}
       </div>
 
       {/* Filters */}
       <div className={styles.filtersBar}>
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Archetype</label>
-          <DropdownMenu open={isArchetypeOpen} onOpenChange={setIsArchetypeOpen}>
-            <DropdownMenuTrigger className={styles.filterInput}>
-              <MessageSquare className={styles.filterIcon} size={20} />
-              <span className={styles.filterValue}>{selectedArchetypeName}</span>
-              <ChevronDown className={styles.chevronIcon} size={16} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className={styles.dropdownContent}>
-              {archetypes.map((archetype) => (
-                <DropdownMenuItem
-                  key={archetype.code}
-                  onClick={() => {
-                    setSelectedArchetype(archetype.code);
-                    setIsArchetypeOpen(false);
-                  }}
-                  className={styles.dropdownItem}
-                >
-                  {archetype.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <ArchetypeFilterTab
+          label="Archetype"
+          iconSrc="/assets/icons/Megaphone.svg"
+          iconAlt="Archetype"
+          selectedValues={selectedArchetypes}
+          options={archetypes}
+          onToggle={handleArchetypeToggle}
+          isOpen={isArchetypeOpen}
+          onOpenChange={setIsArchetypeOpen}
+        />
 
-        <div className={styles.filterGroup}>
-          <label className={styles.filterLabel}>Format</label>
-          <DropdownMenu open={isFormatOpen} onOpenChange={setIsFormatOpen}>
-            <DropdownMenuTrigger className={styles.filterInput}>
-              <Ruler className={styles.filterIcon} size={20} />
-              <span className={styles.filterValue}>{selectedFormatName}</span>
-              <ChevronDown className={styles.chevronIcon} size={16} />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className={styles.dropdownContent}>
-              {formats.map((format) => (
-                <DropdownMenuItem
-                  key={format.code}
-                  onClick={() => {
-                    setSelectedFormat(format.code);
-                    setIsFormatOpen(false);
-                  }}
-                  className={styles.dropdownItem}
-                >
-                  {format.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <FilterTab
+          label="Format"
+          iconSrc="/assets/icons/Ruler.svg"
+          iconAlt="Format"
+          value={selectedFormat}
+          options={formats}
+          onSelect={setSelectedFormat}
+          isOpen={isFormatOpen}
+          onOpenChange={setIsFormatOpen}
+        />
 
-        <button
-          className={`${styles.unsavedButton} ${showUnsaved ? styles.unsavedButtonActive : ''}`}
+        <UnsavedButtonTab
+          isActive={showUnsaved}
           onClick={() => setShowUnsaved(!showUnsaved)}
-        >
-          <Trash2 className={styles.unsavedIcon} size={16} />
-          Unsaved ads
-        </button>
+        />
       </div>
 
-      {/* Grid */}
-      <div className={styles.grid}>
-        {/* Create new card */}
-        <div className={styles.createCard} onClick={handleCreateNew}>
-          <div className={styles.createCardIcon}>
-            <Plus size={32} />
-          </div>
-          <p className={styles.createCardText}>Tap to create new</p>
+      {/* Content */}
+      {isLoading ? (
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
         </div>
-
-        {/* Image cards */}
-        {images.map((image) => (
-          <div key={image.id} className={styles.imageCard}>
-            <div className={styles.imageWrapper}>
-              <Image
-                src={image.publicUrl}
-                alt={image.title || 'Ad image'}
-                width={image.width}
-                height={image.height}
-                className={styles.image}
-                unoptimized
-              />
-              {/* Brand logo overlay - positioned at bottom if brand exists */}
-              {image.brand?.name && (
-                <div className={styles.brandOverlay}>
-                  <span className={styles.brandName}>{image.brand.name}</span>
-                </div>
-              )}
-            </div>
-            {/* Action bar with view and download buttons */}
-            <div className={styles.actionBar}>
-              <button className={styles.actionButton} title="View details">
-                <FileText size={16} />
-              </button>
-              <button 
-                className={styles.actionButton} 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDownload(image);
-                }}
-                title="Download"
-              >
-                <Download size={16} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {images.length === 0 && !isLoading && (
+      ) : error ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyStateText}>
-            No ads found. {showUnsaved ? 'No unsaved ads.' : 'Create your first ad to see it here!'}
-          </p>
+          <p className={styles.emptyStateText}>{error}</p>
         </div>
+      ) : (
+        <>
+          {/* Grid */}
+          <div className={styles.grid}>
+            {/* Create new card */}
+            <div className={styles.createCard} onClick={handleCreateNew}>
+              <div className={styles.createCardIcon}>
+                <Plus size={32} />
+              </div>
+              <p className={styles.createCardText}>Tap to create new</p>
+            </div>
+
+            {/* Image cards */}
+            {images.map((image) => (
+              <div key={image.id} className={styles.imageCard}>
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={image.publicUrl}
+                    alt={image.title || 'Ad image'}
+                    width={image.width}
+                    height={image.height}
+                    className={styles.image}
+                    unoptimized
+                  />
+                  {/* Brand logo overlay - positioned at bottom if brand exists */}
+                  {image.brand?.name && (
+                    <div className={styles.brandOverlay}>
+                      <span className={styles.brandName}>{image.brand.name}</span>
+                    </div>
+                  )}
+                </div>
+                {/* Action bar with view and download buttons */}
+                <div className={styles.actionBar}>
+                  <button className={styles.actionButton} title="View details">
+                    <FileText size={16} />
+                  </button>
+                  <button 
+                    className={styles.actionButton} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(image);
+                    }}
+                    title="Download"
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {images.length === 0 && (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyStateText}>
+                No ads found. {showUnsaved ? 'No unsaved ads.' : 'Create your first ad to see it here!'}
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
