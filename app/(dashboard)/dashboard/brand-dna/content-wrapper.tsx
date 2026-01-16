@@ -10,6 +10,7 @@ import { Brand } from '@/lib/db/schema';
 import styles from './content-wrapper.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const imgCharacter = "/assets/animations/sitting-blumpo.webp";
 
 interface BrandDropdownItemProps {
   iconSrc: string;
@@ -132,7 +133,7 @@ export default function ContentWrapper({
         >
           <div className={styles.bunnyWrapper}>
             <Image
-              src="/images/temp/blumpo_sitting.png"
+              src={imgCharacter}
               alt="Blumpo"
               width={120}
               height={110}
