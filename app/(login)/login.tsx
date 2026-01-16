@@ -80,7 +80,8 @@ const LeftPanel = memo(function LeftPanel() {
 export function Login() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect');
-  const priceId = searchParams.get('priceId');
+  const plan = searchParams.get('plan');
+  const interval = searchParams.get('interval');
   const websiteUrl = searchParams.get('website_url');
   const [awaitingOtp, setAwaitingOtp] = useState(false);
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
@@ -204,8 +205,8 @@ export function Login() {
                 <form id="otp-form" className="w-full flex flex-col gap-[36px] items-center" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
                   <input type="hidden" name="website_url" value={websiteUrl || ''} />
-                  <input type="hidden" name="priceId" value={priceId || ''} />
-                  <input type="hidden" name="website_url" value={websiteUrl || ''} />
+                  <input type="hidden" name="plan" value={plan || ''} />
+                  <input type="hidden" name="interval" value={interval || ''} />
                   <input type="hidden" name="email" value={state.email} />
                   <input type="hidden" name="code" value={otpCode.join('')} />
 
@@ -277,17 +278,19 @@ export function Login() {
                 <form className="space-y-6" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
                   <input type="hidden" name="website_url" value={websiteUrl || ''} />
-                  <input type="hidden" name="priceId" value={priceId || ''} />
+                  <input type="hidden" name="plan" value={plan || ''} />
+                  <input type="hidden" name="interval" value={interval || ''} />
 
                   {/* Google Sign-in Button */}
                   <button
                     type="button"
                     onClick={() => {
                       // Store redirect params in a cookie to preserve through OAuth flow
-                      if (redirect || priceId || websiteUrl) {
+                      if (redirect || plan || interval || websiteUrl) {
                       const params = new URLSearchParams();
                       if (redirect) params.set('redirect', redirect);
-                      if (priceId) params.set('priceId', priceId);
+                      if (plan) params.set('plan', plan);
+                      if (interval) params.set('interval', interval);
                         if (websiteUrl) params.set('website_url', websiteUrl);
                         
                         // Set cookie that will be read by the redirect callback

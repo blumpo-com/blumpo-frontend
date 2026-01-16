@@ -6,13 +6,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
 import { updateUserSubscription, activateSubscription, addTopupTokens, getTopupPlans, getSubscriptionPlanByStripeProductId, getUserWithTokenAccount } from '@/lib/db/queries';
 import Stripe from 'stripe';
+import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('session_id');
 
   if (!sessionId) {
-    return NextResponse.redirect(new URL('/pricing', request.url));
+    return NextResponse.redirect(new URL('/dashboard/your-credits', request.url));
   }
 
   try {
@@ -69,6 +70,13 @@ export async function GET(request: NextRequest) {
         throw new Error('No product ID found for this subscription.');
       }
 
+      // Get the interval from the price
+      const interval = plan.recurring?.interval;
+      if (!interval) {
+        throw new Error('No interval found for this subscription.');
+      }
+      const period = interval === 'year' ? SubscriptionPeriod.YEARLY : SubscriptionPeriod.MONTHLY;
+
       // Find matching subscription plan by Stripe product ID
       const matchingPlan = await getSubscriptionPlanByStripeProductId(productId);
       const planCode = matchingPlan?.planCode || 'FREE';
@@ -97,6 +105,7 @@ export async function GET(request: NextRequest) {
         stripePriceId: priceId,
         subscriptionStatus: subscription.status,
         planCode: planCode,
+        period: period,
       }, matchingPlan ? matchingPlan.monthlyTokens : 0);
 
     } 
@@ -126,9 +135,14 @@ export async function GET(request: NextRequest) {
     }
 
     await setSession(userRecord[0]);
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/dashboard/your-credits', request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
-    return NextResponse.redirect(new URL('/pricing?error=checkout_failed', request.url));
+    const errorCode = error instanceof Error && error.message.includes('subscription') 
+      ? 'subscription_failed' 
+      : error instanceof Error && error.message.includes('payment')
+      ? 'payment_failed'
+      : 'checkout_failed';
+    return NextResponse.redirect(new URL(`/dashboard/your-credits?error=${errorCode}`, request.url));
   }
 }

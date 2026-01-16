@@ -212,7 +212,18 @@ export function DashboardSidebar() {
         </div>
         
         {/* Coins Button */}
-        <div className={styles.coinsButton}>
+        <div
+          className={styles.coinsButton}
+          onClick={() => window.location.assign('/dashboard/your-credits')}
+          role="button"
+          tabIndex={0}
+          style={{ cursor: 'pointer' }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              window.location.assign('/dashboard/your-credits');
+            }
+          }}
+        >
           <img 
             src="/assets/icons/Money.svg" 
             alt="Coins" 
@@ -228,14 +239,9 @@ export function DashboardSidebar() {
               </>
             )}
           </span>
-          <button
+          <span
             className={styles.addButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              // TODO: Handle add coins
-            }}
-            type="button"
+            style={{ pointerEvents: 'none' }}
             aria-label="Add coins"
           >
             <img 
@@ -243,7 +249,7 @@ export function DashboardSidebar() {
               alt="Add coins" 
               className={styles.addButtonIcon}
             />
-          </button>
+          </span>
         </div>
 
         <SidebarItem

@@ -205,16 +205,3 @@ export async function POST(request: NextRequest) {
     });
   }
 }
-
-// Helper function to compute next refill date based on period
-function getNextRefillDate(period: string, currentDate: Date): Date {
-  switch (period) {
-    case 'DAY':
-      return new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
-    case 'WEEK':
-      return new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-    case 'MONTH':
-    default:
-      return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate());
-  }
-}
