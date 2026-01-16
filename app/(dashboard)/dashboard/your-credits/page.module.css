@@ -4,13 +4,13 @@
   flex-direction: column;
   gap: 82px;
   height: 100%;
-  align-items: flex-end;
+  align-items: center;
   padding-bottom: 34px;
   padding-top: 50px;
   padding-left: 52px;
   padding-right: 52px;
   overflow-y: auto;
-  /* position: relative; */
+  position: relative;
 }
 
 /* Loading Overlay */
@@ -43,6 +43,7 @@
   width: 100%;
   height: 350px;
   max-width: 1200px;
+  align-self: center;
 }
 
 /* Header */
@@ -70,7 +71,7 @@
   font-weight: 500;
   height: 46px;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: center;
   line-height: 24.824px;
   font-size: 16.667px;
   text-align: right;
@@ -388,6 +389,7 @@
   align-items: center;
   width: 100%;
   max-width: 1200px;
+  align-self: center;
 }
 
 .upgradeTitleContainer {
@@ -419,12 +421,14 @@
   align-items: center;
   width: 100%;
   justify-content: center;
+  align-self: center;
 }
-
 
 .enterpriseCardContainer {
   width: 100%;
-  max-width: 1030px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .enterpriseCard {

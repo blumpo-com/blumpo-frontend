@@ -178,14 +178,14 @@ function PricingCard({
 
   if (isPopular) {
     return (
-      <div className={cn("rounded-[20px] p-[2px] gradient-primary pricing-card-hover", "w-full", cardHeight)}>
+      <div className={cn("rounded-[20px] p-[2px] gradient-primary pricing-card-hover", "flex-1 max-w-[36rem]", cardHeight)}>
         {cardContent}
       </div>
     );
   }
 
   return (
-    <div className={cn("border-2 border-solid border-[#d8d8db] rounded-[20px] pricing-card-hover pricing-card-hover-border", "w-full", cardHeight)}>
+    <div className={cn("border-2 border-solid border-[#d8d8db] rounded-[20px] pricing-card-hover pricing-card-hover-border", "flex-1 max-w-[36rem]", cardHeight)}>
       {cardContent}
     </div>
   );
@@ -291,7 +291,7 @@ export function PricingSection({
     : null;
 
   return (
-    <div className="mt-12 max-w-xl min-[1301px]:max-w-full mx-auto ">
+    <div className="mt-12 w-full max-w-[1200px] mx-auto">
       <div className="flex items-center justify-center gap-[30px] mb-8">
         <button
           onClick={() => setIsAnnual(!isAnnual)}
@@ -356,7 +356,7 @@ export function PricingSection({
         />
       </div>
 
-      <div className="hidden min-[1301px]:flex justify-between items-end px-0 gap-5">
+      <div className="hidden min-[1301px]:flex justify-between items-end px-0 w-full gap-5">
         {displayPlans.map((plan) => {
           const planPriceMap = plan.planCode ? planPrices[plan.planCode] : null;
           const isCurrent = currentPlanCode ? plan.planCode === currentPlanCode : false;

@@ -437,16 +437,21 @@ function YourCreditsPageContent() {
               Current plan
             </p>
             <div className={styles.billingInfo}>
-              <p className={styles.billedMonthly}>
-                Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
-              </p>
               {currentPlanCode === 'FREE' ? (
-                <p className={styles.renewalDate}>Free trial</p>
-              ) : renewalDate ? (
-                <p className={styles.renewalDate}>
-                  Renews {renewalDate}
-                </p>
-              ) : null}
+
+                  <p className={styles.renewalDate}>Free trial</p>
+              ) : (
+                <>
+                  <p className={styles.billedMonthly}>
+                    Billed {period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly'}
+                  </p>
+                  {renewalDate ? (
+                    <p className={styles.renewalDate}>
+                      Renews {renewalDate}
+                    </p>
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
 
