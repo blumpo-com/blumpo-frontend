@@ -392,11 +392,12 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | product_photo_mode    | text                | Photo mode: 'brand' / 'custom' / 'mixed' (default: 'brand') |
 | archetype_code        | text FK → ad_archetype(code) | Selected archetype (nullable) |
 | archetype_mode        | text                | 'single' / 'random' (default: 'single') |
-| formats               | text[]              | Array of output formats (e.g., ['square', 'story']) |
+| formats               | text[]              | Array of output formats (e.g., ['1:1', '16:9']) |
 | selected_insights     | text[]              | Array of selected insights (pain points, benefits, etc.) |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
 | promotion_value_insight | jsonb            | Promotion value configuration (type, time, etc.). Structure: `{ promotionType: { discount?, newPrice?, freeTrial?, promoCode? }, promotionTime: { unlimited?, occasion?, onlyUntil? } }` |
 | archetype_inputs      | jsonb               | Archetype-specific inputs             |
+| auto_generated        | boolean             | True if automatically generated for quick ads (not manually created) (default: false) |
 | workflow_ctx          | jsonb               | Workflow execution context for external workflows. When not empty, must contain: `execution_id`, `workflow_code`, `callback_url` (default: '{}') |
 
 **Indexes:**
@@ -429,9 +430,10 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "product_photo_mode": "brand",
   "archetype_code": "problem_solution",
   "archetype_mode": "single",
-  "formats": ["square", "story"],
+  "formats": ["1:1", "16:9"],
   "selected_insights": ["High costs", "Complex setup"],
   "insight_source": "auto",
+  "auto_generated": false,
   "promotion_value_insight": {
     "promotionType": {
       "discount": "5%",
@@ -547,6 +549,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | error_message | text                | Error message if generation failed (nullable) |
 | is_deleted    | boolean             | Soft delete flag (default: false)      |
 | delete_at     | timestamptz         | Scheduled deletion timestamp (nullable) |
+| ready_to_display | boolean         | Flag for quick ads - determines if ad is ready to display (default: false) |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's image history
@@ -574,7 +577,8 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
   "error_flag": false,
   "error_message": null,
   "is_deleted": false,
-  "delete_at": null
+  "delete_at": null,
+  "ready_to_display": false
 }
 ```
 

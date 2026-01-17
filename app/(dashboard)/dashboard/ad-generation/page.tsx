@@ -14,7 +14,7 @@ function AdGenerationPageContent() {
   const jobId = searchParams.get('job_id');
   const formatParam = searchParams.get('format'); // '1:1' or '16:9' for quick ads
   const isQuickAds = searchParams.get('quick_ads') === 'true';
-  
+
   const [isProcessComplete, setIsProcessComplete] = useState(IS_TEST_MODE);
   const [jobFormats, setJobFormats] = useState<string[] | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
@@ -22,10 +22,10 @@ function AdGenerationPageContent() {
   // If no job_id, show error or redirect
   if (!jobId) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
         flexDirection: 'column',
         gap: '20px'
@@ -114,13 +114,13 @@ function AdGenerationPageContent() {
         if (response.ok) {
           const job = await response.json();
           const formats = job.formats || [];
-          
+
           // Map database formats to our format type
           // Database uses: '1:1' and '16:9'
           let format: '1:1' | '16:9' | 'mixed' = '1:1';
           const has1x1 = formats.includes('1:1');
           const has16x9 = formats.includes('16:9');
-          
+
           if (has1x1 && has16x9) {
             format = 'mixed';
           } else if (has16x9) {
@@ -128,7 +128,7 @@ function AdGenerationPageContent() {
           } else if (has1x1) {
             format = '1:1';
           }
-          
+
           router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${format}`);
         }
       } catch (error) {
@@ -139,7 +139,7 @@ function AdGenerationPageContent() {
       let format: '1:1' | '16:9' | 'mixed' = '1:1';
       const has1x1 = jobFormats.includes('1:1');
       const has16x9 = jobFormats.includes('16:9');
-      
+
       if (has1x1 && has16x9) {
         format = 'mixed';
       } else if (has16x9) {
@@ -159,7 +159,7 @@ function AdGenerationPageContent() {
   // Show creating process (for both regular and quick ads)
   // For quick ads, we poll job status in useEffect above
   return (
-    <CreatingProcess 
+    <CreatingProcess
       onComplete={handleProcessComplete}
     />
   );
@@ -168,10 +168,10 @@ function AdGenerationPageContent() {
 export default function AdGenerationPage() {
   return (
     <Suspense fallback={
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh'
       }}>
         <p>Loading...</p>

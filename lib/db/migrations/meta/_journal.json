@@ -71,6 +71,13 @@
       "when": 1768326619000,
       "tag": "0009_rename_token_period_to_subscription_period",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768660789000,
+      "tag": "0010_add_quick_ads_flags",
+      "breakpoints": true
     }
   ]
 }
