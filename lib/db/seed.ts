@@ -1,6 +1,6 @@
 import { db } from './drizzle';
 import { user, tokenAccount, tokenLedger, generationJob, adImage, subscriptionPlan, topupPlan, brand, brandInsights } from './schema/index';
-import { TokenPeriod, JobStatus } from './schema/enums';
+import { JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -188,8 +188,8 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'STARTER',
       displayName: 'Starter',
-      monthlyTokens: 2500,
-      description: ['2,500 tokens per month', '50 ads per month', 'All ad types', 'Priority support', 'Export options'],
+      monthlyTokens: 500,
+      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', '1 Brand'],
       stripeProductId: process.env.STRIPE_STARTER_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -198,8 +198,8 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'GROWTH',
       displayName: 'Growth',
-      monthlyTokens: 7500,
-      description: ['7,500 tokens per month', '150 ads per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding'],
+      monthlyTokens: 1500,
+      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', 'Customer & competitor insight\naccess', 'Up to 3 brands'],
       stripeProductId: process.env.STRIPE_GROWTH_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -208,8 +208,8 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'TEAM',
       displayName: 'TEAM',
-      monthlyTokens: 100000,
-      description: ['100,000 tokens per month', '2,000 ads per month', 'All ad types', '24/7 support', 'Advanced features', 'Team collaboration', 'Custom branding', 'User management', 'Analytics dashboard'],
+      monthlyTokens: 20000,
+      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', 'Customer & competitor insight\naccess', 'Unlimited number of brands', 'Up to 5 users'],
       stripeProductId: process.env.STRIPE_TEAM_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,

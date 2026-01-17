@@ -1,6 +1,6 @@
 import { pgTable, uuid, bigint, text, timestamp, bigserial, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
-import { tokenPeriodEnum } from './enums';
+import { subscriptionPeriodEnum } from './enums';
 import { user } from './user';
 import { subscriptionPlan } from './subscription';
 
@@ -9,7 +9,7 @@ export const tokenAccount = pgTable('token_account', {
   userId: uuid('user_id').primaryKey().references(() => user.id, { onDelete: 'cascade' }),
   balance: bigint('balance', { mode: 'number' }).notNull().default(0),
   planCode: text('plan_code').notNull().default('FREE').references(() => subscriptionPlan.planCode, { onUpdate: 'cascade', onDelete: 'restrict' }),
-  period: tokenPeriodEnum('period').notNull().default('MONTH'),
+  period: subscriptionPeriodEnum('period').notNull().default('MONTHLY'),
   lastRefillAt: timestamp('last_refill_at', { withTimezone: true }),
   nextRefillAt: timestamp('next_refill_at', { withTimezone: true }),
   // Stripe-related columns

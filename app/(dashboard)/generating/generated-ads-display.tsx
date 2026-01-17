@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Dialog } from '@/components/ui/dialog';
 import styles from './generated-ads-display.module.css';
 
 interface AdImage {
@@ -86,7 +85,6 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
-  const [showComingSoonDialog, setShowComingSoonDialog] = useState(false);
   const [fontBoxHeight, setFontBoxHeight] = useState<number | null>(null);
   const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
   
@@ -241,8 +239,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   };
 
   const handleGenerateMore = () => {
-    console.log('handleGenerateMore');
-    setShowComingSoonDialog(true);
+    router.push('/dashboard/your-credits');
   };
 
   const handleRegenerate = () => {
@@ -250,14 +247,12 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
       // Navigate to dashboard for paid users
       router.push('/dashboard');
     } else {
-      console.log('handleRegenerate');
-      setShowComingSoonDialog(true);
+      router.push('/dashboard/your-credits');
     }
   };
 
   const handlePaidSectionClick = (sectionName: string) => {
-    console.log('Paid section clicked:', sectionName);
-    setShowComingSoonDialog(true);
+    router.push('/dashboard/your-credits');
   };
 
   // Display logic:
@@ -672,30 +667,6 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           </svg>
         </button>
       </div>
-
-      {/* Coming Soon Dialog */}
-      <Dialog open={showComingSoonDialog} onClose={() => setShowComingSoonDialog(false)}>
-        <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '16px', color: '#000' }}>Coming soon</h2>
-        <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
-          This feature will be available soon. Stay tuned!
-        </p>
-        <button
-          onClick={() => setShowComingSoonDialog(false)}
-          style={{
-            backgroundColor: '#f97316',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            width: '100%',
-          }}
-        >
-          OK
-        </button>
-      </Dialog>
     </div>
   );
 }
