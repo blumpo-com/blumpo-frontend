@@ -549,7 +549,7 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | error_message | text                | Error message if generation failed (nullable) |
 | is_deleted    | boolean             | Soft delete flag (default: false)      |
 | delete_at     | timestamptz         | Scheduled deletion timestamp (nullable) |
-| ready_to_display | boolean         | Flag for quick ads - determines if ad is ready to display (default: false) |
+| ready_to_display | boolean         | Flag for quick ads - determines if ad is ready to display (default: true) |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's image history

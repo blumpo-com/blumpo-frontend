@@ -18,6 +18,7 @@ function AdGenerationPageContent() {
   const [isProcessComplete, setIsProcessComplete] = useState(IS_TEST_MODE);
   const [jobFormats, setJobFormats] = useState<string[] | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
+  const [hasMarkedAsDisplayed, setHasMarkedAsDisplayed] = useState(false);
 
   // If no job_id, show error or redirect
   if (!jobId) {
@@ -39,41 +40,51 @@ function AdGenerationPageContent() {
   // Check job status and handle quick ads
   useEffect(() => {
     if (!jobId) return;
+    
+    let intervalId: NodeJS.Timeout | null = null;
+    let isMounted = true;
 
     const checkJobStatus = async () => {
+      if (!isMounted) return;
+
       try {
         const response = await fetch(`/api/generation-job?jobId=${jobId}`);
-        if (response.ok) {
-          const job = await response.json();
-          const currentStatus = job.status;
-          setJobStatus(currentStatus);
-          const formats = job.formats || [];
-          setJobFormats(formats);
+        if (!response.ok || !isMounted) return;
 
-          // For quick ads, if job is already complete, mark ads as displayed
-          if (isQuickAds && currentStatus === 'SUCCEEDED' && formatParam) {
-            // Format is already in database format (1:1 or 16:9)
-            const dbFormat = formatParam;
-            try {
-              await fetch('/api/quick-ads/mark-displayed', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  jobId,
-                  format: dbFormat,
-                }),
-              });
-            } catch (error) {
+        const job = await response.json();
+        const currentStatus = job.status;
+        setJobStatus(currentStatus);
+        const formats = job.formats || [];
+        setJobFormats(formats);
+
+        // For quick ads, if job is already complete, mark ads as displayed (only once)
+        if (isQuickAds && currentStatus === 'SUCCEEDED' && formatParam) {
+          setHasMarkedAsDisplayed((prev) => {
+            if (prev) return prev; // Already marked, skip
+            
+            // Mark as displayed (async, don't await to avoid blocking)
+            fetch('/api/quick-ads/mark-displayed', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jobId,
+                format: formatParam,
+              }),
+            }).catch((error) => {
               console.error('Error marking ads as displayed:', error);
-            }
-          }
+            });
+            
+            return true;
+          });
+        }
 
-          // If job is complete, show ready view
-          if (currentStatus === 'SUCCEEDED') {
-            setIsProcessComplete(true);
-          } else if (currentStatus === 'FAILED' || currentStatus === 'CANCELED') {
-            setIsProcessComplete(true); // Show error state
+        // If job is complete, stop polling and show ready view
+        if (currentStatus === 'SUCCEEDED' || currentStatus === 'FAILED' || currentStatus === 'CANCELED') {
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
           }
+          setIsProcessComplete(true);
         }
       } catch (error) {
         console.error('Error fetching job:', error);
@@ -83,14 +94,19 @@ function AdGenerationPageContent() {
     // Initial check
     checkJobStatus();
 
-    // Poll job status if not complete (for quick ads generation)
-    if (isQuickAds) {
-      const interval = setInterval(() => {
+    // Poll job status if not complete (for quick ads generation only)
+    if (isQuickAds && !isProcessComplete) {
+      intervalId = setInterval(() => {
         checkJobStatus();
       }, 2000); // Poll every 2 seconds
-
-      return () => clearInterval(interval);
     }
+
+    return () => {
+      isMounted = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [jobId, isQuickAds, formatParam]);
 
   const handleProcessComplete = () => {

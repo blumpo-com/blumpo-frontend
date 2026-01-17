@@ -14,7 +14,7 @@ BEGIN
     AND column_name = 'ready_to_display'
   ) THEN
     ALTER TABLE "public"."ad_image"
-      ADD COLUMN "ready_to_display" boolean NOT NULL DEFAULT false;
+      ADD COLUMN "ready_to_display" boolean NOT NULL DEFAULT true;
   END IF;
 END $$;
 

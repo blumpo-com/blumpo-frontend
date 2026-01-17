@@ -34,6 +34,7 @@ export async function GET(req: Request) {
 
     // Check if we have 5 ads ready
     const ads = await getQuickAdsForFormat(user.id, verifiedBrandId, dbFormat, 5);
+
     
     if (ads.length >= 5) {
       // Extract ad_image and generation_job from joined result
