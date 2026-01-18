@@ -4,13 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
-import { User, TokenAccount, Brand } from '@/lib/db/schema';
+import { Brand } from '@/lib/db/schema';
 import { useBrand } from '@/lib/contexts/brand-context';
+import { useUser } from '@/lib/contexts/user-context';
 import styles from './dashboard-sidebar.module.css';
-
-type UserWithTokenAccount = User & {
-  tokenAccount: TokenAccount | null;
-};
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -80,8 +77,15 @@ function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownIt
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher);
+  const { user, isLoading: isLoadingUser } = useUser();
+  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: true,
+    revalidateIfStale: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000,
+    keepPreviousData: true,
+  });
   const { currentBrand, setCurrentBrand, isInitialized } = useBrand();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const BrandRef = useRef<HTMLDivElement>(null);

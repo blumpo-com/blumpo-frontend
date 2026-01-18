@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import {Check } from 'lucide-react';
 import useSWR from 'swr';
+import { useUser } from '@/lib/contexts/user-context';
 import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
@@ -72,7 +73,7 @@ interface UserWithTokenAccount {
 function YourCreditsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
+  const { user, isLoading: isLoadingUser } = useUser();
   const { data: subscriptionPlans = [], isLoading: isLoadingPlans } = useSWR<SubscriptionPlan[]>('/api/subscription-plans', fetcher);
   const { data: topupPlans = [], isLoading: isLoadingTopups } = useSWR<TopupPlan[]>('/api/topup-plans', fetcher);
   const { data: stripePrices = [], isLoading: isLoadingStripePrices } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);

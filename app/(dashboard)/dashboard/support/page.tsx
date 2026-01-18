@@ -1,22 +1,22 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useUser } from '@/lib/contexts/user-context';
 import styles from './page.module.css';
 
 type FormState = {
   title: string;
   message: string;
-  email: string;
   honeypot: string;
 };
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
 export default function SupportPage() {
+  const { user } = useUser();
   const [formState, setFormState] = useState<FormState>({
     title: '',
     message: '',
-    email: '',
     honeypot: '',
   });
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
@@ -33,7 +33,10 @@ export default function SupportPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify({
+          ...formState,
+          email: user?.email || '',
+        }),
       });
 
       const data = await response.json();
@@ -46,7 +49,6 @@ export default function SupportPage() {
       setFormState({
         title: '',
         message: '',
-        email: '',
         honeypot: '',
       });
 
@@ -106,21 +108,6 @@ export default function SupportPage() {
                 required
                 disabled={submitState === 'loading'}
                 rows={10}
-              />
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="email" className={styles.labelOptional}>
-                Your email (optional - for replies)
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={formState.email}
-                onChange={handleChange('email')}
-                placeholder="your.email@example.com"
-                className={styles.input}
-                disabled={submitState === 'loading'}
               />
             </div>
 
