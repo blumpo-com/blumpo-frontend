@@ -90,15 +90,27 @@ export async function POST(req: Request) {
     
     // Delete unused ads from Vercel Blob and mark as deleted in DB
     const deletePromises = unusedAds.map(async (ad) => {
-      if (ad.publicUrl) {
-        try {
-          const blobPath = extractBlobPathFromUrl(ad.publicUrl);
-          if (blobPath) {
-            await del(blobPath);
-          }
-        } catch (error) {
-          console.error(`[QUICK-ADS] Error deleting blob for ad ${ad.id}:`, error);
+      try {
+        let blobPath: string | null = null;
+        
+        // Try to extract blob path from publicUrl first
+        if (ad.publicUrl) {
+          blobPath = extractBlobPathFromUrl(ad.publicUrl);
         }
+        
+        // Fallback to storageKey if publicUrl extraction failed
+        if (!blobPath && ad.storageKey) {
+          blobPath = ad.storageKey;
+        }
+        
+        // Delete from Vercel Blob if we have a valid path
+        if (blobPath) {
+          await del(blobPath);
+        } else {
+          console.warn(`[QUICK-ADS] No blob path found for ad ${ad.id} (publicUrl: ${ad.publicUrl}, storageKey: ${ad.storageKey})`);
+        }
+      } catch (error) {
+        console.error(`[QUICK-ADS] Error deleting blob for ad ${ad.id}:`, error);
       }
     });
 
