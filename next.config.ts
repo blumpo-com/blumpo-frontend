@@ -20,14 +20,37 @@ const nextConfig: NextConfig = {
   },
 
   webpack(config) {
+    // Find the existing SVG rule and modify it
+    const fileLoaderRule = config.module.rules.find((rule: any) =>
+      rule.test?.test?.(".svg")
+    );
+
+    if (fileLoaderRule) {
+      fileLoaderRule.exclude = /\.svg$/i;
+    }
+
+    // Use oneOf to handle SVG differently based on issuer
     config.module.rules.push({
-      test: /\.svg$/,
-      issuer: /\.[jt]sx?$|\.mdx$/,
-      use: [
+      oneOf: [
+        // SVGR loader for SVG files from TS/TSX (React components)
         {
-          loader: "@svgr/webpack",
-          options: {
-            svgo: false,
+          test: /\.svg$/,
+          issuer: /\.[jt]sx?$/,
+          use: [
+            {
+              loader: "@svgr/webpack",
+              options: {
+                svgo: false,
+              },
+            },
+          ],
+        },
+        // Asset loader for SVG files from MDX or other files (as URLs)
+        {
+          test: /\.svg$/,
+          type: "asset/resource",
+          generator: {
+            filename: "static/media/[name].[hash][ext]",
           },
         },
       ],
