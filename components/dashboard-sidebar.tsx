@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import useSWR from 'swr';
-import { User, TokenAccount, Brand } from '@/lib/db/schema';
-import { useBrand } from '@/lib/contexts/brand-context';
-import styles from './dashboard-sidebar.module.css';
-import Wand from '@/assets/icons/Wand.svg';
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import useSWR from "swr";
+import { User, TokenAccount, Brand } from "@/lib/db/schema";
+import { useBrand } from "@/lib/contexts/brand-context";
+import styles from "./dashboard-sidebar.module.css";
+import Wand from "@/assets/icons/Wand.svg";
 
 type UserWithTokenAccount = User & {
   tokenAccount: TokenAccount | null;
@@ -32,7 +32,9 @@ function SidebarItem({
   isActive = false,
   onClick,
 }: SidebarItemProps) {
-  const className = `${styles.sidebarItem} ${isActive ? styles.sidebarItemActive : ''}`;
+  const className = `${styles.sidebarItem} ${
+    isActive ? styles.sidebarItemActive : ""
+  }`;
 
   const content = (
     <>
@@ -43,21 +45,14 @@ function SidebarItem({
 
   if (href) {
     return (
-      <Link
-        href={href}
-        className={className}
-        onClick={onClick}
-      >
+      <Link href={href} className={className} onClick={onClick}>
         {content}
       </Link>
     );
   }
 
   return (
-    <button
-      className={className}
-      onClick={onClick}
-    >
+    <button className={className} onClick={onClick}>
       {content}
     </button>
   );
@@ -70,7 +65,12 @@ interface BrandDropdownItemProps {
   onClick?: () => void;
 }
 
-function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownItemProps) {
+function BrandDropdownItem({
+  iconSrc,
+  iconAlt,
+  label,
+  onClick,
+}: BrandDropdownItemProps) {
   return (
     <div className={styles.brandDropdownItem} onClick={onClick}>
       <img src={iconSrc} alt={iconAlt} className={styles.brandDropdownIcon} />
@@ -81,40 +81,59 @@ function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownIt
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>('/api/user', fetcher);
-  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher);
+  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>(
+    "/api/user",
+    fetcher
+  );
+  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>(
+    "/api/brands",
+    fetcher
+  );
   const { currentBrand, setCurrentBrand, isInitialized } = useBrand();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const BrandRef = useRef<HTMLDivElement>(null);
-  
+
   const tokenBalance = user?.tokenAccount?.balance || 0;
-  const isCreateNewActive = pathname === '/dashboard' || pathname === '/dashboard/customized-ads';
-  
+  const isCreateNewActive =
+    pathname === "/dashboard" || pathname === "/dashboard/customized-ads";
+
   // Set first brand as current if none is selected, context is initialized, and brands exist
   useEffect(() => {
-    if (isInitialized && !currentBrand && Array.isArray(brands) && brands.length > 0) {
+    if (
+      isInitialized &&
+      !currentBrand &&
+      Array.isArray(brands) &&
+      brands.length > 0
+    ) {
       setCurrentBrand(brands[0]);
     }
   }, [brands, currentBrand, setCurrentBrand, isInitialized]);
-  
+
   // Get current brand name for display, or default to "Brand"
-  const currentBrandName = isLoadingBrands ? 'Loading...' : (currentBrand?.name || 'Brand');
-  
+  const currentBrandName = isLoadingBrands
+    ? "Loading..."
+    : currentBrand?.name || "Brand";
+
   // Filter out current brand from dropdown list
-  const availableBrands = Array.isArray(brands) ? brands.filter((brand) => brand.id !== currentBrand?.id) : [];
+  const availableBrands = Array.isArray(brands)
+    ? brands.filter((brand) => brand.id !== currentBrand?.id)
+    : [];
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (BrandRef.current && !BrandRef.current.contains(event.target as Node)) {
+      if (
+        BrandRef.current &&
+        !BrandRef.current.contains(event.target as Node)
+      ) {
         setIsBrandOpen(false);
       }
     }
 
     if (isBrandOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener("mousedown", handleClickOutside);
       };
     }
   }, [isBrandOpen]);
@@ -124,9 +143,9 @@ export function DashboardSidebar() {
       {/* Logo */}
       <div className={styles.logoContainer}>
         <Link href="/dashboard" className={styles.logo}>
-          <img 
-            src="/assets/logo/Blumpo Logo.svg" 
-            alt="Blumpo" 
+          <img
+            src="/assets/logo/Blumpo Logo.svg"
+            alt="Blumpo"
             className={styles.logoImage}
           />
         </Link>
@@ -136,26 +155,38 @@ export function DashboardSidebar() {
       <nav className={styles.navSection}>
         <Link
           href="/dashboard"
-          className={`${styles.createNewButton} ${isCreateNewActive ? styles.createNewButtonActive : ''}`}
+          className={`${styles.createNewButton} ${
+            isCreateNewActive ? styles.createNewButtonActive : ""
+          }`}
         >
-          <Wand className={`${styles.createNewButtonIcon} ${isCreateNewActive ? styles.createNewButtonIconActive : ''}`} />
-          <span className={isCreateNewActive ? styles.createNewButtonTextActive : styles.createNewButtonText}>
+          <Wand
+            className={`${styles.createNewButtonIcon} ${
+              isCreateNewActive ? styles.createNewButtonIconActive : ""
+            }`}
+          />
+          <span
+            className={
+              isCreateNewActive
+                ? styles.createNewButtonTextActive
+                : styles.createNewButtonText
+            }
+          >
             Create new
           </span>
         </Link>
         <SidebarItem
-          href="/dashboard/library"
+          href="/dashboard/content-library"
           iconSrc="/assets/icons/Library.svg"
           iconAlt="Content library"
           label="Content library"
-          isActive={pathname === '/dashboard/library'}
+          isActive={pathname === "/dashboard/content-library"}
         />
         <SidebarItem
           href="/dashboard/brand-dna"
           iconSrc="/assets/icons/DNA.svg"
           iconAlt="Your brand's DNA"
           label="Your brand's DNA"
-          isActive={pathname === '/dashboard/brand-dna'}
+          isActive={pathname === "/dashboard/brand-dna"}
         />
       </nav>
 
@@ -178,7 +209,7 @@ export function DashboardSidebar() {
                 iconAlt="New brand"
                 label="New brand"
                 onClick={() => {
-                  console.log('New brand clicked');
+                  console.log("New brand clicked");
                   setIsBrandOpen(false);
                 }}
               />
@@ -207,12 +238,12 @@ export function DashboardSidebar() {
             </div>
           )}
         </div>
-        
+
         {/* Coins Button */}
         <div className={styles.coinsButton}>
-          <img 
-            src="/assets/icons/Money.svg" 
-            alt="Coins" 
+          <img
+            src="/assets/icons/Money.svg"
+            alt="Coins"
             className={styles.coinsButtonIcon}
           />
           <span className={styles.coinsText}>
@@ -220,7 +251,9 @@ export function DashboardSidebar() {
               <span className={styles.coinsBold}>Loading...</span>
             ) : (
               <>
-                <span className={styles.coinsBold}>{tokenBalance.toLocaleString()}</span>
+                <span className={styles.coinsBold}>
+                  {tokenBalance.toLocaleString()}
+                </span>
                 <span> coins left</span>
               </>
             )}
@@ -235,9 +268,9 @@ export function DashboardSidebar() {
             type="button"
             aria-label="Add coins"
           >
-            <img 
-              src="/assets/icons/Add.svg" 
-              alt="Add coins" 
+            <img
+              src="/assets/icons/Add.svg"
+              alt="Add coins"
               className={styles.addButtonIcon}
             />
           </button>
@@ -248,21 +281,21 @@ export function DashboardSidebar() {
           iconSrc="/assets/icons/Gift.svg"
           iconAlt="Refer friends"
           label="Refer friends"
-          isActive={pathname === '/dashboard/refer'}
+          isActive={pathname === "/dashboard/refer"}
         />
         <SidebarItem
           href="/dashboard/general"
           iconSrc="/assets/icons/Settings.svg"
           iconAlt="Settings"
           label="Settings"
-          isActive={pathname?.includes('/dashboard/security')}
+          isActive={pathname?.includes("/dashboard/security")}
         />
         <SidebarItem
           href="/dashboard/support"
           iconSrc="/assets/icons/Mail.svg"
           iconAlt="Support"
           label="Support"
-          isActive={pathname === '/dashboard/support'}
+          isActive={pathname === "/dashboard/support"}
         />
       </nav>
     </aside>

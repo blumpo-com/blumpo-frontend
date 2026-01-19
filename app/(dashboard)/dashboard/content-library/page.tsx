@@ -1,0 +1,515 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useBrand } from "@/lib/contexts/brand-context";
+import { useRouter } from "next/navigation";
+import TrashRestore from "@/assets/icons/Trash-restore.svg";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
+import { CreateNewCard } from "./components/create-new-card";
+import { ImageCard } from "./components/image-card";
+import { SkeletonCard } from "./components/skeleton-card";
+import { WarningBox } from "./components/warning-box";
+import { AdImage, ContentLibraryResponse } from "./types";
+import styles from "./page.module.css";
+
+const archetypes = [
+  { code: "all", name: "All" },
+  { code: "problem_solution", name: "Problem-Solution" },
+  { code: "testimonial", name: "Testimonial" },
+  { code: "competitor_comparison", name: "Competitor Comparison" },
+  { code: "promotion_offer", name: "Promotion (Offer)" },
+  { code: "value_proposition", name: "Value Proposition" },
+  { code: "meme", name: "Meme" },
+];
+
+const formats = [
+  { code: "all", name: "All" },
+  { code: "1:1", name: "1:1" },
+  { code: "16:9", name: "16:9" },
+];
+
+interface FilterTabProps {
+  label: string;
+  iconSrc: string;
+  iconAlt: string;
+  value: string;
+  options: Array<{ code: string; name: string }>;
+  onSelect: (code: string) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function FilterTab({
+  label,
+  iconSrc,
+  iconAlt,
+  value,
+  options,
+  onSelect,
+  isOpen,
+  onOpenChange,
+}: FilterTabProps) {
+  const selectedOption = options.find((opt) => opt.code === value);
+  const displayValue = selectedOption?.name || "All";
+
+  return (
+    <div className={styles.filterGroup}>
+      <label className={styles.filterLabel}>{label}</label>
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger className={styles.filterInput}>
+          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <span className={styles.filterValue}>{displayValue}</span>
+          <ChevronDown className={styles.chevronIcon} size={16} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className={styles.dropdownContent}>
+          {options.map((option) => (
+            <DropdownMenuItem
+              key={option.code}
+              onClick={() => {
+                onSelect(option.code);
+                onOpenChange(false);
+              }}
+              className={styles.dropdownItem}
+            >
+              {option.name}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+interface MultiSelectFilterTabProps {
+  label: string;
+  iconSrc: string;
+  iconAlt: string;
+  selectedValues: string[];
+  options: Array<{ code: string; name: string }>;
+  onToggle: (code: string) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function MultiSelectFilterTab({
+  label,
+  iconSrc,
+  iconAlt,
+  selectedValues,
+  options,
+  onToggle,
+  isOpen,
+  onOpenChange,
+}: MultiSelectFilterTabProps) {
+  const isAllSelected = selectedValues.includes("all");
+  const otherOptions = options.filter((opt) => opt.code !== "all");
+
+  const getDisplayValue = () => {
+    if (isAllSelected || selectedValues.length === 0) {
+      return "All";
+    }
+    const selectedNames = selectedValues
+      .map((code) => options.find((opt) => opt.code === code)?.name)
+      .filter(Boolean)
+      .join(", ");
+    return selectedNames || "All";
+  };
+
+  const handleToggle = (code: string) => {
+    onToggle(code);
+  };
+
+  return (
+    <div className={styles.filterGroup}>
+      <label className={styles.filterLabel}>{label}</label>
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger className={styles.filterInput}>
+          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <span className={styles.filterValue}>{getDisplayValue()}</span>
+          <ChevronDown className={styles.chevronIcon} size={16} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className={styles.dropdownContent}>
+          {options.map((option) => {
+            const isChecked = isAllSelected
+              ? option.code === "all"
+              : selectedValues.includes(option.code);
+            return (
+              <DropdownMenuCheckboxItem
+                key={option.code}
+                checked={isChecked}
+                onCheckedChange={() => handleToggle(option.code)}
+                className={styles.dropdownItem}
+              >
+                <span className={styles.dropdownItemText}>{option.name}</span>
+              </DropdownMenuCheckboxItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+interface UnsavedButtonTabProps {
+  isActive: boolean;
+  onClick: () => void;
+}
+
+function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
+  return (
+    <button
+      className={`${styles.unsavedButton} ${
+        isActive ? styles.unsavedButtonActive : ""
+      }`}
+      onClick={onClick}
+    >
+      <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
+      Unsaved ads
+    </button>
+  );
+}
+
+export default function ContentLibraryPage() {
+  const router = useRouter();
+  const { currentBrand, isInitialized } = useBrand();
+  const [allImages, setAllImages] = useState<AdImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
+  const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
+  const [showUnsaved, setShowUnsaved] = useState(false);
+  const [isArchetypeOpen, setIsArchetypeOpen] = useState(false);
+  const [isFormatOpen, setIsFormatOpen] = useState(false);
+
+  // Fetch all images once on mount (including deleted for unsaved filter)
+  const fetchImages = async () => {
+    if (!isInitialized) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const brandId = currentBrand?.id || null;
+      const params = new URLSearchParams();
+      if (brandId) {
+        params.append("brandId", brandId);
+      }
+      // Always fetch deleted images too, so we can filter client-side
+      params.append("includeDeleted", "true");
+
+      const response = await fetch(`/api/content-library?${params.toString()}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch images");
+      }
+
+      const data: ContentLibraryResponse = await response.json();
+      setAllImages(data.images);
+    } catch (err) {
+      console.error("Error fetching content library:", err);
+      setError(err instanceof Error ? err.message : "Failed to load images");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchImages();
+  }, [currentBrand?.id, isInitialized]);
+
+  // Client-side filtering using useMemo
+  const images = React.useMemo(() => {
+    let filtered = [...allImages];
+
+    // Filter by archetype(s)
+    if (selectedArchetypes.length > 0 && !selectedArchetypes.includes("all")) {
+      filtered = filtered.filter(
+        (img) =>
+          img.workflow?.archetypeCode &&
+          selectedArchetypes.includes(img.workflow.archetypeCode)
+      );
+    }
+
+    // Filter by format(s)
+    if (selectedFormats.length > 0 && !selectedFormats.includes("all")) {
+      filtered = filtered.filter((img) => selectedFormats.includes(img.format));
+    }
+
+    // Filter unsaved ads (images with isDeleted = true)
+    if (showUnsaved) {
+      filtered = filtered.filter((img) => img.isDeleted === true);
+    } else {
+      // If not filtering unsaved, exclude deleted images
+      filtered = filtered.filter((img) => !img.isDeleted);
+    }
+
+    return filtered;
+  }, [allImages, selectedArchetypes, selectedFormats, showUnsaved]);
+
+  const handleDownload = async (image: AdImage) => {
+    try {
+      const response = await fetch(image.publicUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${image.title || "ad-image"}.${image.format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Error downloading image:", err);
+    }
+  };
+
+  const handleCreateNew = () => {
+    router.push("/dashboard");
+  };
+
+  const handleDelete = async (
+    imageId: string,
+    jobId: string | null,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
+    if (!jobId) {
+      console.error("No jobId found for image");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/ad-actions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobId,
+          deletedIds: [imageId],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete ad");
+      }
+
+      // Update local state instead of refetching
+      setAllImages((prev) =>
+        prev.map((img) =>
+          img.id === imageId ? { ...img, isDeleted: true } : img
+        )
+      );
+    } catch (err) {
+      console.error("Error deleting ad:", err);
+    }
+  };
+
+  const handleRestore = async (
+    imageId: string,
+    jobId: string | null,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
+    if (!jobId) {
+      console.error("No jobId found for image");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/ad-actions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobId,
+          restoredIds: [imageId],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to restore ad");
+      }
+
+      // Update local state instead of refetching
+      setAllImages((prev) =>
+        prev.map((img) =>
+          img.id === imageId ? { ...img, isDeleted: false } : img
+        )
+      );
+    } catch (err) {
+      console.error("Error restoring ad:", err);
+    }
+  };
+
+  const handleArchetypeToggle = (code: string) => {
+    setSelectedArchetypes((prev) => {
+      if (code === "all") {
+        if (prev.includes("all")) {
+          return []; // Odznacz wszystko
+        } else {
+          return ["all"];
+        }
+      } else {
+        const withoutAll = prev.filter((c) => c !== "all");
+        if (withoutAll.includes(code)) {
+          return withoutAll.filter((c) => c !== code);
+        } else {
+          return [...withoutAll, code];
+        }
+      }
+    });
+  };
+
+  const handleFormatToggle = (code: string) => {
+    setSelectedFormats((prev) => {
+      if (code === "all") {
+        if (prev.includes("all")) {
+          return [];
+        } else {
+          return ["all"];
+        }
+      } else {
+        const withoutAll = prev.filter((c) => c !== "all");
+        if (withoutAll.includes(code)) {
+          return withoutAll.filter((c) => c !== code);
+        } else {
+          return [...withoutAll, code];
+        }
+      }
+    });
+  };
+
+  // Distribute cards into 4 columns for masonry layout
+  const distributeCardsIntoColumns = (
+    items: React.ReactNode[],
+    isCreateCardFirst: boolean = false
+  ) => {
+    const columns: React.ReactNode[][] = [[], [], [], []];
+
+    items.forEach((item, index) => {
+      // First item goes to first column if it's create card
+      if (isCreateCardFirst && index === 0) {
+        columns[0].push(item);
+        return;
+      }
+
+      // For other items, find the column with fewest items
+      const shortestColumnIndex = columns.reduce(
+        (minIndex, column, currentIndex) =>
+          column.length < columns[minIndex].length ? currentIndex : minIndex,
+        0
+      );
+      columns[shortestColumnIndex].push(item);
+    });
+
+    return columns;
+  };
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={`header-gradient-dashboard`}>Content library</h1>
+        {error && <p className={styles.errorMessage}>{error}</p>}
+      </div>
+
+      {/* Filters */}
+      <div className={styles.filtersBar}>
+        <MultiSelectFilterTab
+          label="Archetype"
+          iconSrc="/assets/icons/Megaphone.svg"
+          iconAlt="Archetype"
+          selectedValues={selectedArchetypes}
+          options={archetypes}
+          onToggle={handleArchetypeToggle}
+          isOpen={isArchetypeOpen}
+          onOpenChange={setIsArchetypeOpen}
+        />
+
+        <MultiSelectFilterTab
+          label="Format"
+          iconSrc="/assets/icons/Ruler.svg"
+          iconAlt="Format"
+          selectedValues={selectedFormats}
+          options={formats}
+          onToggle={handleFormatToggle}
+          isOpen={isFormatOpen}
+          onOpenChange={setIsFormatOpen}
+        />
+
+        <UnsavedButtonTab
+          isActive={showUnsaved}
+          onClick={() => setShowUnsaved(!showUnsaved)}
+        />
+      </div>
+
+      {/* Warning message for unsaved ads */}
+      {showUnsaved && <WarningBox />}
+
+      {/* Content */}
+      {isLoading ? (
+        <div className={styles.gridWrapper}>
+          <div className={styles.grid}>
+            <CreateNewCard onClick={handleCreateNew} />
+            {[...Array(4)].map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </div>
+        </div>
+      ) : error ? (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyStateText}>{error}</p>
+        </div>
+      ) : (
+        <>
+          {/* Grid */}
+          <div className={styles.gridWrapper}>
+            <div className={styles.grid}>
+              {distributeCardsIntoColumns(
+                [
+                  <CreateNewCard key="create-new" onClick={handleCreateNew} />,
+                  ...images.map((image) => (
+                    <ImageCard
+                      key={image.id}
+                      image={image}
+                      showUnsaved={showUnsaved}
+                      onDelete={handleDelete}
+                      onRestore={handleRestore}
+                      onDownload={handleDownload}
+                    />
+                  )),
+                ],
+                true
+              ).map((column, columnIndex) => (
+                <div key={columnIndex} className={styles.gridColumn}>
+                  {column}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {images.length === 0 && (
+            <div className={styles.emptyState}>
+              <p className={styles.emptyStateText}>
+                No ads found.{" "}
+                {showUnsaved
+                  ? "No unsaved ads."
+                  : "Create your first ad to see it here!"}
+              </p>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

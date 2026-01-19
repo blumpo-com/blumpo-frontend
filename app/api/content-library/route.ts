@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { getUser } from '@/lib/db/queries';
-import { getUserAds } from '@/lib/db/queries/ads';
+import { NextResponse } from "next/server";
+import { getUser } from "@/lib/db/queries";
+import { getUserAds } from "@/lib/db/queries/ads";
 
 /**
  * GET /api/content-library?brandId=xxx
@@ -10,27 +10,27 @@ export async function GET(req: Request) {
   try {
     const user = await getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
-    const brandId = searchParams.get('brandId');
-    const archetypeCodes = searchParams.getAll('archetype');
-    const format = searchParams.get('format');
-    const includeUnsaved = searchParams.get('unsaved') === 'true';
-    const limit = parseInt(searchParams.get('limit') || '100');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const brandId = searchParams.get("brandId");
+    const includeDeleted = searchParams.get("includeDeleted") === "true";
+    const limit = parseInt(searchParams.get("limit") || "1000"); // Increased limit for client-side filtering
+    const offset = parseInt(searchParams.get("offset") || "0");
 
     // Fetch all images for the user, optionally filtered by brandId
+    // includeDeleted allows fetching deleted images for client-side filtering
     const adImages = await getUserAds(user.id, {
       brandId: brandId || undefined,
       limit,
       offset,
-      includeDeleted: false, // Don't show deleted images
+      includeDeleted: includeDeleted,
     });
 
     // Filter out images with errors and without publicUrl
-    let validImages = adImages
+    // Return all valid images (client-side filtering will handle the rest)
+    const validImages = adImages
       .filter((item) => !item.adImage.errorFlag && item.adImage.publicUrl)
       .map((item) => ({
         id: item.adImage.id,
@@ -42,38 +42,18 @@ export async function GET(req: Request) {
         createdAt: item.adImage.createdAt,
         brand: item.brand,
         job: item.job,
+        workflow: item.workflow,
+        isDeleted: item.adImage.isDeleted,
       }));
-
-    // Filter by archetype(s)
-    if (archetypeCodes.length > 0) {
-      validImages = validImages.filter(
-        (img) => img.job?.archetypeCode && archetypeCodes.includes(img.job.archetypeCode)
-      );
-    }
-
-    // Filter by format (aspect ratio)
-    if (format && format !== 'all') {
-      validImages = validImages.filter((img) => {
-        const aspectRatio = img.width / img.height;
-        if (format === '1:1') return Math.abs(aspectRatio - 1) < 0.1;
-        if (format === '16:9') return Math.abs(aspectRatio - 16/9) < 0.1;
-        return true;
-      });
-    }
-
-    // Filter unsaved ads (images without brandId)
-    if (includeUnsaved) {
-      validImages = validImages.filter((img) => !img.brand?.id);
-    }
 
     return NextResponse.json({
       images: validImages,
       total: validImages.length,
     });
   } catch (error) {
-    console.error('Error getting content library:', error);
+    console.error("Error getting content library:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
