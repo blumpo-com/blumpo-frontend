@@ -18,24 +18,8 @@ import { ImageCard } from "./components/image-card";
 import { SkeletonCard } from "./components/skeleton-card";
 import { WarningBox } from "./components/warning-box";
 import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
-import { AdImage, ContentLibraryResponse } from "./types";
+import { AdImage, archetypes, ContentLibraryResponse, formats } from "./types";
 import styles from "./page.module.css";
-
-const archetypes = [
-  { code: "all", name: "All" },
-  { code: "problem_solution", name: "Problem-Solution" },
-  { code: "testimonial", name: "Testimonial" },
-  { code: "competitor_comparison", name: "Competitor Comparison" },
-  { code: "promotion_offer", name: "Promotion (Offer)" },
-  { code: "value_proposition", name: "Value Proposition" },
-  { code: "meme", name: "Meme" },
-];
-
-const formats = [
-  { code: "all", name: "All" },
-  { code: "1:1", name: "1:1" },
-  { code: "16:9", name: "16:9" },
-];
 
 interface FilterTabProps {
   label: string;
@@ -153,6 +137,7 @@ export default function ContentLibraryPage() {
     imageId: string;
     jobId: string | null;
   } | null>(null);
+  const [columnsCount, setColumnsCount] = useState(4);
 
   // Fetch all images once on mount (including deleted for unsaved filter)
   const fetchImages = async () => {
@@ -369,12 +354,32 @@ export default function ContentLibraryPage() {
     });
   };
 
-  // Distribute cards into 4 columns for masonry layout
+  // Determine number of columns based on screen width
+  useEffect(() => {
+    const updateColumnsCount = () => {
+      const width = window.innerWidth;
+      if (width <= 480) {
+        setColumnsCount(1);
+      } else if (width <= 768) {
+        setColumnsCount(2);
+      } else if (width <= 1024) {
+        setColumnsCount(3);
+      } else {
+        setColumnsCount(4);
+      }
+    };
+
+    updateColumnsCount();
+    window.addEventListener("resize", updateColumnsCount);
+    return () => window.removeEventListener("resize", updateColumnsCount);
+  }, []);
+
+  // Distribute cards into columns for masonry layout
   const distributeCardsIntoColumns = (
     items: React.ReactNode[],
     isCreateCardFirst: boolean = false
   ) => {
-    const columns: React.ReactNode[][] = [[], [], [], []];
+    const columns: React.ReactNode[][] = Array.from({ length: columnsCount }, () => []);
 
     items.forEach((item, index) => {
       // First item goes to first column if it's create card

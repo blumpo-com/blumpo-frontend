@@ -1,5 +1,5 @@
 .container {
-  padding: 60px 50px 0 50px;
+  padding: 60px 50px;
   max-width: 100%;
   height: 100vh;
   overflow-y: auto;
@@ -8,6 +8,9 @@
 
 .header {
   margin-bottom: 24px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 
 .title {
@@ -51,6 +54,7 @@
   display: flex;
   gap: 24px;
   align-items: flex-end;
+  justify-content: center;
   padding-bottom: 32px;
   margin-bottom: 32px;
   flex-wrap: wrap;
@@ -254,8 +258,9 @@
 
 .grid {
   max-width: 1200px;
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(4, 270px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 40px;
   padding-bottom: 40px;
   align-items: start;
@@ -265,6 +270,8 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Create New Card */
@@ -279,9 +286,13 @@
   padding: 13px 20px;
   cursor: pointer;
   transition: all 0.2s;
-  height: 327px;
   box-shadow: 0px 3.604px 11.599px 0px rgba(0, 0, 0, 0.3);
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  /* Match imageCard 1:1 height: imageWrapper uses aspect-ratio 1:1, so total height = width (100%) */
+  aspect-ratio: 1 / 1;
+  min-height: 200px;
 }
 
 .createCard::before {
@@ -497,6 +508,38 @@
 }
 
 /* Responsive design */
+@media (max-width: 1400px) {
+  .grid {
+    max-width: 100%;
+    gap: 24px;
+  }
+
+  .gridColumn {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    gap: 20px;
+  }
+
+  .gridColumn {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .gridColumn {
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 24px 16px;
@@ -522,7 +565,22 @@
   }
 
   .grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .gridColumn {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .gridColumn {
     gap: 16px;
   }
 }

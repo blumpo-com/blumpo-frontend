@@ -2,7 +2,7 @@ import Image from "next/image";
 import Trash from "@/assets/icons/Trash.svg";
 import TrashRestore from "@/assets/icons/Trash-restore.svg";
 import { Download } from "lucide-react";
-import { AdImage } from "../types";
+import { AdImage, ArchetypeCode, getArchetypeName } from "../types";
 import styles from "../page.module.css";
 
 interface ImageCardProps {
@@ -43,9 +43,9 @@ export function ImageCard({
           className={styles.image}
           unoptimized
         />
-        {image.brand?.name && (
+        {image.workflow?.archetypeCode && (
           <div className={styles.brandOverlay}>
-            <span className={styles.brandName}>{image.brand.name}</span>
+            <span className={styles.brandName}>{getArchetypeName(image.workflow.archetypeCode as ArchetypeCode)}</span>
           </div>
         )}
       </div>
