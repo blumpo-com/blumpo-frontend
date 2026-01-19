@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Resend } from 'resend';
+import { SupportCategory, isSalesCategory } from '@/lib/constants/support-categories';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supportSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
+  title: z.nativeEnum(SupportCategory, {
+    errorMap: () => ({ message: 'Please select a valid category' }),
+  }),
   message: z.string().min(1, 'Message is required'),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
   honeypot: z.string().max(0, 'Invalid submission').optional().or(z.literal('')),
@@ -56,8 +59,15 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-function getSupportEmail(): string {
+function getSupportEmail(title: string): string {
   const domain = process.env.SUPPORT_EMAIL_DOMAIN || 'blumpo.com';
+  
+  // Sales-related categories go to sales@blumpo.com
+  if (isSalesCategory(title)) {
+    return `sales@${domain}`;
+  }
+  
+  // All other categories go to support@blumpo.com
   return `support@${domain}`;
 }
 
@@ -165,7 +175,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supportEmail = getSupportEmail();
+    const supportEmail = getSupportEmail(title);
     const domain = process.env.SUPPORT_EMAIL_DOMAIN || 'blumpo.com';
     const fromEmail = `Support <support@${domain}>`;
 

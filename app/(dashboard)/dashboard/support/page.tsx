@@ -2,10 +2,11 @@
 
 import { useState, FormEvent } from 'react';
 import { useUser } from '@/lib/contexts/user-context';
+import { SupportCategory, SUPPORT_CATEGORIES } from '@/lib/constants/support-categories';
 import styles from './page.module.css';
 
 type FormState = {
-  title: string;
+  category: SupportCategory | '';
   message: string;
   honeypot: string;
 };
@@ -15,7 +16,7 @@ type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 export default function SupportPage() {
   const { user } = useUser();
   const [formState, setFormState] = useState<FormState>({
-    title: '',
+    category: '',
     message: '',
     honeypot: '',
   });
@@ -34,8 +35,10 @@ export default function SupportPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formState,
+          title: formState.category,
+          message: formState.message,
           email: user?.email || '',
+          honeypot: formState.honeypot,
         }),
       });
 
@@ -47,7 +50,7 @@ export default function SupportPage() {
 
       setSubmitState('success');
       setFormState({
-        title: '',
+        category: '',
         message: '',
         honeypot: '',
       });
@@ -80,19 +83,24 @@ export default function SupportPage() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formFields}>
             <div className={styles.fieldGroup}>
-              <label htmlFor="title" className={styles.label}>
+              <label htmlFor="category" className={styles.label}>
                 Subject
               </label>
-              <input
-                id="title"
-                type="text"
-                value={formState.title}
-                onChange={handleChange('title')}
-                placeholder="Message..."
-                className={styles.input}
+              <select
+                id="category"
+                value={formState.category}
+                onChange={(e) => setFormState((prev) => ({ ...prev, category: e.target.value as SupportCategory | '' }))}
+                className={styles.select}
                 required
                 disabled={submitState === 'loading'}
-              />
+              >
+                <option value="">Select a category...</option>
+                {SUPPORT_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.fieldGroup}>
