@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/lib/contexts/user-context';
 import { SupportCategory, SUPPORT_CATEGORIES } from '@/lib/constants/support-categories';
 import styles from './page.module.css';
@@ -13,8 +14,9 @@ type FormState = {
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error';
 
-export default function SupportPage() {
+function SupportPageContent() {
   const { user } = useUser();
+  const searchParams = useSearchParams();
   const [formState, setFormState] = useState<FormState>({
     category: '',
     message: '',
@@ -22,6 +24,17 @@ export default function SupportPage() {
   });
   const [submitState, setSubmitState] = useState<SubmitState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  // Pre-fill category from URL query parameter
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam && Object.values(SupportCategory).includes(categoryParam as SupportCategory)) {
+      setFormState((prev) => ({
+        ...prev,
+        category: categoryParam as SupportCategory,
+      }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -170,6 +183,23 @@ export default function SupportPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function SupportPage() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.contentWrapper}>
+          <h1 className={styles.title}>Help & support</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+            <div className="spinner"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <SupportPageContent />
+    </Suspense>
   );
 }
 

@@ -3,13 +3,14 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
-import {Check } from 'lucide-react';
+import {Check} from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
+import { SupportCategory } from '@/lib/constants/support-categories';
 import styles from './page.module.css';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
@@ -646,8 +647,7 @@ function YourCreditsPageContent() {
                 <button 
                   className={styles.enterpriseButton}
                   onClick={() => {
-                    console.log('Enterprise contact requested');
-                    // TODO: Implement enterprise contact form or redirect
+                    router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
                   }}
                 >
                   <span className={styles.enterpriseButtonText}>
