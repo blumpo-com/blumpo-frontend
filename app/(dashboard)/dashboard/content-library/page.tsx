@@ -12,10 +12,12 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import Image from "next/image";
 import { CreateNewCard } from "./components/create-new-card";
 import { ImageCard } from "./components/image-card";
 import { SkeletonCard } from "./components/skeleton-card";
 import { WarningBox } from "./components/warning-box";
+import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
 import { AdImage, ContentLibraryResponse } from "./types";
 import styles from "./page.module.css";
 
@@ -44,47 +46,6 @@ interface FilterTabProps {
   onSelect: (code: string) => void;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function FilterTab({
-  label,
-  iconSrc,
-  iconAlt,
-  value,
-  options,
-  onSelect,
-  isOpen,
-  onOpenChange,
-}: FilterTabProps) {
-  const selectedOption = options.find((opt) => opt.code === value);
-  const displayValue = selectedOption?.name || "All";
-
-  return (
-    <div className={styles.filterGroup}>
-      <label className={styles.filterLabel}>{label}</label>
-      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger className={styles.filterInput}>
-          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
-          <span className={styles.filterValue}>{displayValue}</span>
-          <ChevronDown className={styles.chevronIcon} size={16} />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={styles.dropdownContent}>
-          {options.map((option) => (
-            <DropdownMenuItem
-              key={option.code}
-              onClick={() => {
-                onSelect(option.code);
-                onOpenChange(false);
-              }}
-              className={styles.dropdownItem}
-            >
-              {option.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
 }
 
 interface MultiSelectFilterTabProps {
@@ -187,6 +148,11 @@ export default function ContentLibraryPage() {
   const [showUnsaved, setShowUnsaved] = useState(false);
   const [isArchetypeOpen, setIsArchetypeOpen] = useState(false);
   const [isFormatOpen, setIsFormatOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<{
+    imageId: string;
+    jobId: string | null;
+  } | null>(null);
 
   // Fetch all images once on mount (including deleted for unsaved filter)
   const fetchImages = async () => {
@@ -274,15 +240,25 @@ export default function ContentLibraryPage() {
     router.push("/dashboard");
   };
 
-  const handleDelete = async (
+  const handleDeleteClick = (
     imageId: string,
     jobId: string | null,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
+    setImageToDelete({ imageId, jobId });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!imageToDelete) return;
+
+    const { imageId, jobId } = imageToDelete;
 
     if (!jobId) {
       console.error("No jobId found for image");
+      setImageToDelete(null);
+      setDeleteDialogOpen(false);
       return;
     }
 
@@ -310,6 +286,9 @@ export default function ContentLibraryPage() {
       );
     } catch (err) {
       console.error("Error deleting ad:", err);
+    } finally {
+      setImageToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -356,7 +335,7 @@ export default function ContentLibraryPage() {
     setSelectedArchetypes((prev) => {
       if (code === "all") {
         if (prev.includes("all")) {
-          return []; // Odznacz wszystko
+          return [];
         } else {
           return ["all"];
         }
@@ -461,7 +440,7 @@ export default function ContentLibraryPage() {
         <div className={styles.gridWrapper}>
           <div className={styles.grid}>
             <CreateNewCard onClick={handleCreateNew} />
-            {[...Array(4)].map((_, index) => (
+            {[...Array(10)].map((_, index) => (
               <SkeletonCard key={index} />
             ))}
           </div>
@@ -472,34 +451,16 @@ export default function ContentLibraryPage() {
         </div>
       ) : (
         <>
-          {/* Grid */}
-          <div className={styles.gridWrapper}>
-            <div className={styles.grid}>
-              {distributeCardsIntoColumns(
-                [
-                  <CreateNewCard key="create-new" onClick={handleCreateNew} />,
-                  ...images.map((image) => (
-                    <ImageCard
-                      key={image.id}
-                      image={image}
-                      showUnsaved={showUnsaved}
-                      onDelete={handleDelete}
-                      onRestore={handleRestore}
-                      onDownload={handleDownload}
-                    />
-                  )),
-                ],
-                true
-              ).map((column, columnIndex) => (
-                <div key={columnIndex} className={styles.gridColumn}>
-                  {column}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {images.length === 0 && (
+          {images.length === 0 ? (
             <div className={styles.emptyState}>
+              <Image
+                src="/images/blumpo/confused-blumpo.png"
+                alt="Confused Blumpo"
+                width={300}
+                height={300}
+                className={styles.emptyStateImage}
+                unoptimized
+              />
               <p className={styles.emptyStateText}>
                 No ads found.{" "}
                 {showUnsaved
@@ -507,9 +468,48 @@ export default function ContentLibraryPage() {
                   : "Create your first ad to see it here!"}
               </p>
             </div>
+          ) : (
+            /* Grid */
+            <div className={styles.gridWrapper}>
+              <div className={styles.grid}>
+                {distributeCardsIntoColumns(
+                  [
+                    <CreateNewCard
+                      key="create-new"
+                      onClick={handleCreateNew}
+                    />,
+                    ...images.map((image) => (
+                      <ImageCard
+                        key={image.id}
+                        image={image}
+                        showUnsaved={showUnsaved}
+                        onDelete={handleDeleteClick}
+                        onRestore={handleRestore}
+                        onDownload={handleDownload}
+                      />
+                    )),
+                  ],
+                  true
+                ).map((column, columnIndex) => (
+                  <div key={columnIndex} className={styles.gridColumn}>
+                    {column}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </>
       )}
+
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setImageToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

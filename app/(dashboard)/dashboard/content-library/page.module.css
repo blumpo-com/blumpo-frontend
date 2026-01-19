@@ -1,5 +1,5 @@
 .container {
-  padding: 60px 50px;
+  padding: 60px 50px 0 50px;
   max-width: 100%;
   height: 100vh;
   overflow-y: auto;
@@ -245,7 +245,6 @@
   line-height: 1.5;
   color: #991b1b;
   margin: 0;
-  font-family: "Roboto", sans-serif;
 }
 
 .gridWrapper {
@@ -414,16 +413,87 @@
 
 .emptyState {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
   text-align: center;
-  grid-column: 1 / -1;
+  gap: 24px;
+  min-height: calc(100vh - 300px);
+  width: 100%;
 }
 
 .emptyStateText {
   font-size: 16px;
   color: #6b7280;
+  margin: 0;
+}
+
+/* Delete Confirm Dialog */
+.deleteDialogContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+}
+
+.deleteDialogText {
+  color: #0a0a0a;
+  font-size: 19px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 28px;
+  margin: 0;
+}
+
+.deleteDialogImageImg {
+  object-fit: contain;
+}
+
+.deleteDialogButtons {
+  display: flex;
+  gap: 32px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 32px;
+  width: 100%;
+  max-width: 478px;
+}
+
+.deleteDialogButtonConfirm {
+  background: #0a0a0a;
+  color: #f9fafb;
+  font-size: 14.65px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 7.325px 8.79px;
+  height: 36px;
+  min-width: 162px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteDialogButtonConfirm:hover {
+  background: #1a1a1a;
+}
+
+.deleteDialogButtonCancel {
+  background: white;
+  border: 2px solid #0a0a0a;
+  color: #0a0a0a;
+  font-size: 14.65px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 7.325px 8.79px;
+  height: 37px;
+  min-width: 162px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteDialogButtonCancel:hover {
+  background: #f9fafb;
 }
 
 /* Responsive design */
