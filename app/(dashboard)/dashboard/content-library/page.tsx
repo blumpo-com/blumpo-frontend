@@ -474,10 +474,14 @@ export default function ContentLibraryPage() {
               <div className={styles.grid}>
                 {distributeCardsIntoColumns(
                   [
-                    <CreateNewCard
-                      key="create-new"
-                      onClick={handleCreateNew}
-                    />,
+                    ...(!showUnsaved
+                      ? [
+                          <CreateNewCard
+                            key="create-new"
+                            onClick={handleCreateNew}
+                          />,
+                        ]
+                      : []),
                     ...images.map((image) => (
                       <ImageCard
                         key={image.id}
@@ -489,7 +493,7 @@ export default function ContentLibraryPage() {
                       />
                     )),
                   ],
-                  true
+                  !showUnsaved
                 ).map((column, columnIndex) => (
                   <div key={columnIndex} className={styles.gridColumn}>
                     {column}
