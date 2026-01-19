@@ -22,10 +22,10 @@ const nextConfig: NextConfig = {
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
-      issuer: /\.[jt]sx?$/,
+      issuer: /\.[jt]sx?$|\.mdx$/,
       use: [
         {
-          loader: '@svgr/webpack',
+          loader: "@svgr/webpack",
           options: {
             svgo: false,
           },
