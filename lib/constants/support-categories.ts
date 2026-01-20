@@ -1,5 +1,6 @@
 export enum SupportCategory {
-  SALES_SUBSCRIPTIONS = 'Sales support Subscriptions & Plans',
+  SALES = 'Sales support',
+  SUBSCRIPTIONS = 'Subscriptions & Plans',
   ENTERPRISE_PLAN = 'Enterprise plan',
   BILLINGS = 'Billings',
   CREDITS = 'Credits',
@@ -7,12 +8,14 @@ export enum SupportCategory {
   INTEGRATIONS = 'Integrations',
   TECHNICAL_ISSUES = 'Technical Issues',
   PRODUCT_FEEDBACK = 'Product Feedback',
+  OTHER = 'Other',
 }
 
 export const SUPPORT_CATEGORIES = Object.values(SupportCategory);
 
 export const SALES_CATEGORIES = [
-  SupportCategory.SALES_SUBSCRIPTIONS,
+  SupportCategory.SALES,
+  SupportCategory.SUBSCRIPTIONS,
   SupportCategory.ENTERPRISE_PLAN,
 ];
 
