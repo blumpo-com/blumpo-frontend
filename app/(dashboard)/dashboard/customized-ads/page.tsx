@@ -402,7 +402,7 @@ function CustomizedAdsPageContent() {
         subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       testimonial: {
-        title: "Select Insight",
+        title: "Select testimonials",
         subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       competitor_comparison: {
