@@ -7,6 +7,7 @@ import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
+import { Dialog } from '@/components/ui/dialog';
 import styles from './page.module.css';
 
 interface PageHeaderProps {
@@ -129,6 +130,18 @@ function CustomizedAdsPageContent() {
   const [isLoadingHeadlines, setIsLoadingHeadlines] = useState(false);
   const [headlinesError, setHeadlinesError] = useState<string | null>(null);
   const prevArchetypeRef = useRef<string | null>(null);
+  
+  // Testimonial-specific state (name1 and cta1)
+  const [testimonialName, setTestimonialName] = useState<string>('');
+  const [testimonialCta, setTestimonialCta] = useState<string>('');
+  
+  // Brand insights state (cached for reuse across archetypes)
+  const [brandInsights, setBrandInsights] = useState<any>(null);
+  const [isLoadingBrandInsights, setIsLoadingBrandInsights] = useState(false);
+  const brandInsightsBrandIdRef = useRef<string | null>(null);
+  
+  // Coming soon dialog state
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   // Cleanup preview URL on unmount
   useEffect(() => {
@@ -177,16 +190,18 @@ function CustomizedAdsPageContent() {
     }
     
     if (prevBrandIdRef.current && currentBrand?.id && prevBrandIdRef.current !== currentBrand.id) {
+      // Clear brand insights when brand changes
+      setBrandInsights(null);
+      brandInsightsBrandIdRef.current = null;
       router.push('/dashboard');
     }
     prevBrandIdRef.current = currentBrand?.id || null;
   }, [currentBrand?.id, router]);
 
-  // Simple function to fetch headlines
+  // Function to fetch headlines (only for testimonial)
   const fetchHeadlines = useCallback(async () => {
-    if (currentStep !== 3) return;
-
-    if (!selectedArchetype || selectedArchetype === 'random') {
+    // Only fetch headlines for testimonial archetype
+    if (selectedArchetype !== 'testimonial') {
       setHeadlines([]);
       prevArchetypeRef.current = selectedArchetype;
       return;
@@ -219,22 +234,164 @@ function CustomizedAdsPageContent() {
 
       const data = await response.json();
       setHeadlines(data.headlines || []);
+      // Store testimonial-specific data
+      setTestimonialName(data.name1 || '');
+      setTestimonialCta(data.cta1 || '');
       prevArchetypeRef.current = selectedArchetype;
       console.log('headlines', data.headlines);
+      console.log('testimonial name/cta', data.name1, data.cta1);
     } catch (err) {
       console.error('Error fetching headlines:', err);
       setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch headlines');
     } finally {
       setIsLoadingHeadlines(false);
     }
-  }, [selectedArchetype, currentBrand?.id, currentStep]);
+  }, [selectedArchetype, currentBrand?.id]);
 
-  // Fetch headlines when archetype changes
-  useEffect(() => {
-    if (prevArchetypeRef.current !== selectedArchetype) {
-      fetchHeadlines();
+  // Function to fetch brand insights (cached for reuse across archetypes)
+  const fetchBrandInsights = useCallback(async () => {
+    if (!currentBrand?.id) {
+      setHeadlinesError('No brand selected');
+      return;
     }
-  }, [selectedArchetype, fetchHeadlines]);
+
+    // If we already have insights for this brand, don't refetch
+    if (brandInsights && brandInsightsBrandIdRef.current === currentBrand.id) {
+      return;
+    }
+
+    if (isLoadingBrandInsights) return;
+
+    setIsLoadingBrandInsights(true);
+    setHeadlinesError(null);
+
+    try {
+      // Fetch brand with insights
+      const response = await fetch(`/api/brand/${currentBrand.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch brand insights');
+      }
+
+      const brandData = await response.json();
+      const insights = brandData.insights || null;
+      
+      // Store insights for later use
+      setBrandInsights(insights);
+      brandInsightsBrandIdRef.current = currentBrand.id;
+      
+      console.log('brand insights fetched', insights);
+    } catch (err) {
+      console.error('Error fetching brand insights:', err);
+      setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch brand insights');
+    } finally {
+      setIsLoadingBrandInsights(false);
+    }
+  }, [currentBrand?.id]);
+
+  // Extract insights based on archetype from stored brand insights
+  const extractInsightsForArchetype = useCallback((archetype: string) => {
+    if (!brandInsights) {
+      return [];
+    }
+
+    switch (archetype) {
+      case 'problem_solution': {
+        const redditPainPoints = brandInsights.redditCustomerPainPoints || [];
+        // Convert to string array
+        let painPointsArray: string[] = [];
+        
+        if (Array.isArray(redditPainPoints)) {
+          painPointsArray = redditPainPoints.map((item: any) => {
+            if (typeof item === 'string') {
+              return item;
+            } else if (item && typeof item === 'object' && item.text) {
+              return item.text;
+            } else if (item && typeof item === 'object' && item.painPoint) {
+              return item.painPoint;
+            }
+            return String(item);
+          }).filter(Boolean);
+        }
+        
+        // Shuffle and get 6 random items
+        const shuffled = [...painPointsArray].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 6);
+      }
+      // Add other archetypes here as needed
+      default:
+        return [];
+    }
+  }, [brandInsights]);
+
+  // Fetch brand insights when needed (only once per brand)
+  useEffect(() => {
+    if (currentStep < 4) {
+      return;
+    }
+
+    // Fetch brand insights if needed (only once per brand)
+    if (currentBrand?.id && (!brandInsights || brandInsightsBrandIdRef.current !== currentBrand.id)) {
+      fetchBrandInsights();
+    }
+  }, [currentStep, currentBrand?.id, brandInsights, fetchBrandInsights]);
+
+  // Update headlines based on archetype when archetype changes or when navigating to step 4
+  const prevStepRef = useRef<number>(1);
+  useEffect(() => {
+    // Only process when we're on the insight selection step
+    if (currentStep < 4) {
+      prevStepRef.current = currentStep;
+      return;
+    }
+
+    // Update headlines when archetype changes or when navigating to step 4
+    if (prevArchetypeRef.current !== selectedArchetype || prevStepRef.current < 4) {
+      // Clear testimonial-specific data when switching away from testimonial
+      if (prevArchetypeRef.current === 'testimonial' && selectedArchetype !== 'testimonial') {
+        setTestimonialName('');
+        setTestimonialCta('');
+      }
+      
+      if (selectedArchetype === 'testimonial') {
+        setIsLoadingHeadlines(true);
+        fetchHeadlines();
+      } else if (selectedArchetype === 'problem_solution') {
+        // Extract insights from stored brand insights
+        if (brandInsights) {
+          const extractedInsights = extractInsightsForArchetype(selectedArchetype);
+          setHeadlines(extractedInsights);
+          setIsLoadingHeadlines(false);
+          prevArchetypeRef.current = selectedArchetype;
+        } else {
+          // Wait for brand insights to load
+          setIsLoadingHeadlines(true);
+        }
+      } else {
+        // Clear headlines for other archetypes
+        setHeadlines([]);
+        setIsLoadingHeadlines(false);
+        prevArchetypeRef.current = selectedArchetype;
+      }
+      prevStepRef.current = currentStep;
+    }
+  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype]);
+
+  // Extract insights once brand insights are loaded for problem_solution
+  useEffect(() => {
+    if (
+      currentStep === 4 && 
+      selectedArchetype === 'problem_solution' && 
+      brandInsights && 
+      brandInsightsBrandIdRef.current === currentBrand?.id &&
+      !isLoadingBrandInsights
+    ) {
+      const extractedInsights = extractInsightsForArchetype(selectedArchetype);
+      setHeadlines(extractedInsights);
+      setIsLoadingHeadlines(false);
+      prevArchetypeRef.current = selectedArchetype;
+    }
+  }, [currentStep, selectedArchetype, brandInsights, currentBrand?.id, isLoadingBrandInsights, extractInsightsForArchetype]);
   
 
   // Archetype-specific titles and subtitles for insight selection
@@ -338,6 +495,15 @@ function CustomizedAdsPageContent() {
   const handleNext = async () => {
     const maxSteps = Object.keys(stepConfig).length;
     
+    // Check if moving to insight selection step with unsupported archetype
+    if (currentStep === 3 && currentStep + 1 === maxSteps) {
+      const unsupportedArchetypes = ['competitor_comparison', 'promotion_offer', 'value_proposition', 'random'];
+      if (unsupportedArchetypes.includes(selectedArchetype)) {
+        setShowComingSoon(true);
+        return;
+      }
+    }
+    
     // Headlines are now fetched automatically when archetype changes via useEffect
     // No need to fetch here unless we need to ensure they're loaded before step 3
     
@@ -397,6 +563,16 @@ function CustomizedAdsPageContent() {
         ? null 
         : selectedArchetype.replace(/-/g, '_');
       
+      // Build archetype inputs based on archetype type
+      let archetypeInputs: Record<string, any> = {};
+      if (selectedArchetype === 'testimonial') {
+        // Store testimonial-specific inputs
+        archetypeInputs = {
+          name1: testimonialName,
+          cta1: testimonialCta,
+        };
+      }
+      
       // Create generation job with all data
       const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
@@ -411,6 +587,7 @@ function CustomizedAdsPageContent() {
           selectedInsights,
           insightSource,
           promotionValueInsight: {}, // Can be extended later with specific promotion data
+          archetypeInputs,
         }),
       });
       
@@ -478,6 +655,29 @@ function CustomizedAdsPageContent() {
         nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
         showRandomIcon={currentStep === 4 && selectedInsights.length === 0}
       />
+
+      {/* Coming Soon Dialog */}
+      <Dialog open={showComingSoon} onClose={() => setShowComingSoon(false)}>
+        <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '16px' }}>Coming Soon</h2>
+        <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
+          This archetype is not yet available. Please select a different archetype.
+        </p>
+        <button
+          onClick={() => setShowComingSoon(false)}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: '#040404',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 500,
+          }}
+        >
+          OK
+        </button>
+      </Dialog>
     </div>
   );
 }
