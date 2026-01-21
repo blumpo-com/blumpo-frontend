@@ -61,6 +61,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    // If job is already RUNNING, return success (idempotency)
+    if (job.status === 'RUNNING') {
+      console.log('[GENERATE-CUSTOMIZED] Job is already RUNNING, returning early');
+      return NextResponse.json({
+        job_id: jobId,
+        status: 'RUNNING',
+        message: 'Generation already in progress',
+      });
+    }
+
+    // If job is already completed or failed, don't proceed
+    if (job.status === 'SUCCEEDED' || job.status === 'FAILED' || job.status === 'CANCELED') {
+      console.log('[GENERATE-CUSTOMIZED] Job is already', job.status);
+      return NextResponse.json({
+        job_id: jobId,
+        status: job.status,
+        message: `Job is already ${job.status}`,
+      }, { status: 400 });
+    }
+
     const archetypeCode = job.archetypeCode;
     if(!archetypeCode) {
       console.error('[GENERATE-CUSTOMIZED] Archetype code not found');

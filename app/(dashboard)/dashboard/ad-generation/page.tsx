@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from './creating-process';
 import { ReadyAdsView } from './ready-ads-view';
@@ -17,6 +17,9 @@ function AdGenerationPageContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [jobFormats, setJobFormats] = useState<string[] | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  
+  // Ref to prevent double execution (React Strict Mode)
+  const hasInitiatedRef = useRef<string | null>(null);
 
   // If no job_id, show error or redirect
   if (!jobId) {
@@ -37,7 +40,14 @@ function AdGenerationPageContent() {
 
   // Check job status and trigger generation if needed
   useEffect(() => {
-    if (!jobId || isGenerating || isProcessComplete) return;
+    // Don't run if there's an error, already generating, or already complete
+    if (!jobId || isGenerating || isProcessComplete || generationError) return;
+    
+    // Don't run if we've already initiated for this jobId
+    if (hasInitiatedRef.current === jobId) return;
+
+    // Mark as initiated for this jobId to prevent double execution
+    hasInitiatedRef.current = jobId;
 
     const checkJobAndGenerate = async () => {
       try {
@@ -144,7 +154,7 @@ function AdGenerationPageContent() {
     };
 
     checkJobAndGenerate();
-  }, [jobId, isGenerating, isProcessComplete]);
+  }, [jobId, isGenerating, isProcessComplete, generationError]);
 
   // Fetch job formats when process completes
   useEffect(() => {
