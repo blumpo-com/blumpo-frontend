@@ -16,7 +16,7 @@ interface InsightSelectionContentProps {
 // Archetype-specific titles
 const getArchetypeTitle = (archetype: string): string => {
   const titles: Record<string, string> = {
-    problem_solution: 'Customer pain points',
+    problem_solution: 'Target group',
     testimonial: 'Product review',
     competitor_comparison: 'Competitors',
     promotion_offer: 'Promotional offers',

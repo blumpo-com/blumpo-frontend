@@ -139,6 +139,7 @@ function CustomizedAdsPageContent() {
   const [brandInsights, setBrandInsights] = useState<any>(null);
   const [isLoadingBrandInsights, setIsLoadingBrandInsights] = useState(false);
   const brandInsightsBrandIdRef = useRef<string | null>(null);
+  const fetchingBrandInsightsRef = useRef<boolean>(false);
   
   // Coming soon dialog state
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -211,7 +212,13 @@ function CustomizedAdsPageContent() {
       setHeadlinesError('No brand selected');
       return;
     }
+    
+    // Don't fetch if already loading or if headlines are already loaded for this archetype
     if (isLoadingHeadlines) return;
+    if (headlines.length > 0 && prevArchetypeRef.current === 'testimonial' && testimonialName) {
+      // Headlines already loaded for testimonial
+      return;
+    }
 
     setIsLoadingHeadlines(true);
     setHeadlinesError(null);
@@ -246,7 +253,7 @@ function CustomizedAdsPageContent() {
     } finally {
       setIsLoadingHeadlines(false);
     }
-  }, [selectedArchetype, currentBrand?.id]);
+  }, [selectedArchetype, currentBrand?.id, isLoadingHeadlines, headlines.length, testimonialName]);
 
   // Function to fetch brand insights (cached for reuse across archetypes)
   const fetchBrandInsights = useCallback(async () => {
@@ -260,8 +267,12 @@ function CustomizedAdsPageContent() {
       return;
     }
 
-    if (isLoadingBrandInsights) return;
+    // Prevent concurrent fetches
+    if (isLoadingBrandInsights || fetchingBrandInsightsRef.current) {
+      return;
+    }
 
+    fetchingBrandInsightsRef.current = true;
     setIsLoadingBrandInsights(true);
     setHeadlinesError(null);
 
@@ -286,6 +297,7 @@ function CustomizedAdsPageContent() {
       setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch brand insights');
     } finally {
       setIsLoadingBrandInsights(false);
+      fetchingBrandInsightsRef.current = false;
     }
   }, [currentBrand?.id]);
 
@@ -297,12 +309,12 @@ function CustomizedAdsPageContent() {
 
     switch (archetype) {
       case 'problem_solution': {
-        const redditPainPoints = brandInsights.redditCustomerPainPoints || [];
+        const redditTargetGroup = brandInsights.targetCustomers || [];
         // Convert to string array
         let painPointsArray: string[] = [];
         
-        if (Array.isArray(redditPainPoints)) {
-          painPointsArray = redditPainPoints.map((item: any) => {
+        if (Array.isArray(redditTargetGroup)) {
+          painPointsArray = redditTargetGroup.map((item: any) => {
             if (typeof item === 'string') {
               return item;
             } else if (item && typeof item === 'object' && item.text) {
@@ -325,28 +337,44 @@ function CustomizedAdsPageContent() {
   }, [brandInsights]);
 
   // Fetch brand insights when needed (only once per brand)
+  const hasFetchedBrandInsightsRef = useRef<string | null>(null);
   useEffect(() => {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       return;
     }
 
+    if (!currentBrand?.id) {
+      return;
+    }
+
+    // Reset ref when brand changes
+    if (hasFetchedBrandInsightsRef.current !== currentBrand.id) {
+      hasFetchedBrandInsightsRef.current = null;
+    }
+
     // Fetch brand insights if needed (only once per brand)
-    if (currentBrand?.id && (!brandInsights || brandInsightsBrandIdRef.current !== currentBrand.id)) {
+    if (
+      (!brandInsights || brandInsightsBrandIdRef.current !== currentBrand.id) &&
+      !isLoadingBrandInsights &&
+      !fetchingBrandInsightsRef.current &&
+      hasFetchedBrandInsightsRef.current !== currentBrand.id
+    ) {
+      hasFetchedBrandInsightsRef.current = currentBrand.id;
       fetchBrandInsights();
     }
-  }, [currentStep, currentBrand?.id, brandInsights, fetchBrandInsights]);
+  }, [currentStep, currentBrand?.id, brandInsights, fetchBrandInsights, isLoadingBrandInsights]);
 
-  // Update headlines based on archetype when archetype changes or when navigating to step 4
+  // Load headlines/insights on step 3 (format selection) based on archetype
   const prevStepRef = useRef<number>(1);
   useEffect(() => {
-    // Only process when we're on the insight selection step
-    if (currentStep < 4) {
+    // Only process when we're on step 3 or later
+    if (currentStep < 3) {
       prevStepRef.current = currentStep;
       return;
     }
 
-    // Update headlines when archetype changes or when navigating to step 4
-    if (prevArchetypeRef.current !== selectedArchetype || prevStepRef.current < 4) {
+    // Load data when archetype changes or when navigating to step 3
+    if (prevArchetypeRef.current !== selectedArchetype || prevStepRef.current < 3) {
       // Clear testimonial-specific data when switching away from testimonial
       if (prevArchetypeRef.current === 'testimonial' && selectedArchetype !== 'testimonial') {
         setTestimonialName('');
@@ -354,8 +382,10 @@ function CustomizedAdsPageContent() {
       }
       
       if (selectedArchetype === 'testimonial') {
-        setIsLoadingHeadlines(true);
-        fetchHeadlines();
+        // Fetch headlines for testimonial (only if not already loaded)
+        if (!headlines.length || prevArchetypeRef.current !== 'testimonial' || !testimonialName) {
+          fetchHeadlines();
+        }
       } else if (selectedArchetype === 'problem_solution') {
         // Extract insights from stored brand insights
         if (brandInsights) {
@@ -375,30 +405,30 @@ function CustomizedAdsPageContent() {
       }
       prevStepRef.current = currentStep;
     }
-  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype]);
-
-  // Extract insights once brand insights are loaded for problem_solution
+  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, /*headlines.length, testimonialName*/]);
+  // Extract insights once brand insights are loaded for problem_solution (on step 3 or later)
   useEffect(() => {
     if (
-      currentStep === 4 && 
+      currentStep >= 3 && 
       selectedArchetype === 'problem_solution' && 
       brandInsights && 
       brandInsightsBrandIdRef.current === currentBrand?.id &&
-      !isLoadingBrandInsights
+      !isLoadingBrandInsights &&
+      (!headlines.length || prevArchetypeRef.current !== 'problem_solution')
     ) {
       const extractedInsights = extractInsightsForArchetype(selectedArchetype);
       setHeadlines(extractedInsights);
       setIsLoadingHeadlines(false);
       prevArchetypeRef.current = selectedArchetype;
     }
-  }, [currentStep, selectedArchetype, brandInsights, currentBrand?.id, isLoadingBrandInsights, extractInsightsForArchetype]);
+  }, [currentStep, selectedArchetype, brandInsights, currentBrand?.id, isLoadingBrandInsights, extractInsightsForArchetype, headlines.length]);
   
 
   // Archetype-specific titles and subtitles for insight selection
   const getInsightStepConfig = () => {
     const configs: Record<string, { title: string; subtitle: string }> = {
       problem_solution: {
-        title: "Select Insight",
+        title: "Select target group",
         subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       testimonial: {
