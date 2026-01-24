@@ -275,31 +275,44 @@
 }
 
 /* Create New Card */
-.createCard {
+.createCardWrapper {
+  box-shadow: 0px 3.604px 11.599px 0px rgba(0, 0, 0, 0.3);
   background: white;
-  border-radius: 6px;
+  box-sizing: border-box;
+  position: relative;
+  transition: all 0.2s;
+  border-radius: 10px;
+  box-sizing: border-box;
+
+}
+
+.createCard {
+  position: relative;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  /* Match imageCard 1:1 height: imageWrapper uses aspect-ratio 1:1, so total height = width (100%) */
+  aspect-ratio: 1 / 1;
+}
+
+.createCardContent {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 19px;
   padding: 13px 20px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0px 3.604px 11.599px 0px rgba(0, 0, 0, 0.3);
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  /* Match imageCard 1:1 height: imageWrapper uses aspect-ratio 1:1, so total height = width (100%) */
-  aspect-ratio: 1 / 1;
-  min-height: 200px;
+  text-align: center;
 }
 
-.createCard::before {
+.createCardWrapper::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 5.86px;
+  border-radius: 6px;
   padding: 2px;
   background: linear-gradient(
     95.82deg,
@@ -314,7 +327,7 @@
   pointer-events: none;
 }
 
-.createCard:hover {
+.createCardWrapper:hover {
   transform: translateY(-2px);
   box-shadow: 0px 4.604px 12.599px 0px rgba(0, 0, 0, 0.35);
 }
@@ -388,6 +401,12 @@
   align-items: center;
 }
 
+.brandInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .brandName {
   font-size: 14px;
   font-weight: 500;
@@ -395,12 +414,20 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+.deleteCountdown {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
 .actionBar {
   display: flex;
   justify-content: space-around;
+  align-items: center;
   padding: 8px 0;
   background: white;
   border-top: 1px solid #e5e7eb;
+  height: 56px;
 }
 
 .actionButton {

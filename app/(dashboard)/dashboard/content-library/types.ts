@@ -6,6 +6,7 @@ export interface AdImage {
   height: number;
   format: string;
   createdAt: Date | string;
+  deleteAt?: Date | string | null;
   isDeleted?: boolean;
   brand: {
     id: string | null;
@@ -30,6 +31,8 @@ export interface ContentLibraryResponse {
   images: AdImage[];
   total: number;
 }
+
+export { CONTENT_LIBRARY_DELETE_GRACE_DAYS } from "@/lib/constants/content-library";
 
 export const archetypes = [
   { code: "all", name: "All" },

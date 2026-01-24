@@ -132,6 +132,7 @@ export default function ContentLibraryPage() {
   const [showUnsaved, setShowUnsaved] = useState(false);
   const [isArchetypeOpen, setIsArchetypeOpen] = useState(false);
   const [isFormatOpen, setIsFormatOpen] = useState(false);
+  const [pendingImageIds, setPendingImageIds] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<{
     imageId: string;
@@ -211,7 +212,7 @@ export default function ContentLibraryPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${image.title || "ad-image"}.${image.format}`;
+      a.download = `${image.title || "ad-image"}.png`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -248,6 +249,9 @@ export default function ContentLibraryPage() {
     }
 
     try {
+      setPendingImageIds((prev) =>
+        prev.includes(imageId) ? prev : [...prev, imageId]
+      );
       const response = await fetch("/api/ad-actions", {
         method: "POST",
         headers: {
@@ -272,6 +276,7 @@ export default function ContentLibraryPage() {
     } catch (err) {
       console.error("Error deleting ad:", err);
     } finally {
+      setPendingImageIds((prev) => prev.filter((id) => id !== imageId));
       setImageToDelete(null);
       setDeleteDialogOpen(false);
     }
@@ -290,6 +295,9 @@ export default function ContentLibraryPage() {
     }
 
     try {
+      setPendingImageIds((prev) =>
+        prev.includes(imageId) ? prev : [...prev, imageId]
+      );
       const response = await fetch("/api/ad-actions", {
         method: "POST",
         headers: {
@@ -313,6 +321,8 @@ export default function ContentLibraryPage() {
       );
     } catch (err) {
       console.error("Error restoring ad:", err);
+    } finally {
+      setPendingImageIds((prev) => prev.filter((id) => id !== imageId));
     }
   };
 
@@ -492,6 +502,7 @@ export default function ContentLibraryPage() {
                         key={image.id}
                         image={image}
                         showUnsaved={showUnsaved}
+                        isActionLoading={pendingImageIds.includes(image.id)}
                         onDelete={handleDeleteClick}
                         onRestore={handleRestore}
                         onDownload={handleDownload}

@@ -40,6 +40,7 @@ export async function GET(req: Request) {
         height: item.adImage.height,
         format: item.adImage.format,
         createdAt: item.adImage.createdAt,
+        deleteAt: item.adImage.deleteAt,
         brand: item.brand,
         job: item.job,
         workflow: item.workflow,

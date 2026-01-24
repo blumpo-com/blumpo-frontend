@@ -8,6 +8,7 @@ import {
   generationJob,
   brand,
 } from "../schema/index";
+import { CONTENT_LIBRARY_DELETE_GRACE_DAYS } from "@/lib/constants/content-library";
 
 // Ad archetype operations
 export async function getAdArchetypes() {
@@ -167,11 +168,14 @@ export async function getAdImagesByJobId(jobId: string) {
 }
 
 export async function markAdImageAsDeleted(adImageId: string, deleteAt?: Date) {
+  const deleteAtDate =
+    deleteAt ||
+    new Date(Date.now() + CONTENT_LIBRARY_DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000);
   await db
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: deleteAt || new Date(),
+      deleteAt: deleteAtDate,
     })
     .where(eq(adImage.id, adImageId));
 }
@@ -179,11 +183,14 @@ export async function markAdImageAsDeleted(adImageId: string, deleteAt?: Date) {
 export async function markAdImagesAsDeleted(adImageIds: string[]) {
   if (adImageIds.length === 0) return;
 
+  const deleteAtDate = new Date(
+    Date.now() + CONTENT_LIBRARY_DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000
+  );
   await db
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: new Date(),
+      deleteAt: deleteAtDate,
     })
     .where(inArray(adImage.id, adImageIds));
 }
