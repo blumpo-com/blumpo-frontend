@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import styles from './insight-selection.module.css';
 
 interface InsightSelectionContentProps {
@@ -30,9 +31,10 @@ interface HeadlineCardProps {
   headline: string;
   isSelected: boolean;
   onClick: () => void;
+  variant: 'default' | 'problem_solution';
 }
 
-function HeadlineCard({ headline, isSelected, onClick }: HeadlineCardProps) {
+function HeadlineCard({ headline, isSelected, onClick, variant }: HeadlineCardProps) {
   // Parse headline to extract prefix and quote if it follows the pattern
   const parseHeadline = (text: string) => {
     // Check if headline follows pattern like "Pain - \"quote\"" or "Pain - quote"
@@ -62,14 +64,18 @@ function HeadlineCard({ headline, isSelected, onClick }: HeadlineCardProps) {
   };
 
   const { prefix, quote, hasQuotes } = parseHeadline(headline);
+  
+  const cardClass = variant === 'problem_solution' 
+    ? `${styles.headlineCardProblem} ${isSelected ? styles.headlineCardSelected : ''}`
+    : `${styles.headlineCard} ${isSelected ? styles.headlineCardSelected : ''}`;
 
   return (
     <button
-      className={`${styles.headlineCard} ${isSelected ? styles.headlineCardSelected : ''}`}
+      className={cardClass}
       onClick={onClick}
       type="button"
     >
-      {/* Circular indicator on the left */}
+      {/* Circular indicator */}
       <div className={styles.circleIndicator}>
         {isSelected ? (
           <div className={styles.checkIconContainer}>
@@ -188,44 +194,82 @@ export function InsightSelectionContent({
 
   return (
     <div className={styles.insightSelectionWrapper}>
-      <div className={styles.insightSelectionContent}>
-        {/* Title at top center */}
-        <h2 className={styles.sectionTitle}>
-          {getArchetypeTitle(selectedArchetype)}
-        </h2>
-
-        {/* Headlines Grid */}
-        {headlines.length > 0 ? (
-          <div className={styles.headlinesGrid}>
-            {headlines.map((headline, index) => (
+      {selectedArchetype === 'problem_solution' ? (
+        // Problem Solution layout: 2 columns with mascot in center
+        <div className={styles.problemSolutionLayout}>
+          <div className={styles.problemSolutionColumn}>
+            {headlines.slice(0, Math.ceil(headlines.length / 2)).map((headline, index) => (
               <HeadlineCard
                 key={index}
                 headline={headline}
                 isSelected={selectedInsights.includes(headline)}
                 onClick={() => handleHeadlineToggle(headline)}
+                variant="problem_solution"
               />
             ))}
           </div>
-        ) : (
-          <div className={styles.emptyContainer}>
-            <p className={styles.emptyText}>No headlines available for this archetype.</p>
+          
+          <div className={styles.mascotContainer}>
+            <Image
+              src="/images/blumpo/blumpo-macho.png"
+              alt="Blumpo"
+              width={222}
+              height={377}
+              className={styles.mascotImage}
+            />
           </div>
-        )}
-      </div>
+          
+          <div className={styles.problemSolutionColumn}>
+            {headlines.slice(Math.ceil(headlines.length / 2)).map((headline, index) => (
+              <HeadlineCard
+                key={index + Math.ceil(headlines.length / 2)}
+                headline={headline}
+                isSelected={selectedInsights.includes(headline)}
+                onClick={() => handleHeadlineToggle(headline)}
+                variant="problem_solution"
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Default/Testimonial layout: 2-column grid
+        <div className={styles.insightSelectionContent}>
+          {/* Headlines Grid */}
+          {headlines.length > 0 ? (
+            <div className={styles.headlinesGrid}>
+              {headlines.map((headline, index) => (
+                <HeadlineCard
+                  key={index}
+                  headline={headline}
+                  isSelected={selectedInsights.includes(headline)}
+                  onClick={() => handleHeadlineToggle(headline)}
+                  variant="default"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className={styles.emptyContainer}>
+              <p className={styles.emptyText}>No headlines available for this archetype.</p>
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Manual Input at bottom */}
-      <div className={styles.manualInputContainer}>
-        <label className={styles.manualInputLabel}>Manual input</label>
-        <input
-          type="text"
-          className={styles.manualInput}
-          placeholder="Enter you custom pain points"
-          value={manualInput}
-          onChange={(e) => setManualInput(e.target.value)}
-          onKeyPress={handleManualInputKeyPress}
-          onBlur={handleManualInputBlur}
-        />
-      </div>
+      {/* Manual Input at bottom - only for non-problem_solution archetypes */}
+      {selectedArchetype !== 'problem_solution' && (
+        <div className={styles.manualInputContainer}>
+          <label className={styles.manualInputLabel}>Manual input</label>
+          <input
+            type="text"
+            className={styles.manualInput}
+            placeholder="Enter you custom pain points"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            onKeyPress={handleManualInputKeyPress}
+            onBlur={handleManualInputBlur}
+          />
+        </div>
+      )}
     </div>
   );
 }
