@@ -190,12 +190,13 @@ function Header() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Hide header on dashboard routes (routes starting with /dashboard)
+  // Hide header on dashboard routes (routes starting with /dashboard) and generating page
   const isDashboardRoute = pathname?.startsWith('/dashboard');
+  const isGeneratingRoute = pathname?.startsWith('/generating');
   
   return (
     <section className="flex flex-col min-h-screen">
-      {!isDashboardRoute && <Header />}
+      {!isDashboardRoute && !isGeneratingRoute && <Header />}
       {children}
       {!isDashboardRoute && <Footer />}
     </section>

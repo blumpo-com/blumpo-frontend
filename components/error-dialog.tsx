@@ -1,0 +1,131 @@
+'use client';
+
+import { Dialog } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+
+interface ErrorDialogProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  message: string;
+  errorCode?: string | null;
+  onPrimaryAction?: () => void;
+  primaryActionLabel?: string;
+  showSecondaryButton?: boolean;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
+}
+
+export function ErrorDialog({
+  open,
+  onClose,
+  title = 'Error',
+  message,
+  errorCode,
+  onPrimaryAction,
+  primaryActionLabel = 'Go Back',
+  showSecondaryButton = false,
+  secondaryActionLabel = 'Close',
+  onSecondaryAction,
+}: ErrorDialogProps) {
+  const router = useRouter();
+
+  const handlePrimaryAction = () => {
+    if (onPrimaryAction) {
+      onPrimaryAction();
+    } else {
+      router.push('/');
+    }
+    onClose();
+  };
+
+  const handleSecondaryAction = () => {
+    if (onSecondaryAction) {
+      onSecondaryAction();
+    }
+    onClose();
+  };
+
+  // Custom action for INSUFFICIENT_TOKENS - navigate to pricing
+  const handleUpgrade = () => {
+    router.push('/pricing');
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '16px', color: '#000' }}>
+        {title}
+      </h2>
+      <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
+        {message}
+      </p>
+      {errorCode && (
+        <p style={{ fontSize: '14px', color: '#999', marginBottom: '24px' }}>
+          Error code: {errorCode}
+        </p>
+      )}
+      <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+        {errorCode === 'INSUFFICIENT_TOKENS' ? (
+          <>
+            <Button
+              onClick={handleUpgrade}
+              variant="cta"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              Upgrade Plan
+            </Button>
+            <Button
+              onClick={handlePrimaryAction}
+              variant="outline"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              {primaryActionLabel}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              onClick={handlePrimaryAction}
+              variant="cta"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              {primaryActionLabel}
+            </Button>
+            {showSecondaryButton && (
+              <Button
+                onClick={handleSecondaryAction}
+                variant="outline"
+                style={{
+                  width: '100%',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {secondaryActionLabel}
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+    </Dialog>
+  );
+}
+

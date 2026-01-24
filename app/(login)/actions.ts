@@ -105,14 +105,29 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   const redirectTo = formData.get('redirect') as string | null;
   const websiteUrl = formData.get('website_url') as string | null;
 
-  // Handle generation redirect - redirect to root (/) with website_url
+  // Handle generation redirect - start generation and redirect to generating page
   if (redirectTo === 'generate' && websiteUrl) {
-    redirect(`/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`);
+    // Note: We can't call fetch in a server action, so we'll redirect to a page that handles it
+    // The oauth-redirect-handler will handle the actual generation start
+    redirect(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
   }
 
   // Handle checkout redirect
   if (redirectTo === 'checkout') {
-    redirect('/pricing');
+    const planCode = formData.get('plan') as string | null;
+    const interval = formData.get('interval') as string | null;
+    
+    if (planCode) {
+      // Redirect to your-credits page with plan code and interval
+      const params = new URLSearchParams();
+      params.set('plan', planCode);
+      if (interval) {
+        params.set('interval', interval);
+      }
+      redirect(`/dashboard/your-credits?${params.toString()}`);
+    } else {
+      redirect('/dashboard/your-credits');
+    }
   }
 
   // Default redirect - go to dashboard

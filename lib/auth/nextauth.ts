@@ -112,25 +112,31 @@ export const authOptions: NextAuthOptions = {
 
         // Only parse as URL if it's absolute
         const redirectParam = urlObj.searchParams.get('redirect');
-        const priceId = urlObj.searchParams.get('priceId');
+        const plan = urlObj.searchParams.get('plan');
+        const interval = urlObj.searchParams.get('interval');
         const websiteUrl = urlObj.searchParams.get('website_url');
         
         // Handle checkout redirect
-        if (redirectParam === 'checkout' && priceId) {
-          return `${baseUrl}/pricing?priceId=${priceId}`;
-        }
-        
         if (redirectParam === 'checkout') {
-          return `${baseUrl}/pricing`;
+          if (plan) {
+            const params = new URLSearchParams();
+            params.set('plan', plan);
+            if (interval) {
+              params.set('interval', interval);
+            }
+            return `${baseUrl}/dashboard/your-credits?${params.toString()}`;
+          } else {
+            return `${baseUrl}/dashboard/your-credits`;
+          }
         }
 
         if (redirectParam === 'dashboard') {
           return `${baseUrl}/dashboard`;
         }
         
-        // Handle generation redirect - redirect to root with params
+        // Handle generation redirect - redirect to root with params (oauth-redirect-handler will start generation)
         if (redirectParam === 'generate' && websiteUrl) {
-          return `${baseUrl}/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+          return `${baseUrl}/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`; // oauth-redirect-handler will start generation with flag that is after login
         }
         // For auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
         if (urlObj.pathname.startsWith('/api/auth/callback') || urlObj.pathname === '/api/auth/google-callback') {

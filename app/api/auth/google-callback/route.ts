@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const searchParams = request.nextUrl.searchParams;
     const redirect = searchParams.get('redirect');
-    const priceId = searchParams.get('priceId');
+    const plan = searchParams.get('plan');
     const websiteUrl = searchParams.get('website_url');
     
     if (session?.user?.email) {
@@ -21,11 +21,23 @@ export async function GET(request: NextRequest) {
     }
     
     // Determine redirect URL (same logic as OTP)
-    let redirectUrl = '/'; // Default to root instead of dashboard
+    let redirectUrl = '/dashboard'; // Default to dashboard
     if (redirect === 'checkout') {
-      redirectUrl = priceId ? `/pricing?priceId=${priceId}` : '/pricing';
+      // Redirect to your-credits page after login for checkout
+      if (plan) {
+        const params = new URLSearchParams();
+        params.set('plan', plan);
+        const interval = searchParams.get('interval');
+        if (interval) {
+          params.set('interval', interval);
+        }
+        redirectUrl = `/dashboard/your-credits?${params.toString()}`;
+      } else {
+        redirectUrl = '/dashboard/your-credits';
+      }
     } else if (redirect === 'generate' && websiteUrl) {
-      redirectUrl = `/?generate=true&website_url=${encodeURIComponent(websiteUrl)}`;
+      // Redirect to root with params - oauth-redirect-handler will start generation
+      redirectUrl = `/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`;
     } else if (redirect) {
       redirectUrl = redirect;
     }

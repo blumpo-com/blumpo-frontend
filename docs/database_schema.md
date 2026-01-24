@@ -93,7 +93,7 @@ Stores application users. Each user can own multiple brands and has a token acco
 | user_id                 | uuid PK FK → user   | User reference                                 |
 | balance                 | bigint              | Current token balance (default: 0)             |
 | plan_code               | text FK → subscription_plan | Current subscription plan (default: 'FREE') |
-| period                  | token_period enum   | Refill period: DAY / WEEK / MONTH (default: MONTH) |
+| period                  | subscription_period enum | Billing period: MONTHLY / YEARLY (default: MONTHLY) |
 | last_refill_at          | timestamptz         | Last token refill timestamp                    |
 | next_refill_at          | timestamptz         | Next scheduled refill                          |
 | stripe_customer_id      | text UNIQUE         | Stripe customer ID (nullable)                 |
@@ -114,7 +114,7 @@ Stores application users. Each user can own multiple brands and has a token acco
   "user_id": "4b0fd8af-638d-4158-92d3-444a90f26417",
   "balance": 1250,
   "plan_code": "PRO",
-  "period": "MONTH",
+  "period": "MONTHLY",
   "last_refill_at": "2025-01-01T00:00:00Z",
   "next_refill_at": "2025-02-01T00:00:00Z",
   "stripe_customer_id": "cus_abc123",
@@ -682,12 +682,11 @@ FAILED
 CANCELED
 ```
 
-### `token_period`
+### `subscription_period`
 
 ```
-DAY
-WEEK
-MONTH
+MONTHLY
+YEARLY
 ```
 
 ---

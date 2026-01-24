@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
-import { updateAccount } from '@/app/(login)/actions';
+import { updateAccount, signOut } from '@/app/(login)/actions';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
 import { Suspense } from 'react';
@@ -112,6 +112,23 @@ export default function GeneralPage() {
               ) : (
                 'Save Changes'
               )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Sign Out</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={signOut}>
+            <Button
+              type="submit"
+              variant="destructive"
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Sign Out
             </Button>
           </form>
         </CardContent>

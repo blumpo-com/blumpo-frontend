@@ -24,6 +24,7 @@
     "@types/node": "^22.15.18",
     "@types/react": "19.1.4",
     "@types/react-dom": "19.1.5",
+    "@upstash/redis": "^1.35.8",
     "@vercel/blob": "^2.0.0",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^3.0.2",

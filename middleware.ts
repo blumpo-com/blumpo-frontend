@@ -3,13 +3,15 @@ import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
 
 const protectedRoutes = '/dashboard';
+const protectedRoutes2 = '/generating';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
-  const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname.startsWith(protectedRoutes2);
 
   if (isProtectedRoute && !sessionCookie) {
+    console.log('User is not authenticated - redirecting to sign-in with dashboard');
     return NextResponse.redirect(new URL('/sign-in?redirect=dashboard', request.url));
   }
 
@@ -18,18 +20,18 @@ export async function middleware(request: NextRequest) {
   if (sessionCookie && request.method === 'GET') {
     try {
       const parsed = await verifyToken(sessionCookie.value);
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const expiresInFourteenDays = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
 
       res.cookies.set({
         name: 'session',
         value: await signToken({
           ...parsed,
-          expires: expiresInOneDay.toISOString()
+          expires: expiresInFourteenDays.toISOString()
         }),
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
-        expires: expiresInOneDay
+        expires: expiresInFourteenDays
       });
     } catch (error) {
       console.error('Error updating session:', error);

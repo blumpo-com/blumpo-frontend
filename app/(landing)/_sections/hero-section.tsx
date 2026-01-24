@@ -59,11 +59,11 @@ export function HeroSection() {
             {/* Desktop: URL input */}
             <div className="hidden lg:block lg:relative w-160 my-2">
               <Image
-                  src="/images/temp/Blumpo01.png"
-                  alt="Footer CTA"
-                  width={180}
+                  src="/assets/animations/pointing-blumpo.webp"
+                  alt="Pointing Blumpo"
+                  width={210}
                   height={140}
-                  className="absolute -top-32 right-10 z-10"
+                  className="absolute -top-40 right-2 z-10"
                 />
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
                 <UrlInputSection />
