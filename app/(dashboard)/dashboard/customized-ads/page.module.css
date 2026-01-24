@@ -23,7 +23,8 @@
 }
 
 .pageTitle {
-  width: 1145px;
+  width: 100%;
+  max-width: 1145px;
   position: relative;
   font-size: 40px;
   display: inline-block;
@@ -35,6 +36,7 @@
   -webkit-text-fill-color: transparent;
   text-align: center;
   line-height: 1.2;
+  padding: 0 20px;
 }
 
 .pageDescription {
@@ -45,6 +47,7 @@
   color: #888e98;
   width: 100%;
   max-width: 707px;
+  padding: 0 20px;
 }
 
 /* Content Area */
@@ -214,3 +217,77 @@
   margin: 0;
 }
 
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .pageContainer {
+    padding: 15px 32px 20px 32px;
+  }
+  
+  .pageTitle {
+    font-size: 36px;
+  }
+  
+  .pageDescription {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageContainer {
+    padding: 15px 20px 20px 20px;
+  }
+  
+  .pageTitle {
+    font-size: 28px;
+    padding: 0 10px;
+  }
+  
+  .pageDescription {
+    font-size: 20px;
+    padding: 0 10px;
+  }
+  
+  .navigationButtons {
+    font-size: 16px;
+    gap: 15px;
+  }
+  
+  .backButton,
+  .nextButton {
+    min-width: 100px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  
+  .backButton span,
+  .nextButton span {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageContainer {
+    padding: 10px 15px 15px 15px;
+    gap: 5px;
+  }
+  
+  .pageTitle {
+    font-size: 24px;
+  }
+  
+  .pageDescription {
+    font-size: 18px;
+  }
+  
+  .backButton,
+  .nextButton {
+    height: 40px;
+    min-width: 90px;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+  
+  .chooseRandom {
+    min-width: 140px;
+  }
+}

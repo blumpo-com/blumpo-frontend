@@ -328,7 +328,7 @@ function CustomizedAdsPageContent() {
         
         // Shuffle and get 6 random items
         const shuffled = [...painPointsArray].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, 6);
+        return shuffled.slice(0, 4);
       }
       // Add other archetypes here as needed
       default:
