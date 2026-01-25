@@ -8,10 +8,7 @@ import { User, TokenAccount, Brand } from "@/lib/db/schema";
 import { useBrand } from "@/lib/contexts/brand-context";
 import styles from "./dashboard-sidebar.module.css";
 import Wand from "@/assets/icons/Wand.svg";
-
-type UserWithTokenAccount = User & {
-  tokenAccount: TokenAccount | null;
-};
+import { useUser } from "@/lib/contexts/user-context";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -81,14 +78,15 @@ function BrandDropdownItem({
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { data: user, isLoading: isLoadingUser } = useSWR<UserWithTokenAccount>(
-    "/api/user",
-    fetcher
-  );
-  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>(
-    "/api/brands",
-    fetcher
-  );
+  const { user, isLoading: isLoadingUser } = useUser();
+  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: true,
+    revalidateIfStale: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000,
+    keepPreviousData: true,
+  });
   const { currentBrand, setCurrentBrand, isInitialized } = useBrand();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
   const BrandRef = useRef<HTMLDivElement>(null);

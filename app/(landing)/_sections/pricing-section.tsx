@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/hooks/use-animated-number";
+import { SupportCategory } from "@/lib/constants/support-categories";
 
 interface PricingCardProps {
   name: string;
@@ -22,6 +24,23 @@ interface PricingCardProps {
   annualPriceId?: string | null;
   isAnnual?: boolean;
   allowCheckoutWithoutPriceId?: boolean;
+}
+
+function EnterpriseTalkButton() {
+  const router = useRouter();
+  
+  return (
+    <button 
+      className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
+      onClick={() => {
+        router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
+      }}
+    >
+      <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
+        Let's talk
+      </span>
+    </button>
+  );
 }
 
 function PricingCard({
@@ -136,16 +155,7 @@ function PricingCard({
           </button>
         </form>
       ) : buttonText === "Let's talk" ? (
-        <button 
-          className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
-          onClick={() => {
-            console.log('Enterprise contact requested');
-          }}
-        >
-          <span className="text-[22px] font-bold text-[#f9fafb] leading-normal">
-            {buttonText}
-          </span>
-        </button>
+        <EnterpriseTalkButton />
       ) : (
         <button 
           disabled
