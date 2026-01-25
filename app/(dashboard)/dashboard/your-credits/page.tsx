@@ -6,13 +6,13 @@ import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@
 import {Check} from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
-import { PricingSection } from '../../pricing-section';
 import { Save50Dialog } from './save-50-dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
 import { SupportCategory } from '@/lib/constants/support-categories';
 import styles from './page.module.css';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
+import { PricingSection } from '@/app/(landing)/_sections/pricing-section';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 

@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Dialog } from '@/components/ui/dialog';
-import { X, Plus, Loader2 } from 'lucide-react';
-import { HexColorPicker } from 'react-colorful';
-import ContentWrapper from './content-wrapper';
+import { useState, useEffect, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { X, Plus, Loader2 } from "lucide-react";
+import { HexColorPicker } from "react-colorful";
+import ContentWrapper from "./content-wrapper";
 // @ts-ignore - Package will be installed
-const languages = require('@cospired/i18n-iso-languages');
+const languages = require("@cospired/i18n-iso-languages");
 // @ts-ignore - Package will be installed
-const en = require('@cospired/i18n-iso-languages/langs/en.json');
-import styles from './your-brand.module.css';
+const en = require("@cospired/i18n-iso-languages/langs/en.json");
+import styles from "./your-brand.module.css";
 
 // Register English locale for language names
 languages.registerLocale(en);
@@ -50,7 +50,7 @@ interface YourBrandPageProps {
 }
 
 // Get all languages as array for dropdown
-const getAllLanguages = (): Array<{ code: string, name: string }> => {
+const getAllLanguages = (): Array<{ code: string; name: string }> => {
   // @ts-ignore - Package will be installed
   const codes = languages.getAlpha2Codes();
   // Convert to array if it's an object
@@ -58,21 +58,41 @@ const getAllLanguages = (): Array<{ code: string, name: string }> => {
   return codesArray
     .map((code: string) => {
       // @ts-ignore - Package will be installed
-      const name = (languages.getName as (code: string, lang: string) => string | undefined)(code, 'en');
+      const name = (
+        languages.getName as (code: string, lang: string) => string | undefined
+      )(code, "en");
       return name ? { code, name } : null;
     })
-    .filter((lang: { code: string; name: string } | null): lang is { code: string; name: string } => lang !== null)
-    .sort((a: { code: string; name: string }, b: { code: string; name: string }) => a.name.localeCompare(b.name));
+    .filter(
+      (
+        lang: { code: string; name: string } | null
+      ): lang is { code: string; name: string } => lang !== null
+    )
+    .sort(
+      (a: { code: string; name: string }, b: { code: string; name: string }) =>
+        a.name.localeCompare(b.name)
+    );
 };
 
 // Get language code from name or return as-is if it's already a code
 const getLanguageCode = (value: string): string => {
   // Check if it's already a valid 2-letter code
-  if (value.length === 2 && (languages.getName as (code: string, lang: string) => string | undefined)(value, 'en')) {
+  if (
+    value.length === 2 &&
+    (languages.getName as (code: string, lang: string) => string | undefined)(
+      value,
+      "en"
+    )
+  ) {
     return value.toLowerCase();
   }
   // Try to find the code by name
-  const code = (languages.getAlpha2Code as (name: string, lang: string) => string | undefined)(value, 'en');
+  const code = (
+    languages.getAlpha2Code as (
+      name: string,
+      lang: string
+    ) => string | undefined
+  )(value, "en");
   return code || value;
 };
 
@@ -80,17 +100,35 @@ const getLanguageCode = (value: string): string => {
 const getLanguageName = (value: string): string => {
   // If it's a 2-letter code, get the name
   if (value.length === 2) {
-    const name = (languages.getName as (code: string, lang: string) => string | undefined)(value.toLowerCase(), 'en');
+    const name = (
+      languages.getName as (code: string, lang: string) => string | undefined
+    )(value.toLowerCase(), "en");
     if (name) return name;
   }
   // If it's already a name, check if it's valid and return it
-  const code = (languages.getAlpha2Code as (name: string, lang: string) => string | undefined)(value, 'en');
+  const code = (
+    languages.getAlpha2Code as (
+      name: string,
+      lang: string
+    ) => string | undefined
+  )(value, "en");
   if (code) return value; // It's a valid name, return as-is
   // Fallback: try to get name from code
-  return (languages.getName as (code: string, lang: string) => string | undefined)(value.toLowerCase(), 'en') || value;
+  return (
+    (languages.getName as (code: string, lang: string) => string | undefined)(
+      value.toLowerCase(),
+      "en"
+    ) || value
+  );
 };
 
-export default function YourBrandPage({ brandId, brandData, isLoading: isLoadingData, error: fetchError, onBrandDataUpdate }: YourBrandPageProps) {
+export default function YourBrandPage({
+  brandId,
+  brandData,
+  isLoading: isLoadingData,
+  error: fetchError,
+  onBrandDataUpdate,
+}: YourBrandPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -100,21 +138,26 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
   // Form state
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [fonts, setFonts] = useState<Array<{ count: number, fontFamily: string }>>([]);
-  const [fontInput, setFontInput] = useState('');
+  const [fonts, setFonts] = useState<
+    Array<{ count: number; fontFamily: string }>
+  >([]);
+  const [fontInput, setFontInput] = useState("");
   const [isFontInputFocused, setIsFontInputFocused] = useState(false);
   const [colors, setColors] = useState<string[]>([]);
-  const [colorInput, setColorInput] = useState('#000000');
+  const [colorInput, setColorInput] = useState("#000000");
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [tempColorInput, setTempColorInput] = useState('#000000');
-  const [brandVoice, setBrandVoice] = useState('');
-  const [websiteUrl, setWebsiteUrl] = useState('');
-  const [language, setLanguage] = useState('en');
-  const [languageDisplayName, setLanguageDisplayName] = useState<string>('English');
+  const [tempColorInput, setTempColorInput] = useState("#000000");
+  const [brandVoice, setBrandVoice] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [language, setLanguage] = useState("en");
+  const [languageDisplayName, setLanguageDisplayName] =
+    useState<string>("English");
   const [photos, setPhotos] = useState<string[]>([]);
   const [heroPhotos, setHeroPhotos] = useState<string[]>([]);
   const [insightsLoaded, setInsightsLoaded] = useState(false);
-  const [allLanguages, setAllLanguages] = useState<Array<{ code: string, name: string }>>([]);
+  const [allLanguages, setAllLanguages] = useState<
+    Array<{ code: string; name: string }>
+  >([]);
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const heroPhotoInputRef = useRef<HTMLInputElement>(null);
@@ -129,25 +172,31 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     if (brandData) {
       setLogoUrl(brandData.logoUrl || null);
       // Handle fonts - could be jsonb array of objects or strings (for backward compatibility)
-      const fontsArray = Array.isArray(brandData.fonts) ? brandData.fonts : (brandData.fonts ? [brandData.fonts] : []);
+      const fontsArray = Array.isArray(brandData.fonts)
+        ? brandData.fonts
+        : brandData.fonts
+        ? [brandData.fonts]
+        : [];
       // Convert to object format: if string, convert to object; if already object, use as-is
-      const fontsObjects = fontsArray.map((f: any) => {
-        if (typeof f === 'string') {
-          // Legacy format: string, convert to object with count 1
-          return { count: 1, fontFamily: f };
-        } else if (f && typeof f === 'object' && 'fontFamily' in f) {
-          // Already in object format
-          return { count: f.count || 1, fontFamily: f.fontFamily };
-        }
-        return null;
-      }).filter((f): f is { count: number, fontFamily: string } => f !== null);
+      const fontsObjects = fontsArray
+        .map((f: any) => {
+          if (typeof f === "string") {
+            // Legacy format: string, convert to object with count 1
+            return { count: 1, fontFamily: f };
+          } else if (f && typeof f === "object" && "fontFamily" in f) {
+            // Already in object format
+            return { count: f.count || 1, fontFamily: f.fontFamily };
+          }
+          return null;
+        })
+        .filter((f): f is { count: number; fontFamily: string } => f !== null);
       setFonts(fontsObjects);
       setColors(Array.isArray(brandData.colors) ? brandData.colors : []);
-      setBrandVoice(brandData.insights?.brandVoice || '');
-      setWebsiteUrl(brandData.websiteUrl || '');
+      setBrandVoice(brandData.insights?.brandVoice || "");
+      setWebsiteUrl(brandData.websiteUrl || "");
 
       // Handle language - could be code or full name
-      const langValue = brandData.language || 'en';
+      const langValue = brandData.language || "en";
       // Convert to code for storage, but keep display name
       const langCode = getLanguageCode(langValue);
       setLanguage(langCode);
@@ -156,7 +205,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       setLanguageDisplayName(displayName);
       setIsUploadingPhotos(false);
       setPhotos(Array.isArray(brandData.photos) ? brandData.photos : []);
-      setHeroPhotos(Array.isArray(brandData.heroPhotos) ? brandData.heroPhotos : []);
+      setHeroPhotos(
+        Array.isArray(brandData.heroPhotos) ? brandData.heroPhotos : []
+      );
       setInsightsLoaded(brandData.insights !== null);
     }
   }, [brandData, allLanguages]);
@@ -173,27 +224,32 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       // First, delete old logo if it exists
       if (logoUrl) {
         try {
-          await fetch(`/api/delete-photo?url=${encodeURIComponent(logoUrl)}&brandId=${brandId}&type=logo`, {
-            method: 'DELETE',
-          });
+          await fetch(
+            `/api/delete-photo?url=${encodeURIComponent(
+              logoUrl
+            )}&brandId=${brandId}&type=logo`,
+            {
+              method: "DELETE",
+            }
+          );
         } catch (deleteErr) {
           // Log error but continue with upload
-          console.error('Error deleting old logo:', deleteErr);
+          console.error("Error deleting old logo:", deleteErr);
         }
       }
 
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('brandId', brandId);
-      formData.append('type', 'logo');
+      formData.append("file", file);
+      formData.append("brandId", brandId);
+      formData.append("type", "logo");
 
-      const response = await fetch('/api/upload-photo', {
-        method: 'POST',
+      const response = await fetch("/api/upload-photo", {
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload logo');
+        throw new Error("Failed to upload logo");
       }
 
       const { url } = await response.json();
@@ -202,7 +258,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       // Update brand with logo URL
       await saveBrandData({ logoUrl: url });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload logo');
+      setError(err instanceof Error ? err.message : "Failed to upload logo");
     } finally {
       setIsUploadingLogo(false);
     }
@@ -219,17 +275,17 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('brandId', brandId);
-        formData.append('type', 'product');
+        formData.append("file", file);
+        formData.append("brandId", brandId);
+        formData.append("type", "product");
 
-        const response = await fetch('/api/upload-photo', {
-          method: 'POST',
+        const response = await fetch("/api/upload-photo", {
+          method: "POST",
           body: formData,
         });
 
         if (!response.ok) {
-          throw new Error('Failed to upload photo');
+          throw new Error("Failed to upload photo");
         }
 
         const { url } = await response.json();
@@ -243,18 +299,20 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       // Update brand with new photos
       // await saveBrandData({ photos: newPhotos });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload photos');
+      setError(err instanceof Error ? err.message : "Failed to upload photos");
     } finally {
       setIsUploadingPhotos(false);
       // Reset input value to allow selecting the same file again
       if (photoInputRef.current) {
-        photoInputRef.current.value = '';
+        photoInputRef.current.value = "";
       }
     }
   };
 
   // Handle hero photo upload
-  const handleHeroPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHeroPhotoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
@@ -264,17 +322,17 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('brandId', brandId);
-        formData.append('type', 'hero');
+        formData.append("file", file);
+        formData.append("brandId", brandId);
+        formData.append("type", "hero");
 
-        const response = await fetch('/api/upload-photo', {
-          method: 'POST',
+        const response = await fetch("/api/upload-photo", {
+          method: "POST",
           body: formData,
         });
 
         if (!response.ok) {
-          throw new Error('Failed to upload hero photo');
+          throw new Error("Failed to upload hero photo");
         }
 
         const { url } = await response.json();
@@ -289,12 +347,14 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       // Update brand with new hero photos
       await saveBrandData({ heroPhotos: newHeroPhotos });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload hero photos');
+      setError(
+        err instanceof Error ? err.message : "Failed to upload hero photos"
+      );
     } finally {
       setIsUploadingHeroPhotos(false);
       // Reset input value to allow selecting the same file again
       if (heroPhotoInputRef.current) {
-        heroPhotoInputRef.current.value = '';
+        heroPhotoInputRef.current.value = "";
       }
     }
   };
@@ -304,24 +364,25 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     const trimmed = fontInput.trim();
     if (trimmed) {
       // Check if font already exists
-      const existingFont = fonts.find(f => f.fontFamily.toLowerCase() === trimmed.toLowerCase());
+      const existingFont = fonts.find(
+        (f) => f.fontFamily.toLowerCase() === trimmed.toLowerCase()
+      );
       if (existingFont) {
         // Font already exists, don't add duplicate
-        setFontInput('');
+        setFontInput("");
         setIsFontInputFocused(false);
         return;
       }
 
       // Find the highest count in existing fonts
-      const highestCount = fonts.length > 0
-        ? Math.max(...fonts.map(f => f.count || 0))
-        : 0;
+      const highestCount =
+        fonts.length > 0 ? Math.max(...fonts.map((f) => f.count || 0)) : 0;
 
       // Add new font with count = highestCount + 1
       const newFont = { count: highestCount + 1, fontFamily: trimmed };
       const newFonts = [...fonts, newFont];
       setFonts(newFonts);
-      setFontInput('');
+      setFontInput("");
       setIsFontInputFocused(false);
       saveBrandData({ fonts: newFonts });
     }
@@ -329,14 +390,14 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
   // Remove font
   const handleRemoveFont = (fontFamily: string) => {
-    const newFonts = fonts.filter(f => f.fontFamily !== fontFamily);
+    const newFonts = fonts.filter((f) => f.fontFamily !== fontFamily);
     setFonts(newFonts);
     saveBrandData({ fonts: newFonts });
   };
 
   // Open color picker
   const handleOpenColorPicker = () => {
-    setTempColorInput('#000000');
+    setTempColorInput("#000000");
     setIsColorPickerOpen(true);
   };
 
@@ -352,7 +413,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
   // Remove color
   const handleRemoveColor = (color: string) => {
-    const newColors = colors.filter(c => c !== color);
+    const newColors = colors.filter((c) => c !== color);
     setColors(newColors);
     saveBrandData({ colors: newColors });
   };
@@ -362,9 +423,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
     try {
       setIsSaving(true);
       const response = await fetch(`/api/brand/${brandId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...updates,
@@ -373,13 +434,13 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save brand data');
+        throw new Error("Failed to save brand data");
       }
 
       const updated = await response.json();
       onBrandDataUpdate(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setIsSaving(false);
     }
@@ -403,7 +464,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
   // Save brand voice and website URL on blur only if the value has changed
   const handleBlur = () => {
-    if (websiteUrl !== brandData?.websiteUrl || brandVoice !== brandData?.insights?.brandVoice) {
+    if (
+      websiteUrl !== brandData?.websiteUrl ||
+      brandVoice !== brandData?.insights?.brandVoice
+    ) {
       saveBrandData({
         websiteUrl: websiteUrl,
         brandVoice: brandVoice,
@@ -412,27 +476,35 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
   };
 
   // Remove photo (product photos)
-  const handleRemovePhoto = async (photoUrl: string, type: 'product' | 'hero' = 'product') => {
+  const handleRemovePhoto = async (
+    photoUrl: string,
+    type: "product" | "hero" = "product"
+  ) => {
     try {
       setDeletingPhotoUrl(photoUrl);
       setError(null);
 
       // Delete from Vercel Blob
-      await fetch(`/api/delete-photo?url=${encodeURIComponent(photoUrl)}&brandId=${brandId}&type=${type}`, {
-        method: 'DELETE',
-      });
+      await fetch(
+        `/api/delete-photo?url=${encodeURIComponent(
+          photoUrl
+        )}&brandId=${brandId}&type=${type}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      if (type === 'hero') {
-        const newHeroPhotos = heroPhotos.filter(p => p !== photoUrl);
+      if (type === "hero") {
+        const newHeroPhotos = heroPhotos.filter((p) => p !== photoUrl);
         setHeroPhotos(newHeroPhotos);
         await saveBrandData({ heroPhotos: newHeroPhotos });
       } else {
-        const newPhotos = photos.filter(p => p !== photoUrl);
+        const newPhotos = photos.filter((p) => p !== photoUrl);
         setPhotos(newPhotos);
         // await saveBrandData({ photos: newPhotos });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete photo');
+      setError(err instanceof Error ? err.message : "Failed to delete photo");
     } finally {
       setDeletingPhotoUrl(null);
     }
@@ -478,9 +550,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
             <div className={styles.rowContent}>
               {/* Website URL */}
               <div>
-                <Label className={styles.label}>
-                  Website URL
-                </Label>
+                <Label className={styles.label}>Website URL</Label>
                 <input
                   type="url"
                   value={websiteUrl}
@@ -493,9 +563,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
               {/* Ads Language */}
               <div>
-                <Label className={styles.label}>
-                  Ads language
-                </Label>
+                <Label className={styles.label}>Ads language</Label>
                 <select
                   value={language}
                   onChange={(e) => handleLanguageChange(e.target.value)}
@@ -521,16 +589,16 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
             <div className={styles.rowContent}>
               {/* Brand Fonts */}
               <div>
-                <Label className={styles.label}>
-                  Brand fonts
-                </Label>
+                <Label className={styles.label}>Brand fonts</Label>
                 <div
                   className={styles.fontContainer}
                   onClick={(e) => {
                     // Only focus if clicking on white space, not on chips
                     const target = e.target as HTMLElement;
                     const isClickOnChip = target.closest(`.${styles.fontChip}`);
-                    const isClickOnPlaceholder = target.classList.contains(styles.fontPlaceholder);
+                    const isClickOnPlaceholder = target.classList.contains(
+                      styles.fontPlaceholder
+                    );
 
                     // Enter focus mode if clicking on container, fontsList, or placeholder (but not on chips)
                     if (!isClickOnChip || isClickOnPlaceholder) {
@@ -561,7 +629,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                           </div>
                         ))
                       ) : (
-                        <span className={styles.fontPlaceholder}>Click to add fonts</span>
+                        <span className={styles.fontPlaceholder}>
+                          Click to add fonts
+                        </span>
                       )}
                     </div>
                   ) : (
@@ -572,13 +642,13 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                         value={fontInput}
                         onChange={(e) => setFontInput(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             e.preventDefault();
                             handleAddFont();
                           }
-                          if (e.key === 'Escape') {
+                          if (e.key === "Escape") {
                             setIsFontInputFocused(false);
-                            setFontInput('');
+                            setFontInput("");
                           }
                         }}
                         onBlur={() => {
@@ -610,15 +680,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
               {/* Colors */}
               <div>
-                <Label className={styles.label}>
-                  Colors
-                </Label>
+                <Label className={styles.label}>Colors</Label>
                 <div className={styles.colorsList}>
                   {colors.map((color) => (
-                    <div
-                      key={color}
-                      className={styles.colorSwatchContainer}
-                    >
+                    <div key={color} className={styles.colorSwatchContainer}>
                       <div
                         className={styles.colorSwatch}
                         style={{ backgroundColor: color }}
@@ -642,7 +707,10 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                 </div>
 
                 {/* Color Picker Dialog */}
-                <Dialog open={isColorPickerOpen} onClose={() => setIsColorPickerOpen(false)}>
+                <Dialog
+                  open={isColorPickerOpen}
+                  onClose={() => setIsColorPickerOpen(false)}
+                >
                   <div className={styles.colorPickerDialog}>
                     <h3 className={styles.colorPickerTitle}>Select Color</h3>
                     <div className={styles.colorPickerContent}>
@@ -670,7 +738,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                         <Button
                           type="button"
                           onClick={handleAddColor}
-                          disabled={!tempColorInput || colors.includes(tempColorInput)}
+                          disabled={
+                            !tempColorInput || colors.includes(tempColorInput)
+                          }
                           className={styles.colorPickerAddButton}
                         >
                           Add Color
@@ -683,9 +753,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
 
               {/* Brand Voice */}
               <div>
-                <Label className={styles.label}>
-                  Brand voice
-                </Label>
+                <Label className={styles.label}>Brand voice</Label>
                 {!insightsLoaded ? (
                   <div className={styles.skeletonTextarea} />
                 ) : (
@@ -704,16 +772,11 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
             <div className={styles.rowContent}>
               {/* Product Photos */}
               <div>
-                <Label className={styles.label}>
-                  Product photos
-                </Label>
+                <Label className={styles.label}>Product photos</Label>
                 <div className={styles.photosGrid}>
                   {/* Display hero photos */}
                   {heroPhotos.map((photo, index) => (
-                    <div
-                      key={`hero-${index}`}
-                      className={styles.photoItem}
-                    >
+                    <div key={`hero-${index}`} className={styles.photoItem}>
                       <img
                         src={photo}
                         alt={`Hero photo ${index + 1}`}
@@ -727,9 +790,13 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                       {deletingPhotoUrl !== photo && (
                         <button
                           type="button"
-                          onClick={() => handleRemovePhoto(photo, 'hero')}
+                          onClick={() => handleRemovePhoto(photo, "hero")}
                           className={styles.photoRemoveButton}
-                          disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                          disabled={
+                            deletingPhotoUrl !== null ||
+                            isUploadingPhotos ||
+                            isUploadingHeroPhotos
+                          }
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -738,10 +805,7 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                   ))}
                   {/* Display product photos */}
                   {photos.map((photo, index) => (
-                    <div
-                      key={`product-${index}`}
-                      className={styles.photoItem}
-                    >
+                    <div key={`product-${index}`} className={styles.photoItem}>
                       <img
                         src={photo}
                         alt={`Product photo ${index + 1}`}
@@ -755,9 +819,13 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
                       {deletingPhotoUrl !== photo && (
                         <button
                           type="button"
-                          onClick={() => handleRemovePhoto(photo, 'product')}
+                          onClick={() => handleRemovePhoto(photo, "product")}
                           className={styles.photoRemoveButton}
-                          disabled={deletingPhotoUrl !== null || isUploadingPhotos || isUploadingHeroPhotos}
+                          disabled={
+                            deletingPhotoUrl !== null ||
+                            isUploadingPhotos ||
+                            isUploadingHeroPhotos
+                          }
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -820,17 +888,9 @@ export default function YourBrandPage({ brandId, brandData, isLoading: isLoading
           </div>
         </div>
 
-        {error && (
-          <div className={styles.errorMessage}>
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorMessage}>{error}</div>}
 
-        {isSaving && (
-          <div className={styles.savingMessage}>
-            Saving...
-          </div>
-        )}
+        {isSaving && <div className={styles.savingMessage}>Saving...</div>}
       </div>
     </div>
   );

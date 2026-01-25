@@ -1,13 +1,18 @@
-import { desc, eq, and, sql, inArray } from 'drizzle-orm';
-import { db } from '../drizzle';
-import { adArchetype, adWorkflow, adImage, adEvent, generationJob, brand } from '../schema/index';
+import { desc, eq, and, sql, inArray } from "drizzle-orm";
+import { db } from "../drizzle";
+import {
+  adArchetype,
+  adWorkflow,
+  adImage,
+  adEvent,
+  generationJob,
+  brand,
+} from "../schema/index";
+import { CONTENT_LIBRARY_DELETE_GRACE_DAYS } from "@/lib/constants/content-library";
 
 // Ad archetype operations
 export async function getAdArchetypes() {
-  return await db
-    .select()
-    .from(adArchetype)
-    .orderBy(adArchetype.displayName);
+  return await db.select().from(adArchetype).orderBy(adArchetype.displayName);
 }
 
 export async function getAdArchetypeByCode(code: string) {
@@ -24,10 +29,12 @@ export async function getWorkflowsForArchetype(archetypeCode: string) {
   return await db
     .select()
     .from(adWorkflow)
-    .where(and(
-      eq(adWorkflow.archetypeCode, archetypeCode),
-      eq(adWorkflow.isActive, true)
-    ))
+    .where(
+      and(
+        eq(adWorkflow.archetypeCode, archetypeCode),
+        eq(adWorkflow.isActive, true)
+      )
+    )
     .orderBy(adWorkflow.variantKey);
 }
 
@@ -127,10 +134,16 @@ export async function getUserAds(
         archetypeMode: generationJob.archetypeMode,
         createdAt: generationJob.createdAt,
       },
+      workflow: {
+        id: adWorkflow.id,
+        archetypeCode: adWorkflow.archetypeCode,
+        variantKey: adWorkflow.variantKey,
+      },
     })
     .from(adImage)
     .leftJoin(brand, eq(adImage.brandId, brand.id))
     .leftJoin(generationJob, eq(adImage.jobId, generationJob.id))
+    .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .where(and(...conditions))
     .orderBy(desc(adImage.createdAt))
     .limit(limit)
@@ -155,23 +168,29 @@ export async function getAdImagesByJobId(jobId: string) {
 }
 
 export async function markAdImageAsDeleted(adImageId: string, deleteAt?: Date) {
+  const deleteAtDate =
+    deleteAt ||
+    new Date(Date.now() + CONTENT_LIBRARY_DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000);
   await db
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: deleteAt || new Date(),
+      deleteAt: deleteAtDate,
     })
     .where(eq(adImage.id, adImageId));
 }
 
 export async function markAdImagesAsDeleted(adImageIds: string[]) {
   if (adImageIds.length === 0) return;
-  
+
+  const deleteAtDate = new Date(
+    Date.now() + CONTENT_LIBRARY_DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000
+  );
   await db
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: new Date(),
+      deleteAt: deleteAtDate,
     })
     .where(inArray(adImage.id, adImageIds));
 }
@@ -268,10 +287,9 @@ export async function getAdAnalyticsSummary(options?: {
       count: sql<number>`count(*)::int`,
     })
     .from(adEvent)
-    .where(and(
-      whereClause || sql`1=1`,
-      sql`${adEvent.archetypeCode} IS NOT NULL`
-    ))
+    .where(
+      and(whereClause || sql`1=1`, sql`${adEvent.archetypeCode} IS NOT NULL`)
+    )
     .groupBy(adEvent.archetypeCode);
 
   // Count events by workflow
@@ -281,10 +299,7 @@ export async function getAdAnalyticsSummary(options?: {
       count: sql<number>`count(*)::int`,
     })
     .from(adEvent)
-    .where(and(
-      whereClause || sql`1=1`,
-      sql`${adEvent.workflowId} IS NOT NULL`
-    ))
+    .where(and(whereClause || sql`1=1`, sql`${adEvent.workflowId} IS NOT NULL`))
     .groupBy(adEvent.workflowId);
 
   return {
@@ -313,7 +328,9 @@ export async function getAdEventsForJob(jobId: string, limit = 100) {
 }
 
 // Get worklows and their archetypes by workflow ids
-export async function getWorkflowsAndArchetypesByWorkflowIds(workflowIds: string[]) {
+export async function getWorkflowsAndArchetypesByWorkflowIds(
+  workflowIds: string[]
+) {
   return await db
     .select()
     .from(adWorkflow)

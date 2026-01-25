@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Home, LogOut, X, Menu, ArrowRight } from "lucide-react";
-import { Footer } from "./footer-section";
+import { Footer } from "./_sections/footer-section";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -1,26 +1,44 @@
 import Link from 'next/link';
-import { CircleIcon } from 'lucide-react';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
-    <div className="flex items-center justify-center min-h-[100dvh]">
-      <div className="max-w-md space-y-8 p-4 text-center">
-        <div className="flex justify-center">
-          <CircleIcon className="size-12 text-orange-500" />
+    <div className="flex flex-col items-center justify-center min-h-[100dvh] bg-gray-50 px-4">
+      <div className="max-w-lg w-full space-y-8 text-center">
+        {/* Illustration with 404 */}
+        <div className="relative flex justify-center items-center mb-8">
+          
+          
+          {/* Blumpo character */}
+          <div className="relative z-10">
+            <Image
+              src="/images/blumpo/blumpo-404.png"
+              alt="Blumpo confused"
+              width={400}
+              height={400}
+              className="w-auto h-auto max-w-[300px] md:max-w-[400px]"
+              priority
+            />
+          </div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-          Page Not Found
+
+        {/* Heading */}
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">
+          Oops! Page not found
         </h1>
-        <p className="text-base text-gray-500">
-          The page you are looking for might have been removed, had its name
-          changed, or is temporarily unavailable.
+
+        {/* Description */}
+        <p className="text-base md:text-lg text-gray-900">
+          We couldn't find the page that you were looking for.
         </p>
-        <Link
-          href="/"
-          className="max-w-48 mx-auto flex justify-center py-2 px-4 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-        >
-          Back to Home
-        </Link>
+        
+         {/* CTA Button */}
+        <Button asChild variant="cta" className="px-10 py-6 text-base">
+          <Link href="/dashboard">
+            Go home
+          </Link>
+        </Button>
       </div>
     </div>
   );
