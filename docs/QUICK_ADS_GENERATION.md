@@ -11,7 +11,7 @@ Quick Ads Generation is an automatic ad creation system that:
 - **Pre-generates** ad images in batches (5 ads per format)
 - **Generates** both `1:1` (square) and `16:9` (story) formats simultaneously
 - **Maintains** a pool of ready-to-use ads for instant access
-- **Takes tokens** when generation starts (via reservation system)
+- **Takes tokens** when ads are displayed (not at generation time)
 - **Automatically cleans up** unused format ads when a format is selected
 
 ---
@@ -202,35 +202,40 @@ For **paid users** (non-FREE subscription plans):
 
 ### Token Deduction
 
-Tokens are **deducted when generation starts**, using the reservation system (same as customized ads).
+Tokens are **deducted when ads are displayed**, not when generation starts. This allows users to generate ads without upfront payment, and only pay when they actually use the ads.
 
 1. **Job Creation** (`/api/quick-ads/create`):
    - **Amount**: 0 tokens
    - **Status**: Job created with `QUEUED` status
-   - **No token deduction yet**
+   - **No token deduction**
 
 2. **Generation Start** (`/api/generate/quick-ads`):
-   - **Amount**: 50 tokens per generation job
-   - **When**: Via `reserveTokens()` before n8n workflow starts
-   - **Method**: Atomic transaction using `JOB_RESERVE` ledger entry
+   - **Amount**: 0 tokens
    - **Status**: Job moves from `QUEUED` to `RUNNING`
+   - **No token deduction** - ads are generated without payment
 
-3. **Token Refund** (if generation fails):
-   - If n8n workflow fails: Full refund (50 tokens)
-   - If webhook fails: Full refund (50 tokens)
-   - If timeout: Full refund (50 tokens)
-   - If insufficient tokens: Error returned, no deduction
+3. **Ads Displayed** (`/api/quick-ads/mark-displayed`):
+   - **Amount**: 50 tokens per generation job
+   - **When**: When user views/displays the generated ads
+   - **Method**: Atomic transaction using `appendTokenLedgerEntry()`
+   - **Ledger Entry**: Recorded with reason `'GENERATION'` and job ID
+   - **Idempotent**: If tokens already deducted (tokensCost > 0), skip deduction
+
+4. **Token Check** (before display):
+   - If insufficient tokens: Error returned, ads not marked as displayed
+   - User must top up tokens before viewing ads
 
 ### Token Cost Summary
 
 | Event | Token Cost | When |
 |-------|-----------|------|
 | Create QUEUED job | 0 tokens | Job creation |
-| Start generation (reserve tokens) | 50 tokens | Generation trigger |
-| Display existing ads | 0 tokens | Free (already paid) |
-| Maintenance generation (paid users) | 50 tokens | Generation trigger |
+| Start generation | 0 tokens | Generation trigger |
+| Display/view ads | 50 tokens | When ads are displayed |
+| Display existing ads (already paid) | 0 tokens | Free (tokensCost already set) |
+| Maintenance generation (paid users) | 50 tokens | When displayed (not at generation) |
 
-**Note**: One generation job (50 tokens) produces **10 ads total** (5 per format).
+**Note**: One generation job (50 tokens) produces **10 ads total** (5 per format). Tokens are only charged once per job, even if user views ads multiple times.
 
 ---
 
@@ -276,7 +281,7 @@ Tokens are **deducted when generation starts**, using the reservation system (sa
 
 2. **Generation Trigger**:
    - Ad generation page calls `/api/generate/quick-ads` with `jobId`
-   - Tokens reserved (50 tokens) via `reserveTokens()`
+   - No tokens deducted at this stage
    - n8n webhook triggered: `https://automationforms.app.n8n.cloud/webhook/quick-ads`
    - Job status: `QUEUED` → `RUNNING`
 
@@ -286,11 +291,19 @@ Tokens are **deducted when generation starts**, using the reservation system (sa
    - Ads saved to database with `ready_to_display: false`
    - Callback sent to `/api/generate/callback`
    - Job status: `RUNNING` → `SUCCEEDED`
+   - **Still no tokens deducted** - payment happens when ads are displayed
 
 4. **User Experience**:
    - User sees `CreatingProcess` component
    - API waits for callback (event-driven, no polling)
    - When complete, automatically transitions to ad review
+
+5. **Token Deduction** (when ads displayed):
+   - User views ads in ad review page
+   - `/api/quick-ads/mark-displayed` is called
+   - Tokens deducted (50 tokens) if not already deducted
+   - Ads marked as `ready_to_display: true`
+   - Unused format ads cleaned up
 
 ### Display Flow
 
@@ -320,9 +333,10 @@ If 5+ ads already exist for selected format:
    - Selected format ads marked as displayed
    - Unused format ads cleaned up
 
-2. **No Token Cost**:
-   - Tokens already deducted during generation
-   - Displaying existing ads is free
+2. **Token Cost**:
+   - If ads from a job that hasn't been paid yet: 50 tokens deducted
+   - If ads from a job already paid: 0 tokens (already deducted)
+   - Token check happens when marking ads as displayed
 
 ### Paid User Maintenance
 
@@ -331,8 +345,9 @@ After maintenance check triggers generation:
 1. **Background Generation**:
    - QUEUED jobs created via `/api/quick-ads/create`
    - Generation triggered via `/api/generate/quick-ads`
-   - Tokens reserved when generation starts
-   - No user interaction required
+   - No tokens deducted during generation
+   - Tokens deducted when user displays the ads
+   - No user interaction required for generation
 
 2. **Ready for Use**:
    - Generated ads available for next quick ads request
@@ -358,9 +373,7 @@ Navigate to /dashboard/ad-generation?job_id=...&quick_ads=true
     ↓
 POST /api/generate/quick-ads { jobId }
     ↓
-50 tokens reserved (via reserveTokens)
-    ↓
-Job status: QUEUED → RUNNING
+Job status: QUEUED → RUNNING (no tokens deducted)
     ↓
 n8n webhook triggered (quick-ads)
     ↓
@@ -372,7 +385,11 @@ Callback to /api/generate/callback
     ↓
 Job status: SUCCEEDED
     ↓
-User selects format
+User selects format and views ads
+    ↓
+POST /api/quick-ads/mark-displayed { jobId, format }
+    ↓
+50 tokens deducted (if not already paid)
     ↓
 Mark selected format as displayed
     ↓
@@ -427,13 +444,14 @@ WHERE job_id = ? AND format != ?;
 ### Common Scenarios
 
 1. **Insufficient Tokens**:
-   - Error returned before job creation
+   - Error returned when trying to display ads
    - No tokens deducted
-   - User must top up tokens
+   - User must top up tokens before viewing ads
+   - Generation can complete without tokens, but ads cannot be displayed
 
 2. **Generation Failure**:
    - n8n workflow fails
-   - Tokens automatically refunded
+   - No tokens to refund (none were deducted)
    - User notified of error
    - Job status: `FAILED`
 
@@ -483,12 +501,36 @@ Quick Ads Generation provides:
 ✅ **Format Flexible**: Generate both formats, use one, discard other  
 ✅ **Automatic Maintenance**: Paid users get background generation  
 ✅ **Smart Cleanup**: Unused formats automatically removed  
-✅ **Token Safety**: Tokens reserved at generation start, refunded on failure  
+✅ **Token Safety**: Tokens only deducted when ads are displayed, no upfront payment  
 
 **Key Points**:
 - 50 tokens per generation (10 ads total)
-- Tokens reserved when generation starts (not at job creation)
-- Uses reservation system (same as customized ads)
+- Tokens deducted when ads are **displayed**, not at generation time
+- Generation can complete without tokens, but ads cannot be viewed without payment
+- Idempotent: Tokens only deducted once per job (even if viewed multiple times)
 - All users can use, paid users get maintenance
 - Unused format ads are deleted when format is selected
 - Dedicated webhook: `https://automationforms.app.n8n.cloud/webhook/quick-ads`
+
+---
+
+## Architecture Notes
+
+### Separation from Customized Ads
+
+Quick ads generation uses a separate API route (`/api/generate/quick-ads`) from customized ads (`/api/generate/customized-ads`):
+
+- **Quick Ads**: Tokens deducted when displayed
+- **Customized Ads**: Tokens reserved when generation starts
+
+This separation allows different payment flows for different ad types.
+
+### Job Creation Flow
+
+1. **Quick Ads**: `/api/quick-ads/create` → Creates QUEUED job (no tokens)
+2. **Customized Ads**: Job created during flow with tokens reserved immediately
+
+### Token Deduction Flow
+
+1. **Quick Ads**: `/api/quick-ads/mark-displayed` → Deducts tokens when ads viewed
+2. **Customized Ads**: `/api/generate/customized-ads` → Reserves tokens at generation start

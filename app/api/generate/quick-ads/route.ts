@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { getUser, hasEnoughTokens, updateGenerationJobStatus, refundTokens, reserveTokens, getLedgerEntryByReference } from "@/lib/db/queries";
+import { getUser, updateGenerationJobStatus } from "@/lib/db/queries";
 import { getGenerationJobById } from "@/lib/db/queries/generation";
-import { updateGenerationJob } from "@/lib/db/queries/generation";
 import { waitForCallback } from "@/lib/api/callback-waiter";
 
 const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
 const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received the request
-const TOKENS_COST_PER_GENERATION = 50;
 
 export async function POST(req: Request) {
   const requestStartTime = Date.now();
@@ -74,55 +72,11 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Token cost for quick ads
-    const tokensCost = TOKENS_COST_PER_GENERATION;
-    console.log('[GENERATE-QUICK-ADS] Token cost:', tokensCost);
-
-    // Check if user has enough tokens
-    const hasTokens = await hasEnoughTokens(user.id, tokensCost);
-    if (!hasTokens) {
-      console.log('[GENERATE-QUICK-ADS] Insufficient tokens for user:', user.id);
-      return NextResponse.json({ 
-        error: "Insufficient tokens", 
-        error_code: "INSUFFICIENT_TOKENS",
-        tokens_required: tokensCost
-      }, { status: 402 }); // Payment Required
-    }
-    console.log('[GENERATE-QUICK-ADS] User has sufficient tokens');
-
-    // Reserve tokens for this job (deducts tokens atomically)
-    let tokensReserved = false;
-    try {
-      console.log('[GENERATE-QUICK-ADS] Reserving tokens...');
-      await reserveTokens(user.id, tokensCost, jobId);
-      tokensReserved = true;
-      console.log('[GENERATE-QUICK-ADS] Tokens reserved successfully');
-      
-      // Get the ledger entry ID for this job
-      const ledgerEntry = await getLedgerEntryByReference(jobId, 'JOB_RESERVE');
-      const ledgerId = ledgerEntry?.id || null;
-      
-      // Update job with token cost, ledger ID, and status
-      await updateGenerationJob(jobId, {
-        tokensCost,
-        ledgerId: ledgerId || undefined,
-      });
-      
-      // Update status to RUNNING
-      await updateGenerationJobStatus(jobId, 'RUNNING');
-      
-      console.log('[GENERATE-QUICK-ADS] Job updated with token cost:', tokensCost);
-    } catch (error) {
-      console.error('[GENERATE-QUICK-ADS] Error reserving tokens:', error);
-      if (error instanceof Error && error.message.includes('INSUFFICIENT')) {
-        return NextResponse.json({ 
-          error: "Insufficient tokens", 
-          error_code: "INSUFFICIENT_TOKENS",
-          tokens_required: tokensCost
-        }, { status: 402 });
-      }
-      throw error;
-    }
+    // For quick ads, tokens are NOT deducted at generation start
+    // Tokens will be deducted when ads are displayed via /api/quick-ads/mark-displayed
+    // Update status to RUNNING
+    await updateGenerationJobStatus(jobId, 'RUNNING');
+    console.log('[GENERATE-QUICK-ADS] Job status updated to RUNNING (no tokens deducted yet)');
 
     // Send job_id to n8n webhook
     try {
@@ -165,7 +119,7 @@ export async function POST(req: Request) {
         console.log('[GENERATE-QUICK-ADS] Webhook responded after', webhookDuration, 'ms with status:', res.status);
 
         if (!res.ok) {
-          // Webhook call failed - mark job as failed and refund tokens
+          // Webhook call failed - mark job as failed
           console.error('[GENERATE-QUICK-ADS] Webhook returned non-OK status:', res.status);
           const errorText = await res.text().catch(() => 'Webhook request failed');
           console.error('[GENERATE-QUICK-ADS] Webhook error text:', errorText);
@@ -175,20 +129,10 @@ export async function POST(req: Request) {
             'WEBHOOK_ERROR',
             errorText
           );
-          // Refund tokens if they were reserved
-          if (tokensReserved) {
-            try {
-              await refundTokens(user.id, tokensCost, jobId);
-              console.log('[GENERATE-QUICK-ADS] Tokens refunded for failed webhook');
-            } catch (refundError) {
-              console.error('[GENERATE-QUICK-ADS] Error refunding tokens:', refundError);
-            }
-          }
           
           return NextResponse.json({ 
             error: "Failed to trigger generation", 
-            job_id: jobId,
-            tokens_refunded: tokensReserved ? tokensCost : 0
+            job_id: jobId
           }, { status: res.status });
         }
       } catch (webhookFetchError) {
@@ -205,20 +149,10 @@ export async function POST(req: Request) {
             'WEBHOOK_ERROR',
             webhookFetchError instanceof Error ? webhookFetchError.message : 'Unknown webhook error'
           );
-          // Refund tokens if they were reserved
-          if (tokensReserved) {
-            try {
-              await refundTokens(user.id, tokensCost, jobId);
-              console.log('[GENERATE-QUICK-ADS] Tokens refunded for webhook error');
-            } catch (refundError) {
-              console.error('[GENERATE-QUICK-ADS] Error refunding tokens:', refundError);
-            }
-          }
           
           return NextResponse.json({ 
             error: "Failed to trigger generation", 
-            job_id: jobId,
-            tokens_refunded: tokensReserved ? tokensCost : 0
+            job_id: jobId
           }, { status: 502 });
         }
       }
@@ -241,31 +175,18 @@ export async function POST(req: Request) {
           return NextResponse.json({
             job_id: jobId,
             status: 'SUCCEEDED',
-            images: callbackResult.images,
-            tokens_used: tokensCost
+            images: callbackResult.images
           });
         } else {
-          // FAILED or CANCELED - refund tokens
-          console.log('[GENERATE-QUICK-ADS] Returning', callbackResult.status, 'response - refunding tokens');
-          
-          // Refund tokens for failed/canceled jobs
-          if (tokensReserved) {
-            try {
-              await refundTokens(user.id, tokensCost, jobId);
-              console.log('[GENERATE-QUICK-ADS] Tokens refunded for', callbackResult.status, 'job:', jobId);
-            } catch (refundError) {
-              console.error('[GENERATE-QUICK-ADS] Error refunding tokens:', refundError);
-              // Continue even if refund fails - we still want to return the error to the user
-            }
-          }
+          // FAILED or CANCELED
+          console.log('[GENERATE-QUICK-ADS] Returning', callbackResult.status, 'response');
           
           return NextResponse.json({
             job_id: jobId,
             status: callbackResult.status,
             images: callbackResult.images, // May be empty
             error_message: callbackResult.error_message,
-            error_code: callbackResult.error_code,
-            tokens_refunded: tokensReserved ? tokensCost : 0
+            error_code: callbackResult.error_code
           }, { status: callbackResult.status === 'FAILED' ? 500 : 200 });
         }
       } catch (callbackError) {
@@ -280,22 +201,11 @@ export async function POST(req: Request) {
           'Generation exceeded maximum wait time of 7 minutes'
         );
         
-        // Refund tokens if they were reserved
-        if (tokensReserved) {
-          try {
-            await refundTokens(user.id, tokensCost, jobId);
-            console.log('[GENERATE-QUICK-ADS] Tokens refunded for timeout');
-          } catch (refundError) {
-            console.error('[GENERATE-QUICK-ADS] Error refunding tokens:', refundError);
-          }
-        }
-        
         return NextResponse.json({
           error: "Generation timeout",
           job_id: jobId,
           status: 'FAILED',
-          error_code: 'TIMEOUT',
-          tokens_refunded: tokensReserved ? tokensCost : 0
+          error_code: 'TIMEOUT'
         }, { status: 504 }); // Gateway Timeout
       }
 
@@ -324,21 +234,10 @@ export async function POST(req: Request) {
         errorMessage
       );
       
-      // Refund tokens if they were reserved
-      if (tokensReserved) {
-        try {
-          await refundTokens(user.id, tokensCost, jobId);
-          console.log('[GENERATE-QUICK-ADS] Tokens refunded for webhook error');
-        } catch (refundError) {
-          console.error('[GENERATE-QUICK-ADS] Error refunding tokens:', refundError);
-        }
-      }
-      
       return NextResponse.json({ 
         error: "Failed to trigger generation", 
         job_id: jobId,
-        error_code: statusCode === 504 ? 'WEBHOOK_TIMEOUT' : 'WEBHOOK_ERROR',
-        tokens_refunded: tokensReserved ? tokensCost : 0
+        error_code: statusCode === 504 ? 'WEBHOOK_TIMEOUT' : 'WEBHOOK_ERROR'
       }, { status: statusCode });
     }
   } catch (e) {
