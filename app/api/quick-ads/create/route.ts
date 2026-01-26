@@ -1,0 +1,40 @@
+import { NextResponse } from "next/server";
+import { getUser } from "@/lib/db/queries";
+import { createQuickAdsJob } from "@/lib/db/queries/quick-ads";
+
+export async function POST(req: Request) {
+  try {
+    const user = await getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { brandId } = await req.json();
+    
+    if (!brandId) {
+      return NextResponse.json({ error: "Brand ID required" }, { status: 400 });
+    }
+
+    // Verify brand belongs to user
+    const { getBrandById } = await import('@/lib/db/queries/brand');
+    const brand = await getBrandById(brandId);
+    
+    if (!brand || brand.userId !== user.id) {
+      return NextResponse.json({ error: "Brand not found or unauthorized" }, { status: 404 });
+    }
+
+    // Create QUEUED job (no tokens deducted yet)
+    const job = await createQuickAdsJob(user.id, brandId);
+
+    return NextResponse.json({
+      job_id: job.id,
+      status: job.status,
+    });
+  } catch (error) {
+    console.error('[QUICK-ADS-CREATE] Error creating quick ads job:', error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
