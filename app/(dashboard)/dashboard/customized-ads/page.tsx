@@ -587,6 +587,12 @@ function CustomizedAdsPageContent() {
       // Determine insight source based on selection
       // If user selected insights manually, it's 'manual', otherwise 'auto'
       const insightSource = selectedInsights.length > 0 ? 'manual' : 'auto';
+
+      // If insight source is auto, set selected insights to random 2 headlines
+      let autoSelectedInsights: string[] = [];
+      if (insightSource === 'auto') {
+        autoSelectedInsights = headlines.slice(0, 2);
+      }
       
       // Convert archetype code format (problem-solution -> problem_solution)
       const archetypeCode = selectedArchetype === 'random' 
@@ -614,7 +620,7 @@ function CustomizedAdsPageContent() {
           archetypeCode,
           archetypeMode,
           formats,
-          selectedInsights,
+          selectedInsights: insightSource === 'auto' ? autoSelectedInsights : selectedInsights,
           insightSource,
           promotionValueInsight: {}, // Can be extended later with specific promotion data
           archetypeInputs,

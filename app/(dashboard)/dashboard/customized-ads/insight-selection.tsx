@@ -255,21 +255,19 @@ export function InsightSelectionContent({
         </div>
       )}
 
-      {/* Manual Input at bottom - only for non-problem_solution archetypes */}
-      {selectedArchetype !== 'problem_solution' && (
-        <div className={styles.manualInputContainer}>
-          <label className={styles.manualInputLabel}>Manual input</label>
-          <input
-            type="text"
-            className={styles.manualInput}
-            placeholder="Enter you custom pain points"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            onKeyPress={handleManualInputKeyPress}
-            onBlur={handleManualInputBlur}
-          />
-        </div>
-      )}
+      {/* Manual Input at bottom */}
+      <div className={styles.manualInputContainer}>
+        <label className={styles.manualInputLabel}>Manual input</label>
+        <input
+          type="text"
+          className={styles.manualInput}
+          placeholder="Enter you custom pain points"
+          value={manualInput}
+          onChange={(e) => setManualInput(e.target.value)}
+          onKeyPress={handleManualInputKeyPress}
+          onBlur={handleManualInputBlur}
+        />
+      </div>
     </div>
   );
 }
