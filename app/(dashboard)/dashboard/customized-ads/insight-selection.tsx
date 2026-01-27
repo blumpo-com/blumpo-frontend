@@ -192,26 +192,32 @@ export function InsightSelectionContent({
     );
   }
 
+  // Determine which layout to use and which mascot image
+  const useMascotLayout = selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition';
+  const mascotImage = selectedArchetype === 'value_proposition' 
+    ? '/images/blumpo/blumpo-reading.png'
+    : '/images/blumpo/blumpo-macho.png';
+
   return (
     <div className={styles.insightSelectionWrapper}>
-      {selectedArchetype === 'problem_solution' ? (
-        // Problem Solution layout: 2 columns with mascot in center
+      {useMascotLayout ? (
+        // Problem Solution / Value Proposition layout: 2 columns with mascot in center
         <div className={styles.problemSolutionLayout}>
-          <div className={styles.problemSolutionColumn}>
-            {headlines.slice(0, Math.ceil(headlines.length / 2)).map((headline, index) => (
-              <HeadlineCard
-                key={index}
-                headline={headline}
-                isSelected={selectedInsights.includes(headline)}
-                onClick={() => handleHeadlineToggle(headline)}
-                variant="problem_solution"
-              />
-            ))}
-          </div>
+          {/* Left column - first card */}
+          {headlines[0] && (
+            <HeadlineCard
+              key="left-0"
+              headline={headlines[0]}
+              isSelected={selectedInsights.includes(headlines[0])}
+              onClick={() => handleHeadlineToggle(headlines[0])}
+              variant="problem_solution"
+            />
+          )}
           
+          {/* Mascot - spans rows */}
           <div className={styles.mascotContainer}>
             <Image
-              src="/images/blumpo/blumpo-macho.png"
+              src={mascotImage}
               alt="Blumpo"
               width={222}
               height={377}
@@ -219,17 +225,38 @@ export function InsightSelectionContent({
             />
           </div>
           
-          <div className={styles.problemSolutionColumn}>
-            {headlines.slice(Math.ceil(headlines.length / 2)).map((headline, index) => (
-              <HeadlineCard
-                key={index + Math.ceil(headlines.length / 2)}
-                headline={headline}
-                isSelected={selectedInsights.includes(headline)}
-                onClick={() => handleHeadlineToggle(headline)}
-                variant="problem_solution"
-              />
-            ))}
-          </div>
+          {/* Right column - first card */}
+          {headlines[Math.ceil(headlines.length / 2)] && (
+            <HeadlineCard
+              key="right-0"
+              headline={headlines[Math.ceil(headlines.length / 2)]}
+              isSelected={selectedInsights.includes(headlines[Math.ceil(headlines.length / 2)])}
+              onClick={() => handleHeadlineToggle(headlines[Math.ceil(headlines.length / 2)])}
+              variant="problem_solution"
+            />
+          )}
+          
+          {/* Left column - second card */}
+          {headlines[1] && (
+            <HeadlineCard
+              key="left-1"
+              headline={headlines[1]}
+              isSelected={selectedInsights.includes(headlines[1])}
+              onClick={() => handleHeadlineToggle(headlines[1])}
+              variant="problem_solution"
+            />
+          )}
+          
+          {/* Right column - second card */}
+          {headlines[Math.ceil(headlines.length / 2) + 1] && (
+            <HeadlineCard
+              key="right-1"
+              headline={headlines[Math.ceil(headlines.length / 2) + 1]}
+              isSelected={selectedInsights.includes(headlines[Math.ceil(headlines.length / 2) + 1])}
+              onClick={() => handleHeadlineToggle(headlines[Math.ceil(headlines.length / 2) + 1])}
+              variant="problem_solution"
+            />
+          )}
         </div>
       ) : (
         // Default/Testimonial layout: 2-column grid

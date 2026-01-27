@@ -330,6 +330,28 @@ function CustomizedAdsPageContent() {
         const shuffled = [...painPointsArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
       }
+      case 'value_proposition': {
+        const targetCustomers = brandInsights.targetCustomers || [];
+        // Convert to string array (same logic as problem_solution)
+        let customerGroupArray: string[] = [];
+        
+        if (Array.isArray(targetCustomers)) {
+          customerGroupArray = targetCustomers.map((item: any) => {
+            if (typeof item === 'string') {
+              return item;
+            } else if (item && typeof item === 'object' && item.text) {
+              return item.text;
+            } else if (item && typeof item === 'object' && item.painPoint) {
+              return item.painPoint;
+            }
+            return String(item);
+          }).filter(Boolean);
+        }
+        
+        // Shuffle and get 4 random items
+        const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 4);
+      }
       // Add other archetypes here as needed
       default:
         return [];
@@ -386,7 +408,7 @@ function CustomizedAdsPageContent() {
         if (!headlines.length || prevArchetypeRef.current !== 'testimonial' || !testimonialName) {
           fetchHeadlines();
         }
-      } else if (selectedArchetype === 'problem_solution') {
+      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') {
         // Extract insights from stored brand insights
         if (brandInsights) {
           const extractedInsights = extractInsightsForArchetype(selectedArchetype);
@@ -406,15 +428,15 @@ function CustomizedAdsPageContent() {
       prevStepRef.current = currentStep;
     }
   }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, /*headlines.length, testimonialName*/]);
-  // Extract insights once brand insights are loaded for problem_solution (on step 3 or later)
+  // Extract insights once brand insights are loaded for problem_solution/value_proposition (on step 3 or later)
   useEffect(() => {
     if (
       currentStep >= 3 && 
-      selectedArchetype === 'problem_solution' && 
+      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') && 
       brandInsights && 
       brandInsightsBrandIdRef.current === currentBrand?.id &&
       !isLoadingBrandInsights &&
-      (!headlines.length || prevArchetypeRef.current !== 'problem_solution')
+      (!headlines.length || prevArchetypeRef.current !== selectedArchetype)
     ) {
       const extractedInsights = extractInsightsForArchetype(selectedArchetype);
       setHeadlines(extractedInsights);
@@ -440,8 +462,8 @@ function CustomizedAdsPageContent() {
         subtitle: "Competitor insights for you product category we found on Reddit & Social media"
       },
       promotion_offer: {
-        title: "Value insight",
-        subtitle: "Customer value perception of your product we found on Reddit & Social media"
+        title: "Select target group",
+        subtitle: "Customer insights for you product category we found on Reddit and other social media."
       },
       value_proposition: {
         title: "Value insight",
@@ -527,7 +549,7 @@ function CustomizedAdsPageContent() {
     
     // Check if moving to insight selection step with unsupported archetype
     if (currentStep === 3 && currentStep + 1 === maxSteps) {
-      const unsupportedArchetypes = ['competitor_comparison', 'promotion_offer', 'value_proposition', 'random'];
+      const unsupportedArchetypes = ['competitor_comparison', 'promotion_offer', 'random'];
       if (unsupportedArchetypes.includes(selectedArchetype)) {
         setShowComingSoon(true);
         return;
