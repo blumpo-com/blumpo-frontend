@@ -288,7 +288,7 @@ export function InsightSelectionContent({
         <input
           type="text"
           className={styles.manualInput}
-          placeholder="Enter you custom pain points"
+          placeholder="Enter you custom insights"
           value={manualInput}
           onChange={(e) => setManualInput(e.target.value)}
           onKeyPress={handleManualInputKeyPress}

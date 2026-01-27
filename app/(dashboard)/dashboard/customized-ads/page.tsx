@@ -220,6 +220,11 @@ function CustomizedAdsPageContent() {
       return;
     }
 
+    // Don't fetch if there's already an error - require manual retry
+    if (headlinesError) {
+      return;
+    }
+
     setIsLoadingHeadlines(true);
     setHeadlinesError(null);
 
@@ -236,7 +241,8 @@ function CustomizedAdsPageContent() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch headlines');
+        const errorMessage = errorData.error || `Failed to fetch headlines (${response.status})`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -249,11 +255,14 @@ function CustomizedAdsPageContent() {
       console.log('testimonial name/cta', data.name1, data.cta1);
     } catch (err) {
       console.error('Error fetching headlines:', err);
-      setHeadlinesError(err instanceof Error ? err.message : 'Failed to fetch headlines');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch headlines';
+      setHeadlinesError(errorMessage);
+      // Clear headlines on error
+      setHeadlines([]);
     } finally {
       setIsLoadingHeadlines(false);
     }
-  }, [selectedArchetype, currentBrand?.id, isLoadingHeadlines, headlines.length, testimonialName]);
+  }, [selectedArchetype, currentBrand?.id, isLoadingHeadlines, headlines.length, testimonialName, headlinesError]);
 
   // Function to fetch brand insights (cached for reuse across archetypes)
   const fetchBrandInsights = useCallback(async () => {
@@ -352,6 +361,27 @@ function CustomizedAdsPageContent() {
         const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
       }
+      case 'competitor_comparison': {
+        const competitors = brandInsights.competitors || [];
+        // Convert to string array
+        let competitorsArray: string[] = [];
+        
+        if (Array.isArray(competitors)) {
+          competitorsArray = competitors.map((item: any) => {
+            if (typeof item === 'string') {
+              return item;
+            } else if (item && typeof item === 'object' && item.text) {
+              return item.text;
+            } else if (item && typeof item === 'object' && item.name) {
+              return item.name;
+            }
+            return String(item);
+          }).filter(Boolean);
+        }
+        
+        // Return all competitors (or shuffle if needed)
+        return competitorsArray;
+      }
       // Add other archetypes here as needed
       default:
         return [];
@@ -395,25 +425,35 @@ function CustomizedAdsPageContent() {
       return;
     }
 
+    // Don't fetch if there's an error - wait for manual retry
+    if (headlinesError) {
+      return;
+    }
+
     // Load data when archetype changes or when navigating to step 3
     if (prevArchetypeRef.current !== selectedArchetype || prevStepRef.current < 3) {
       // Clear testimonial-specific data when switching away from testimonial
       if (prevArchetypeRef.current === 'testimonial' && selectedArchetype !== 'testimonial') {
         setTestimonialName('');
         setTestimonialCta('');
+        setHeadlinesError(null); // Clear error when switching archetypes
       }
       
       if (selectedArchetype === 'testimonial') {
-        // Fetch headlines for testimonial (only if not already loaded)
+        // Fetch headlines for testimonial (only if not already loaded and no error)
         if (!headlines.length || prevArchetypeRef.current !== 'testimonial' || !testimonialName) {
-          fetchHeadlines();
+          // Only fetch if not currently loading and no error
+          if (!isLoadingHeadlines && !headlinesError) {
+            fetchHeadlines();
+          }
         }
-      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') {
+      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') {
         // Extract insights from stored brand insights
         if (brandInsights) {
           const extractedInsights = extractInsightsForArchetype(selectedArchetype);
           setHeadlines(extractedInsights);
           setIsLoadingHeadlines(false);
+          setHeadlinesError(null); // Clear any previous errors
           prevArchetypeRef.current = selectedArchetype;
         } else {
           // Wait for brand insights to load
@@ -423,16 +463,17 @@ function CustomizedAdsPageContent() {
         // Clear headlines for other archetypes
         setHeadlines([]);
         setIsLoadingHeadlines(false);
+        setHeadlinesError(null); // Clear any previous errors
         prevArchetypeRef.current = selectedArchetype;
       }
       prevStepRef.current = currentStep;
     }
-  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, /*headlines.length, testimonialName*/]);
-  // Extract insights once brand insights are loaded for problem_solution/value_proposition (on step 3 or later)
+  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, headlines.length, testimonialName, headlinesError, isLoadingHeadlines]);
+  // Extract insights once brand insights are loaded for problem_solution/value_proposition/competitor_comparison (on step 3 or later)
   useEffect(() => {
     if (
       currentStep >= 3 && 
-      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') && 
+      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') && 
       brandInsights && 
       brandInsightsBrandIdRef.current === currentBrand?.id &&
       !isLoadingBrandInsights &&
@@ -525,7 +566,10 @@ function CustomizedAdsPageContent() {
           headlines={headlines}
           isLoading={isLoadingHeadlines}
           error={headlinesError}
-          onRetry={fetchHeadlines}
+          onRetry={() => {
+            setHeadlinesError(null);
+            fetchHeadlines();
+          }}
           selectedInsights={selectedInsights}
           onSelectedInsightsChange={setSelectedInsights}
         />
@@ -549,7 +593,7 @@ function CustomizedAdsPageContent() {
     
     // Check if moving to insight selection step with unsupported archetype
     if (currentStep === 3 && currentStep + 1 === maxSteps) {
-      const unsupportedArchetypes = ['competitor_comparison', 'promotion_offer', 'random'];
+      const unsupportedArchetypes = ['promotion_offer', 'random'];
       if (unsupportedArchetypes.includes(selectedArchetype)) {
         setShowComingSoon(true);
         return;
