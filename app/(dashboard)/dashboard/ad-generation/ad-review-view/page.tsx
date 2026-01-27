@@ -19,11 +19,11 @@ const testAds1_1 = [
 ];
 
 const testAds16_9 = [
-  { id: '1', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_1.png', format: '16:9' as const },
-  { id: '2', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_2.png', format: '16:9' as const },
-  { id: '3', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_3.png', format: '16:9' as const },
-  { id: '4', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_2.png', format: '16:9' as const },
-  { id: '5', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_3.png', format: '16:9' as const },
+  { id: '1', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_1.png', format: '9:16' as const },
+  { id: '2', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_2.png', format: '9:16' as const },
+  { id: '3', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_3.png', format: '9:16' as const },
+  { id: '4', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_2.png', format: '9:16' as const },
+  { id: '5', imageUrl: '/images/default_ads/tinder/tinder_test_16-9_3.png', format: '9:16' as const },
 ];
 
 const testAdsMixed = [
@@ -47,7 +47,7 @@ function TinderPageContent() {
   const [hasCompleted, setHasCompleted] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   
-  const format: AdFormat = (formatParam === '1:1' || formatParam === '16:9' || formatParam === 'mixed') 
+  const format: AdFormat = (formatParam === '1:1' || formatParam === '9:16' || formatParam === 'mixed') 
     ? formatParam 
     : '1:1';
 
@@ -63,7 +63,7 @@ function TinderPageContent() {
             
             // Group ads by format based on width/height ratio
             const ads1_1List: Array<{ id: string; imageUrl: string; format: '1:1' }> = [];
-            const ads16_9List: Array<{ id: string; imageUrl: string; format: '16:9' }> = [];
+            const ads16_9List: Array<{ id: string; imageUrl: string; format: '9:16' }> = [];
 
             adImages.forEach((img: any) => {
               const ratio = img.width / img.height;
@@ -76,13 +76,13 @@ function TinderPageContent() {
               if (Math.abs(ratio - 1) < 0.15) {
                 ads1_1List.push({ ...adData, format: '1:1' as const });
               } 
-              // Check if it's 16:9 format - ratio close to 16/9 (≈1.78)
+              // Check if it's 9:16 format - ratio close to 16/9 (≈1.78)
               else if (Math.abs(ratio - 16/9) < 0.2) {
-                ads16_9List.push({ ...adData, format: '16:9' as const });
+                ads16_9List.push({ ...adData, format: '9:16' as const });
               }
-              // Default: if wider than tall, assume 16:9, otherwise 1:1
+              // Default: if wider than tall, assume 9:16, otherwise 1:1
               else if (ratio > 1.3) {
-                ads16_9List.push({ ...adData, format: '16:9' as const });
+                ads16_9List.push({ ...adData, format: '9:16' as const });
               } else {
                 ads1_1List.push({ ...adData, format: '1:1' as const });
               }

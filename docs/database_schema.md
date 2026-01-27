@@ -494,7 +494,7 @@ Stores workflow implementations for each archetype. Multiple workflows can exist
 | archetype_code | text FK → ad_archetype(code) | Associated archetype |
 | workflow_uid   | text UNIQUE         | External workflow ID (e.g., n8n) - must be unique |
 | variant_key    | text                | Variant identifier (e.g., 'v1', 'square') |
-| format         | text                | Output format (e.g., 'square', 'story', '16:9') |
+| format         | text                | Output format (e.g., 'square', 'story', '9:16') |
 | is_active      | boolean             | Whether workflow is active (default: true) |
 | created_at     | timestamptz         | Creation timestamp                    |
 | updated_at     | timestamptz         | Last update timestamp                 |

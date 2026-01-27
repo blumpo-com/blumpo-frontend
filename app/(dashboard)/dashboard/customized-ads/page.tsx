@@ -173,8 +173,8 @@ function CustomizedAdsPageContent() {
   
   // Determine formats from selected format
   useEffect(() => {
-    if (selectedFormat === '1:1-16:9') {
-      setFormats(['1:1', '16:9']);
+    if (selectedFormat === '1:1-9:16') {
+      setFormats(['1:1', '9:16']);
     } else {
       setFormats([selectedFormat]);
     }
