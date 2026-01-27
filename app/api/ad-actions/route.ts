@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import { markAdImagesAsDeleted, getAdImageById, getAdImagesByJobId } from '@/lib/db/queries/ads';
+import { markAdImagesAsDeleted, restoreAdImage, getAdImageById, getAdImagesByJobId } from '@/lib/db/queries/ads';
 import { logAdEvent } from '@/lib/db/queries/ads';
 
 // Handle batch ad actions (delete, save to library)
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { jobId, deletedIds, savedIds, downloadedIds } = body;
+    const { jobId, deletedIds, restoredIds, savedIds, downloadedIds } = body;
 
     if (!jobId) {
       return NextResponse.json({ error: 'jobId required' }, { status: 400 });
@@ -37,6 +37,27 @@ export async function POST(req: Request) {
             adImageId: adImage.id,
             workflowId: adImage.workflowId || undefined,
             eventType: 'deleted',
+            eventSource: 'ui',
+            metadata: {},
+          });
+        }
+      }
+    }
+
+    // Restore deleted images
+    if (restoredIds && restoredIds.length > 0) {
+      for (const adImageId of restoredIds) {
+        await restoreAdImage(adImageId);
+        
+        const adImage = adImageMap.get(adImageId);
+        if (adImage) {
+          await logAdEvent({
+            userId: user.id,
+            brandId: adImage.brandId || undefined,
+            jobId: adImage.jobId,
+            adImageId: adImage.id,
+            workflowId: adImage.workflowId || undefined,
+            eventType: 'restored',
             eventSource: 'ui',
             metadata: {},
           });

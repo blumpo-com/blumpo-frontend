@@ -1,24 +1,28 @@
-import './globals.css';
-import type { Metadata, Viewport } from 'next';
+import "./globals.css";
+import type { Metadata, Viewport } from "next";
 // import { Manrope } from 'next/font/google';
-import Script from 'next/script';
-import { getUser } from '@/lib/db/queries';
-import { SWRConfig } from 'swr';
-import { Providers } from './providers';
+import Script from "next/script";
+import { getUser } from "@/lib/db/queries";
+import { SWRConfig } from "swr";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: "Blumpo - AI-powered ad generator",
+  description:
+    "Blumpo turns customer insights from Reddit, YT, and your website into $500+ worth ads.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {
-  maximumScale: 1
+  maximumScale: 1,
 };
 
 // const manrope = Manrope({ subsets: ['latin'] });
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
@@ -55,8 +59,8 @@ export default function RootLayout({
               fallback: {
                 // We do NOT await here
                 // Only components that read this data will suspend
-                '/api/user': getUser(),
-              }
+                "/api/user": getUser(),
+              },
             }}
           >
             {children}

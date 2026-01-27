@@ -43,7 +43,14 @@ export default function ContentWrapper({
 }: ContentWrapperProps) {
   const { currentBrand, setCurrentBrand } = useBrand();
   const router = useRouter();
-  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher);
+  const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: true,
+    revalidateIfStale: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000,
+    keepPreviousData: true,
+  });
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const brandDropdownRef = useRef<HTMLDivElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
