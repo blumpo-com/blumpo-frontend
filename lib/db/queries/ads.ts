@@ -171,7 +171,7 @@ export async function markAdImagesAsDeleted(adImageIds: string[]) {
     .update(adImage)
     .set({
       isDeleted: true,
-      deleteAt: new Date(),
+      deleteAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
     })
     .where(inArray(adImage.id, adImageIds));
 }
