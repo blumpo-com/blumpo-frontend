@@ -1,0 +1,613 @@
+.container {
+  padding: 60px 50px;
+  max-width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  background: #f9fafb;
+}
+
+.header {
+  margin-bottom: 24px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #00bfa6;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.errorMessage {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #00bfa6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Filters Bar */
+.filtersBar {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 32px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.filterInput {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #111827;
+  min-width: 200px;
+  min-height: 44px;
+  transition: border-color 0.2s;
+}
+
+.filterInput:hover {
+  border-color: #9ca3af;
+}
+
+.tabIcon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(45%) sepia(8%) saturate(469%)
+    hue-rotate(182deg) brightness(93%) contrast(88%);
+}
+
+.filterValue {
+  flex: 1;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.chevronIcon {
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.filterInput[data-state="open"] .chevronIcon {
+  transform: rotate(180deg);
+}
+
+.dropdownContent {
+  min-width: 200px;
+  padding: 4px;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.dropdownItem:hover {
+  background: #f3f4f6;
+}
+
+.dropdownItemText {
+  flex: 1;
+}
+
+/* Custom checkbox style - solid square with white checkmark */
+.dropdownContent :global([data-slot="dropdown-menu-checkbox-item"]) {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px !important;
+}
+
+.dropdownContent
+  :global([data-slot="dropdown-menu-checkbox-item"] > span:first-child) {
+  position: static !important;
+  left: auto !important;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 2px solid #6b7280;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.dropdownContent
+  :global(
+    [data-slot="dropdown-menu-checkbox-item"][data-state="checked"]
+      > span:first-child
+  ) {
+  background: #111827;
+  border-color: #111827;
+}
+
+.dropdownContent
+  :global(
+    [data-slot="dropdown-menu-checkbox-item"][data-state="checked"]
+      > span:first-child
+      svg
+  ) {
+  color: white !important;
+  width: 12px;
+  height: 12px;
+}
+
+.unsavedButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s;
+  min-width: 200px;
+  min-height: 44px;
+}
+
+.unsavedButton:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.unsavedButtonActive {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.unsavedButtonActive:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.unsavedButtonActive .tabIcon {
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
+/* Warning Box */
+.warningBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  max-width: 800px;
+}
+
+.warningIcon {
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warningText {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #991b1b;
+  margin: 0;
+}
+
+.gridWrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.grid {
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 40px;
+  padding-bottom: 40px;
+  align-items: start;
+}
+
+.gridColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Create New Card */
+.createCardWrapper {
+  box-shadow: 0px 3.604px 11.599px 0px rgba(0, 0, 0, 0.3);
+  background: white;
+  box-sizing: border-box;
+  position: relative;
+  transition: all 0.2s;
+  border-radius: 10px;
+  box-sizing: border-box;
+
+}
+
+.createCard {
+  position: relative;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  /* Match imageCard 1:1 height: imageWrapper uses aspect-ratio 1:1, so total height = width (100%) */
+  aspect-ratio: 1 / 1;
+}
+
+.createCardContent {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 19px;
+  padding: 13px 20px;
+  text-align: center;
+}
+
+.createCardWrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  padding: 2px;
+  background: linear-gradient(
+    95.82deg,
+    hsl(172 100% 37%),
+    hsl(200 100% 67%) 50%,
+    hsl(209 77% 23%)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.createCardWrapper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 4.604px 12.599px 0px rgba(0, 0, 0, 0.35);
+}
+
+.createCardText {
+  font-size: 18.131px;
+  font-weight: 500;
+  color: #0a0a0a;
+  margin: 0;
+  text-align: center;
+  font-family: "Roboto", sans-serif;
+}
+
+/* Image Cards */
+.imageCard {
+  background: white;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  width: 100%;
+}
+
+.imageCard.format9x16 {
+  /* Remove grid-row span - let it take natural height based on aspect ratio */
+  height: auto;
+}
+
+.imageCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.imageCard.format9x16 .imageWrapper {
+  aspect-ratio: 9/16;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brandOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  display: flex;
+  align-items: center;
+}
+
+.brandInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brandName {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.deleteCountdown {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.actionBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  height: 56px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  min-height: calc(100vh - 300px);
+  width: 100%;
+}
+
+.emptyStateText {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Delete Confirm Dialog */
+.deleteDialogContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+}
+
+.deleteDialogText {
+  color: #0a0a0a;
+  font-size: 19px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 28px;
+  margin: 0;
+}
+
+.deleteDialogImageImg {
+  object-fit: contain;
+}
+
+.deleteDialogButtons {
+  display: flex;
+  gap: 32px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 32px;
+  width: 100%;
+  max-width: 478px;
+}
+
+.deleteDialogButtonConfirm {
+  background: #0a0a0a;
+  color: #f9fafb;
+  font-size: 14.65px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 7.325px 8.79px;
+  height: 36px;
+  min-width: 162px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteDialogButtonConfirm:hover {
+  background: #1a1a1a;
+}
+
+.deleteDialogButtonCancel {
+  background: white;
+  border: 2px solid #0a0a0a;
+  color: #0a0a0a;
+  font-size: 14.65px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 7.325px 8.79px;
+  height: 37px;
+  min-width: 162px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteDialogButtonCancel:hover {
+  background: #f9fafb;
+}
+
+/* Responsive design */
+@media (max-width: 1400px) {
+  .grid {
+    max-width: 100%;
+    gap: 24px;
+  }
+
+  .gridColumn {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    gap: 20px;
+  }
+
+  .gridColumn {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .gridColumn {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .filtersBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterInput {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .unsavedButton {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .gridColumn {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .gridColumn {
+    gap: 16px;
+  }
+}

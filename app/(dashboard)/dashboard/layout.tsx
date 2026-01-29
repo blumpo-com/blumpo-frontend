@@ -2,6 +2,7 @@
 
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { BrandProvider } from '@/lib/contexts/brand-context';
+import { UserProvider } from '@/lib/contexts/user-context';
 
 export default function DashboardLayout({
   children
@@ -9,16 +10,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <BrandProvider>
-      <div className="flex h-screen bg-[#F9FAFB] overflow-hidden">
-        {/* Sidebar */}
-        <DashboardSidebar />
+    <UserProvider>
+      <BrandProvider>
+        <div className="flex h-screen bg-[#F9FAFB] overflow-hidden">
+          {/* Sidebar */}
+          <DashboardSidebar />
 
-        {/* Main content */}
-        <main className="flex-1 ml-[267px] overflow-hidden">
-          {children}
-        </main>
-      </div>
-    </BrandProvider>
+          {/* Main content */}
+          <main className="flex-1 ml-[267px] overflow-hidden">
+            {children}
+          </main>
+        </div>
+      </BrandProvider>
+    </UserProvider>
   );
 }

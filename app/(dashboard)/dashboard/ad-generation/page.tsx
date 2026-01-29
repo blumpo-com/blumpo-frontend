@@ -294,16 +294,16 @@ function AdGenerationPageContent() {
           const formats = job.formats || [];
           
           // Map database formats to our format type
-          // Database uses: '1:1' and '16:9'
-          let format: '1:1' | '16:9' | 'mixed' = '1:1';
-          const has1x1 = formats.includes('1:1');
-          const has16x9 = formats.includes('16:9');
+          // Database uses: 'square' (1:1), 'story' (9:16)
+          let format: '1:1' | '9:16' | 'mixed' = '1:1';
+          const hasSquare = formats.includes('square') || formats.includes('1:1');
+          const hasStory = formats.includes('story') || formats.includes('9:16');
           
           if (has1x1 && has16x9) {
             format = 'mixed';
-          } else if (has16x9) {
-            format = '16:9';
-          } else if (has1x1) {
+          } else if (hasStory) {
+            format = '9:16';
+          } else if (hasSquare) {
             format = '1:1';
           }
           
@@ -314,15 +314,15 @@ function AdGenerationPageContent() {
       }
     } else {
       // Use already fetched formats
-      let format: '1:1' | '16:9' | 'mixed' = '1:1';
-      const has1x1 = jobFormats.includes('1:1');
-      const has16x9 = jobFormats.includes('16:9');
+      let format: '1:1' | '9:16' | 'mixed' = '1:1';
+      const hasSquare = jobFormats.includes('square') || jobFormats.includes('1:1');
+      const hasStory = jobFormats.includes('story') || jobFormats.includes('9:16');
       
       if (has1x1 && has16x9) {
         format = 'mixed';
-      } else if (has16x9) {
-        format = '16:9';
-      } else if (has1x1) {
+      } else if (hasStory) {
+        format = '9:16';
+      } else if (hasSquare) {
         format = '1:1';
       }
       router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${format}`);

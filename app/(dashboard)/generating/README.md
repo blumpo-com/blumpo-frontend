@@ -130,7 +130,7 @@ Shows "Coming soon" dialog when user clicks on paid-only sections.
    - Click shows "Coming soon" dialog
 
 4. **Ad Formats Section**:
-   - Different Ad Formats (1:1, 16:9)
+   - Different Ad Formats (1:1, 9:16)
    - Language display (with flag emoji)
    - Shows "Paid only" badge for free users
    - Click shows "Coming soon" dialog

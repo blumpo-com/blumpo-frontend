@@ -9,9 +9,9 @@ const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received 
 
 // Calculate token cost based on formats
 function calculateTokenCost(formats: string[]): number {
-  // Based on format-selection.tsx: 1:1 = 50, 16:9 = 50, 1:1 & 16:9 = 80
+  // Based on format-selection.tsx: 1:1 = 50, 9:16 = 50, 1:1 & 9:16 = 80
   const hasSquare = formats.includes('1:1') || formats.includes('square');
-  const hasStory = formats.includes('16:9') || formats.includes('story');
+  const hasStory = formats.includes('9:16') || formats.includes('story');
   
   if (hasSquare && hasStory) {
     return 80;

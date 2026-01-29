@@ -7,7 +7,7 @@ import styles from './tinder-view-mixed.module.css';
 interface Ad {
   id: string;
   imageUrl: string;
-  format: '1:1' | '16:9';
+  format: '1:1' | '9:16';
 }
 
 interface TinderViewMixedProps {
@@ -30,7 +30,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const [rightCardAnimating1_1, setRightCardAnimating1_1] = useState(false);
   const [nextCardSide1_1, setNextCardSide1_1] = useState<'left' | 'right'>('left');
 
-  // State for 16:9 stack
+  // State for 9:16 stack
   const [currentIndex16_9, setCurrentIndex16_9] = useState(0);
   const [swipeOffset16_9, setSwipeOffset16_9] = useState(0);
   const [isDragging16_9, setIsDragging16_9] = useState(false);
@@ -46,7 +46,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const cardRef16_9 = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startYRef = useRef<number>(0);
-  const isDraggingRef = useRef<'1:1' | '16:9' | null>(null);
+  const isDraggingRef = useRef<'1:1' | '9:16' | null>(null);
 
   const handleImageLoadStart = (adId: string) => {
     setImageLoading(prev => ({ ...prev, [adId]: true }));
@@ -77,7 +77,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
     setSwipeDirection16_9(direction);
   }, []);
 
-  const handleSwipe = useCallback((direction: 'left' | 'right', stack: '1:1' | '16:9') => {
+  const handleSwipe = useCallback((direction: 'left' | 'right', stack: '1:1' | '9:16') => {
     const isAnimating = stack === '1:1' ? isAnimating1_1 : isAnimating16_9;
     const currentAd = stack === '1:1' ? currentAd1_1 : currentAd16_9;
     const leftAd = stack === '1:1' ? leftAd1_1 : leftAd16_9;
@@ -127,7 +127,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
       }
 
       // Sync the other stack - find and update the matching ad by ID
-      const otherStack = stack === '1:1' ? '16:9' : '1:1';
+      const otherStack = stack === '1:1' ? '9:16' : '1:1';
       const otherAds = otherStack === '1:1' ? ads1_1 : ads16_9;
       const otherCurrentIndex = otherStack === '1:1' ? currentIndex1_1 : currentIndex16_9;
       const otherCurrentAd = otherAds[otherCurrentIndex];
@@ -185,7 +185,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   }, [currentAd1_1, currentAd16_9, onSave]);
 
   // Touch handlers
-  const handleTouchStart = (e: React.TouchEvent, stack: '1:1' | '16:9') => {
+  const handleTouchStart = (e: React.TouchEvent, stack: '1:1' | '9:16') => {
     if ((stack === '1:1' ? isAnimating1_1 : isAnimating16_9)) return;
     const touch = e.touches[0];
     startXRef.current = touch.clientX;
@@ -243,7 +243,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   };
 
   // Mouse handlers
-  const handleMouseDown = (e: React.MouseEvent, stack: '1:1' | '16:9') => {
+  const handleMouseDown = (e: React.MouseEvent, stack: '1:1' | '9:16') => {
     if ((stack === '1:1' ? isAnimating1_1 : isAnimating16_9)) return;
     startXRef.current = e.clientX;
     startYRef.current = e.clientY;
@@ -332,7 +332,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const opacity16_9 = 1 - Math.abs(swipeOffset16_9) / 500;
 
   const renderCardStack = (
-    stack: '1:1' | '16:9',
+    stack: '1:1' | '9:16',
     currentAd: Ad | undefined,
     leftAd: Ad | undefined,
     rightAd: Ad | undefined,
@@ -484,7 +484,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
             isDragging1_1
           )}
           {renderCardStack(
-            '16:9',
+            '9:16',
             currentAd16_9,
             leftAd16_9,
             rightAd16_9,
