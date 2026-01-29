@@ -101,6 +101,14 @@ export async function updatePendingCancellationReasons(userId: string, reasons: 
     .where(eq(tokenAccount.userId, userId));
 }
 
+/** Mark retention offer (70% off + 200 credits) as applied for user. */
+export async function setRetentionOfferApplied(userId: string) {
+  await db
+    .update(tokenAccount)
+    .set({ retentionOfferAppliedAt: new Date() })
+    .where(eq(tokenAccount.userId, userId));
+}
+
 /** Copy pending reasons to cancellation_reasons and clear pending (called from Stripe webhook when subscription is canceled). */
 export async function applyPendingCancellationReasons(userId: string) {
   const row = await db

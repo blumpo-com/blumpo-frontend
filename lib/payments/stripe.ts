@@ -15,6 +15,7 @@ import {
   refillSubscriptionTokens,
   activateSubscription,
   applyPendingCancellationReasons,
+  setRetentionOfferApplied,
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -395,4 +396,37 @@ export async function reactivateUserSubscription(userId: string) {
   });
 
   console.log(`Reactivated subscription: ${tokenAccount.stripeSubscriptionId} for user: ${userId}`);
+}
+
+/** Apply 70% off retention coupon to user's subscription (next invoice only). Call after adding 200 credits. */
+export async function applyRetentionOffer(userId: string): Promise<{ ok: true } | { error: string }> {
+  const couponId = process.env.STRIPE_RETENTION_COUPON_ID;
+  if (!couponId) {
+    console.error('STRIPE_RETENTION_COUPON_ID not set');
+    return { error: 'Retention offer not configured' };
+  }
+
+  const userWithAccount = await getUserWithTokenAccount(userId);
+  if (!userWithAccount?.tokenAccount) {
+    return { error: 'Token account not found' };
+  }
+
+  const { tokenAccount } = userWithAccount;
+  if (!tokenAccount.stripeSubscriptionId) {
+    return { error: 'No active subscription' };
+  }
+  if (tokenAccount.retentionOfferAppliedAt) {
+    return { error: 'Retention offer already applied' };
+  }
+
+  try {
+    await stripe.subscriptions.update(tokenAccount.stripeSubscriptionId, {
+      discounts: [{ coupon: couponId }],
+    });
+    await setRetentionOfferApplied(userId);
+    return { ok: true };
+  } catch (err) {
+    console.error('Failed to apply retention coupon:', err);
+    return { error: err instanceof Error ? err.message : 'Failed to apply discount' };
+  }
 }

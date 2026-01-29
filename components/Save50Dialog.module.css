@@ -1,0 +1,252 @@
+.dialogContent {
+  background-color: white;
+  border: 2px solid #d8d8db;
+  display: flex;
+  flex-direction: column;
+  min-height: 552px;
+  align-items: center;
+  padding-bottom: 48px;
+  padding-top: 41px;
+  padding-left: 0;
+  padding-right: 0;
+  position: relative;
+  border-radius: 19.932px;
+  box-shadow: 0px 1.993px 7.275px 0px rgba(0, 0, 0, 0.12);
+  width: 863px;
+  max-width: 90vw;
+  margin: 0 auto;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 745px;
+}
+
+/* Pricing Header */
+.pricingHeader {
+  display: flex;
+  gap: 18px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 745px;
+}
+
+.priceComparison {
+  display: inline-grid;
+  grid-template-columns: max-content;
+  grid-template-rows: max-content;
+  justify-items: start;
+  line-height: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.oldPrice {
+  grid-column: 1;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  line-height: 59.83px;
+  margin-left: 10px;
+  margin-top: 0;
+  position: relative;
+  grid-row: 1;
+  color: #888e98;
+  font-size: 40.17px;
+  text-align: center;
+  text-decoration: line-through;
+}
+
+.arrowContainer {
+  height: 24.543px;
+  position: relative;
+  flex-shrink: 0;
+  width: 41.002px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: #0a0a0a;
+  stroke-width: 2;
+}
+
+.newPrice {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  line-height: 59.83px;
+  position: relative;
+  flex-shrink: 0;
+  color: #0a0a0a;
+  font-size: 40.17px;
+  text-align: center;
+}
+
+.saveBadge {
+  position: absolute;
+  display: flex;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  left: 333px;
+  overflow: clip;
+  padding-left: 7.646px;
+  padding-right: 7.646px;
+  padding-top: 6.371px;
+  padding-bottom: 6.371px;
+  border-radius: 32px;
+  box-shadow: 0px 0px 2.549px 0px rgba(0, 0, 0, 0.4);
+  top: 63px;
+  width: 96px;
+  background-image: linear-gradient(107.00397013646507deg, rgba(0, 191, 166, 1) 5.1344%, rgba(88, 199, 255, 1) 51.376%, rgba(13, 59, 102, 1) 97.617%);
+}
+
+.saveBadgeText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #f9fafb;
+  font-size: 15.36px;
+  text-align: center;
+}
+
+/* Description */
+.description {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  line-height: 34.141px;
+  position: relative;
+  flex-shrink: 0;
+  color: #0a0a0a;
+  font-size: 22.922px;
+  text-align: center;
+  width: 716.316px;
+  white-space: pre-wrap;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  gap: 121.587px;
+  height: 69px;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 745px;
+}
+
+.confirmButton {
+  background-color: #0a0a0a;
+  display: flex;
+  height: 49.662px;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding-left: 11.959px;
+  padding-right: 11.959px;
+  padding-top: 9.966px;
+  padding-bottom: 9.966px;
+  position: relative;
+  border-radius: 10px;
+  flex-shrink: 0;
+  width: 221.492px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.confirmButton:hover {
+  background-color: rgba(10, 10, 10, 0.9);
+}
+
+.confirmButtonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #f9fafb;
+  font-size: 19.93px;
+  text-align: center;
+}
+
+.cancelButton {
+  background-color: white;
+  border: 1.993px solid #0a0a0a;
+  display: flex;
+  height: 49.662px;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding-left: 11.959px;
+  padding-right: 11.959px;
+  padding-top: 9.966px;
+  padding-bottom: 9.966px;
+  position: relative;
+  border-radius: 10px;
+  flex-shrink: 0;
+  width: 221.492px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: #f9fafb;
+}
+
+.cancelButtonText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 600;
+  line-height: normal;
+  position: relative;
+  flex-shrink: 0;
+  color: #0a0a0a;
+  font-size: 19.93px;
+  text-align: center;
+}
+
+/* Illustration */
+.illustration {
+  height: 193px;
+  position: relative;
+  flex-shrink: 0;
+  width: 227px;
+}
+
+.illustrationImage {
+  position: absolute;
+  height: 117.51%;
+  left: 0;
+  max-width: none;
+  top: -17.7%;
+  width: 100%;
+  object-fit: contain;
+}

@@ -85,6 +85,13 @@
       "when": 1768400100000,
       "tag": "0011_add_pending_cancellation_reasons",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1768400200000,
+      "tag": "0012_add_retention_offer_applied_at",
+      "breakpoints": true
     }
   ]
 }

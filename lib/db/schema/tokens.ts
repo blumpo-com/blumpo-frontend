@@ -24,6 +24,8 @@ export const tokenAccount = pgTable('token_account', {
   pendingCancellationReasons: jsonb('pending_cancellation_reasons').$type<string[]>(),
   // Set only when Stripe confirms subscription cancellation (webhook)
   cancellationReasons: jsonb('cancellation_reasons').$type<string[]>(),
+  // When user accepted "70% off next month + 200 credits" retention offer
+  retentionOfferAppliedAt: timestamp('retention_offer_applied_at', { withTimezone: true }),
 }, (table) => ({
   stripeCustomerIdx: uniqueIndex('uq_token_account_stripe_customer')
     .on(table.stripeCustomerId)

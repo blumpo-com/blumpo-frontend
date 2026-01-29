@@ -50,7 +50,10 @@ function SettingsPageContent() {
     '/api/subscription-plans',
     fetcher
   );
-  const { data: stripePrices = [] } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
+  const { data: stripePrices = [], isLoading: isLoadingStripePrices } = useSWR<StripePrice[]>(
+    '/api/stripe-prices',
+    fetcher
+  );
 
   const [profileState, formAction, isSavePending] = useActionState<ProfileFormState, FormData>(
     updateAccount,
@@ -62,8 +65,9 @@ function SettingsPageContent() {
   const [lastSavedName, setLastSavedName] = useState('');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [save50DialogOpen, setSave50DialogOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const isLoading = isLoadingUser || isLoadingPlans;
+  const isLoading = isLoadingUser || isLoadingPlans || isLoadingStripePrices;
 
   // Sync profile state from user when user loads
   useEffect(() => {
@@ -130,19 +134,22 @@ function SettingsPageContent() {
   }
 
   async function handleManageBillings() {
+    setActionLoading(true);
+    let willRedirect = false;
     try {
       const response = await fetch('/api/stripe/customer-portal');
       const data = await response.json();
-      
       if (response.ok && data.url) {
+        willRedirect = true;
         window.location.href = data.url;
-      } else {
-        // If no Stripe account, redirect to your-credits
-        router.push('/dashboard/your-credits');
+        return;
       }
+      router.push('/dashboard/your-credits');
     } catch (error) {
       console.error('Error opening customer portal:', error);
       router.push('/dashboard/your-credits');
+    } finally {
+      if (!willRedirect) setActionLoading(false);
     }
   }
 
@@ -154,36 +161,64 @@ function SettingsPageContent() {
     setCancelDialogOpen(false);
   }
 
+  async function handleAcceptRetentionOffer() {
+    setActionLoading(true);
+    try {
+      const response = await fetch('/api/retention-offer', { method: 'POST' });
+      const data = await response.json();
+      if (response.ok && data.ok) {
+        closeCancelDialog();
+        mutate('/api/user');
+      } else {
+        console.error('Retention offer failed:', data.error);
+        closeCancelDialog();
+      }
+    } catch (err) {
+      console.error('Retention offer error:', err);
+      closeCancelDialog();
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   async function handleProceedToCancel() {
     closeCancelDialog();
+    setActionLoading(true);
+    let willRedirect = false;
     try {
       const response = await fetch('/api/stripe/customer-portal?flow=subscription_cancel');
       const data = await response.json();
       if (response.ok && data.url) {
+        willRedirect = true;
         window.location.href = data.url;
-      } else {
-        router.push('/dashboard/your-credits');
+        return;
       }
+      router.push('/dashboard/your-credits');
     } catch (error) {
       console.error('Error opening customer portal:', error);
       router.push('/dashboard/your-credits');
+    } finally {
+      if (!willRedirect) setActionLoading(false);
     }
   }
 
   async function handleUpgradeToAnnual() {
-    // Use Customer Portal with flow_data to directly open subscription update page
+    setActionLoading(true);
+    let willRedirect = false;
     try {
       const response = await fetch('/api/stripe/customer-portal?flow=subscription_update');
       const data = await response.json();
-      
       if (response.ok && data.url) {
+        willRedirect = true;
         window.location.href = data.url;
-      } else {
-        router.push('/dashboard/your-credits');
+        return;
       }
+      router.push('/dashboard/your-credits');
     } catch (error) {
       console.error('Error opening customer portal:', error);
       router.push('/dashboard/your-credits');
+    } finally {
+      if (!willRedirect) setActionLoading(false);
     }
   }
 
@@ -199,6 +234,11 @@ function SettingsPageContent() {
 
   return (
     <div className={styles.container}>
+      {actionLoading && (
+        <div className={styles.actionLoadingOverlay} aria-busy="true" aria-live="polite">
+          <div className="spinner" />
+        </div>
+      )}
       {/* Header */}
       <div className={styles.header}>
         <h1 className="header-gradient-dashboard ">Settings</h1>
@@ -226,7 +266,7 @@ function SettingsPageContent() {
                   <button
                     type="submit"
                     className={styles.saveButton}
-                    disabled={isSavePending}
+                    disabled={isSavePending || actionLoading}
                   >
                     {isSavePending ? 'Saving...' : 'Save'}
                   </button>
@@ -316,6 +356,7 @@ function SettingsPageContent() {
           open={cancelDialogOpen}
           onClose={closeCancelDialog}
           onProceedToCancel={handleProceedToCancel}
+          onAcceptOffer={handleAcceptRetentionOffer}
         />
 
         {/* Save 50% dialog (Upgrade to annual) */}
