@@ -50,6 +50,14 @@ export async function POST(req: Request) {
         }, { status: 400 });
       }
 
+      // Verify job is FAILED or CANCELED (not SUCCEEDED)
+      if (job.status === 'SUCCEEDED' || job.status === 'RUNNING' || job.status === 'QUEUED') {
+        return NextResponse.json({ 
+          error: "Job is not failed",
+          message: `This endpoint only migrates FAILED or CANCELED jobs. Job status: ${job.status}`
+        }, { status: 400 });
+      }
+
       // Get ads from the job
       const adImages = await getAdImagesByJobId(jobId);
       const validAds = adImages.filter(

@@ -4,12 +4,13 @@ import { markAdsAsReadyToDisplay, getUnusedFormatAds } from "@/lib/db/queries/ad
 import { getAdImagesByJobId } from "@/lib/db/queries/ads";
 import { del } from "@vercel/blob";
 import { extractBlobPathFromUrl } from "@/lib/blob-utils";
-import { markAdImagesAsDeleted } from "@/lib/db/queries/ads";
+import { deleteAdImages } from "@/lib/db/queries/quick-ads";
 import { getGenerationJobById, updateGenerationJob } from "@/lib/db/queries/generation";
 
 const TOKENS_COST_PER_GENERATION = 50;
 
 // Mark ads as displayed, deduct tokens, and cleanup unused formats
+// Supports single format ('1:1' or '9:16') or mixed format ('mixed', '1:1,9:16', '1:1-9:16')
 export async function POST(req: Request) {
   try {
     const user = await getUser();
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { jobId, format } = body; // format: '1:1' or '9:16'
+    const { jobId, format } = body; // format: '1:1', '9:16', 'mixed', '1:1,9:16', or '1:1-9:16'
 
     if (!jobId || !format) {
       return NextResponse.json({ error: "jobId and format required" }, { status: 400 });
@@ -43,8 +44,25 @@ export async function POST(req: Request) {
     // Get all ads from this job
     const allAds = await getAdImagesByJobId(jobId);
     
-    // Filter ads in the selected format
-    const selectedFormatAds = allAds.filter(ad => ad.format === format);
+    // Check if format is mixed (both formats)
+    const isMixedFormat = format === 'mixed' || format === '1:1,9:16' || format === '1:1-9:16';
+    
+    let selectedFormatAds: typeof allAds;
+    let unusedAds: typeof allAds = [];
+    
+    if (isMixedFormat) {
+      // For mixed format, mark all ads as displayed (both formats)
+      selectedFormatAds = allAds.filter(ad => !ad.isDeleted);
+      
+      // Don't delete anything for mixed format - keep both formats
+      unusedAds = [];
+    } else {
+      // For single format, filter ads in the selected format
+      selectedFormatAds = allAds.filter(ad => ad.format === format && !ad.isDeleted);
+      
+      // Get unused format ads (ads not in selected format)
+      unusedAds = await getUnusedFormatAds(jobId, format as '1:1' | '9:16');
+    }
     
     if (selectedFormatAds.length === 0) {
       return NextResponse.json({ error: "No ads found for selected format" }, { status: 404 });
@@ -82,47 +100,50 @@ export async function POST(req: Request) {
     const adIds = selectedFormatAds.map(ad => ad.id);
     await markAdsAsReadyToDisplay(adIds);
 
-    // Get unused format ads (ads not in selected format)
-    const unusedAds = await getUnusedFormatAds(jobId, format as '1:1' | '9:16');
-    
-    // Delete unused ads from Vercel Blob and mark as deleted in DB
-    const deletePromises = unusedAds.map(async (ad) => {
-      try {
-        let blobPath: string | null = null;
-        
-        // Try to extract blob path from publicUrl first
-        if (ad.publicUrl) {
-          blobPath = extractBlobPathFromUrl(ad.publicUrl);
+    // Only delete unused format ads if NOT mixed format
+    if (!isMixedFormat && unusedAds.length > 0) {
+      // Delete unused ads from Vercel Blob
+      const deletePromises = unusedAds.map(async (ad) => {
+        try {
+          let blobPath: string | null = null;
+          
+          // Try to extract blob path from publicUrl first
+          if (ad.publicUrl) {
+            blobPath = extractBlobPathFromUrl(ad.publicUrl);
+          }
+          
+          // Fallback to storageKey if publicUrl extraction failed
+          if (!blobPath && ad.storageKey) {
+            blobPath = ad.storageKey;
+          }
+          
+          // Delete from Vercel Blob if we have a valid path
+          if (blobPath) {
+            await del(blobPath);
+            console.log(`[QUICK-ADS] Deleted blob for ad ${ad.id}`);
+          } else {
+            console.warn(`[QUICK-ADS] No blob path found for ad ${ad.id} (publicUrl: ${ad.publicUrl}, storageKey: ${ad.storageKey})`);
+          }
+        } catch (error) {
+          console.error(`[QUICK-ADS] Error deleting blob for ad ${ad.id}:`, error);
         }
-        
-        // Fallback to storageKey if publicUrl extraction failed
-        if (!blobPath && ad.storageKey) {
-          blobPath = ad.storageKey;
-        }
-        
-        // Delete from Vercel Blob if we have a valid path
-        if (blobPath) {
-          await del(blobPath);
-        } else {
-          console.warn(`[QUICK-ADS] No blob path found for ad ${ad.id} (publicUrl: ${ad.publicUrl}, storageKey: ${ad.storageKey})`);
-        }
-      } catch (error) {
-        console.error(`[QUICK-ADS] Error deleting blob for ad ${ad.id}:`, error);
-      }
-    });
+      });
 
-    await Promise.all(deletePromises);
-    
-    // Mark unused ads as deleted in database
-    const unusedAdIds = unusedAds.map(ad => ad.id);
-    if (unusedAdIds.length > 0) {
-      await markAdImagesAsDeleted(unusedAdIds);
+      await Promise.all(deletePromises);
+      
+      // Delete unused ads from database (hard delete)
+      const unusedAdIds = unusedAds.map(ad => ad.id);
+      if (unusedAdIds.length > 0) {
+        await deleteAdImages(unusedAdIds);
+        console.log(`[QUICK-ADS] Deleted ${unusedAdIds.length} unused ads from database`);
+      }
     }
 
     return NextResponse.json({
       success: true,
       markedAsDisplayed: adIds.length,
-      deleted: unusedAdIds.length,
+      deleted: isMixedFormat ? 0 : unusedAds.length,
+      isMixedFormat,
     });
   } catch (error) {
     console.error('[QUICK-ADS] Error marking ads as displayed:', error);

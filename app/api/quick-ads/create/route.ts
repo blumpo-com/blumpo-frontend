@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { brandId } = await req.json();
+    const { brandId, formats } = await req.json();
     
     if (!brandId) {
       return NextResponse.json({ error: "Brand ID required" }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
     // Create QUEUED job (no tokens deducted yet)
-    const job = await createQuickAdsJob(user.id, brandId);
+    const job = await createQuickAdsJob(user.id, brandId, formats);
 
     return NextResponse.json({
       job_id: job.id,

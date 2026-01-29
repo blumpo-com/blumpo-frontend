@@ -133,13 +133,16 @@ function QuickAdsGenerationPageContent() {
 
     try {
       const brandId = currentBrand?.id || null;
-      const format = selectedFormat === '1:1' ? '1:1' : selectedFormat === '9:16' ? '9:16' : '1:1'; // Handle mixed format
       
-      // For mixed format, we'll need to handle both formats separately
-      // For now, let's use the first format
-      const checkFormat = selectedFormat === '1:1-9:16' ? '1:1' : format;
+      if (!brandId) {
+        throw new Error('Brand ID required for quick ads generation');
+      }
+
+      // Determine the format(s) to check
+      const isMixedFormat = selectedFormat === '1:1-9:16';
+      const checkFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
       
-      // Check if we have 5 ads ready for this format
+      // Check if we have 5 ads ready for the selected format(s)
       const checkResponse = await fetch(`/api/quick-ads?format=${checkFormat}${brandId ? `&brandId=${brandId}` : ''}`);
       
       if (!checkResponse.ok) {
@@ -153,21 +156,18 @@ function QuickAdsGenerationPageContent() {
         // Use the first job ID (all ads should be from the same job for quick ads)
         const jobId = checkData.jobIds[0];
         
-        // Format is already in database format (1:1 or 9:16)
-        const pageFormat = checkFormat;
+        // For navigation, use the selected format
+        // If mixed, pass both formats as comma-separated
+        const pageFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
         
         router.push(`/dashboard/ad-generation?job_id=${jobId}&format=${pageFormat}&quick_ads=true`);
       } else {
         // No ads ready - create a QUEUED job and navigate to ad generation page
-        if (!brandId) {
-          throw new Error('Brand ID required for quick ads generation');
-        }
-
         // Create a QUEUED quick ads job (tokens not deducted yet)
         const createResponse = await fetch('/api/quick-ads/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brandId }),
+          body: JSON.stringify({ brandId, formats: mapFormatToDatabase(selectedFormat) }),
         });
 
         if (!createResponse.ok) {
@@ -178,7 +178,9 @@ function QuickAdsGenerationPageContent() {
         const createData = await createResponse.json();
         
         // Navigate to ad generation page - it will show creating process and trigger generation
-        const pageFormat = checkFormat;
+        // For navigation, use the selected format
+        // If mixed, pass both formats as comma-separated
+        const pageFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
         router.push(`/dashboard/ad-generation?job_id=${createData.job_id}&format=${pageFormat}&quick_ads=true`);
       }
     } catch (error) {

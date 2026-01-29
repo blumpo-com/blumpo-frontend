@@ -3,7 +3,7 @@ import { getUser } from "@/lib/db/queries";
 import { getQuickAdsForFormat, getQuickAdsCountByFormat } from "@/lib/db/queries/ads";
 import { getBrandById } from "@/lib/db/queries/brand";
 
-// Check if user has 5 ads ready for a format
+// Check if user has 5 ads ready for a format (or both formats if mixed)
 export async function GET(req: Request) {
   try {
     const user = await getUser();
@@ -12,16 +12,13 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const format = searchParams.get('format'); // '1:1' or '9:16'
+    const format = searchParams.get('format'); // '1:1', '9:16', or '1:1,9:16' for mixed
     const brandId = searchParams.get('brandId');
 
     if (!format) {
       return NextResponse.json({ error: "Format required" }, { status: 400 });
     }
 
-    // Format is already in database format (1:1 or 9:16)
-    const dbFormat = format === '1:1' ? '1:1' : '9:16';
-    
     // Verify brand belongs to user if provided
     let verifiedBrandId = null;
     if (brandId) {
@@ -32,10 +29,82 @@ export async function GET(req: Request) {
       verifiedBrandId = brandId;
     }
 
-    // Check if we have 5 ads ready
+    // Check if format is mixed (contains comma or is '1:1-9:16')
+    const isMixedFormat = format.includes(',') || format === '1:1-9:16';
+    
+    if (isMixedFormat) {
+      // Check both formats
+      const format1x1 = '1:1';
+      const format9x16 = '9:16';
+      
+      const [ads1x1, ads9x16] = await Promise.all([
+        getQuickAdsForFormat(user.id, verifiedBrandId, format1x1, 5),
+        getQuickAdsForFormat(user.id, verifiedBrandId, format9x16, 5),
+      ]);
+
+      const hasBothFormats = ads1x1.length >= 5 && ads9x16.length >= 5;
+
+      if (hasBothFormats) {
+        // Extract ad images from both formats
+        const adImages1x1 = ads1x1.map((row) => ({
+          id: row.ad_image.id,
+          publicUrl: row.ad_image.publicUrl,
+          width: row.ad_image.width,
+          height: row.ad_image.height,
+          format: row.ad_image.format,
+          jobId: row.ad_image.jobId,
+        }));
+
+        const adImages9x16 = ads9x16.map((row) => ({
+          id: row.ad_image.id,
+          publicUrl: row.ad_image.publicUrl,
+          width: row.ad_image.width,
+          height: row.ad_image.height,
+          format: row.ad_image.format,
+          jobId: row.ad_image.jobId,
+        }));
+
+        // Combine all ads
+        const allAdImages = [...adImages1x1, ...adImages9x16];
+        
+        // Get unique job IDs from the ads
+        const jobIds = [...new Set(allAdImages.map(ad => ad.jobId))];
+        
+        return NextResponse.json({
+          hasAds: true,
+          ads: allAdImages,
+          jobIds: jobIds,
+          format1x1: {
+            hasAds: true,
+            count: ads1x1.length,
+            ads: adImages1x1,
+          },
+          format9x16: {
+            hasAds: true,
+            count: ads9x16.length,
+            ads: adImages9x16,
+          },
+        });
+      }
+
+      // Return partial results if only one format has enough ads
+      return NextResponse.json({
+        hasAds: false,
+        format1x1: {
+          hasAds: ads1x1.length >= 5,
+          count: ads1x1.length,
+        },
+        format9x16: {
+          hasAds: ads9x16.length >= 5,
+          count: ads9x16.length,
+        },
+      });
+    }
+
+    // Single format check (original logic)
+    const dbFormat = format === '1:1' ? '1:1' : '9:16';
     const ads = await getQuickAdsForFormat(user.id, verifiedBrandId, dbFormat, 5);
 
-    
     if (ads.length >= 5) {
       // Extract ad_image and generation_job from joined result
       const adImages = ads.map((row) => {

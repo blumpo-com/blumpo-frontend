@@ -280,7 +280,11 @@ function AdGenerationPageContent() {
 
     // For quick ads, use the format from URL parameter
     if (isQuickAds && formatParam) {
-      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${formatParam}`);
+      // Convert comma-separated formats to 'mixed' for the review view
+      const reviewFormat = formatParam.includes(',') || formatParam === '1:1-9:16' 
+        ? 'mixed' 
+        : formatParam;
+      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${reviewFormat}`);
       return;
     }
 
