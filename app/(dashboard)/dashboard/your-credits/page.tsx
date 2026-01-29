@@ -6,7 +6,7 @@ import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@
 import {Check} from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
-import { Save50Dialog } from './save-50-dialog';
+import { Save50Dialog } from '@/components/Save50Dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
 import { SupportCategory } from '@/lib/constants/support-categories';
@@ -693,7 +693,6 @@ function YourCreditsPageContent() {
           onContinue={handleSave50DialogContinue}
           monthlyPrice={save50DialogData.monthlyPrice}
           annualPrice={save50DialogData.annualPrice}
-          annualPriceId={save50DialogData.annualPriceId}
         />
       )}
 

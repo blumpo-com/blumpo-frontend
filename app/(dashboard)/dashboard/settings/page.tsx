@@ -8,6 +8,7 @@ import { useUser } from '@/lib/contexts/user-context';
 import { signOut, updateAccount } from '@/app/(login)/actions';
 import { InputRegular } from '@/components/ui/InputRegular';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
+import { Save50Dialog } from '@/components/Save50Dialog';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
 import { SettingsActionCard } from './components/SettingsActionCard';
 import { CancelSubscriptionDialog } from './components/CancelSubscriptionDialog';
@@ -33,6 +34,14 @@ interface SubscriptionPlan {
   sortOrder: number;
 }
 
+interface StripePrice {
+  id: string;
+  productId: string;
+  unitAmount: number | null;
+  interval?: string;
+  intervalCount?: number;
+}
+
 
 function SettingsPageContent() {
   const router = useRouter();
@@ -41,6 +50,7 @@ function SettingsPageContent() {
     '/api/subscription-plans',
     fetcher
   );
+  const { data: stripePrices = [] } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
 
   const [profileState, formAction, isSavePending] = useActionState<ProfileFormState, FormData>(
     updateAccount,
@@ -51,6 +61,7 @@ function SettingsPageContent() {
   const [email, setEmail] = useState('');
   const [lastSavedName, setLastSavedName] = useState('');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [save50DialogOpen, setSave50DialogOpen] = useState(false);
 
   const isLoading = isLoadingUser || isLoadingPlans;
 
@@ -99,6 +110,19 @@ function SettingsPageContent() {
 
   // Billing text
   const billingText = period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly';
+
+  // Save 50 dialog: monthly vs annual price for current plan (for Upgrade to annual card)
+  const save50PriceData = (() => {
+    if (!currentPlan?.stripeProductId || !stripePrices.length) return null;
+    const prices = stripePrices.filter((p) => p.productId === currentPlan.stripeProductId);
+    const monthly = prices.find((p) => p.interval === 'month' && p.intervalCount === 1);
+    const annual = prices.find((p) => p.interval === 'year' && p.intervalCount === 1);
+    if (!monthly?.unitAmount || !annual?.unitAmount) return null;
+    const monthlyPriceDollars = Math.round(monthly.unitAmount / 100);
+    const annualTotalCents = annual.unitAmount;
+    const annualMonthlyEquivalent = Math.round(annualTotalCents / 100 / 12);
+    return { monthlyPrice: monthlyPriceDollars, annualPrice: annualMonthlyEquivalent };
+  })();
 
   async function handleSignOut() {
     await signOut();
@@ -241,12 +265,12 @@ function SettingsPageContent() {
               onClick={() => router.push('/dashboard/your-credits')}
             />
 
-            {/* Upgrade to Annual Plan - hidden when FREE or yearly; empty placeholder keeps half-width layout */}
+            {/* Upgrade to Annual Plan - hidden when FREE or yearly; opens Save50 dialog, redirect on Yes */}
             {!isFreePlan && period !== SubscriptionPeriod.YEARLY ? (
               <SettingsActionCard
                 icon={<Calendar />}
                 title="Upgrade to annual plan"
-                onClick={handleUpgradeToAnnual}
+                onClick={() => (save50PriceData ? setSave50DialogOpen(true) : handleUpgradeToAnnual())}
               />
             ) : (
               <div className={styles.cardPlaceholder} aria-hidden="true" />
@@ -293,6 +317,21 @@ function SettingsPageContent() {
           onClose={closeCancelDialog}
           onProceedToCancel={handleProceedToCancel}
         />
+
+        {/* Save 50% dialog (Upgrade to annual) */}
+        {save50PriceData && (
+          <Save50Dialog
+            open={save50DialogOpen}
+            onClose={() => setSave50DialogOpen(false)}
+            onConfirm={() => {
+              setSave50DialogOpen(false);
+              handleUpgradeToAnnual();
+            }}
+            onContinue={() => setSave50DialogOpen(false)}
+            monthlyPrice={save50PriceData.monthlyPrice}
+            annualPrice={save50PriceData.annualPrice}
+          />
+        )}
 
         {/* Logout Button */}
         <form action={handleSignOut}>
