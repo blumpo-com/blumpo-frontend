@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TinderView, AdFormat } from '../tinder-view';
 import { TinderViewMixed } from '../tinder-view-mixed';
@@ -46,6 +46,8 @@ function TinderPageContent() {
   const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [hasCompleted, setHasCompleted] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  // Ref to prevent double execution (React Strict Mode)
+  const hasMarkedAsDisplayedRef = useRef<string | null>(null);
   
   // Convert format parameter to AdFormat type
   // Handle '1:1,9:16' or '1:1-9:16' as mixed format
@@ -59,13 +61,24 @@ function TinderPageContent() {
   // Mark ads as displayed when page loads (for quick ads only)
   // Check if this is a quick ads job by checking URL params or job status
   useEffect(() => {
-    if (!isTest && jobId && formatParam) {
+    // Create a unique key for this job+format combination
+    const executionKey = `${jobId}-${formatParam}`;
+    
+    // Don't run if we've already marked this job+format as displayed
+    if (!isTest && jobId && formatParam && hasMarkedAsDisplayedRef.current !== executionKey) {
+      // Mark as initiated to prevent double execution
+      hasMarkedAsDisplayedRef.current = executionKey;
+      
       const markAdsAsDisplayed = async () => {
         try {
           // First, check if this is a quick ads job by fetching job info
           const jobResponse = await fetch(`/api/generation-job?jobId=${jobId}`);
           if (!jobResponse.ok) {
             console.warn('[AD-REVIEW] Could not fetch job info, skipping mark-displayed');
+            // Reset ref on error so it can retry if needed
+            if (hasMarkedAsDisplayedRef.current === executionKey) {
+              hasMarkedAsDisplayedRef.current = null;
+            }
             return;
           }
           
@@ -96,9 +109,17 @@ function TinderPageContent() {
             const error = await response.json().catch(() => ({}));
             // Don't block the UI if marking fails - just log it
             console.warn('[AD-REVIEW] Failed to mark ads as displayed:', error);
+            // Reset ref on error so it can retry if needed
+            if (hasMarkedAsDisplayedRef.current === executionKey) {
+              hasMarkedAsDisplayedRef.current = null;
+            }
           }
         } catch (error) {
           console.error('[AD-REVIEW] Error marking ads as displayed:', error);
+          // Reset ref on error so it can retry if needed
+          if (hasMarkedAsDisplayedRef.current === executionKey) {
+            hasMarkedAsDisplayedRef.current = null;
+          }
         }
       };
       

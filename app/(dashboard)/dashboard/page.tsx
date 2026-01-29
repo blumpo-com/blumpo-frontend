@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
@@ -160,6 +160,8 @@ export default function DashboardHomePage() {
   const router = useRouter();
   const { currentBrand } = useBrand();
   const [isCheckingAds, setIsCheckingAds] = useState(false);
+  // Ref to prevent double execution (React Strict Mode)
+  const hasCheckedBrandRef = useRef<string | null>(null);
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -170,14 +172,31 @@ export default function DashboardHomePage() {
   
   // Check and maintain quick ads for paid users
   useEffect(() => {
+    const brandId = currentBrand?.id || null;
+    
+    // Reset ref if brand changed
+    if (brandId && hasCheckedBrandRef.current !== null && hasCheckedBrandRef.current !== brandId) {
+      hasCheckedBrandRef.current = null;
+    }
+    
+    // Don't run if no brand or if we've already checked this brand
+    if (!brandId || hasCheckedBrandRef.current === brandId) {
+      return;
+    }
+    
+    // Don't run if already checking
+    if (isCheckingAds) {
+      return;
+    }
+    
+    // Mark as checked for this brand to prevent double execution
+    hasCheckedBrandRef.current = brandId;
+    
     const checkAndGenerateQuickAds = async () => {
-      if (isCheckingAds) return;
-      
       try {
         setIsCheckingAds(true);
-        const brandId = currentBrand?.id || null;
         
-        const checkResponse = await fetch(`/api/quick-ads/check-paid-user${brandId ? `?brandId=${brandId}` : ''}`);
+        const checkResponse = await fetch(`/api/quick-ads/check-paid-user?brandId=${brandId}`);
         
         if (!checkResponse.ok) {
           return;
@@ -192,11 +211,7 @@ export default function DashboardHomePage() {
 
         console.log('brandId', brandId);
         // User is paid and needs more ads - trigger generation
-        if (!brandId) {
-          console.warn('Cannot generate quick ads without brand');
-          return;
-        }
-
+        
         // Generate ads for formats that need them
         const generatePromises = [];
         
@@ -232,10 +247,8 @@ export default function DashboardHomePage() {
       }
     };
 
-    // Only check if we have a brand
-    if (currentBrand?.id) {
-      checkAndGenerateQuickAds();
-    }
+    checkAndGenerateQuickAds();
+    
     // Only run once when brand changes, not on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBrand?.id]);
