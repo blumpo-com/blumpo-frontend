@@ -217,6 +217,14 @@ export default function ContentLibraryPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      // log download event to analytics
+      fetch("/api/ad-actions", {
+        method: "POST",
+        body: JSON.stringify({
+          jobId: image.job?.id,
+          downloadedIds: [image.id],
+        }),
+      });
     } catch (err) {
       console.error("Error downloading image:", err);
     }
