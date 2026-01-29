@@ -492,11 +492,11 @@ function CustomizedAdsPageContent() {
     const configs: Record<string, { title: string; subtitle: string }> = {
       problem_solution: {
         title: "Select target group",
-        subtitle: "Customer insights for you product category we found on Reddit and other social media."
+        subtitle: "Customer segments you want to target with your ad"
       },
       testimonial: {
         title: "Select testimonials",
-        subtitle: "Customer insights for you product category we found on Reddit and other social media."
+        subtitle: "Customer segments you want to target with your ad"
       },
       competitor_comparison: {
         title: "Competitor insight",
@@ -504,11 +504,11 @@ function CustomizedAdsPageContent() {
       },
       promotion_offer: {
         title: "Select target group",
-        subtitle: "Customer insights for you product category we found on Reddit and other social media."
+        subtitle: "Customer segments you want to target with your ad"
       },
       value_proposition: {
-        title: "Value insight",
-        subtitle: "Customer value perception of your product we found on Reddit & Social media"
+        title: "Select target group",
+        subtitle: "Customer segments you want to target with your ad"
       },
       random: {
         title: "Select Insight",
