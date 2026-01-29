@@ -62,13 +62,14 @@ function TinderPageContent() {
             const adImages = await response.json();
             
             // Group ads by their provided .format value instead of ratio
-            const ads1_1List: Array<{ id: string; imageUrl: string; format: '1:1' }> = [];
-            const ads16_9List: Array<{ id: string; imageUrl: string; format: '9:16' }> = [];
+            const ads1_1List: Array<{ id: string; imageUrl: string; format: '1:1'; workflowId: string }> = [];
+            const ads16_9List: Array<{ id: string; imageUrl: string; format: '9:16'; workflowId: string }> = [];
 
             adImages.forEach((img: any) => {
               const adData = {
                 id: img.id,
                 imageUrl: img.publicUrl || img.storageKey,
+                workflowId: img.workflowId,
               };
 
               console.log('img', img);
@@ -86,6 +87,12 @@ function TinderPageContent() {
 
             console.log('ads1_1List', ads1_1List);
             console.log('ads16_9List', ads16_9List);
+
+            // if mixed format, sort ads1_1List and ads16_9List by workflowId
+            if (format === 'mixed') {
+              ads1_1List.sort((a, b) => a.workflowId.localeCompare(b.workflowId));
+              ads16_9List.sort((a, b) => a.workflowId.localeCompare(b.workflowId));
+            }
 
             setAds1_1(ads1_1List);
             setAds16_9(ads16_9List);

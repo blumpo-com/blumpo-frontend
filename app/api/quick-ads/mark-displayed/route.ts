@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { jobId, format } = body; // format: '1:1' or '16:9'
+    const { jobId, format } = body; // format: '1:1' or '9:16'
 
     if (!jobId || !format) {
       return NextResponse.json({ error: "jobId and format required" }, { status: 400 });
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     await markAdsAsReadyToDisplay(adIds);
 
     // Get unused format ads (ads not in selected format)
-    const unusedAds = await getUnusedFormatAds(jobId, format as '1:1' | '16:9');
+    const unusedAds = await getUnusedFormatAds(jobId, format as '1:1' | '9:16');
     
     // Delete unused ads from Vercel Blob and mark as deleted in DB
     const deletePromises = unusedAds.map(async (ad) => {

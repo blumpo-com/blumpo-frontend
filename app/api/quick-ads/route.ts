@@ -12,15 +12,15 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url);
-    const format = searchParams.get('format'); // '1:1' or '16:9'
+    const format = searchParams.get('format'); // '1:1' or '9:16'
     const brandId = searchParams.get('brandId');
 
     if (!format) {
       return NextResponse.json({ error: "Format required" }, { status: 400 });
     }
 
-    // Format is already in database format (1:1 or 16:9)
-    const dbFormat = format === '1:1' ? '1:1' : '16:9';
+    // Format is already in database format (1:1 or 9:16)
+    const dbFormat = format === '1:1' ? '1:1' : '9:16';
     
     // Verify brand belongs to user if provided
     let verifiedBrandId = null;

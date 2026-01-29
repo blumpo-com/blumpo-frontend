@@ -36,7 +36,7 @@ export const generationJob = pgTable('generation_job', {
   archetypeMode: text('archetype_mode').notNull().default('single'), // 'single' | 'random'
   
   // Format support
-  formats: text('formats').array().notNull().default([]), // Array of formats (e.g., ['1:1', '16:9'])
+  formats: text('formats').array().notNull().default([]), // Array of formats (e.g., ['1:1', '9:16'])
   
   // Selected insights
   selectedInsights: text('selected_insights').array().notNull().default([]), // Array of selected insights

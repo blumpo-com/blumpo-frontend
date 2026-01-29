@@ -105,10 +105,10 @@ function QuickAdsGenerationPageContent() {
     switch (formatId) {
       case '1:1':
         return ['1:1'];
-      case '16:9':
-        return ['16:9'];
-      case '1:1-16:9':
-        return ['1:1', '16:9'];
+      case '9:16':
+        return ['9:16'];
+      case '1:1-9:16':
+        return ['1:1', '9:16'];
       default:
         return ['1:1'];
     }
@@ -133,11 +133,11 @@ function QuickAdsGenerationPageContent() {
 
     try {
       const brandId = currentBrand?.id || null;
-      const format = selectedFormat === '1:1' ? '1:1' : selectedFormat === '16:9' ? '16:9' : '1:1'; // Handle mixed format
+      const format = selectedFormat === '1:1' ? '1:1' : selectedFormat === '9:16' ? '9:16' : '1:1'; // Handle mixed format
       
       // For mixed format, we'll need to handle both formats separately
       // For now, let's use the first format
-      const checkFormat = selectedFormat === '1:1-16:9' ? '1:1' : format;
+      const checkFormat = selectedFormat === '1:1-9:16' ? '1:1' : format;
       
       // Check if we have 5 ads ready for this format
       const checkResponse = await fetch(`/api/quick-ads?format=${checkFormat}${brandId ? `&brandId=${brandId}` : ''}`);
@@ -153,7 +153,7 @@ function QuickAdsGenerationPageContent() {
         // Use the first job ID (all ads should be from the same job for quick ads)
         const jobId = checkData.jobIds[0];
         
-        // Format is already in database format (1:1 or 16:9)
+        // Format is already in database format (1:1 or 9:16)
         const pageFormat = checkFormat;
         
         router.push(`/dashboard/ad-generation?job_id=${jobId}&format=${pageFormat}&quick_ads=true`);

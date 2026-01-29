@@ -12,7 +12,7 @@ function AdGenerationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const jobId = searchParams.get('job_id');
-  const formatParam = searchParams.get('format'); // '1:1' or '16:9' for quick ads
+  const formatParam = searchParams.get('format');
   const isQuickAds = searchParams.get('quick_ads') === 'true';
   
   const [isProcessComplete, setIsProcessComplete] = useState(false);
@@ -299,7 +299,7 @@ function AdGenerationPageContent() {
           const hasSquare = formats.includes('square') || formats.includes('1:1');
           const hasStory = formats.includes('story') || formats.includes('9:16');
           
-          if (has1x1 && has16x9) {
+          if (hasSquare && hasStory) {
             format = 'mixed';
           } else if (hasStory) {
             format = '9:16';
@@ -318,7 +318,7 @@ function AdGenerationPageContent() {
       const hasSquare = jobFormats.includes('square') || jobFormats.includes('1:1');
       const hasStory = jobFormats.includes('story') || jobFormats.includes('9:16');
       
-      if (has1x1 && has16x9) {
+      if (hasSquare && hasStory) {
         format = 'mixed';
       } else if (hasStory) {
         format = '9:16';

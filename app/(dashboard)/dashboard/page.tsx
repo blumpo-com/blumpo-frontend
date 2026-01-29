@@ -200,7 +200,7 @@ export default function DashboardHomePage() {
         // Generate ads for formats that need them
         const generatePromises = [];
         
-        if (checkData.needs1x1 || checkData.needs16x9) {
+        if (checkData.needsGeneration) {
           // Create quick ads job (generates both formats)
           generatePromises.push(
             fetch('/api/quick-ads/create', {

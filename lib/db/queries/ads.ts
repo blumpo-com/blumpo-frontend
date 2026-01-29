@@ -344,10 +344,10 @@ export async function getWorkflowsAndArchetypesByWorkflowIds(
 export async function getQuickAdsForFormat(
   userId: string,
   brandId: string | null,
-  format: '1:1' | '16:9',
+  format: '1:1' | '9:16',
   limit: number = 5
 ) {
-  // Format is already in database format (1:1 or 16:9)
+  // Format is already in database format (1:1 or 9:16)
   const formatValue = format;
   
   const results = await db
@@ -388,9 +388,9 @@ export async function markAdsAsReadyToDisplay(adImageIds: string[]) {
 export async function getQuickAdsCountByFormat(
   userId: string,
   brandId: string | null,
-  format: '1:1' | '16:9'
+  format: '1:1' | '9:16'
 ) {
-  // Format is already in database format (1:1 or 16:9)
+  // Format is already in database format (1:1 or 9:16)
   const formatValue = format;
   
   const result = await db
@@ -414,10 +414,10 @@ export async function getQuickAdsCountByFormat(
 
 export async function getUnusedFormatAds(
   jobId: string,
-  selectedFormat: '1:1' | '16:9'
+  selectedFormat: '1:1' | '9:16'
 ) {
   // Get all ads from the job that are NOT in the selected format
-  // Format is already in database format (1:1 or 16:9)
+  // Format is already in database format (1:1 or 9:16)
   const formatValue = selectedFormat;
   
   return await db

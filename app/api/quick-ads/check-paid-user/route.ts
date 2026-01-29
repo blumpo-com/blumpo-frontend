@@ -6,7 +6,7 @@ import { getUserWithTokenBalance } from "@/lib/db/queries/tokens";
 
 const REQUIRED_ADS_PER_FORMAT = 10; // Paid users need 10 ads per format (20 total)
 
-// Check if paid user has enough quick ads (20 total: 10 1:1 + 10 16:9)
+// Check if paid user has enough quick ads (20 total: 10 1:1 + 10 9:16)
 export async function GET(req: Request) {
   try {
     const user = await getUser();
@@ -39,18 +39,20 @@ export async function GET(req: Request) {
 
     // Check counts for both formats
     const format1x1Count = await getQuickAdsCountByFormat(user.id, verifiedBrandId, '1:1');
-    const format16x9Count = await getQuickAdsCountByFormat(user.id, verifiedBrandId, '16:9');
+    const format9x16Count = await getQuickAdsCountByFormat(user.id, verifiedBrandId, '9:16');
+    console.log('format1x1Count', format1x1Count);
+    console.log('format9x16Count', format9x16Count);
 
     const needs1x1 = format1x1Count < REQUIRED_ADS_PER_FORMAT;
-    const needs16x9 = format16x9Count < REQUIRED_ADS_PER_FORMAT;
+    const needs9x16 = format9x16Count < REQUIRED_ADS_PER_FORMAT;
 
     return NextResponse.json({
       isPaid: true,
-      needsGeneration: needs1x1 || needs16x9,
+      needsGeneration: needs1x1 || needs9x16,
       format1x1Count,
-      format16x9Count,
+      format9x16Count,
       needs1x1,
-      needs16x9,
+      needs9x16,
     });
   } catch (error) {
     console.error('[QUICK-ADS] Error checking paid user:', error);

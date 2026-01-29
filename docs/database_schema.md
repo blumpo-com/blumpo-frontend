@@ -392,7 +392,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | product_photo_mode    | text                | Photo mode: 'brand' / 'custom' / 'mixed' (default: 'brand') |
 | archetype_code        | text FK → ad_archetype(code) | Selected archetype (nullable) |
 | archetype_mode        | text                | 'single' / 'random' (default: 'single') |
-| formats               | text[]              | Array of output formats (e.g., ['1:1', '16:9']) |
+| formats               | text[]              | Array of output formats (e.g., ['1:1', '9:16']) |
 | selected_insights     | text[]              | Array of selected insights (pain points, benefits, etc.) |
 | insight_source        | text                | 'auto' / 'manual' / 'mixed' (default: 'auto') |
 | promotion_value_insight | jsonb            | Promotion value configuration (type, time, etc.). Structure: `{ promotionType: { discount?, newPrice?, freeTrial?, promoCode? }, promotionTime: { unlimited?, occasion?, onlyUntil? } }` |
@@ -430,7 +430,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
   "product_photo_mode": "brand",
   "archetype_code": "problem_solution",
   "archetype_mode": "single",
-  "formats": ["1:1", "16:9"],
+  "formats": ["1:1", "9:16"],
   "selected_insights": ["High costs", "Complex setup"],
   "insight_source": "auto",
   "auto_generated": false,
