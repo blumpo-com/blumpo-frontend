@@ -13,7 +13,8 @@ import {
   getTopupPlan,
   addTopupTokens,
   refillSubscriptionTokens,
-  activateSubscription
+  activateSubscription,
+  applyPendingCancellationReasons,
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -192,17 +193,8 @@ export async function handleSubscriptionChange(
       await updateUserSubscription(userId, subscriptionData);
     }
   } else if (status === 'canceled' || status === 'unpaid') {
-    // await updateUserSubscription(userId, {
-    //   stripeSubscriptionId: null,
-    //   stripeProductId: null,
-    //   stripePriceId: null,
-    //   subscriptionStatus: status,
-    //   planCode: 'FREE', // Reset to free plan
-    //   cancellationTime: null
-    // });
     const cancellationTime = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : 
-    // Now plus 1 day
-    new Date( Date.now() + 1 * 24 * 60 * 60 * 1000);
+    new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
     await updateUserSubscription(userId, {
       cancellationTime,
       subscriptionStatus: 'cancel_at_period_end',
@@ -210,6 +202,8 @@ export async function handleSubscriptionChange(
       stripeProductId: null,
       stripePriceId: null,
     });
+    // Move pending cancel feedback (from our survey) to cancellation_reasons now that Stripe confirmed cancel
+    await applyPendingCancellationReasons(userId);
   }
 }
 

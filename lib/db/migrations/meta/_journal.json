@@ -71,6 +71,20 @@
       "when": 1768326619000,
       "tag": "0009_rename_token_period_to_subscription_period",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768400000000,
+      "tag": "0010_add_cancellation_reasons",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768400100000,
+      "tag": "0011_add_pending_cancellation_reasons",
+      "breakpoints": true
     }
   ]
 }

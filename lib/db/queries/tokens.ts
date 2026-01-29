@@ -93,6 +93,33 @@ export async function appendTokenLedgerEntry(
   });
 }
 
+/** Save cancel feedback reasons to pending; only moved to cancellation_reasons when Stripe confirms cancel. */
+export async function updatePendingCancellationReasons(userId: string, reasons: string[]) {
+  await db
+    .update(tokenAccount)
+    .set({ pendingCancellationReasons: reasons })
+    .where(eq(tokenAccount.userId, userId));
+}
+
+/** Copy pending reasons to cancellation_reasons and clear pending (called from Stripe webhook when subscription is canceled). */
+export async function applyPendingCancellationReasons(userId: string) {
+  const row = await db
+    .select({ pendingCancellationReasons: tokenAccount.pendingCancellationReasons })
+    .from(tokenAccount)
+    .where(eq(tokenAccount.userId, userId))
+    .limit(1);
+
+  if (row.length === 0 || !row[0].pendingCancellationReasons?.length) return;
+
+  await db
+    .update(tokenAccount)
+    .set({
+      cancellationReasons: row[0].pendingCancellationReasons,
+      pendingCancellationReasons: null,
+    })
+    .where(eq(tokenAccount.userId, userId));
+}
+
 export async function createOrUpdateTokenAccount(
   userId: string,
   data: {

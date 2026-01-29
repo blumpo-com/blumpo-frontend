@@ -1,4 +1,4 @@
-import { pgTable, uuid, bigint, text, timestamp, bigserial, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, bigint, text, timestamp, bigserial, index, uniqueIndex, jsonb } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 import { subscriptionPeriodEnum } from './enums';
 import { user } from './user';
@@ -20,6 +20,10 @@ export const tokenAccount = pgTable('token_account', {
   subscriptionStatus: text('subscription_status'),
   // When subscription is cancelled but user still has access until end of billing period
   cancellationTime: timestamp('cancellation_time', { withTimezone: true }),
+  // Pending: reasons from feedback form (saved when user clicks cancel in app, before Stripe)
+  pendingCancellationReasons: jsonb('pending_cancellation_reasons').$type<string[]>(),
+  // Set only when Stripe confirms subscription cancellation (webhook)
+  cancellationReasons: jsonb('cancellation_reasons').$type<string[]>(),
 }, (table) => ({
   stripeCustomerIdx: uniqueIndex('uq_token_account_stripe_customer')
     .on(table.stripeCustomerId)
