@@ -94,6 +94,8 @@ export async function updateGenerationJob(
     insightSource?: 'auto' | 'manual' | 'mixed';
     promotionValueInsight?: any;
     archetypeInputs?: any;
+    tokensCost?: number;
+    ledgerId?: number;
   }
 ) {
   const [updated] = await db
@@ -107,7 +109,7 @@ export async function updateGenerationJob(
 
 export async function updateGenerationJobStatus(
   jobId: string,
-  status: 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED',
+  status: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED',
   errorCode?: string,
   errorMessage?: string
 ) {

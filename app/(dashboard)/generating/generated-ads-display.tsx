@@ -625,7 +625,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               </div>
               <div className={styles.formatBoxes}>
                 <div className={styles.formatBox}>1:1</div>
-                <div className={styles.formatBox}>16:9</div>
+                <div className={styles.formatBox}>9:16</div>
               </div>
             </div>
             <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>

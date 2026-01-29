@@ -4,12 +4,12 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import styles from './tinder-view.module.css';
 
-export type AdFormat = '1:1' | '16:9' | 'mixed';
+export type AdFormat = '1:1' | '9:16' | 'mixed';
 
 interface Ad {
   id: string;
   imageUrl: string;
-  format: '1:1' | '16:9';
+  format: '1:1' | '9:16';
 }
 
 interface TinderViewProps {
@@ -61,7 +61,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
   const rightAd = nextCardSide === 'left' ? nextNextAd : nextAd;
 
   // Get card size based on format
-  const getCardSize = (adFormat: '1:1' | '16:9') => {
+  const getCardSize = (adFormat: '1:1' | '9:16') => {
     if (adFormat === '1:1') {
       return { width: 374, height: 374 };
     } else {

@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, desc } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { user, tokenAccount, tokenLedger } from '../schema/index';
 
@@ -91,6 +91,18 @@ export async function appendTokenLedgerEntry(
 
     return ledgerEntry[0];
   });
+}
+
+// Get ledger entry by referenceId and reason
+export async function getLedgerEntryByReference(referenceId: string, reason: string) {
+  const result = await db
+    .select()
+    .from(tokenLedger)
+    .where(and(eq(tokenLedger.referenceId, referenceId), eq(tokenLedger.reason, reason)))
+    .orderBy(desc(tokenLedger.occurredAt))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function createOrUpdateTokenAccount(

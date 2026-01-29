@@ -132,7 +132,7 @@ The Free Generation Feature provides a streamlined flow for non-paid users to ge
 - **Coming Soon Dialog**: Clicking shows "Coming soon" popup
 
 **Ad Formats Section**:
-- **Different Ad Formats**: Shows available formats (1:1, 16:9)
+- **Different Ad Formats**: Shows available formats (1:1, 9:16)
 - **Language**: Displays detected brand language
 - **Paid Badge**: Shows "Paid only" badge for free users
 - **Coming Soon Dialog**: Clicking shows "Coming soon" popup

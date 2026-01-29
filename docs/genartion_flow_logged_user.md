@@ -285,16 +285,16 @@ Later, n8n (or backend) will choose 2 archetypes from `ad_archetype` and pass th
 Screen: user chooses:
 
 * `1:1` (square),
-* `16:9` (landscape),
-* `1:1 & 16:9` (full package).
+* `9:16` (landscape),
+* `1:1 & 9:16` (full package).
 
 #### 4.1. Write formats on job
 
 Map UI choice to formats:
 
 * `1:1` → `{'square'}`
-* `16:9` → `{'16_9'}` (or `'landscape'`)
-* `1:1 & 16:9` → `{'square','16_9'}`
+* `9:16` → `{'16_9'}` (or `'landscape'`)
+* `1:1 & 9:16` → `{'square','16_9'}`
 
 **Writes:**
 

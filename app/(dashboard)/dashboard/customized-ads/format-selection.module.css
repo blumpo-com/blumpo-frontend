@@ -16,6 +16,8 @@
   max-width: 1200px;
   padding: 0;
   height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Format Card */
@@ -215,5 +217,108 @@
 .formatCard:nth-child(3) {
   width: 343.162px;
   height: 419.421px;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .formatSelectionContent {
+    gap: 25px;
+  }
+  
+  .formatCard:nth-child(1) {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .formatCard:nth-child(2) {
+    width: 225px;
+    height: 376px;
+  }
+  
+  .formatCard:nth-child(3) {
+    width: 307px;
+    height: 376px;
+  }
+}
+
+@media (max-width: 968px) {
+  .formatSelectionContent {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .formatCard:nth-child(1),
+  .formatCard:nth-child(2),
+  .formatCard:nth-child(3) {
+    width: 280px;
+    height: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .formatSelectionContent {
+    gap: 15px;
+  }
+  
+  .formatCard:nth-child(1),
+  .formatCard:nth-child(2),
+  .formatCard:nth-child(3) {
+    width: 260px;
+    height: 300px;
+  }
+  
+  .formatText {
+    font-size: 32px;
+  }
+  
+  .formatDescription {
+    font-size: 18px;
+  }
+  
+  .creditsBadge {
+    padding: 6px 14px;
+  }
+  
+  .creditsBadgeText,
+  .creditsBadgeTextSelected {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .formatSelectionContent {
+    gap: 12px;
+  }
+  
+  .formatCard:nth-child(1),
+  .formatCard:nth-child(2),
+  .formatCard:nth-child(3) {
+    width: 240px;
+    height: 280px;
+    padding: 20px;
+  }
+  
+  .formatText {
+    font-size: 28px;
+  }
+  
+  .formatDescription {
+    font-size: 16px;
+  }
+  
+  .socialIcon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .formatBox {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  
+  .formatBoxText {
+    font-size: 16px;
+  }
 }
 

@@ -196,6 +196,13 @@ export async function POST(req: Request) {
       (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
     );
 
+    // If 0 valid images set job status to FAILED
+    if (validImages.length === 0) {
+      jobStatus = 'FAILED';
+      await updateGenerationJobStatus(job_id, 'FAILED', undefined, 'No valid images found');
+      console.error('[CALLBACK] No valid images found for job:', job_id);
+    }
+
     console.log('[CALLBACK] Found', validImages.length, 'valid images');
 
     // Get archetypes for each image from workflow_id

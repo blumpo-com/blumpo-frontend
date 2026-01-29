@@ -16,7 +16,7 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
   const router = useRouter();
 
   // Test buttons for different formats - only show in test mode
-  const handleTestFormat = (format: '1:1' | '16:9' | 'mixed') => {
+  const handleTestFormat = (format: '1:1' | '9:16' | 'mixed') => {
     if (IS_TEST_MODE) {
       router.push(`/dashboard/ad-generation/ad-review-view?format=${format}&test=true`);
     }
@@ -35,11 +35,11 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
             TEST: 1:1 Format
           </button>
           <button
-            onClick={() => handleTestFormat('16:9')}
+            onClick={() => handleTestFormat('9:16')}
             className={styles.testButton}
             style={{ backgroundColor: '#4ecdc4' }}
           >
-            TEST: 16:9 Format
+            TEST: 9:16 Format
           </button>
           <button
             onClick={() => handleTestFormat('mixed')}

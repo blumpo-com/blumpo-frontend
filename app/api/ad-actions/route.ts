@@ -103,19 +103,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // TODO: Delete images from Vercel blob storage for deletedIds
-    // This would require:
-    // 1. Getting storageKey from adImage records
-    // 2. Using @vercel/blob del() function to delete from blob storage
-    // Example:
-    // import { del } from '@vercel/blob';
-    // for (const adImageId of deletedIds) {
-    //   const adImage = adImageMap.get(adImageId);
-    //   if (adImage?.storageKey) {
-    //     await del(adImage.storageKey);
-    //   }
-    // }
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error processing ad actions:', error);
