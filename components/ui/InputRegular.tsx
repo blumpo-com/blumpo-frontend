@@ -9,6 +9,8 @@ interface InputRegularProps {
   disabled?: boolean;
   readOnly?: boolean;
   type?: string;
+  name?: string;
+  id?: string;
   onChange?: (value: string) => void;
 }
 
@@ -19,15 +21,22 @@ export function InputRegular({
   disabled = false,
   readOnly = false,
   type = 'text',
+  name,
+  id,
   onChange,
 }: InputRegularProps) {
+  const inputId = id ?? (name ? `input-${name}` : undefined);
   return (
     <div className={styles.container}>
       <div className={styles.labelWrapper}>
-        <label className={styles.label}>{label}</label>
+        <label className={styles.label} htmlFor={inputId}>
+          {label}
+        </label>
       </div>
       <input
+        id={inputId}
         type={type}
+        name={name}
         className={styles.input}
         value={value}
         placeholder={placeholder}
