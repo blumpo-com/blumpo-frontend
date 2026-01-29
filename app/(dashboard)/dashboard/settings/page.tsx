@@ -8,6 +8,9 @@ import { useUser } from '@/lib/contexts/user-context';
 import { signOut, updateAccount } from '@/app/(login)/actions';
 import { InputRegular } from '@/components/ui/InputRegular';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
+import { CurrentPlanCard } from './components/CurrentPlanCard';
+import { SettingsActionCard } from './components/SettingsActionCard';
+import { CancelSubscriptionDialog } from './components/CancelSubscriptionDialog';
 import styles from './page.module.css';
 import Calendar from '@/assets/icons/Calendar.svg';
 import Money from '@/assets/icons/Money.svg';
@@ -15,7 +18,6 @@ import Cancel from '@/assets/icons/Cancel-alt.svg';
 import Help from '@/assets/icons/Help.svg';
 import Gift from '@/assets/icons/Gift.svg';
 import Exit from '@/assets/icons/Exit.svg';
-import ChevronRight from '@/assets/icons/Chevron-right.svg';
 
 type ProfileFormState = { error?: string; success?: string };
 
@@ -31,18 +33,6 @@ interface SubscriptionPlan {
   sortOrder: number;
 }
 
-
-const iconMap: Record<string, string> = {
-  STARTER: '/assets/icons/bolt.svg',
-  GROWTH: '/assets/icons/star.svg',
-  TEAM: '/assets/icons/people.svg',
-  ENTERPRISE: '/assets/icons/briefcase.svg',
-  FREE: '/assets/icons/leaf.svg',
-};
-
-function getPlanIcon(planCode: string): string {
-  return iconMap[planCode] || iconMap.FREE;
-}
 
 function SettingsPageContent() {
   const router = useRouter();
@@ -60,6 +50,7 @@ function SettingsPageContent() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [lastSavedName, setLastSavedName] = useState('');
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   const isLoading = isLoadingUser || isLoadingPlans;
 
@@ -131,12 +122,19 @@ function SettingsPageContent() {
     }
   }
 
-  async function handleCancelSubscription() {
-    // Use Customer Portal with flow_data to directly open subscription cancel page
+  function openCancelDialog() {
+    setCancelDialogOpen(true);
+  }
+
+  function closeCancelDialog() {
+    setCancelDialogOpen(false);
+  }
+
+  async function handleProceedToCancel() {
+    closeCancelDialog();
     try {
       const response = await fetch('/api/stripe/customer-portal?flow=subscription_cancel');
       const data = await response.json();
-      
       if (response.ok && data.url) {
         window.location.href = data.url;
       } else {
@@ -234,90 +232,42 @@ function SettingsPageContent() {
 
           {/* Row 1: Current Plan + Upgrade to Annual */}
           <div className={styles.cardsRow}>
-            {/* Current Plan Card */}
-            <div
-              className={`${styles.card} ${styles.clickable}`}
+            <CurrentPlanCard
+              planCode={currentPlanCode}
+              planDisplayName={planDisplayName}
+              isFreePlan={isFreePlan}
+              billingText={billingText}
+              renewalDate={renewalDate}
               onClick={() => router.push('/dashboard/your-credits')}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.planIconWrapper}>
-                  <img
-                    src={getPlanIcon(currentPlanCode)}
-                    alt={`${planDisplayName} plan icon`}
-                    className={styles.planIcon}
-                  />
-                </div>
-                <span className={styles.planName}>{planDisplayName}</span>
-              </div>
-              <div className={styles.planInfo}>
-                {isFreePlan ? (
-                  <span className={styles.planBilling}>Free Trial</span>
-                ) : (
-                  <>
-                    <span className={styles.planBilling}>Billed {billingText}</span>
-                    {renewalDate && <span className={styles.planRenewal}>Renews {renewalDate}</span>}
-                  </>
-                )}
-              </div>
-            </div>
+            />
 
-            {/* Upgrade to Annual Plan */}
-            <div
-              className={`${styles.card} ${styles.clickable}`}
-              onClick={handleUpgradeToAnnual}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.cardIconWrapper}>
-                  <Calendar className={styles.cardIcon} />
-                </div>
-                <span className={styles.cardTitle}>Upgrade to annual plan</span>
-              </div>
-              <div className={styles.chevronButton}>
-                <div className={styles.chevronCircle}>
-                  <ChevronRight className={styles.chevronIcon} />
-                </div>
-              </div>
-            </div>
+            {/* Upgrade to Annual Plan - hidden when FREE or yearly; empty placeholder keeps half-width layout */}
+            {!isFreePlan && period !== SubscriptionPeriod.YEARLY ? (
+              <SettingsActionCard
+                icon={<Calendar />}
+                title="Upgrade to annual plan"
+                onClick={handleUpgradeToAnnual}
+              />
+            ) : (
+              <div className={styles.cardPlaceholder} aria-hidden="true" />
+            )}
           </div>
 
-          {/* Row 2: Manage Billings + Cancel Subscription */}
-          <div className={styles.cardsRow}>
-            {/* Manage Billings & Invoices */}
-            <div
-              className={`${styles.card} ${styles.clickable}`}
-              onClick={handleManageBillings}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.cardIconWrapper}>
-                  <Money className={styles.cardIcon} />
-                </div>
-                <span className={styles.cardTitle}>Manage billings & invoices</span>
-              </div>
-              <div className={styles.chevronButton}>
-                <div className={styles.chevronCircle}>
-                  <ChevronRight className={styles.chevronIcon} />
-                </div>
-              </div>
+          {/* Row 2: Manage Billings + Cancel Subscription - hidden when FREE */}
+          {!isFreePlan && (
+            <div className={styles.cardsRow}>
+              <SettingsActionCard
+                icon={<Money />}
+                title="Manage billings & invoices"
+                onClick={handleManageBillings}
+              />
+              <SettingsActionCard
+                icon={<Cancel />}
+                title="Cancel subscription"
+                onClick={openCancelDialog}
+              />
             </div>
-
-            {/* Cancel Subscription */}
-            <div
-              className={`${styles.card} ${styles.clickable}`}
-              onClick={handleCancelSubscription}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.cardIconWrapper}>
-                  <Cancel className={styles.cardIcon} />
-                </div>
-                <span className={styles.cardTitle}>Cancel subscription</span>
-              </div>
-              <div className={styles.chevronButton}>
-                <div className={styles.chevronCircle}>
-                  <ChevronRight className={styles.chevronIcon} />
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Other Section */}
@@ -325,40 +275,24 @@ function SettingsPageContent() {
           <h2 className={styles.sectionTitle}>Other</h2>
 
           <div className={styles.cardsRow}>
-            {/* Help & Support */}
-            <div
-              className={`${styles.card} ${styles.clickable}`}
+            <SettingsActionCard
+              icon={<Help />}
+              title="Help & support"
               onClick={() => router.push('/dashboard/support')}
-            >
-              <div className={styles.cardContent}>
-                <div className={styles.cardIconWrapper}>
-                  <Help className={styles.cardIcon} />
-                </div>
-                <span className={styles.cardTitle}>Help & support</span>
-              </div>
-              <div className={styles.chevronButton}>
-                <div className={styles.chevronCircle}>
-                  <ChevronRight className={styles.chevronIcon} />
-                </div>
-              </div>
-            </div>
-
-            {/* Refer Friends & Earn */}
-            <div className={`${styles.card} ${styles.disabled}`}>
-              <div className={styles.cardContent}>
-                <div className={styles.cardIconWrapper}>
-                  <Gift className={styles.cardIcon} />
-                </div>
-                <span className={styles.cardTitle}>Refer friends & earn - soon</span>
-              </div>
-              <div className={styles.chevronButton}>
-                <div className={styles.chevronCircle}>
-                  <ChevronRight className={styles.chevronIcon} />
-                </div>
-              </div>
-            </div>
+            />
+            <SettingsActionCard
+              icon={<Gift />}
+              title="Refer friends & earn - soon"
+              disabled
+            />
           </div>
         </div>
+
+        <CancelSubscriptionDialog
+          open={cancelDialogOpen}
+          onClose={closeCancelDialog}
+          onProceedToCancel={handleProceedToCancel}
+        />
 
         {/* Logout Button */}
         <form action={handleSignOut}>
