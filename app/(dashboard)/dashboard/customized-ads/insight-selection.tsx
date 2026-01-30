@@ -158,6 +158,7 @@ export function InsightSelectionContent({
     <div className={styles.insightSelectionWrapper}>
       {useMascotLayout ? (
         // Problem Solution / Value Proposition layout: 2 columns with mascot in center
+        <div className={styles.problemSolutionLayoutWrapper}>
         <div className={styles.problemSolutionLayout}>
           {/* Left column - first card */}
           {headlines[0] && (
@@ -211,8 +212,9 @@ export function InsightSelectionContent({
               isSelected={selectedInsights.includes(headlines[Math.ceil(headlines.length / 2) + 1])}
               onClick={() => handleHeadlineToggle(headlines[Math.ceil(headlines.length / 2) + 1])}
               variant="problem_solution"
-            />
-          )}
+               />
+            )}
+          </div>
         </div>
       ) : (
         // Default/Testimonial layout: 2-column grid

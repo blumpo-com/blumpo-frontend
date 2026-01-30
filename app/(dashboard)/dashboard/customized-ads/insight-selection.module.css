@@ -24,6 +24,11 @@
   flex-shrink: 0;
 }
 
+.problemSolutionLayoutWrapper {
+height: 100%;
+display: flex;
+align-items: center;
+}
 /* Problem Solution layout with mascot */
 .problemSolutionLayout {
   width: 100%;
@@ -229,7 +234,6 @@
   position: relative;
   font-size: 21.23px;
   line-height: 118.42%;
-  font-family: Roboto;
   color: #0a0a0a;
   text-align: left;
 }
