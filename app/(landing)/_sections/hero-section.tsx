@@ -65,6 +65,7 @@ export function HeroSection() {
                 height={140}
                 className="absolute -top-40 right-2 z-10"
                 style={{ clipPath: 'inset(0 40px 0 40px)' }}
+                unoptimized
               />
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
                 <UrlInputSection />

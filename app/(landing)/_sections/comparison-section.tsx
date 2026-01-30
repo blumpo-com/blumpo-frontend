@@ -110,17 +110,17 @@ export function ComparisonSection() {
             "mb-4 md:mb-5 "
           )}
         >
-         
+
 
           <div className="flex items-center justify-end w-full md:w-auto flex-1 gap-6 sm:gap-20 xl:gap-30">
             {/* Blumpo */}
-            <ComparisonImage src="/images/blumpo/blumpo-squeezed.png" alt="Blumpo" width={48} height={48} blumpoLogo={true} />
+            <ComparisonImage src="/assets/animations/sitting-blumpo-narrow.webp" alt="Blumpo" width={48} height={48} blumpoLogo={true} />
 
             {/* ChatGPT */}
-                <ComparisonImage src="/assets/social/chatgpt-logo.png" alt="ChatGPT" width={36} height={36} />
+            <ComparisonImage src="/assets/social/chatgpt-logo.png" alt="ChatGPT" width={36} height={36} />
 
             {/* Canva */}
-                <ComparisonImage src="/assets/social/canva-logo.png" alt="Canva" width={36} height={36} />
+            <ComparisonImage src="/assets/social/canva-logo.png" alt="Canva" width={36} height={36} />
 
             {/* Other AI tools */}
             <div className="w-8 h-8 md:w-12 md:h-12 xl:w-20 xl:h-20 flex items-center justify-center">
@@ -151,7 +151,7 @@ export function ComparisonSection() {
               {/* Feature Name */}
               <div
                 className={cn(
-                 
+
                   "w-full md:w-auto sm:max-w-40 md:max-w-100 xl:min-w-[385px]",
                   "pr-0 md:pr-8 xl:pr-[77px]"
                 )}
