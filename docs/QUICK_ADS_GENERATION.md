@@ -62,8 +62,9 @@ For **paid users** (non-FREE subscription plans):
 - **File**: `app/(dashboard)/dashboard/quick-ads-generation/page.tsx`
 - **Purpose**: Main UI for quick ads generation
 - **Features**:
-  - Format selection (1:1, 9:16, or both)
+  - Format selection (1:1, 9:16, or both/mixed)
   - Checks for existing ads before generating
+  - Handles mixed format by checking both formats simultaneously
   - Navigates to ad generation page on completion
 
 #### Ad Generation Page
@@ -71,8 +72,31 @@ For **paid users** (non-FREE subscription plans):
 - **Purpose**: Displays generated ads or generation progress
 - **Quick Ads Flow**:
   - Polls job status for quick ads generation
-  - Marks ads as displayed when job completes
+  - Converts mixed format parameter (`1:1,9:16` or `1:1-9:16`) to `mixed` for review view
   - Shows `CreatingProcess` component during generation
+
+#### Ad Review View
+- **File**: `app/(dashboard)/dashboard/ad-generation/ad-review-view/page.tsx`
+- **Purpose**: Displays ads for review and interaction
+- **Features**:
+  - Supports single format (1:1 or 9:16) and mixed format display
+  - Automatically marks ads as displayed when page loads (for quick ads only)
+  - Pairs ads by `workflowId` for mixed format to ensure matching ads stay together
+  - Validates and syncs stacks to prevent workflowId mismatches
+  - Uses `TinderView` component for single format
+  - Uses `TinderViewMixed` component for mixed format
+
+#### Tinder View Mixed Component
+- **File**: `app/(dashboard)/dashboard/ad-generation/tinder-view-mixed.tsx`
+- **Purpose**: Displays both formats side-by-side for mixed format selection
+- **Features**:
+  - **Synchronized swiping**: Both format stacks swipe together
+  - **WorkflowId pairing**: Ensures ads with the same `workflowId` are displayed together
+  - **Automatic synchronization**: When swiping one stack, finds matching `workflowId` in the other stack and advances both
+  - **Validation**: Continuous monitoring via `useEffect` to detect and correct workflowId mismatches
+  - Independent card animations per stack
+  - Shared action buttons (delete, save, add to library)
+  - Swiping one stack advances both stacks if they have matching workflowIds
 
 #### Dashboard Page
 - **File**: `app/(dashboard)/dashboard/page.tsx`
@@ -145,13 +169,24 @@ For **paid users** (non-FREE subscription plans):
   ```json
   {
     "jobId": "uuid",
-    "format": "1:1" // or "9:16"
+    "format": "1:1" // or "9:16" or "mixed"
   }
   ```
 - **Purpose**:
   - Marks selected format ads as `ready_to_display: true`
-  - Deletes unused format ads from Vercel Blob
-  - Marks unused ads as deleted in database
+  - For single format: Deletes unused format ads from Vercel Blob and database
+  - For mixed format: Marks both formats as displayed (no cleanup, keeps both formats)
+  - Deducts 50 tokens if not already deducted for this job
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "markedCount": 5,
+    "deletedCount": 5, // 0 for mixed format
+    "isMixedFormat": false,
+    "tokensDeducted": 50
+  }
+  ```
 
 #### 5. Check Paid User Status
 - **Endpoint**: `GET /api/quick-ads/check-paid-user`
@@ -368,28 +403,37 @@ Tokens are **deducted when ads are displayed**, not when generation starts. This
 
 5. **Token Deduction** (when ads displayed):
    - User views ads in ad review page
-   - `/api/quick-ads/mark-displayed` is called
-   - Tokens deducted (50 tokens) if not already deducted
+   - `/api/quick-ads/mark-displayed` is called automatically on page load
+   - Tokens deducted (50 tokens) if not already deducted for this job
    - Ads marked as `ready_to_display: true`
-   - Unused format ads cleaned up
+   - For single format: Unused format ads cleaned up
+   - For mixed format: Both formats kept (no cleanup)
 
 ### Display Flow
 
 When user selects a format:
 
 1. **Format Selection**:
-   - User selects format (1:1 or 9:16)
-   - System retrieves 5 ads for that format
+   - User selects format (1:1, 9:16, or mixed/both)
+   - System retrieves 5 ads for that format (or 5 pairs for mixed)
 
-2. **Marking as Displayed**:
+2. **Mixed Format Pairing**:
+   - When mixed format is selected, ads are paired by `workflowId`
+   - Ads with the same `workflowId` are displayed together (1:1 and 9:16 side-by-side)
+   - Pairing ensures matching workflowIds are at the same index in both format arrays
+   - Validation logic continuously monitors and corrects any misalignment
+
+3. **Marking as Displayed**:
    - Selected format ads marked: `ready_to_display: true`
+   - For mixed format: Both formats marked as displayed (no cleanup)
+   - For single format: Unused format ads deleted from storage
    - These ads now appear in normal ad listings
-   - Unused format ads deleted from storage
 
-3. **Cleanup**:
+4. **Cleanup** (single format only):
    - Unused format ads deleted from Vercel Blob
    - Unused ads marked as `is_deleted: true` in database
    - Only selected format ads remain accessible
+   - **Note**: Mixed format keeps both formats (no cleanup)
 
 ### Using Existing Ads
 
@@ -399,12 +443,20 @@ If 5+ ads already exist for selected format:
    - Ads retrieved immediately (no generation wait)
    - User navigated directly to ad review page
    - Selected format ads marked as displayed
-   - Unused format ads cleaned up
+   - For single format: Unused format ads cleaned up
+   - For mixed format: Both formats kept, no cleanup
 
 2. **Token Cost**:
    - If ads from a job that hasn't been paid yet: 50 tokens deducted
    - If ads from a job already paid: 0 tokens (already deducted)
    - Token check happens when marking ads as displayed
+   - Idempotent: Tokens only deducted once per job
+
+3. **Mixed Format Pairing**:
+   - Ads are paired by `workflowId` when loaded
+   - Matching workflowIds are placed at the same index in both format arrays
+   - Ensures 1:1 and 9:16 ads with the same workflowId are displayed together
+   - Validation logic continuously monitors and corrects any misalignment
 
 ### Paid User Maintenance
 
@@ -427,17 +479,17 @@ After maintenance check triggers generation:
 ## Technical Flow Diagram
 
 ```
-User selects format
+User selects format (1:1, 9:16, or mixed)
     ↓
-Check /api/quick-ads?format=1:1
+Check /api/quick-ads?format=1:1 (or both formats for mixed)
     ↓
-Has 5+ ads? → Yes → Display ads → Mark as displayed → Cleanup unused
+Has 5+ ads? → Yes → Pair ads by workflowId (mixed only) → Display ads
     ↓ No
 POST /api/quick-ads/create { brandId }
     ↓
 QUEUED job created (no tokens yet)
     ↓
-Navigate to /dashboard/ad-generation?job_id=...&quick_ads=true
+Navigate to /dashboard/ad-generation?job_id=...&quick_ads=true&format=...
     ↓
 POST /api/generate/quick-ads { jobId }
     ↓
@@ -445,9 +497,9 @@ Job status: QUEUED → RUNNING (no tokens deducted)
     ↓
 n8n webhook triggered (quick-ads)
     ↓
-Ads generated (target: 10 ads, 5 per format)
+Ads generated (target: 10 ads, 5 per format, matched by workflowId)
     ↓
-Ads saved (ready_to_display: false)
+Ads saved (ready_to_display: false, workflowId preserved)
     ↓
 Callback to /api/generate/callback
     ↓
@@ -465,15 +517,25 @@ If FAILED with partial ads:
     ↓
     Mark failed job as CANCELED
     ↓
-User selects format and views ads
+User views ads in review page
     ↓
-POST /api/quick-ads/mark-displayed { jobId, format }
+POST /api/quick-ads/mark-displayed { jobId, format } (auto-called on page load)
     ↓
-50 tokens deducted (if not already paid)
+50 tokens deducted (if not already paid, idempotent)
     ↓
-Mark selected format as displayed
+If mixed format:
     ↓
-Delete unused format from storage
+    Mark both formats as displayed
+    ↓
+    Keep both formats (no cleanup)
+    ↓
+If single format:
+    ↓
+    Mark selected format as displayed
+    ↓
+    Delete unused format from storage
+    ↓
+Ads ready for use
 ```
 
 ---
@@ -493,9 +555,11 @@ WHERE ad_image.user_id = ?
   AND ad_image.is_deleted = false
   AND generation_job.auto_generated = true
   AND generation_job.status = 'SUCCEEDED'
-ORDER BY ad_image.created_at DESC
+ORDER BY ad_image.workflow_id, ad_image.created_at DESC
 LIMIT 5;
 ```
+
+**Note**: Results are sorted by `workflow_id` to ensure matching pairs are grouped together for mixed format display.
 
 ### Mark as Displayed
 
@@ -516,6 +580,50 @@ UPDATE ad_image
 SET is_deleted = true
 WHERE job_id = ? AND format != ?;
 ```
+
+---
+
+## WorkflowId Pairing for Mixed Format
+
+### Overview
+
+When displaying ads in **mixed format** (both 1:1 and 9:16 simultaneously), the system ensures that ads with the same `workflowId` are displayed together. This pairing mechanism ensures that related ads (same ad concept in different formats) stay synchronized.
+
+### How It Works
+
+1. **Initial Pairing** (`ad-review-view/page.tsx`):
+   - When ads are loaded, they are grouped by `workflowId`
+   - Ads with matching `workflowId` are placed at the same index in both format arrays
+   - This ensures that `ads1_1[i]` and `ads16_9[i]` have the same `workflowId` when possible
+
+2. **Swipe Synchronization** (`tinder-view-mixed.tsx`):
+   - When a user swipes one stack, the system finds the matching `workflowId` in the other stack
+   - Both stacks advance together to keep matching workflowIds aligned
+   - If a matching `workflowId` is found at a different index, the other stack syncs to that index
+
+3. **Continuous Validation**:
+   - A `useEffect` hook continuously monitors the current ads in both stacks
+   - If mismatched `workflowId`s are detected, the system automatically corrects the alignment
+   - This prevents drift that can occur after multiple swipes or button presses
+
+### Example
+
+```
+Initial State:
+ads1_1[0] = { id: 'a1', workflowId: 'w1', format: '1:1' }
+ads16_9[0] = { id: 'b1', workflowId: 'w1', format: '9:16' } ✅ Matched
+
+User swipes 1:1 stack:
+- System finds ads16_9 with workflowId 'w1'
+- Both stacks advance together
+- New ads with matching workflowId are displayed together
+```
+
+### Benefits
+
+- **Consistent Experience**: Users see related ads (same concept) side-by-side
+- **Automatic Recovery**: System corrects misalignment automatically
+- **Smooth Interaction**: Swiping feels natural with synchronized stacks
 
 ---
 
@@ -639,9 +747,11 @@ Quick Ads Generation provides:
 - Generation can complete without tokens, but ads cannot be viewed without payment
 - Idempotent: Tokens only deducted once per job (even if viewed multiple times)
 - All users can use, paid users get maintenance
-- Unused format ads are deleted when format is selected
+- Unused format ads are deleted when single format is selected (mixed format keeps both)
 - Dedicated webhook: `https://automationforms.app.n8n.cloud/webhook/quick-ads`
 - **Automatic recovery**: Failed jobs with partial ads are automatically migrated to other jobs
+- **WorkflowId pairing**: Mixed format ensures ads with the same `workflowId` are displayed together
+- **Automatic synchronization**: Stacks stay synchronized by workflowId during swiping
 
 ---
 
