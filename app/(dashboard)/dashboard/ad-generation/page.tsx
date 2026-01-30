@@ -12,6 +12,8 @@ function AdGenerationPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const jobId = searchParams.get('job_id');
+  const formatParam = searchParams.get('format');
+  const isQuickAds = searchParams.get('quick_ads') === 'true';
   
   const [isProcessComplete, setIsProcessComplete] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -20,6 +22,8 @@ function AdGenerationPageContent() {
   
   // Ref to prevent double execution (React Strict Mode)
   const hasInitiatedRef = useRef<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
+  const [hasMarkedAsDisplayed, setHasMarkedAsDisplayed] = useState(false);
 
   // If no job_id, show error or redirect
   if (!jobId) {
@@ -39,6 +43,7 @@ function AdGenerationPageContent() {
   }
 
   // Check job status and trigger generation if needed
+  // Separate logic for quick ads vs customized ads
   useEffect(() => {
     // Don't run if there's an error, already generating, or already complete
     if (!jobId || isGenerating || isProcessComplete || generationError) return;
@@ -61,89 +66,184 @@ function AdGenerationPageContent() {
         const formats = job.formats || [];
         setJobFormats(formats);
 
-        // If job is QUEUED, trigger generation (API will wait for callback)
-        if (job.status === 'QUEUED') {
-          setIsGenerating(true);
-          setGenerationError(null);
+        // QUICK ADS FLOW: Only apply when quick_ads=true is in URL
+        if (isQuickAds) {
+          const generateEndpoint = '/api/generate/quick-ads';
 
-          // Call API - it will wait for callback
-          const generateResponse = await fetch('/api/generate/customized-ads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobId }),
-          });
+          // If job is QUEUED, trigger generation (API will wait for callback)
+          if (job.status === 'QUEUED') {
+            setIsGenerating(true);
+            setGenerationError(null);
 
-          if (!generateResponse.ok) {
-            let msg = 'Generation request failed';
-            let errorCode = null;
-            try {
-              const errorData = await generateResponse.json();
-              if (errorData?.error) msg = errorData.error;
-              errorCode = errorData?.error_code;
+            // Call API - it will wait for callback
+            const generateResponse = await fetch(generateEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jobId }),
+            });
 
-              if (errorCode === 'INSUFFICIENT_TOKENS') {
-                msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
-              } else if (errorCode === 'TIMEOUT') {
-                msg = 'Generation is taking longer than expected. Please try again later.';
+            if (!generateResponse.ok) {
+              let msg = 'Generation request failed';
+              let errorCode = null;
+              try {
+                const errorData = await generateResponse.json();
+                if (errorData?.error) msg = errorData.error;
+                errorCode = errorData?.error_code;
+
+                if (errorCode === 'INSUFFICIENT_TOKENS') {
+                  msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
+                } else if (errorCode === 'TIMEOUT') {
+                  msg = 'Generation is taking longer than expected. Please try again later.';
+                }
+              } catch {
+                // Error parsing failed, use default message
               }
-            } catch {
-              // Error parsing failed, use default message
+              
+              setGenerationError(msg);
+              setIsGenerating(false);
+              return;
             }
+
+            const result = await generateResponse.json();
             
-            setGenerationError(msg);
-            setIsGenerating(false);
-            return;
-          }
-
-          const result = await generateResponse.json();
-          
-          // Check if generation succeeded
-          if (result.status === 'SUCCEEDED') {
+            // Check if generation succeeded
+            if (result.status === 'SUCCEEDED') {
+              setIsProcessComplete(true);
+              setIsGenerating(false);
+              setJobStatus('SUCCEEDED');
+            } else if (result.status === 'FAILED' || result.status === 'CANCELED') {
+              // Generation failed or was canceled
+              const errorMessage = result.error_message || `Generation ${result.status.toLowerCase()}`;
+              setGenerationError(errorMessage);
+              setIsGenerating(false);
+            } else {
+              // Unexpected status
+              setGenerationError(`Unexpected status: ${result.status}`);
+              setIsGenerating(false);
+            }
+          } else if (job.status === 'SUCCEEDED' || job.status === 'COMPLETED') {
+            // Job already completed
             setIsProcessComplete(true);
-            setIsGenerating(false);
-          } else if (result.status === 'FAILED' || result.status === 'CANCELED') {
-            // Generation failed or was canceled
-            const errorMessage = result.error_message || `Generation ${result.status.toLowerCase()}`;
-            setGenerationError(errorMessage);
-            setIsGenerating(false);
-          } else {
-            // Unexpected status
-            setGenerationError(`Unexpected status: ${result.status}`);
-            setIsGenerating(false);
-          }
-        } else if (job.status === 'SUCCEEDED' || job.status === 'COMPLETED') {
-          // Job already completed
-          setIsProcessComplete(true);
-        } else if (job.status === 'FAILED' || job.status === 'CANCELED') {
-          // Job failed
-          setGenerationError(job.errorMessage || `Job ${job.status}`);
-        } else if (job.status === 'RUNNING') {
-          // Job is currently running - this shouldn't happen but handle gracefully
-          // Could be from a previous session, trigger generation again
-          setIsGenerating(true);
-          setGenerationError(null);
-          
-          // Trigger generation again (API will handle it)
-          const generateResponse = await fetch('/api/generate/customized-ads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ jobId }),
-          });
+            setJobStatus('SUCCEEDED');
+          } else if (job.status === 'FAILED' || job.status === 'CANCELED') {
+            // Job failed
+            setGenerationError(job.errorMessage || `Job ${job.status}`);
+          } else if (job.status === 'RUNNING') {
+            // Job is currently running - trigger generation again
+            setIsGenerating(true);
+            setGenerationError(null);
+            
+            const generateResponse = await fetch(generateEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jobId }),
+            });
 
-          if (!generateResponse.ok) {
-            const errorData = await generateResponse.json().catch(() => ({}));
-            setGenerationError(errorData.error || 'Failed to continue generation');
-            setIsGenerating(false);
-            return;
-          }
+            if (!generateResponse.ok) {
+              const errorData = await generateResponse.json().catch(() => ({}));
+              setGenerationError(errorData.error || 'Failed to continue generation');
+              setIsGenerating(false);
+              return;
+            }
 
-          const result = await generateResponse.json();
-          if (result.status === 'SUCCEEDED') {
+            const result = await generateResponse.json();
+            if (result.status === 'SUCCEEDED') {
+              setIsProcessComplete(true);
+              setIsGenerating(false);
+              setJobStatus('SUCCEEDED');
+            } else {
+              setGenerationError(result.error_message || `Generation ${result.status}`);
+              setIsGenerating(false);
+            }
+          }
+        } else {
+          // CUSTOMIZED ADS FLOW: Original logic (unchanged)
+          const generateEndpoint = '/api/generate/customized-ads';
+
+          // If job is QUEUED, trigger generation (API will wait for callback)
+          if (job.status === 'QUEUED') {
+            setIsGenerating(true);
+            setGenerationError(null);
+
+            // Call API - it will wait for callback
+            const generateResponse = await fetch(generateEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jobId }),
+            });
+
+            if (!generateResponse.ok) {
+              let msg = 'Generation request failed';
+              let errorCode = null;
+              try {
+                const errorData = await generateResponse.json();
+                if (errorData?.error) msg = errorData.error;
+                errorCode = errorData?.error_code;
+
+                if (errorCode === 'INSUFFICIENT_TOKENS') {
+                  msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
+                } else if (errorCode === 'TIMEOUT') {
+                  msg = 'Generation is taking longer than expected. Please try again later.';
+                }
+              } catch {
+                // Error parsing failed, use default message
+              }
+              
+              setGenerationError(msg);
+              setIsGenerating(false);
+              return;
+            }
+
+            const result = await generateResponse.json();
+            
+            // Check if generation succeeded
+            if (result.status === 'SUCCEEDED') {
+              setIsProcessComplete(true);
+              setIsGenerating(false);
+            } else if (result.status === 'FAILED' || result.status === 'CANCELED') {
+              // Generation failed or was canceled
+              const errorMessage = result.error_message || `Generation ${result.status.toLowerCase()}`;
+              setGenerationError(errorMessage);
+              setIsGenerating(false);
+            } else {
+              // Unexpected status
+              setGenerationError(`Unexpected status: ${result.status}`);
+              setIsGenerating(false);
+            }
+          } else if (job.status === 'SUCCEEDED' || job.status === 'COMPLETED') {
+            // Job already completed
             setIsProcessComplete(true);
-            setIsGenerating(false);
-          } else {
-            setGenerationError(result.error_message || `Generation ${result.status}`);
-            setIsGenerating(false);
+          } else if (job.status === 'FAILED' || job.status === 'CANCELED') {
+            // Job failed
+            setGenerationError(job.errorMessage || `Job ${job.status}`);
+          } else if (job.status === 'RUNNING') {
+            // Job is currently running - this shouldn't happen but handle gracefully
+            // Could be from a previous session, trigger generation again
+            setIsGenerating(true);
+            setGenerationError(null);
+            
+            // Trigger generation again (API will handle it)
+            const generateResponse = await fetch(generateEndpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ jobId }),
+            });
+
+            if (!generateResponse.ok) {
+              const errorData = await generateResponse.json().catch(() => ({}));
+              setGenerationError(errorData.error || 'Failed to continue generation');
+              setIsGenerating(false);
+              return;
+            }
+
+            const result = await generateResponse.json();
+            if (result.status === 'SUCCEEDED') {
+              setIsProcessComplete(true);
+              setIsGenerating(false);
+            } else {
+              setGenerationError(result.error_message || `Generation ${result.status}`);
+              setIsGenerating(false);
+            }
           }
         }
       } catch (error) {
@@ -154,9 +254,9 @@ function AdGenerationPageContent() {
     };
 
     checkJobAndGenerate();
-  }, [jobId, isGenerating, isProcessComplete, generationError]);
+  }, [jobId, isGenerating, isProcessComplete, generationError, isQuickAds]);
 
-  // Fetch job formats when process completes
+  // Check job status and handle quick ads
   useEffect(() => {
     if (isProcessComplete && jobId && !jobFormats) {
       const fetchJobFormats = async () => {
@@ -178,13 +278,17 @@ function AdGenerationPageContent() {
   const handleSeeAds = async () => {
     if (!jobId) return;
 
-    // if (IS_TEST_MODE) {
-    //   // In test mode, navigate to tinder page with format selection
-    //   // The ready-ads-view will handle format selection via test buttons
-    //   return;
-    // }
+    // For quick ads, use the format from URL parameter
+    if (isQuickAds && formatParam) {
+      // Convert comma-separated formats to 'mixed' for the review view
+      const reviewFormat = formatParam.includes(',') || formatParam === '1:1-9:16' 
+        ? 'mixed' 
+        : formatParam;
+      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${reviewFormat}`);
+      return;
+    }
 
-    // Get format from job
+    // For regular ads, determine format from job
     if (!jobFormats) {
       // Fetch if not already fetched
       try {
@@ -250,7 +354,8 @@ function AdGenerationPageContent() {
   }
 
   // Show ready ads view when process is complete
-  if (isProcessComplete) {
+  // For quick ads, check jobStatus; for customized ads, just check isProcessComplete
+  if (isProcessComplete && (isQuickAds ? jobStatus === 'SUCCEEDED' : true)) {
     return <ReadyAdsView onSeeAds={handleSeeAds} jobId={jobId || undefined} />;
   }
 

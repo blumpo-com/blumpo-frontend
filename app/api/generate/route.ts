@@ -10,32 +10,35 @@ const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received 
 export async function POST(req: Request) {
   const requestStartTime = Date.now();
   console.log('[GENERATE] Request started at', new Date().toISOString());
-  
+
   const webhookUrl = process.env.N8N_WEBHOOK_URL + 'main-free-workflow';
   const webhookKey = process.env.N8N_WEBHOOK_KEY;
-  
+
   if (!webhookUrl) {
     console.error('[GENERATE] Webhook URL not configured');
     return NextResponse.json({ error: "Webhook URL not configured" }, { status: 500 });
   }
 
   try {
-    const { url } = await req.json();
-    console.log('[GENERATE] Received URL:', url);
+    const body = await req.json();
+    const { url } = body;
+    console.log('[GENERATE] Received request:', { url });
+
     // Check if user is authenticated
     const user = await getUser();
     if (!user) {
       console.log('[GENERATE] User not authenticated');
-      return NextResponse.json({ 
-        error: "Unauthorized", 
+      return NextResponse.json({
+        error: "Unauthorized",
         error_code: "AUTH_REQUIRED",
         website_url: url // Include website URL for redirect after login
       }, { status: 401 });
     }
     console.log('[GENERATE] User authenticated:', user.id);
 
-    if (!url || typeof url !== "string") {
-      console.error('[GENERATE] Missing or invalid URL');
+    // Validate input: url is required
+    if (!url) {
+      console.error('[GENERATE] Missing url');
       return NextResponse.json({ error: "Missing url" }, { status: 400 });
     }
 
@@ -43,8 +46,8 @@ export async function POST(req: Request) {
     const hasTokens = await hasEnoughTokens(user.id, TOKENS_COST_PER_GENERATION);
     if (!hasTokens) {
       console.log('[GENERATE] Insufficient tokens for user:', user.id);
-      return NextResponse.json({ 
-        error: "Insufficient tokens", 
+      return NextResponse.json({
+        error: "Insufficient tokens",
         error_code: "INSUFFICIENT_TOKENS",
         tokens_required: TOKENS_COST_PER_GENERATION
       }, { status: 402 }); // Payment Required
@@ -55,7 +58,7 @@ export async function POST(req: Request) {
     const jobId = randomUUID();
     console.log('[GENERATE] Created job ID:', jobId);
 
-    // Try to find existing brand by website URL (optional - brandId can be null)
+    // Find existing brand by website URL
     const existingBrand = await getBrandByWebsiteUrl(user.id, url);
     console.log('[GENERATE] Existing brand found:', existingBrand?.id || 'none');
 
@@ -76,8 +79,8 @@ export async function POST(req: Request) {
     } catch (error) {
       console.error('[GENERATE] Error creating job:', error);
       if (error instanceof Error && error.message.includes('Insufficient')) {
-        return NextResponse.json({ 
-          error: "Insufficient tokens", 
+        return NextResponse.json({
+          error: "Insufficient tokens",
           error_code: "INSUFFICIENT_TOKENS",
           tokens_required: TOKENS_COST_PER_GENERATION
         }, { status: 402 }); // Payment Required
@@ -88,14 +91,14 @@ export async function POST(req: Request) {
     try {
       console.log('[GENERATE] Sending webhook request to:', webhookUrl);
       const webhookStartTime = Date.now();
-      
-        // Resolve callback URL (prefer CALLBACK_URL, fallback to BASE_URL or localhost)
-        const callbackUrl =
-          process.env.CALLBACK_URL
-            ? `${process.env.CALLBACK_URL}/api/generate/callback`
-            : `${process.env.BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')}/api/generate/callback`;
-        console.log('[GENERATE] Callback URL:', callbackUrl);
-      
+
+      // Resolve callback URL (prefer CALLBACK_URL, fallback to BASE_URL or localhost)
+      const callbackUrl =
+        process.env.CALLBACK_URL
+          ? `${process.env.CALLBACK_URL}/api/generate/callback`
+          : `${process.env.BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')}/api/generate/callback`;
+      console.log('[GENERATE] Callback URL:', callbackUrl);
+
       // Set a short timeout (30 seconds) just to ensure the webhook accepts the request
       // We don't wait for workflow completion - that's handled by callback
       const controller = new AbortController();
@@ -103,7 +106,7 @@ export async function POST(req: Request) {
         console.warn('[GENERATE] Webhook request timeout after 30s - continuing to wait for callback');
         controller.abort();
       }, WEBHOOK_TIMEOUT);
-      
+
       // Fire the webhook request (fire-and-forget after confirmation)
       const webhookPromise = fetch(webhookUrl, {
         method: "POST",
@@ -113,7 +116,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           job_id: jobId,
-          website_url: url, // Pass website URL so n8n can handle brand extraction if needed
+          website_url: url, // Pass website URL
           callback_url: callbackUrl, // Tell n8n where to send the callback
         }),
         signal: controller.signal,
@@ -138,9 +141,9 @@ export async function POST(req: Request) {
             errorText
           );
           await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
-          
-          return NextResponse.json({ 
-            error: "Failed to trigger generation", 
+
+          return NextResponse.json({
+            error: "Failed to trigger generation",
             job_id: jobId,
             tokens_refunded: TOKENS_COST_PER_GENERATION
           }, { status: res.status });
@@ -160,9 +163,9 @@ export async function POST(req: Request) {
             webhookFetchError instanceof Error ? webhookFetchError.message : 'Unknown webhook error'
           );
           await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
-          
-          return NextResponse.json({ 
-            error: "Failed to trigger generation", 
+
+          return NextResponse.json({
+            error: "Failed to trigger generation",
             job_id: jobId,
             tokens_refunded: TOKENS_COST_PER_GENERATION
           }, { status: 502 });
@@ -172,7 +175,7 @@ export async function POST(req: Request) {
       // Wait for callback from n8n (no polling - event-driven)
       console.log('[GENERATE] Waiting for callback from n8n...');
       const callbackWaitStart = Date.now();
-      
+
       try {
         const callbackResult = await waitForCallback(jobId, MAX_WAIT_TIME);
         const callbackWaitDuration = Date.now() - callbackWaitStart;
@@ -193,7 +196,7 @@ export async function POST(req: Request) {
         } else {
           // FAILED or CANCELED - refund tokens
           console.log('[GENERATE] Returning', callbackResult.status, 'response - refunding tokens');
-          
+
           // Refund tokens for failed/canceled jobs
           try {
             await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
@@ -202,7 +205,7 @@ export async function POST(req: Request) {
             console.error('[GENERATE] Error refunding tokens:', refundError);
             // Continue even if refund fails - we still want to return the error to the user
           }
-          
+
           return NextResponse.json({
             job_id: jobId,
             status: callbackResult.status,
@@ -215,7 +218,7 @@ export async function POST(req: Request) {
       } catch (callbackError) {
         const callbackWaitDuration = Date.now() - callbackWaitStart;
         console.error('[GENERATE] Callback timeout/error after', callbackWaitDuration, 'ms:', callbackError);
-        
+
         // Timeout waiting for callback
         await updateGenerationJobStatus(
           jobId,
@@ -224,7 +227,7 @@ export async function POST(req: Request) {
           'Generation exceeded maximum wait time of 7 minutes'
         );
         await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
-        
+
         return NextResponse.json({
           error: "Generation timeout",
           job_id: jobId,
@@ -238,10 +241,10 @@ export async function POST(req: Request) {
       // Webhook call failed - mark job as failed and refund tokens
       const errorDuration = Date.now() - requestStartTime;
       console.error('[GENERATE] Webhook error after', errorDuration, 'ms:', webhookError);
-      
+
       let errorMessage = 'Unknown webhook error';
       let statusCode = 502;
-      
+
       if (webhookError instanceof Error) {
         console.error('[GENERATE] Error name:', webhookError.name, 'message:', webhookError.message);
         if (webhookError.name === 'AbortError') {
@@ -251,7 +254,7 @@ export async function POST(req: Request) {
           errorMessage = webhookError.message;
         }
       }
-      
+
       await updateGenerationJobStatus(
         jobId,
         'FAILED',
@@ -259,9 +262,9 @@ export async function POST(req: Request) {
         errorMessage
       );
       await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
-      
-      return NextResponse.json({ 
-        error: "Failed to trigger generation", 
+
+      return NextResponse.json({
+        error: "Failed to trigger generation",
         job_id: jobId,
         error_code: statusCode === 504 ? 'WEBHOOK_TIMEOUT' : 'WEBHOOK_ERROR',
         tokens_refunded: TOKENS_COST_PER_GENERATION
@@ -270,7 +273,7 @@ export async function POST(req: Request) {
   } catch (e) {
     const errorDuration = Date.now() - requestStartTime;
     console.error('[GENERATE] Generation error after', errorDuration, 'ms:', e);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: "Internal server error",
       message: e instanceof Error ? e.message : "Unknown error"
     }, { status: 500 });
