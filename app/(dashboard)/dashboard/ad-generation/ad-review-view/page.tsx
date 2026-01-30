@@ -37,8 +37,12 @@ function TinderPageContent() {
   const formatParam = searchParams.get('format') || '1:1';
   const isTest = searchParams.get('test') === 'true';
   
-  const [ads1_1, setAds1_1] = useState(testAds1_1);
-  const [ads16_9, setAds16_9] = useState(testAds16_9);
+  const [ads1_1, setAds1_1] = useState<Array<{ id: string; imageUrl: string; format: '1:1'; workflowId: string }>>(
+    testAds1_1.map(ad => ({ ...ad, workflowId: 'test-workflow' }))
+  );
+  const [ads16_9, setAds16_9] = useState<Array<{ id: string; imageUrl: string; format: '9:16'; workflowId: string }>>(
+    testAds16_9.map(ad => ({ ...ad, workflowId: 'test-workflow' }))
+  );
   const [loading, setLoading] = useState(!isTest && !!jobId);
   const [isCompleting, setIsCompleting] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
@@ -145,7 +149,7 @@ function TinderPageContent() {
               const adData = {
                 id: img.id,
                 imageUrl: img.publicUrl || img.storageKey,
-                workflowId: img.workflowId,
+                workflowId: img.workflowId || 'no-workflow',
               };
 
               console.log('img', img);
@@ -164,10 +168,67 @@ function TinderPageContent() {
             console.log('ads1_1List', ads1_1List);
             console.log('ads16_9List', ads16_9List);
 
-            // if mixed format, sort ads1_1List and ads16_9List by workflowId
+            // if mixed format, sort and pair ads by workflowId to ensure matching pairs
             if (format === 'mixed') {
-              ads1_1List.sort((a, b) => a.workflowId.localeCompare(b.workflowId));
-              ads16_9List.sort((a, b) => a.workflowId.localeCompare(b.workflowId));
+              // Create maps of workflowId to ads for pairing
+              const workflowMap1_1 = new Map<string, typeof ads1_1List>();
+              const workflowMap16_9 = new Map<string, typeof ads16_9List>();
+              
+              ads1_1List.forEach(ad => {
+                if (!workflowMap1_1.has(ad.workflowId)) {
+                  workflowMap1_1.set(ad.workflowId, []);
+                }
+                workflowMap1_1.get(ad.workflowId)!.push(ad);
+              });
+              
+              ads16_9List.forEach(ad => {
+                if (!workflowMap16_9.has(ad.workflowId)) {
+                  workflowMap16_9.set(ad.workflowId, []);
+                }
+                workflowMap16_9.get(ad.workflowId)!.push(ad);
+              });
+              
+              // Get all unique workflowIds and sort them
+              const allWorkflowIds = Array.from(new Set([...ads1_1List.map(a => a.workflowId), ...ads16_9List.map(a => a.workflowId)])).sort();
+              
+              // Rebuild lists ensuring pairs are at the same index
+              const final1_1: typeof ads1_1List = [];
+              const final16_9: typeof ads16_9List = [];
+              
+              for (const workflowId of allWorkflowIds) {
+                const ads1_1 = workflowMap1_1.get(workflowId) || [];
+                const ads16_9 = workflowMap16_9.get(workflowId) || [];
+                
+                // Pair up ads with the same workflowId
+                // Add pairs first (matching indices)
+                const minPairs = Math.min(ads1_1.length, ads16_9.length);
+                for (let i = 0; i < minPairs; i++) {
+                  final1_1.push(ads1_1[i]);
+                  final16_9.push(ads16_9[i]);
+                }
+                
+                // Add remaining ads from the longer list (orphaned by format)
+                if (ads1_1.length > ads16_9.length) {
+                  for (let i = minPairs; i < ads1_1.length; i++) {
+                    final1_1.push(ads1_1[i]);
+                  }
+                } else if (ads16_9.length > ads1_1.length) {
+                  for (let i = minPairs; i < ads16_9.length; i++) {
+                    final16_9.push(ads16_9[i]);
+                  }
+                }
+              }
+              
+              // Update the lists with paired ads
+              ads1_1List.length = 0;
+              ads1_1List.push(...final1_1);
+              ads16_9List.length = 0;
+              ads16_9List.push(...final16_9);
+              
+              console.log('[AD-REVIEW] Paired ads by workflowId:', {
+                '1:1': final1_1.map(a => ({ id: a.id, workflowId: a.workflowId })),
+                '9:16': final16_9.map(a => ({ id: a.id, workflowId: a.workflowId }))
+              });
             }
 
             setAds1_1(ads1_1List);
