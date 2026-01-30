@@ -64,17 +64,6 @@ export function UrlInputSection() {
   };
 
 
-  // // Auto-trigger generation if we have a pending auto-generate request
-  // useEffect(() => {
-  //     if (autoGenerateUrl) {
-  //         const url = autoGenerateUrl;
-  //         setAutoGenerateUrl(null); // Clear the state
-  //         // Navigate to generating page - it will handle the API call
-  //         router.push(`/generating?website_url=${encodeURIComponent(url)}&login=true`);
-  //     }
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [autoGenerateUrl, router]); // Trigger when autoGenerateUrl is set
-
   return (
     <section className="flex flex-col gap-4">
 

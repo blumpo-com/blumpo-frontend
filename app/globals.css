@@ -373,3 +373,9 @@
 .animate-spin-slow {
   animation: spin 6s linear infinite;
 }
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  
+}
