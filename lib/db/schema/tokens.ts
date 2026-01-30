@@ -20,12 +20,12 @@ export const tokenAccount = pgTable('token_account', {
   subscriptionStatus: text('subscription_status'),
   // When subscription is cancelled but user still has access until end of billing period
   cancellationTime: timestamp('cancellation_time', { withTimezone: true }),
-  // Pending: reasons from feedback form (saved when user clicks cancel in app, before Stripe)
-  pendingCancellationReasons: jsonb('pending_cancellation_reasons').$type<string[]>(),
-  // Set only when Stripe confirms subscription cancellation (webhook)
+  // Reasons from cancel feedback form (saved when user submits survey before redirect to Stripe)
   cancellationReasons: jsonb('cancellation_reasons').$type<string[]>(),
   // When user accepted "70% off next month + 200 credits" retention offer
   retentionOfferAppliedAt: timestamp('retention_offer_applied_at', { withTimezone: true }),
+  // Next refill/renewal that has the 70% discount (set when offer applied); hide "(70% off)" after that cycle
+  retentionDiscountRenewalAt: timestamp('retention_discount_renewal_at', { withTimezone: true }),
 }, (table) => ({
   stripeCustomerIdx: uniqueIndex('uq_token_account_stripe_customer')
     .on(table.stripeCustomerId)

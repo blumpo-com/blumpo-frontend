@@ -67,6 +67,7 @@ interface UserWithTokenAccount {
     planCode: string;
     nextRefillAt: string | null;
     subscriptionStatus: string | null;
+    cancellationTime: string | null;
     period: string | null;
   } | null;
 }
@@ -108,6 +109,8 @@ function YourCreditsPageContent() {
   const userBalance = user?.tokenAccount?.balance || 0;
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
   const nextRefillAt = user?.tokenAccount?.nextRefillAt;
+  const subscriptionStatus = user?.tokenAccount?.subscriptionStatus;
+  const cancellationTime = user?.tokenAccount?.cancellationTime;
 
   // Get current plan details
   const currentPlan = subscriptionPlans.find(p => p.planCode === currentPlanCode);
@@ -117,10 +120,15 @@ function YourCreditsPageContent() {
   const progressPercentage = planTokens > 0 ? (userBalance / creditsTotal) * 100 : 0;
   const period = user?.tokenAccount?.period || 'MONTHLY';
 
-  // Format renewal date
-  const renewalDate = nextRefillAt 
-    ? new Date(nextRefillAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : null;
+  const dateFormat: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+  const isCancelAtPeriodEnd = subscriptionStatus === 'cancel_at_period_end';
+  const renewalLabel = isCancelAtPeriodEnd ? 'Ends' : 'Renews';
+  const renewalDate = (() => {
+    if (isCancelAtPeriodEnd && cancellationTime) {
+      return new Date(cancellationTime).toLocaleDateString('en-US', dateFormat);
+    }
+    return nextRefillAt ? new Date(nextRefillAt).toLocaleDateString('en-US', dateFormat) : null;
+  })();
 
   // Map subscription plans to Stripe price IDs
   const planPrices: Record<string, { monthly: string | null; annual: string | null }> = {};
@@ -449,7 +457,7 @@ function YourCreditsPageContent() {
                   </p>
                   {renewalDate ? (
                     <p className={styles.renewalDate}>
-                      Renews {renewalDate}
+                      {renewalLabel} {renewalDate}
                     </p>
                   ) : null}
                 </>

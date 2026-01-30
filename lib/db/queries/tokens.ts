@@ -93,37 +93,24 @@ export async function appendTokenLedgerEntry(
   });
 }
 
-/** Save cancel feedback reasons to pending; only moved to cancellation_reasons when Stripe confirms cancel. */
-export async function updatePendingCancellationReasons(userId: string, reasons: string[]) {
+/** Save cancellation reasons from cancel feedback form. */
+export async function updateCancellationReasons(userId: string, reasons: string[]) {
   await db
     .update(tokenAccount)
-    .set({ pendingCancellationReasons: reasons })
+    .set({ cancellationReasons: reasons })
     .where(eq(tokenAccount.userId, userId));
 }
 
-/** Mark retention offer (70% off + 200 credits) as applied for user. */
-export async function setRetentionOfferApplied(userId: string) {
-  await db
-    .update(tokenAccount)
-    .set({ retentionOfferAppliedAt: new Date() })
-    .where(eq(tokenAccount.userId, userId));
-}
-
-/** Copy pending reasons to cancellation_reasons and clear pending (called from Stripe webhook when subscription is canceled). */
-export async function applyPendingCancellationReasons(userId: string) {
-  const row = await db
-    .select({ pendingCancellationReasons: tokenAccount.pendingCancellationReasons })
-    .from(tokenAccount)
-    .where(eq(tokenAccount.userId, userId))
-    .limit(1);
-
-  if (row.length === 0 || !row[0].pendingCancellationReasons?.length) return;
-
+/** Mark retention offer (70% off + 200 credits) as applied; store which renewal has the discount. */
+export async function setRetentionOfferApplied(
+  userId: string,
+  retentionDiscountRenewalAt: Date | null
+) {
   await db
     .update(tokenAccount)
     .set({
-      cancellationReasons: row[0].pendingCancellationReasons,
-      pendingCancellationReasons: null,
+      retentionOfferAppliedAt: new Date(),
+      retentionDiscountRenewalAt: retentionDiscountRenewalAt ?? null,
     })
     .where(eq(tokenAccount.userId, userId));
 }

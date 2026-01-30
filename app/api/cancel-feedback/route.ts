@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import { updatePendingCancellationReasons } from '@/lib/db/queries/tokens';
+import { updateCancellationReasons } from '@/lib/db/queries/tokens';
 
 const REASONS = [
   'Too expensive',
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (valid.length > 0) {
-      await updatePendingCancellationReasons(user.id, valid);
+      await updateCancellationReasons(user.id, valid);
     }
 
     return NextResponse.json({ ok: true });

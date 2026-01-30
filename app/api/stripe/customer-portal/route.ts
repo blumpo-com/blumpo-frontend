@@ -89,9 +89,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const returnPath = flowType === 'subscription_cancel' ? '/dashboard/settings?from=stripe_portal_cancel' : '/dashboard';
     const sessionParams: Stripe.BillingPortal.SessionCreateParams = {
       customer: tokenAccount.stripeCustomerId,
-      return_url: `${process.env.BASE_URL}/dashboard`,
+      return_url: `${baseUrl}${returnPath}`,
       configuration: configuration.id
     };
 

@@ -14,7 +14,6 @@ import {
   addTopupTokens,
   refillSubscriptionTokens,
   activateSubscription,
-  applyPendingCancellationReasons,
   setRetentionOfferApplied,
 } from '@/lib/db/queries';
 
@@ -135,14 +134,35 @@ export async function createCustomerPortalSession(userId: string) {
 export async function handleSubscriptionChange(
   subscription: Stripe.Subscription
 ) {
-  const customerId = subscription.customer as string;
+  const customerId =
+    typeof subscription.customer === 'string'
+      ? subscription.customer
+      : (subscription.customer as Stripe.Customer)?.id;
+  if (!customerId) {
+    console.error('[handleSubscriptionChange] Missing subscription.customer');
+    return;
+  }
+
   const subscriptionId = subscription.id;
   const status = subscription.status;
+  const cancelAtPeriodEnd = !!subscription.cancel_at_period_end;
+  const cancelAt = subscription.cancel_at
+    ? new Date(subscription.cancel_at * 1000)
+    : null;
+
+  // eslint-disable-next-line no-console
+  console.log('[handleSubscriptionChange]', {
+    subscriptionId,
+    customerId,
+    status,
+    cancel_at_period_end: cancelAtPeriodEnd,
+    cancel_at: cancelAt?.toISOString() ?? null,
+  });
 
   const userWithAccount = await getTokenAccountByStripeCustomerId(customerId);
 
   if (!userWithAccount) {
-    console.error('User not found for Stripe customer:', customerId);
+    console.error('[handleSubscriptionChange] User not found for Stripe customer:', customerId);
     return;
   }
 
@@ -175,15 +195,23 @@ export async function handleSubscriptionChange(
       }
     }
 
+    const cancellationTime = cancelAtPeriodEnd && cancelAt ? cancelAt : null;
+
+    // eslint-disable-next-line no-console
+    console.log('[handleSubscriptionChange] active branch', {
+      cancelAtPeriodEnd,
+      cancellationTime: cancellationTime?.toISOString() ?? null,
+      subscriptionStatus: cancelAtPeriodEnd ? 'cancel_at_period_end' : status,
+    });
+
     const subscriptionData = {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: stripeProductId,
       stripePriceId: stripePriceId,
-      subscriptionStatus: status,
+      subscriptionStatus: cancelAtPeriodEnd ? 'cancel_at_period_end' : status,
       planCode: planCode,
       period: period,
-      // If subscription is active/trialing, ensure any scheduled cancellation is cleared
-      cancellationTime: null
+      cancellationTime,
     };
 
     // Use activation function for active subscriptions to ensure proper token allocation
@@ -203,8 +231,6 @@ export async function handleSubscriptionChange(
       stripeProductId: null,
       stripePriceId: null,
     });
-    // Move pending cancel feedback (from our survey) to cancellation_reasons now that Stripe confirmed cancel
-    await applyPendingCancellationReasons(userId);
   }
 }
 
@@ -423,7 +449,7 @@ export async function applyRetentionOffer(userId: string): Promise<{ ok: true } 
     await stripe.subscriptions.update(tokenAccount.stripeSubscriptionId, {
       discounts: [{ coupon: couponId }],
     });
-    await setRetentionOfferApplied(userId);
+    await setRetentionOfferApplied(userId, tokenAccount.nextRefillAt ?? null);
     return { ok: true };
   } catch (err) {
     console.error('Failed to apply retention coupon:', err);

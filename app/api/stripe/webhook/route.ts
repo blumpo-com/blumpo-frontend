@@ -29,10 +29,13 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-      case 'customer.subscription.deleted':
+      case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription;
+        // eslint-disable-next-line no-console
+        console.log(`[webhook] ${event.type} sub=${subscription.id} status=${subscription.status} cancel_at_period_end=${!!subscription.cancel_at_period_end}`);
         await handleSubscriptionChange(subscription);
         break;
+      }
 
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;

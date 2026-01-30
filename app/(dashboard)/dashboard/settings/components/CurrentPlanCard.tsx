@@ -19,7 +19,11 @@ export interface CurrentPlanCardProps {
   planDisplayName: string;
   isFreePlan: boolean;
   billingText?: string;
+  /** Label before date: "Renews" or "Ends" (when cancel_at_period_end) */
+  renewalLabel?: 'Renews' | 'Ends';
   renewalDate?: string | null;
+  /** Show "(70% off)" next to "Renews X" when coupon applies to next renewal only */
+  show70Off?: boolean;
   onClick: () => void;
 }
 
@@ -28,7 +32,9 @@ export function CurrentPlanCard({
   planDisplayName,
   isFreePlan,
   billingText = 'monthly',
+  renewalLabel = 'Renews',
   renewalDate,
+  show70Off = false,
   onClick,
 }: CurrentPlanCardProps) {
   return (
@@ -49,7 +55,12 @@ export function CurrentPlanCard({
         ) : (
           <>
             <span className={styles.planBilling}>Billed {billingText}</span>
-            {renewalDate && <span className={styles.planRenewal}>Renews {renewalDate}</span>}
+            {renewalDate && (
+              <span className={styles.planRenewal}>
+                {renewalLabel} {renewalDate}
+                {show70Off && ' (70% off)'}
+              </span>
+            )}
           </>
         )}
       </div>

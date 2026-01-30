@@ -21,6 +21,8 @@ interface CancelSubscriptionDialogProps {
   onClose: () => void;
   onProceedToCancel: () => void;
   onAcceptOffer?: () => void;
+  /** When false, hide "Get 70% off" button (yearly plan or offer already used). */
+  showRetentionOffer?: boolean;
 }
 
 function ChevronRight({ className }: { className?: string }) {
@@ -50,6 +52,7 @@ export function CancelSubscriptionDialog({
   onClose,
   onProceedToCancel,
   onAcceptOffer,
+  showRetentionOffer = true,
 }: CancelSubscriptionDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} contentClassName={styles.dialogContent}>
@@ -57,6 +60,7 @@ export function CancelSubscriptionDialog({
         onClose={onClose}
         onProceedToCancel={onProceedToCancel}
         onAcceptOffer={onAcceptOffer}
+        showRetentionOffer={showRetentionOffer}
       />
     </Dialog>
   );
@@ -66,10 +70,12 @@ function CancelSubscriptionFlow({
   onClose,
   onProceedToCancel,
   onAcceptOffer,
+  showRetentionOffer,
 }: {
   onClose: () => void;
   onProceedToCancel: () => void;
   onAcceptOffer?: () => void;
+  showRetentionOffer: boolean;
 }) {
   const [currentStep, setCurrentStep] = useState<'retention' | 'feedback'>('retention');
   const [reasons, setReasons] = useState<Set<CancelReason>>(new Set());
@@ -115,9 +121,11 @@ function CancelSubscriptionFlow({
     return (
       <div className={styles.contentWrapper}>
         <h2 className={styles.headline}>We don&apos;t want you to leave!</h2>
-        <button type="button" className={styles.ctaButton} onClick={handleAcceptOffer}>
-          Get 70% off your next month + 200 free credits
-        </button>
+        {showRetentionOffer && (
+          <button type="button" className={styles.ctaButton} onClick={handleAcceptOffer}>
+            Get 70% off your next month + 200 free credits
+          </button>
+        )}
         <button
           type="button"
           className={styles.cancelLink}

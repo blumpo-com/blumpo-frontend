@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useActionState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { signOut, updateAccount } from '@/app/(login)/actions';
@@ -45,6 +45,7 @@ interface StripePrice {
 
 function SettingsPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading: isLoadingUser } = useUser();
   const { data: subscriptionPlans = [], isLoading: isLoadingPlans } = useSWR<SubscriptionPlan[]>(
     '/api/subscription-plans',
@@ -88,32 +89,73 @@ function SettingsPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileState?.success]);
 
+  // Sync subscription from Stripe when returning from Customer Portal cancel flow (webhook may not have fired)
+  useEffect(() => {
+    if (searchParams.get('from') !== 'stripe_portal_cancel') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/stripe/sync-subscription', { method: 'POST' });
+        const data = await res.json();
+        if (!cancelled && res.ok && data.synced) await mutate('/api/user');
+      } catch {
+        // ignore
+      }
+      if (!cancelled) router.replace('/dashboard/settings', { scroll: false });
+    })();
+    return () => { cancelled = true; };
+  }, [searchParams, router]);
+
   const hasChanges = name !== lastSavedName;
 
   // User data (for subscription section)
   const currentPlanCode = user?.tokenAccount?.planCode || 'FREE';
   const period = user?.tokenAccount?.period as SubscriptionPeriod | null;
   const nextRefillAt = user?.tokenAccount?.nextRefillAt;
- 
+  const subscriptionStatus = user?.tokenAccount?.subscriptionStatus;
+  const cancellationTime = user?.tokenAccount?.cancellationTime;
+  const retentionOfferAppliedAt = user?.tokenAccount?.retentionOfferAppliedAt;
+  const retentionDiscountRenewalAt = user?.tokenAccount?.retentionDiscountRenewalAt;
 
   // Get current plan display name
   const currentPlan = subscriptionPlans.find((p) => p.planCode === currentPlanCode);
   const planDisplayName = currentPlan?.displayName || 'Free Trial';
 
-  // Format renewal date
-  const renewalDate = nextRefillAt
-    ? new Date(nextRefillAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : null;
+  const dateFormat: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  };
+  const isCancelAtPeriodEnd = subscriptionStatus === 'cancel_at_period_end';
+  const renewalLabel = isCancelAtPeriodEnd ? 'Ends' : 'Renews';
+  const renewalDate = (() => {
+    if (isCancelAtPeriodEnd && cancellationTime) {
+      return new Date(cancellationTime).toLocaleDateString('en-US', dateFormat);
+    }
+    return nextRefillAt
+      ? new Date(nextRefillAt).toLocaleDateString('en-US', dateFormat)
+      : null;
+  })();
 
   // Check if free plan
   const isFreePlan = currentPlanCode === 'FREE';
 
   // Billing text
   const billingText = period === SubscriptionPeriod.MONTHLY ? 'monthly' : 'yearly';
+
+  // Show "Get 70% off" only for monthly plan and when offer not yet used
+  const showRetentionOffer =
+    !isFreePlan &&
+    period === SubscriptionPeriod.MONTHLY &&
+    !retentionOfferAppliedAt;
+
+  // Show "(70% off)" next to "Renews X" only when next renewal is the discounted one (same cycle)
+  const show70Off = (() => {
+    if (!retentionDiscountRenewalAt || !nextRefillAt) return false;
+    const a = new Date(retentionDiscountRenewalAt).toDateString();
+    const b = new Date(nextRefillAt).toDateString();
+    return a === b;
+  })();
 
   // Save 50 dialog: monthly vs annual price for current plan (for Upgrade to annual card)
   const save50PriceData = (() => {
@@ -301,7 +343,9 @@ function SettingsPageContent() {
               planDisplayName={planDisplayName}
               isFreePlan={isFreePlan}
               billingText={billingText}
+              renewalLabel={renewalLabel}
               renewalDate={renewalDate}
+              show70Off={show70Off}
               onClick={() => router.push('/dashboard/your-credits')}
             />
 
@@ -357,6 +401,7 @@ function SettingsPageContent() {
           onClose={closeCancelDialog}
           onProceedToCancel={handleProceedToCancel}
           onAcceptOffer={handleAcceptRetentionOffer}
+          showRetentionOffer={showRetentionOffer}
         />
 
         {/* Save 50% dialog (Upgrade to annual) */}
