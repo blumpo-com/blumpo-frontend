@@ -302,6 +302,7 @@ export async function updateUserSubscription(
     lastRefillAt?: Date | null;
     nextRefillAt?: Date | null;
     cancellationTime?: Date | null;
+    retentionOfferAppliedAt?: Date | null;
   }
 ) {
   // First ensure token account exists

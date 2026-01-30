@@ -93,6 +93,28 @@ export async function appendTokenLedgerEntry(
   });
 }
 
+/** Save cancellation reasons from cancel feedback form. */
+export async function updateCancellationReasons(userId: string, reasons: string[]) {
+  await db
+    .update(tokenAccount)
+    .set({ cancellationReasons: reasons })
+    .where(eq(tokenAccount.userId, userId));
+}
+
+/** Mark retention offer (70% off + 200 credits) as applied; store which renewal has the discount. */
+export async function setRetentionOfferApplied(
+  userId: string,
+  retentionDiscountRenewalAt: Date | null
+) {
+  await db
+    .update(tokenAccount)
+    .set({
+      retentionOfferAppliedAt: new Date(),
+      retentionDiscountRenewalAt: retentionDiscountRenewalAt ?? null,
+    })
+    .where(eq(tokenAccount.userId, userId));
+}
+
 export async function createOrUpdateTokenAccount(
   userId: string,
   data: {

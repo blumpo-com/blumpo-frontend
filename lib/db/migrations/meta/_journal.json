@@ -71,6 +71,41 @@
       "when": 1768326619000,
       "tag": "0009_rename_token_period_to_subscription_period",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768400000000,
+      "tag": "0010_add_cancellation_reasons",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768400100000,
+      "tag": "0011_add_pending_cancellation_reasons",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1768400200000,
+      "tag": "0012_add_retention_offer_applied_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1768400300000,
+      "tag": "0013_add_retention_discount_renewal_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1768400400000,
+      "tag": "0014_remove_pending_cancellation_reasons",
+      "breakpoints": true
     }
   ]
 }

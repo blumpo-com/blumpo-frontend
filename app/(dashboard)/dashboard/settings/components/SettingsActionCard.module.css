@@ -1,0 +1,82 @@
+.card {
+  flex: 1;
+  height: 89px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 2px 7.3px 0px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  overflow: hidden;
+}
+
+.cardContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cardIconWrapper {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardIconWrapper > :global(svg) {
+  width: 28px;
+  height: 28px;
+}
+
+.cardTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  color: #0a0a0a;
+}
+
+.chevronButton {
+  width: 47px;
+  height: 47px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.chevronCircle {
+  width: 30px;
+  height: 30px;
+  background-color: #0a0a0a;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chevronIcon {
+  width: 7px;
+  height: 15px;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clickable:hover {
+  opacity: 0.9;
+}
+
+.clickable:active {
+  transform: scale(0.99);
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
