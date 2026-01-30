@@ -42,7 +42,7 @@ export function ImageCard({
   return (
     <div
       className={`${styles.imageCard} ${
-        image.format === "16:9" ? styles.format16x9 : ""
+        image.format === "9:16" ? styles.format9x16 : ""
       }`}
     >
       <div className={styles.imageWrapper}>

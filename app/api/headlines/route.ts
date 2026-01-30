@@ -38,6 +38,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing brandId" }, { status: 400 });
     }
 
+    // Only allow testimonial archetype
+    if (archetypeId !== "testimonial") {
+      return NextResponse.json({ 
+        error: "Headlines API only supports testimonial archetype" 
+      }, { status: 400 });
+    }
+
     if (!webhookUrl) {
       return NextResponse.json({ error: "Webhook URL not configured" }, { status: 500 });
     }
@@ -71,11 +78,11 @@ export async function POST(req: Request) {
 
       const data = await res.json();
       
-      // Extract headlines from the response structure
+      // Extract data from the response structure
       // Response format can be:
-      // 1. [{ output: { headline1: "...", headline2: "...", ... } }]
-      // 2. { output: { headline1: "...", headline2: "...", ... } }
-      // 3. Direct object with headline properties
+      // 1. [{ output: { testimonial1: "...", name1: "...", cta1: "..." } }]
+      // 2. { output: { testimonial1: "...", name1: "...", cta1: "..." } }
+      // 3. Direct object with testimonial properties
       
       let output: Record<string, any> | null = null;
       
@@ -83,16 +90,16 @@ export async function POST(req: Request) {
         // Handle array format: [{ output: {...} }]
         if (data[0].output) {
           output = data[0].output;
-        } else if (data[0].headline1) {
-          // Direct array with headline properties
+        } else if (data[0].testimonial1) {
+          // Direct array with testimonial properties
           output = data[0];
         }
       } else if (data && typeof data === 'object') {
         // Handle object format
         if (data.output) {
           output = data.output;
-        } else if (data.headline1) {
-          // Direct object with headline properties
+        } else if (data.testimonial1) {
+          // Direct object with testimonial properties
           output = data;
         }
       }
@@ -100,16 +107,24 @@ export async function POST(req: Request) {
       if (output) {
         const headlines: string[] = [];
         
-        // Extract headline1 through headline6
+        // Extract testimonial1 through testimonial6
         for (let i = 1; i <= 6; i++) {
-          const headlineKey = `headline${i}`;
-          if (output[headlineKey] && typeof output[headlineKey] === 'string') {
-            headlines.push(output[headlineKey]);
+          const testimonialKey = `testimonial${i}`;
+          if (output[testimonialKey] && typeof output[testimonialKey] === 'string') {
+            headlines.push(output[testimonialKey]);
           }
         }
         
+        // Extract name1 and cta1 for testimonial archetype
+        const name1 = output.name1 && typeof output.name1 === 'string' ? output.name1 : '';
+        const cta1 = output.cta1 && typeof output.cta1 === 'string' ? output.cta1 : '';
+        
         if (headlines.length > 0) {
-          return NextResponse.json({ headlines });
+          return NextResponse.json({ 
+            headlines,
+            name1,
+            cta1
+          });
         }
       }
       

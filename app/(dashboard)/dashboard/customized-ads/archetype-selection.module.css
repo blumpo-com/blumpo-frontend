@@ -15,8 +15,10 @@
     justify-content: center;
     width: 100%;
     max-width: 1000px;
-    padding: 0 0 0 0;
+    padding: 0;
     height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Archetype Card */
@@ -216,3 +218,103 @@
     object-fit: cover;
     border-radius: 15.474px;
 }
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+    .archetypeSelectionContent {
+        gap: 25px;
+    }
+    
+    .archetypeCard {
+        width: 240px;
+        height: 275px;
+    }
+}
+
+@media (max-width: 968px) {
+    .archetypeSelectionContent {
+        gap: 20px;
+    }
+    
+    .archetypeCard {
+        width: 230px;
+        height: 265px;
+    }
+    
+    .cardTitle {
+        font-size: 19px;
+    }
+    
+    .cardDescription {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .archetypeSelectionContent {
+        gap: 15px;
+        max-width: 600px;
+    }
+    
+    .archetypeCard {
+        width: 220px;
+        height: 255px;
+        padding: 18px 24px 0 24px;
+    }
+    
+    .cardTitle {
+        font-size: 18px;
+    }
+    
+    .cardDescription {
+        font-size: 13px;
+        width: 200px;
+    }
+    
+    .previewImageWrapper {
+        width: 110px;
+        height: 120px;
+    }
+    
+    .previewImageCard {
+        width: 110px;
+        height: 112px;
+    }
+}
+
+@media (max-width: 480px) {
+    .archetypeSelectionContent {
+        gap: 12px;
+    }
+    
+    .archetypeCard {
+        width: 200px;
+        height: 235px;
+        padding: 16px 20px 0 20px;
+    }
+    
+    .cardContent {
+        height: 85px;
+        width: 100%;
+    }
+    
+    .cardTitle {
+        font-size: 17px;
+    }
+    
+    .cardDescription {
+        font-size: 12px;
+        width: 100%;
+    }
+    
+    .previewImageWrapper {
+        width: 95px;
+        height: 105px;
+    }
+    
+    .previewImageCard {
+        width: 95px;
+        height: 97px;
+    }
+}
+

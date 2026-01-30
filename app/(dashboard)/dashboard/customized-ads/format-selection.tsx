@@ -104,8 +104,8 @@ export function FormatSelectionContent({
       ]
     },
     {
-      id: '16:9',
-      format: '16:9',
+      id: '9:16',
+      format: '9:16',
       description: 'Perfect for stories',
       credits: 50,
       socialIcons: [
@@ -115,13 +115,13 @@ export function FormatSelectionContent({
       ]
     },
     {
-      id: '1:1-16:9',
-      format: '1:1 & 16:9',
+      id: '1:1-9:16',
+      format: '1:1 & 9:16',
       description: 'Full package',
       credits: 80,
       formatBoxes: [
         { label: '1:1', width: '107.11px', height: '107.11px' },
-        { label: '16:9', width: '73.947px', height: '107.455px' }
+        { label: '9:16', width: '73.947px', height: '107.455px' }
       ]
     }
   ];

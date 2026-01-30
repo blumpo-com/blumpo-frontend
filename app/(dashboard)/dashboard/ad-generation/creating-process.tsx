@@ -190,12 +190,12 @@ const defaultSteps: Omit<ProcessStep, 'status' | 'progress'>[] = [
 // Static timing configuration (in milliseconds)
 // This will be replaced with webhook data in the future
 const STEP_TIMINGS = {
-  'analyze-website': 5000,      // 5 seconds
-  'capture-tone': 6500,         // 6.5 seconds
-  'review-social': 4000,        // 4 seconds (longer, with progress bar)
-  'benchmark-competitors': 7000, // 7 seconds
-  'craft-cta': 7500,            // 7.5 seconds
-};
+  'analyze-website': 15000,      // 15 seconds
+  'capture-tone': 20000,         // 20 seconds
+  'review-social': 25000,        // 25 seconds (longer, with progress bar)
+  'benchmark-competitors': 30000, // 30 seconds
+  'craft-cta': 70000,            // 70 seconds
+}; // Total time: 160 seconds
 
 // Progress update interval for in-progress steps (ms)
 const PROGRESS_UPDATE_INTERVAL = 50;
