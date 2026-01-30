@@ -15,10 +15,10 @@ import styles from './page.module.css';
 // const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
 const imgCharacter = "/assets/animations/sitting-blumpo.webp";
 
-const imgImage1 = "/images/default_ads/ads_1.png";
-const imgImage2 = "/images/default_ads/ads_2.png";
-const imgImage3 = "/images/default_ads/ads_3.png";
-const imgImage4 = "/images/default_ads/ads_4.png";
+const imgImage1 = "/images/dashboard/quick-ad1.png";
+const imgImage2 = "/images/dashboard/quick-ad2.png";
+const imgImage3 = "/images/dashboard/customized-ad1.png";
+const imgImage4 = "/images/dashboard/customized-ad2.png";
 const imgImage5 = "/images/default_ads/ads_5.png";
 const imgImage6 = "/images/default_ads/ads_6.png";
 
@@ -34,11 +34,12 @@ interface FeatureCardProps {
   onButtonClick?: () => void;
   showCharacter?: boolean;
   characterImage?: string;
-      }
+  inactive?: boolean;
+}
 
-function FeatureCard({ 
-  title, 
-  description, 
+function FeatureCard({
+  title,
+  description,
   gradientClass,
   frontImage,
   backImage,
@@ -46,33 +47,34 @@ function FeatureCard({
   backImageClass,
   onButtonClick,
   showCharacter = false,
-  characterImage
+  characterImage,
+  inactive = false,
 }: FeatureCardProps) {
-  const cardPositionClass = gradientClass === styles.cardImageGradient1 
-    ? styles.cardFirst 
-    : gradientClass === styles.cardImageGradient2 
-    ? styles.cardSecond 
-    : styles.cardThird;
+  const cardPositionClass = gradientClass === styles.cardImageGradient1
+    ? styles.cardFirst
+    : gradientClass === styles.cardImageGradient2
+      ? styles.cardSecond
+      : styles.cardThird;
 
   if (showCharacter && characterImage) {
     return (
       <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
         <div className={styles.cardCharacterIllustration}>
-          <img 
-            src={characterImage} 
-            alt="Character illustration" 
+          <img
+            src={characterImage}
+            alt="Character illustration"
             className={styles.cardCharacterImage}
           />
-              </div>
-        <div className={`${styles.card} ${styles.cardInWrapper}`}>
+        </div>
+        <div className={`${styles.card} ${styles.cardInWrapper} ${inactive ? `${styles.cardInactive} disabled` : ''}`.trim()}>
           <div className={styles.cardContent}>
             <h3 className={styles.cardTitle}>{title}</h3>
             <p className={styles.cardDescription}>{description}</p>
             <button
               onClick={onButtonClick}
-              className={styles.cardButton}
+              className={`${styles.cardButton} ${inactive ? 'disabled' : ''}`.trim()}
             >
-              Create now
+              {inactive ? 'Coming soon' : 'Create now'}
             </button>
           </div>
           <div className={`${styles.cardImageSection} ${gradientClass} ${gradientClass === styles.cardImageGradient3 ? styles.cardImageSectionThird : ''}`.trim()}>
@@ -81,9 +83,9 @@ function FeatureCard({
               <div className={styles.imageBack}>
                 <div className={styles.imageTransform}>
                   <div className={styles.imageCard}>
-                    <img 
-                      src={frontImage} 
-                      alt="" 
+                    <img
+                      src={frontImage}
+                      alt=""
                       className={`${styles.imageCardBack} ${frontImageClass || ''}`}
                     />
                   </div>
@@ -94,14 +96,14 @@ function FeatureCard({
                 <div className={`${styles.imageFront}`}>
                   <div className={styles.imageTransform}>
                     <div className={styles.imageCard}>
-                      <img 
-                        src={backImage} 
-                        alt="" 
+                      <img
+                        src={backImage}
+                        alt=""
                         className={`${styles.imageCardFront} ${backImageClass || ''}`}
                       />
-              </div>
-            </div>
-          </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -128,30 +130,30 @@ function FeatureCard({
           <div className={styles.imageBack}>
             <div className={styles.imageTransform}>
               <div className={styles.imageCard}>
-                <img 
-                  src={frontImage} 
-                  alt="" 
+                <img
+                  src={frontImage}
+                  alt=""
                   className={`${styles.imageCardBack} ${frontImageClass || ''}`}
                 />
-          </div>
-        </div>
+              </div>
+            </div>
           </div>
           {/* Swapped: backImage now in front position */}
           {backImage && (
             <div className={`${styles.imageFront}`}>
               <div className={styles.imageTransform}>
                 <div className={styles.imageCard}>
-                  <img 
-                    src={backImage} 
-                    alt="" 
+                  <img
+                    src={backImage}
+                    alt=""
                     className={`${styles.imageCardFront} ${backImageClass || ''}`}
                   />
                 </div>
               </div>
             </div>
-            )}
-          </div>
+          )}
         </div>
+      </div>
     </div>
   );
 }
@@ -159,21 +161,21 @@ function FeatureCard({
 export default function DashboardHomePage() {
   const router = useRouter();
   const { currentBrand } = useBrand();
-  
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
-  
+
   // Example: Access current brand data
   // console.log('Current brand:', currentBrand);
 
   // Use NEXT_PUBLIC_ prefix for client-side access
   const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
 
- return (
+  return (
     <div className={styles.homePage}>
       {/* Test button - only show in test mode */}
       {IS_TEST_MODE && (
@@ -234,8 +236,9 @@ export default function DashboardHomePage() {
           onButtonClick={() => console.log('Insights clicked')}
           showCharacter={true}
           characterImage={imgCharacter}
+          inactive
         />
       </div>
-        </div>
+    </div>
   );
 }

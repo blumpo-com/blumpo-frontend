@@ -6,16 +6,18 @@ export function HeroPhotoWall() {
   const images = [
     { filename: "1.png", alt: "Hero Photo Wall" },
     { filename: "2.png", alt: "Hero Photo Wall" },
-    { filename: "1.png", alt: "Hero Photo Wall" },
-    { filename: "2.png", alt: "Hero Photo Wall" },
-    { filename: "1.png", alt: "Hero Photo Wall" },
-    
+    { filename: "3.png", alt: "Hero Photo Wall" },
+    { filename: "4.png", alt: "Hero Photo Wall" },
+    { filename: "5.png", alt: "Hero Photo Wall" },
+    { filename: "6.png", alt: "Hero Photo Wall" },
+    { filename: "7.png", alt: "Hero Photo Wall" },
+
   ];
 
   // Duplicate images twice for seamless loop
   // One set = 3 images (117px each) + 2 gaps (15px each) = 381px total
   // Animation moves exactly -381px, so when it loops, the second set is in the same position
-  const duplicatedImages = [...images, ...images,  ...images,  ...images];
+  const duplicatedImages = [...images, ...images, ...images, ...images];
 
   return (
     <>
@@ -46,7 +48,7 @@ export function HeroPhotoWall() {
           {/* Animated container with a delay */}
           <div
             className="flex flex-col gap-4 animate-scroll-down pt-8"
-            style={{ animationDelay: "-10s" }}
+            style={{ animationDelay: "-20s" }}
           >
             {duplicatedImages.map((img, index) => (
               <WallImage
