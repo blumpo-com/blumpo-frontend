@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { getUser } from "@/lib/db/queries";
 import { SWRConfig } from "swr";
+import { PageTitle } from "@/components/page-title";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+        <PageTitle />
         <Providers>
           <SWRConfig
             value={{
