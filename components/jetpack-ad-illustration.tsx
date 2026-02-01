@@ -12,6 +12,8 @@ export interface JetpackAdIllustrationProps {
   adImageSrc?: string;
   animationAlt?: string;
   adImageAlt?: string;
+  /** Optional: Tailwind classes to size the ad image, e.g. "w-[280px] h-[180px]" or "max-w-[90%] max-h-[50%]" */
+  adImageClassName?: string;
 }
 
 export function JetpackAdIllustration({
@@ -20,6 +22,7 @@ export function JetpackAdIllustration({
   adImageSrc = DEFAULT_AD_IMAGE_SRC,
   animationAlt = "Jetpack illustration",
   adImageAlt = "Ad template preview",
+  adImageClassName,
 }: JetpackAdIllustrationProps) {
   return (
     <div
@@ -28,17 +31,27 @@ export function JetpackAdIllustration({
         className
       )}
     >
-      <div className="relative  h-full w-full max-w-2xl aspect-video flex-shrink-0 overflow-hidden rounded-xl z-1">
+      <div className="relative w-full max-w-[460px] h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.3 ]">
+        {/* Layer 1: ad template (back) – size via adImageClassName, no stretch */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className={cn("relative", adImageClassName ?? "w-full h-full")}>
+            <Image
+              src={adImageSrc}
+              alt={adImageAlt}
+              fill
+              className="object-contain"
+            />
+          </div>
+        </div>
+        {/* Layer 2: jetpack animation (front, stacked on top, 2x scale) */}
         <Image
           src={animationSrc}
           alt={animationAlt}
-          width={2240}
-          height={720}
-          className="w-full h-full object-contain"
+          fill
+          className="object-contain z-10 scale-[1.3] origin-center translate-y-19"
           unoptimized
         />
       </div>
-
     </div>
   );
 }
