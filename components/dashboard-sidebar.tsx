@@ -6,9 +6,12 @@ import { usePathname } from "next/navigation";
 import useSWR from "swr";
 import { User, TokenAccount, Brand } from "@/lib/db/schema";
 import { useBrand } from "@/lib/contexts/brand-context";
+import { useUser } from "@/lib/contexts/user-context";
+import { useRouter } from "next/navigation";
+import { getBrandLimit } from "@/lib/constants/brand-limits";
+import { ErrorDialog } from "@/components/error-dialog";
 import styles from "./dashboard-sidebar.module.css";
 import Wand from "@/assets/icons/Wand.svg";
-import { useUser } from "@/lib/contexts/user-context";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -87,13 +90,24 @@ export function DashboardSidebar() {
     dedupingInterval: 5000,
     keepPreviousData: true,
   });
+  const router = useRouter();
   const { currentBrand, setCurrentBrand, isInitialized } = useBrand();
   const [isBrandOpen, setIsBrandOpen] = useState(false);
+  const [brandLimitDialog, setBrandLimitDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    errorCode: string | null;
+  }>({ open: false, title: '', message: '', errorCode: null });
   const BrandRef = useRef<HTMLDivElement>(null);
 
   const tokenBalance = user?.tokenAccount?.balance || 0;
+  const planCode = user?.tokenAccount?.planCode ?? 'FREE';
+  const brandLimit = getBrandLimit(planCode);
+  const isAtBrandLimit = Array.isArray(brands) && brands.length >= brandLimit;
   const isCreateNewActive =
-    pathname === "/dashboard" || pathname === "/dashboard/customized-ads";
+    pathname === "/dashboard" ||
+    pathname === "/dashboard/customized-ads";
 
   // Set first brand as current if none is selected, context is initialized, and brands exist
   useEffect(() => {
@@ -207,8 +221,17 @@ export function DashboardSidebar() {
                 iconAlt="New brand"
                 label="New brand"
                 onClick={() => {
-                  console.log("New brand clicked");
                   setIsBrandOpen(false);
+                  if (isAtBrandLimit) {
+                    setBrandLimitDialog({
+                      open: true,
+                      title: 'Brand Limit Reached',
+                      message: `Your ${planCode} plan allows up to ${brandLimit === Infinity ? 'unlimited' : brandLimit} brand(s). Upgrade your plan to add more brands.`,
+                      errorCode: 'BRAND_LIMIT_REACHED',
+                    });
+                  } else {
+                    router.push('/input-url');
+                  }
                 }}
               />
               {isLoadingBrands ? (
@@ -302,6 +325,16 @@ export function DashboardSidebar() {
           isActive={pathname === "/dashboard/support"}
         />
       </nav>
+
+      <ErrorDialog
+        open={brandLimitDialog.open}
+        onClose={() =>
+          setBrandLimitDialog((prev) => ({ ...prev, open: false }))
+        }
+        title={brandLimitDialog.title}
+        message={brandLimitDialog.message}
+        errorCode={brandLimitDialog.errorCode}
+      />
     </aside>
   );
 }
