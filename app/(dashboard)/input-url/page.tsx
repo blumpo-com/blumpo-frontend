@@ -2,13 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UrlInput } from '@/components/url-input';
+import { ArrowRight } from 'lucide-react';
 import { useUser } from '@/lib/contexts/user-context';
 import { getBrandLimit } from '@/lib/constants/brand-limits';
 import { ErrorDialog } from '@/components/error-dialog';
 import useSWR from 'swr';
+import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+function isValidUrl(value: string): boolean {
+  const v = value.trim();
+  if (!v) return false;
+  const pattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(?:[:#/?].*)?$/i;
+  const localhost = /^(https?:\/\/)?localhost(?:[:#/?].*)?$/i;
+  return pattern.test(v) || localhost.test(v);
+}
 
 export default function InputUrlPage() {
   const router = useRouter();
@@ -18,6 +27,8 @@ export default function InputUrlPage() {
     fetcher,
     { revalidateOnFocus: false }
   );
+  const [url, setUrl] = useState('');
+  const [isInvalid, setIsInvalid] = useState(false);
   const [errorDialog, setErrorDialog] = useState<{
     open: boolean;
     title: string;
@@ -47,7 +58,12 @@ export default function InputUrlPage() {
     }
   }, [isAtLimit, isLoadingUser, isLoadingBrands, planCode, brandLimit]);
 
-  const handleSubmit = async (url: string) => {
+  const handleSubmit = () => {
+    const valid = isValidUrl(url);
+    if (!valid) {
+      setIsInvalid(true);
+      return;
+    }
     if (isAtLimit) {
       setErrorDialog({
         open: true,
@@ -57,31 +73,61 @@ export default function InputUrlPage() {
       });
       return;
     }
+    setIsInvalid(false);
     router.push(`/generating?website_url=${encodeURIComponent(url.trim())}`);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
+
   return (
-    <div className="flex h-full min-h-screen w-full">
+    <div className={styles.page}>
       {/* Left: empty container for future animation */}
-      <div className="flex-1 min-h-0 flex items-center justify-center p-8">
-        <div className="w-full max-w-lg h-[400px] rounded-2xl bg-gray-100" />
+      <div className={styles.leftPanel}>
+        <div className={styles.animationContainer} />
       </div>
 
       {/* Right: content */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-lg">
-          <h1 className="text-3xl md:text-4xl font-bold text-black tracking-tight mb-4">
-            Create AI B2B SaaS{' '}
-            <span className="text-brand-secondary">ads</span>{' '}
-            that win.
+      <div className={styles.rightPanel}>
+        <div className={styles.contentBlock}>
+          <h1 className={styles.headline}>
+            Create AI B2B SaaS <span className={styles.headlineAccent}>ads that win.</span>
           </h1>
-          <p className="text-base text-gray-600 mb-8">
+          <p className={styles.description}>
             Enter your website URL and we'll create a complete, consistent brand tailored to your business - from visuals to messaging.
           </p>
-          <UrlInput
-            onSubmit={handleSubmit}
-            placeholder="https://example.com/my-webpage"
-          />
+          <div>
+            <div className={`${styles.urlInputWrapper} gradient-primary`}>
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setIsInvalid(false);
+                }}
+                placeholder="https://example.com/my-webpage"
+                aria-invalid={isInvalid}
+                onKeyDown={handleKeyDown}
+                className={styles.urlInput}
+              />
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className={styles.submitButton}
+                aria-label="Submit URL"
+              >
+                <ArrowRight size={20} strokeWidth={2} />
+              </button>
+            </div>
+            {isInvalid && (
+              <p className={styles.errorMessage}>
+                We'll need a valid URL, like "blumpo.com/home".
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
