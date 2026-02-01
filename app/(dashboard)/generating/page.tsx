@@ -66,6 +66,7 @@ function GeneratingPageContent() {
     title: string;
     message: string;
     errorCode: string | null;
+    canRegenerate?: boolean;
   }>({
     open: false,
     title: 'Error',
@@ -193,6 +194,8 @@ function GeneratingPageContent() {
             const j = await res.json();
             if (j?.error) msg = j.error;
             errorCode = j?.error_code;
+            // Set actual job id
+            setActualJobId(j?.job_id);
 
             if (errorCode === 'INSUFFICIENT_TOKENS') {
               msg = 'Insufficient tokens. Please upgrade your plan or purchase more tokens.';
@@ -228,6 +231,7 @@ function GeneratingPageContent() {
                 title: 'Generation Failed',
                 message: msg,
                 errorCode: errorCode || 'UNKNOWN',
+                canRegenerate: true,
               });
               setIsLoading(false);
               return;
@@ -239,6 +243,7 @@ function GeneratingPageContent() {
               title: 'Generation Failed',
               message: msg,
               errorCode: 'UNKNOWN',
+              canRegenerate: true,
             });
             setIsLoading(false);
             return;
@@ -248,10 +253,8 @@ function GeneratingPageContent() {
         const data = await res.json();
         setStatus(data.status);
 
-        // Store job_id from response
         if (data.job_id) {
           setActualJobId(data.job_id);
-          // Change search params to include the job_id
           router.replace(`/generating?job_id=${data.job_id}`);
         }
 
@@ -260,7 +263,6 @@ function GeneratingPageContent() {
           if (!data.images || data.images.length === 0) {
             setError('Generation completed but no images were created.');
           } else {
-            // Show ReadyAdsView when generation succeeds
             setShowReadyAds(true);
           }
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
@@ -273,6 +275,7 @@ function GeneratingPageContent() {
             title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
             message: errorMessage,
             errorCode: data.error_code || null,
+            canRegenerate: true,
           });
           
           if (data.images && data.images.length > 0) {
@@ -289,6 +292,7 @@ function GeneratingPageContent() {
           title: 'Generation Failed',
           message: errorMessage,
           errorCode: null,
+          canRegenerate: !!websiteUrl,
         });
       } finally {
         setIsLoading(false);
@@ -304,6 +308,70 @@ function GeneratingPageContent() {
     setShowGeneratedAds(true);
   };
 
+  // Regenerate: delete failed/canceled job, then create new generation
+  const handleRegenerate = async () => {
+    if (!actualJobId || !websiteUrl) return;
+    try {
+      await fetch(`/api/generation-job?jobId=${actualJobId}`, { method: 'DELETE' });
+      setError(null);
+      setErrorDialog({ open: false, title: '', message: '', errorCode: null });
+      setStatus(null);
+      setActualJobId(null);
+      hasInitiatedRef.current = null;
+      setIsLoading(true);
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: websiteUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data?.error || 'Generation request failed';
+        setError(msg);
+        setErrorDialog({
+          open: true,
+          title: 'Generation Failed',
+          message: msg,
+          errorCode: data?.error_code || null,
+          canRegenerate: !['INSUFFICIENT_TOKENS', 'AUTH_REQUIRED'].includes(data?.error_code || ''),
+        });
+        return;
+      }
+      setError(null);
+      setStatus(data.status);
+      if (data.job_id) {
+        setActualJobId(data.job_id);
+        router.replace(`/generating?job_id=${data.job_id}`);
+      }
+      if (data.status === 'SUCCEEDED') {
+        setImages(shuffle(data.images || []));
+        setShowReadyAds((data.images?.length ?? 0) > 0);
+        if (!data.images?.length) setError('Generation completed but no images were created.');
+      } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
+        setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
+        setErrorDialog({
+          open: true,
+          title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
+          message: data.error_message || `Generation ${data.status.toLowerCase()}`,
+          errorCode: data.error_code || null,
+          canRegenerate: true,
+        });
+        if (data.images?.length) setImages(shuffle(data.images));
+      }
+    } catch (e: any) {
+      setError(e?.message || 'Regeneration failed');
+      setErrorDialog({
+        open: true,
+        title: 'Generation Failed',
+        message: e?.message || 'Regeneration failed',
+        errorCode: null,
+        canRegenerate: !!websiteUrl,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Show loading/creating process while API call is in progress
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
     return (
@@ -316,12 +384,17 @@ function GeneratingPageContent() {
             router.push('/');
           }} 
         />
-        <ErrorDialog
+         <ErrorDialog
           open={errorDialog.open}
           onClose={() => setErrorDialog({ ...errorDialog, open: false })}
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
+          onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
+          primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
+          showSecondaryButton={true}
+          secondaryActionLabel="Go Back"
+          onSecondaryAction={() => router.push('/')}
         />
       </>
     );
@@ -334,19 +407,31 @@ function GeneratingPageContent() {
       <>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-red-600 mb-4">Generation Failed</h2>
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              {status === 'CANCELED' ? 'Generation Canceled' : 'Generation Failed'}
+            </h2>
             <p className="text-gray-600 mb-4">{errorMessage}</p>
             {images.length > 0 && (
               <p className="text-sm text-gray-500 mb-4">
                 {images.length} image(s) were created before the failure.
               </p>
             )}
-            <button
-              onClick={() => router.push('/')}
-              className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600"
-            >
-              Go Back
-            </button>
+            <div className="flex flex-col gap-2">
+              {websiteUrl && (
+                <button
+                  onClick={handleRegenerate}
+                  className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600"
+                >
+                  Regenerate
+                </button>
+              )}
+              <button
+                onClick={() => router.push('/')}
+                className="w-full border border-gray-300 py-2 px-4 rounded-lg hover:bg-gray-50"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </div>
         <LoggedInDialog 
@@ -362,6 +447,11 @@ function GeneratingPageContent() {
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
+          onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
+          primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
+          showSecondaryButton={true}
+          secondaryActionLabel="Go Back"
+          onSecondaryAction={() => router.push('/')}
         />
       </>
     );

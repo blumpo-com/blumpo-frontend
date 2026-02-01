@@ -67,7 +67,7 @@ export function ErrorDialog({
       <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
         {message}
       </p>
-      {errorCode && (
+      {errorCode && errorCode !== 'EXISTING_BRAND' && (
         <p style={{ fontSize: '14px', color: '#999', marginBottom: '24px' }}>
           Error code: {errorCode}
         </p>
