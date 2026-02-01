@@ -7,7 +7,8 @@ import { extractBlobPathFromUrl } from "@/lib/blob-utils";
 import { deleteAdImages } from "@/lib/db/queries/quick-ads";
 import { getGenerationJobById, updateGenerationJob } from "@/lib/db/queries/generation";
 
-const TOKENS_COST_PER_GENERATION = 50;
+const TOKENS_COST_PER_GENERATION_SINGLE = 50;
+const TOKENS_COST_PER_GENERATION_MIXED = 80;
 
 // Mark ads as displayed, deduct tokens, and cleanup unused formats
 // Supports single format ('1:1' or '9:16') or mixed format ('mixed', '1:1,9:16', '1:1-9:16')
@@ -68,32 +69,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No ads found for selected format" }, { status: 404 });
     }
 
+    const tokensCost = isMixedFormat ? TOKENS_COST_PER_GENERATION_MIXED : TOKENS_COST_PER_GENERATION_SINGLE;
+
     // Deduct tokens when ads are displayed (only if not already deducted)
     if (job.tokensCost === 0 || !job.ledgerId) {
       // Check if user has enough tokens
-      const hasTokens = await hasEnoughTokens(user.id, TOKENS_COST_PER_GENERATION);
+      const hasTokens = await hasEnoughTokens(user.id, tokensCost);
       if (!hasTokens) {
         return NextResponse.json({
           error: "Insufficient tokens",
           error_code: "INSUFFICIENT_TOKENS",
-          tokens_required: TOKENS_COST_PER_GENERATION
+          tokens_required: tokensCost
         }, { status: 402 });
       }
 
       // Deduct tokens and update job
       const ledgerEntry = await appendTokenLedgerEntry(
         user.id,
-        -TOKENS_COST_PER_GENERATION,
+        -tokensCost,
         'GENERATION',
         jobId
       );
 
       await updateGenerationJob(jobId, {
-        tokensCost: TOKENS_COST_PER_GENERATION,
+        tokensCost: tokensCost,
         ledgerId: ledgerEntry.id,
       });
 
-      console.log('[QUICK-ADS] Tokens deducted when ads displayed:', TOKENS_COST_PER_GENERATION);
+      console.log('[QUICK-ADS] Tokens deducted when ads displayed:', tokensCost);
     }
 
     // Mark selected format ads as ready to display
