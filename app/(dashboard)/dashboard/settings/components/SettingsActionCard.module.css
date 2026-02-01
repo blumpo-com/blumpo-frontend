@@ -1,13 +1,14 @@
 .card {
   flex: 1;
-  height: 89px;
+  min-height: 90px;
+  padding: 10px 20px;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0px 2px 7.3px 0px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  
   overflow: hidden;
 }
 
@@ -18,29 +19,27 @@
 }
 
 .cardIconWrapper {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .cardIconWrapper > :global(svg) {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
 }
 
 .cardTitle {
   font-family: 'Roboto', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  line-height: 26px;
   color: #0a0a0a;
 }
 
 .chevronButton {
-  width: 47px;
-  height: 47px;
+  
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,4 +78,28 @@
   opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+
+@media (max-width: 768px) {
+  .card {
+    padding: 20px 20px;
+  }
+
+  .cardIconWrapper {
+    width: 28px;
+    height: 28px;
+  }
+
+  
+  .cardTitle {
+    font-size: 16px;
+  }
+
+  .chevronCircle {
+    width: 28px;
+    height: 28px;
+  }
+
+  
 }

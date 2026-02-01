@@ -1,13 +1,14 @@
 .card {
   flex: 1;
-  height: 89px;
+  min-height: 90px;
+  padding: 10px 20px;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0px 2px 7.3px 0px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+ 
   overflow: hidden;
 }
 
@@ -75,4 +76,10 @@
 
 .planRenewal {
   color: #0a0a0a;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 20px 20px;
+  }
 }

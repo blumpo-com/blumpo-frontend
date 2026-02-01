@@ -20,7 +20,6 @@
   font-family: 'Roboto', sans-serif;
   font-size: 40px;
   font-weight: 600;
-  line-height: 24px;
   background: linear-gradient(160deg, #00BFA6 2%, #58C7FF 14%, #0D3B66 29%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -55,7 +54,6 @@
   font-family: 'Roboto', sans-serif;
   font-size: 30px;
   font-weight: 600;
-  line-height: 24px;
   color: #0a0a0a;
   margin: 0;
 }
@@ -64,13 +62,16 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 482px;
+  width: 100%;
+  max-width: 482px;
 }
 
 .profileInputs {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  width: 100%;
+  min-width: 0;
 }
 
 .profileRow {
@@ -138,12 +139,6 @@
   min-width: 0;
 }
 
-.cardPlaceholder {
-  flex: 1;
-  min-height: 89px;
-  min-width: 0;
-}
-
 .logoutButton {
   width: 100%;
   height: 62px;
@@ -198,4 +193,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media (max-width: 1024px) {
+  .cardsRow {
+    flex-direction: column;
+  }
+
+  .profileRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saveButton {
+    align-self: flex-start;
+  }
 }

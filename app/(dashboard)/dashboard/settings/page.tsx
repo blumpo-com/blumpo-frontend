@@ -372,14 +372,12 @@ function SettingsPageContent() {
             />
 
             {/* Upgrade to Annual Plan - hidden when FREE or yearly; opens Save50 dialog, redirect on Yes */}
-            {!isFreePlan && period !== SubscriptionPeriod.YEARLY ? (
+            {!isFreePlan && period !== SubscriptionPeriod.YEARLY && (
               <SettingsActionCard
                 icon={<Calendar />}
                 title="Upgrade to annual plan"
                 onClick={() => (save50PriceData ? setSave50DialogOpen(true) : handleUpgradeToAnnual())}
               />
-            ) : (
-              <div className={styles.cardPlaceholder} aria-hidden="true" />
             )}
           </div>
 
