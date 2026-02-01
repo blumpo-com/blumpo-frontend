@@ -156,7 +156,7 @@ export function DashboardSidebar() {
       <div className={styles.logoContainer}>
         <Link href="/dashboard" className={styles.logo}>
           <img
-            src="/assets/logo/Blumpo Logo.svg"
+            src="/assets/logo/Blumpo_Logo.svg"
             alt="Blumpo"
             className={styles.logoImage}
           />

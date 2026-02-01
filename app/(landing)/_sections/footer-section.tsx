@@ -174,7 +174,7 @@ export function Footer() {
             {/* Logo */}
             <Link href="/" className="flex items-center">
               <Image
-                src="/assets/logo/Blumpo Logo.svg"
+                src="/assets/logo/Blumpo_Logo.svg"
                 alt="Blumpo"
                 width={144}
                 height={56}
