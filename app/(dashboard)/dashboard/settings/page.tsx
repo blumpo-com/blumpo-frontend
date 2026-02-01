@@ -16,6 +16,7 @@ import styles from './page.module.css';
 import Calendar from '@/assets/icons/Calendar.svg';
 import Money from '@/assets/icons/Money.svg';
 import Cancel from '@/assets/icons/Cancel-alt.svg';
+import Renew from '@/assets/icons/Renew.svg';
 import Help from '@/assets/icons/Help.svg';
 import Gift from '@/assets/icons/Gift.svg';
 import Exit from '@/assets/icons/Exit.svg';
@@ -86,12 +87,13 @@ function SettingsPageContent() {
     mutate('/api/user');
     setLastSavedName(name);
     // name intentionally from closure (value we just submitted)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileState?.success]);
 
-  // Sync subscription from Stripe when returning from Customer Portal cancel flow (webhook may not have fired)
+  // Sync subscription from Stripe when returning from Customer Portal (webhook may not have fired)
   useEffect(() => {
-    if (searchParams.get('from') !== 'stripe_portal_cancel') return;
+    const from = searchParams.get('from');
+    if (from !== 'stripe_portal_cancel' && from !== 'stripe_portal') return;
     let cancelled = false;
     (async () => {
       try {
@@ -179,7 +181,7 @@ function SettingsPageContent() {
     setActionLoading(true);
     let willRedirect = false;
     try {
-      const response = await fetch('/api/stripe/customer-portal');
+      const response = await fetch('/api/stripe/customer-portal?returnTo=settings');
       const data = await response.json();
       if (response.ok && data.url) {
         willRedirect = true;
@@ -229,6 +231,26 @@ function SettingsPageContent() {
     let willRedirect = false;
     try {
       const response = await fetch('/api/stripe/customer-portal?flow=subscription_cancel');
+      const data = await response.json();
+      if (response.ok && data.url) {
+        willRedirect = true;
+        window.location.href = data.url;
+        return;
+      }
+      router.push('/dashboard/your-credits');
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      router.push('/dashboard/your-credits');
+    } finally {
+      if (!willRedirect) setActionLoading(false);
+    }
+  }
+
+  async function handleRenewSubscription() {
+    setActionLoading(true);
+    let willRedirect = false;
+    try {
+      const response = await fetch('/api/stripe/customer-portal?returnTo=settings');
       const data = await response.json();
       if (response.ok && data.url) {
         willRedirect = true;
@@ -361,7 +383,7 @@ function SettingsPageContent() {
             )}
           </div>
 
-          {/* Row 2: Manage Billings + Cancel Subscription - hidden when FREE */}
+          {/* Row 2: Manage Billings + Cancel/Renew Subscription - hidden when FREE */}
           {!isFreePlan && (
             <div className={styles.cardsRow}>
               <SettingsActionCard
@@ -369,11 +391,19 @@ function SettingsPageContent() {
                 title="Manage billings & invoices"
                 onClick={handleManageBillings}
               />
-              <SettingsActionCard
-                icon={<Cancel />}
-                title="Cancel subscription"
-                onClick={openCancelDialog}
-              />
+              {isCancelAtPeriodEnd ? (
+                <SettingsActionCard
+                  icon={<Renew />}
+                  title="Renew subscription"
+                  onClick={handleRenewSubscription}
+                />
+              ) : (
+                <SettingsActionCard
+                  icon={<Cancel />}
+                  title="Cancel subscription"
+                  onClick={openCancelDialog}
+                />
+              )}
             </div>
           )}
         </div>

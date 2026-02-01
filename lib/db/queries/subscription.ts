@@ -299,6 +299,7 @@ export async function updateUserSubscription(
     stripePriceId?: string | null;
     subscriptionStatus?: string | null;
     planCode?: string;
+    period?: string | null;
     lastRefillAt?: Date | null;
     nextRefillAt?: Date | null;
     cancellationTime?: Date | null;

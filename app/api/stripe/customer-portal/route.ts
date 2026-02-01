@@ -90,7 +90,13 @@ export async function GET(request: NextRequest) {
     }
 
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-    const returnPath = flowType === 'subscription_cancel' ? '/dashboard/settings?from=stripe_portal_cancel' : '/dashboard';
+    const returnToSettings = searchParams.get('returnTo') === 'settings';
+    const returnPath =
+      flowType === 'subscription_cancel'
+        ? '/dashboard/settings?from=stripe_portal_cancel'
+        : returnToSettings
+          ? '/dashboard/settings?from=stripe_portal'
+          : '/dashboard';
     const sessionParams: Stripe.BillingPortal.SessionCreateParams = {
       customer: tokenAccount.stripeCustomerId,
       return_url: `${baseUrl}${returnPath}`,
