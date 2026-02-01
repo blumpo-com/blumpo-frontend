@@ -29,11 +29,13 @@ export default function InputUrlPage() {
   );
   const [url, setUrl] = useState('');
   const [isInvalid, setIsInvalid] = useState(false);
+  const [isLoadingUrlCheck, setIsLoadingUrlCheck] = useState(false);
   const [errorDialog, setErrorDialog] = useState<{
     open: boolean;
     title: string;
     message: string;
     errorCode: string | null;
+    brandId?: string;
   }>({
     open: false,
     title: 'Brand Limit Reached',
@@ -58,10 +60,12 @@ export default function InputUrlPage() {
     }
   }, [isAtLimit, isLoadingUser, isLoadingBrands, planCode, brandLimit]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setIsLoadingUrlCheck(true);
     const valid = isValidUrl(url);
     if (!valid) {
       setIsInvalid(true);
+      setIsLoadingUrlCheck(false);
       return;
     }
     if (isAtLimit) {
@@ -71,9 +75,46 @@ export default function InputUrlPage() {
         message: `Your ${planCode} plan allows up to ${brandLimit === Infinity ? 'unlimited' : brandLimit} brand(s). Upgrade your plan to add more brands.`,
         errorCode: 'BRAND_LIMIT_REACHED',
       });
+      setIsLoadingUrlCheck(false);
       return;
     }
     setIsInvalid(false);
+    const trimmedUrl = url.trim();
+
+    // Check if user already has a brand with this URL
+    try {
+      const checkRes = await fetch(`/api/brands/check-url?url=${encodeURIComponent(trimmedUrl)}`);
+      if (checkRes.ok) {
+        const data = await checkRes.json();
+        if (data.exists && data.brand) {
+          setErrorDialog({
+            open: true,
+            title: 'Brand Already Exists',
+            message: `You already have a brand for this website: ${data.brand.name}. Would you like to go to your brand or generate new ads for it?`,
+            errorCode: 'EXISTING_BRAND',
+            brandId: data.brand.id,
+          });
+          setIsLoadingUrlCheck(false);
+          return;
+        }
+      }
+    } catch {
+      // Continue to generation if check fails
+    }
+    setIsLoadingUrlCheck(false);
+    router.push(`/generating?website_url=${encodeURIComponent(trimmedUrl)}`);
+  };
+
+  const handleExistingBrandGoToBrand = () => {
+    if (errorDialog.brandId) {
+      localStorage.setItem('blumpo_current_brand_id', errorDialog.brandId);
+      setErrorDialog((prev) => ({ ...prev, open: false }));
+      router.push('/dashboard/brand-dna');
+    }
+  };
+
+  const handleExistingBrandContinue = () => {
+    setErrorDialog((prev) => ({ ...prev, open: false }));
     router.push(`/generating?website_url=${encodeURIComponent(url.trim())}`);
   };
 
@@ -116,7 +157,7 @@ export default function InputUrlPage() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className={styles.submitButton}
+                className={`${styles.submitButton} ${isLoadingUrlCheck ? styles.disabled : ''}`}
                 aria-label="Submit URL"
               >
                 <ArrowRight size={20} strokeWidth={2} />
@@ -139,6 +180,11 @@ export default function InputUrlPage() {
         title={errorDialog.title}
         message={errorDialog.message}
         errorCode={errorDialog.errorCode}
+        onPrimaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandGoToBrand : undefined}
+        primaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Go to Brand' : undefined}
+        // showSecondaryButton={errorDialog.errorCode === 'EXISTING_BRAND'}
+        // secondaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Generate New Ads Anyway' : undefined}
+        // onSecondaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandContinue : undefined}
       />
     </div>
   );
