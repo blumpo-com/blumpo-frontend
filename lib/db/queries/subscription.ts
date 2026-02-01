@@ -332,11 +332,14 @@ export async function updateUserSubscription(
     .limit(1);
 
   if (existingAccount.length === 0) {
-    // Create token account if it doesn't exist
-    await db.insert(tokenAccount).values({
+    // Create token account if it doesn't exist (omit period if null – schema default is MONTHLY)
+    const { period, ...rest } = subscriptionData;
+    const insertData = {
       userId,
-      ...subscriptionData,
-    });
+      ...rest,
+      ...(period === 'MONTHLY' || period === 'YEARLY' ? { period } : {}),
+    };
+    await db.insert(tokenAccount).values(insertData as typeof subscriptionData & { userId: string });
   } else {
     // Update existing token account
     await db
