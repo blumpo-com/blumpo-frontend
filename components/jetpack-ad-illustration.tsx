@@ -4,7 +4,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_ANIMATION_SRC = "/assets/animations/jetpack-canvas.webp";
-const DEFAULT_AD_IMAGE_SRC = "/images/temp/ad-template.png";
+const DEFAULT_AD_IMAGE_SRC = "/images/temp/ad-template2.png";
 
 export interface JetpackAdIllustrationProps {
   className?: string;
@@ -31,7 +31,7 @@ export function JetpackAdIllustration({
         className
       )}
     >
-      <div className="relative w-full max-w-[460px] h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.3 ]">
+      <div className="relative w-full max-w-[460px] h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.4]">
         {/* Layer 1: ad template (back) – size via adImageClassName, no stretch */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className={cn("relative", adImageClassName ?? "w-full h-full")}>
