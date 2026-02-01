@@ -263,13 +263,13 @@ export function DashboardSidebar() {
         {/* Coins Button */}
         <div
           className={styles.coinsButton}
-          onClick={() => window.location.assign('/dashboard/your-credits')}
+          onClick={() => router.push("/dashboard/your-credits")}
           role="button"
           tabIndex={0}
           style={{ cursor: 'pointer' }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              window.location.assign('/dashboard/your-credits');
+              router.push("/dashboard/your-credits");
             }
           }}
         >
