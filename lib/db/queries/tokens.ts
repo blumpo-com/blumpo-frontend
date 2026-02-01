@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, desc } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { user, tokenAccount, tokenLedger } from '../schema/index';
 
@@ -93,7 +93,8 @@ export async function appendTokenLedgerEntry(
   });
 }
 
-/** Save cancellation reasons from cancel feedback form. */
+
+// Save cancellation reasons from cancel feedback form.
 export async function updateCancellationReasons(userId: string, reasons: string[]) {
   await db
     .update(tokenAccount)
@@ -101,7 +102,7 @@ export async function updateCancellationReasons(userId: string, reasons: string[
     .where(eq(tokenAccount.userId, userId));
 }
 
-/** Mark retention offer (70% off + 200 credits) as applied; store which renewal has the discount. */
+// Mark retention offer (70% off + 200 credits) as applied; store which renewal has the discount.
 export async function setRetentionOfferApplied(
   userId: string,
   retentionDiscountRenewalAt: Date | null
@@ -113,6 +114,19 @@ export async function setRetentionOfferApplied(
       retentionDiscountRenewalAt: retentionDiscountRenewalAt ?? null,
     })
     .where(eq(tokenAccount.userId, userId));
+  }
+  
+// Get ledger entry by referenceId and reason
+export async function getLedgerEntryByReference(referenceId: string, reason: string) {
+  const result = await db
+    .select()
+    .from(tokenLedger)
+    .where(and(eq(tokenLedger.referenceId, referenceId), eq(tokenLedger.reason, reason)))
+    .orderBy(desc(tokenLedger.occurredAt))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+
 }
 
 export async function createOrUpdateTokenAccount(

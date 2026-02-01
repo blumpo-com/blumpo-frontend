@@ -182,7 +182,7 @@
   height: 374px;
 }
 
-.card[data-format="16:9"] {
+.card[data-format="9:16"] {
   width: 252px;
   height: 448px;
 }
@@ -409,7 +409,7 @@
   height: 515px;
 }
 
-.mixedColumn[data-format="16:9"] {
+.mixedColumn[data-format="9:16"] {
   width: 521px;
 }
 

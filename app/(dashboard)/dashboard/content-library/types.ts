@@ -47,7 +47,7 @@ export const archetypes = [
 export const formats = [
   { code: "all", name: "All" },
   { code: "1:1", name: "1:1" },
-  { code: "16:9", name: "16:9" },
+  { code: "9:16", name: "9:16" },
 ];
 export type ArchetypeCode = typeof archetypes[number]['code'];
 

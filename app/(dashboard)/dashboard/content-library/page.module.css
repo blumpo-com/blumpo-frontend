@@ -355,7 +355,7 @@
   width: 100%;
 }
 
-.imageCard.format16x9 {
+.imageCard.format9x16 {
   /* Remove grid-row span - let it take natural height based on aspect ratio */
   height: auto;
 }
@@ -374,7 +374,7 @@
   background: #f3f4f6;
 }
 
-.imageCard.format16x9 .imageWrapper {
+.imageCard.format9x16 .imageWrapper {
   aspect-ratio: 9/16;
   flex-shrink: 0;
   min-height: 0;

@@ -14,6 +14,9 @@
   width: 100%;
   max-width: 1083px;
   padding: 0 31px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Current Photos Section - use same styles as addNewPhotoSection */
@@ -493,5 +496,142 @@
 
 .addNewPhotoSectionWithPreview {
   gap: 103px !important;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .photoSelectionContent {
+    gap: 30px;
+  }
+  
+  .mainPhotoCard {
+    width: 320px;
+    height: 320px;
+  }
+  
+  .photoCard {
+    width: 115px;
+    height: 115px;
+  }
+  
+  .addIconContainer {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 968px) {
+  .photoSelectionContent {
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+  }
+  
+  .currentPhotosSection,
+  .addNewPhotoSection {
+    max-width: 600px;
+    width: 100%;
+  }
+  
+  .separator {
+    width: 100%;
+    flex-direction: row;
+  }
+  
+  .separatorText {
+    width: auto;
+  }
+  
+  .photoCollage {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .currentPhotosSection,
+  .addNewPhotoSection {
+    padding: 25px;
+  }
+  
+  .sectionTitle {
+    font-size: 20px;
+  }
+  
+  .mainPhotoCard {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .photoCard {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .photoCollage {
+    gap: 12px;
+  }
+  
+  .addIconContainer {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .addPhotoHint {
+    font-size: 14px;
+    width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .currentPhotosSection,
+  .addNewPhotoSection {
+    padding: 20px;
+  }
+  
+  .sectionTitle {
+    font-size: 18px;
+  }
+  
+  .mainPhotoCard {
+    width: 220px;
+    height: 220px;
+  }
+  
+  .photoCard {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .photoCollage {
+    grid-template-columns: repeat(2, 80px);
+    gap: 10px;
+  }
+  
+  .addIconContainer {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .addPhotoHint {
+    font-size: 13px;
+    width: 180px;
+    top: 60px;
+  }
+  
+  .previewPhotoCard {
+    width: 220px;
+    height: 220px;
+  }
+  
+  .cancelButton {
+    width: 30px;
+    height: 30px;
+    left: 170px;
+  }
+  
+  .cancelButton svg {
+    width: 30px;
+    height: 30px;
+  }
 }
 

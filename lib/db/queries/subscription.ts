@@ -90,9 +90,27 @@ export async function getUserWithTokenAccount(userId: string) {
   return result.length > 0 ? result[0] : null;
 }
 
-// Reserve tokens for a generation job
+// Reserve tokens for a generation job (idempotent)
 export async function reserveTokens(userId: string, tokensCost: number, jobId: string) {
   return await db.transaction(async (tx) => {
+    // Check if tokens are already reserved for this job (idempotency)
+    const existingReserve = await tx
+      .select()
+      .from(tokenLedger)
+      .where(sql`${tokenLedger.reason} = 'JOB_RESERVE' AND ${tokenLedger.referenceId} = ${jobId}`)
+      .limit(1);
+
+    if (existingReserve.length > 0) {
+      // Tokens already reserved - return current balance
+      const account = await tx
+        .select()
+        .from(tokenAccount)
+        .where(eq(tokenAccount.userId, userId))
+        .limit(1);
+      
+      return account[0]?.balance || 0;
+    }
+
     // Lock the token account for update
     const account = await tx
       .select()
@@ -112,7 +130,7 @@ export async function reserveTokens(userId: string, tokensCost: number, jobId: s
 
     const newBalance = currentBalance - tokensCost;
 
-    // Create ledger entry
+    // Create ledger entry (already checked for existence above, so this should succeed)
     await tx.insert(tokenLedger).values({
       userId,
       delta: -tokensCost,

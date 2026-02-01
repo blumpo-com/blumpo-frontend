@@ -24,7 +24,8 @@ export async function POST(req: Request) {
       formats,
       selectedInsights,
       insightSource,
-      promotionValueInsight
+      promotionValueInsight,
+      archetypeInputs
     } = body;
 
     // If jobId provided, update existing job
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
         selectedInsights,
         insightSource,
         promotionValueInsight,
+        archetypeInputs,
       });
 
       return NextResponse.json(updated);
@@ -64,6 +66,7 @@ export async function POST(req: Request) {
         selectedInsights: selectedInsights || [],
         insightSource: insightSource || 'auto',
         promotionValueInsight: promotionValueInsight || {},
+        archetypeInputs: archetypeInputs || {},
         params: {},
         tokensCost: 0, // Will be set on final submission
         status: 'QUEUED',
