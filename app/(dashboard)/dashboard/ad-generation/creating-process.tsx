@@ -156,6 +156,8 @@ interface CreatingProcessProps {
   // For future webhook integration
   onStepUpdate?: (stepId: string, status: StepStatus, progress?: number) => void;
   stepTimings?: Partial<typeof STEP_TIMINGS>;
+  /** Increment to restart the animation from the beginning */
+  restartTrigger?: number;
 }
 
 // Default steps configuration
@@ -204,9 +206,11 @@ export function CreatingProcess({
   steps: externalSteps,
   onComplete,
   onStepUpdate,
-  stepTimings: customStepTimings
+  stepTimings: customStepTimings,
+  restartTrigger,
 }: CreatingProcessProps) {
   const isControlled = !!externalSteps;
+  const prevRestartTriggerRef = useRef(restartTrigger);
 
   // Merge custom step timings with defaults
   const effectiveStepTimings = customStepTimings || STEP_TIMINGS;
@@ -359,6 +363,32 @@ export function CreatingProcess({
       clearTimeout(completionTimeout);
     };
   }, [isControlled, isRunning, currentStepIndex, onStepUpdate, onComplete]);
+
+  // Restart animation when restartTrigger changes (e.g. from handleRegenerate)
+  const restart = useCallback(() => {
+    setSteps(defaultSteps.map((step) => ({ ...step, status: 'pending' as StepStatus, progress: 0 })));
+    setCurrentStepIndex(-1);
+    setAnimatingConnectorIndex(null);
+    startTimeRef.current = null;
+    setIsRunning(false);
+    // Defer start so state updates flush first
+    setTimeout(() => {
+      setIsRunning(true);
+      setCurrentStepIndex(0);
+      setSteps((prev) =>
+        prev.map((step, index) =>
+          index === 0 ? { ...step, status: 'inProgress' as StepStatus, progress: 0 } : step
+        )
+      );
+    }, 0);
+  }, []);
+
+  useEffect(() => {
+    if (restartTrigger !== undefined && restartTrigger !== prevRestartTriggerRef.current) {
+      prevRestartTriggerRef.current = restartTrigger;
+      if (!isControlled) restart();
+    }
+  }, [restartTrigger, isControlled, restart]);
 
   // Auto-start on mount (only for automatic mode)
   useEffect(() => {

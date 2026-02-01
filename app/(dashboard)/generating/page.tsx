@@ -74,6 +74,7 @@ function GeneratingPageContent() {
     errorCode: null,
   });
   const hasInitiatedRef = useRef<string | null>(null);
+  const [animationRestartKey, setAnimationRestartKey] = useState(0);
 
   // Fetch user subscription status
   useEffect(() => {
@@ -167,7 +168,7 @@ function GeneratingPageContent() {
       return;
     }
 
-    if(jobId && !websiteUrl){
+    if (jobId && !websiteUrl) {
       return;
     }
 
@@ -268,7 +269,7 @@ function GeneratingPageContent() {
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
           const errorMessage = data.error_message || `Generation ${data.status.toLowerCase()}`;
           setError(errorMessage);
-          
+
           // Show error dialog for failed/canceled status
           setErrorDialog({
             open: true,
@@ -277,7 +278,7 @@ function GeneratingPageContent() {
             errorCode: data.error_code || null,
             canRegenerate: true,
           });
-          
+
           if (data.images && data.images.length > 0) {
             setImages(shuffle(data.images));
           }
@@ -318,6 +319,7 @@ function GeneratingPageContent() {
       setStatus(null);
       setActualJobId(null);
       hasInitiatedRef.current = null;
+      setAnimationRestartKey((k) => k + 1);
       setIsLoading(true);
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -376,15 +378,15 @@ function GeneratingPageContent() {
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
     return (
       <>
-        <CreatingProcess stepTimings={STEP_TIMINGS} />
-        <LoggedInDialog 
-          open={showLoggedInDialog} 
+        <CreatingProcess stepTimings={STEP_TIMINGS} restartTrigger={animationRestartKey} />
+        <LoggedInDialog
+          open={showLoggedInDialog}
           onClose={() => {
             setShowLoggedInDialog(false);
             router.push('/');
-          }} 
+          }}
         />
-         <ErrorDialog
+        <ErrorDialog
           open={errorDialog.open}
           onClose={() => setErrorDialog({ ...errorDialog, open: false })}
           title={errorDialog.title}
@@ -434,12 +436,12 @@ function GeneratingPageContent() {
             </div>
           </div>
         </div>
-        <LoggedInDialog 
-          open={showLoggedInDialog} 
+        <LoggedInDialog
+          open={showLoggedInDialog}
           onClose={() => {
             setShowLoggedInDialog(false);
             router.push('/');
-          }} 
+          }}
         />
         <ErrorDialog
           open={errorDialog.open}
@@ -462,12 +464,12 @@ function GeneratingPageContent() {
     return (
       <>
         <ReadyAdsView onSeeAds={handleSeeAds} jobId={actualJobId || jobId || undefined} />
-        <LoggedInDialog 
-          open={showLoggedInDialog} 
+        <LoggedInDialog
+          open={showLoggedInDialog}
           onClose={() => {
             setShowLoggedInDialog(false);
             router.push('/');
-          }} 
+          }}
         />
         <ErrorDialog
           open={errorDialog.open}
@@ -485,12 +487,12 @@ function GeneratingPageContent() {
     return (
       <>
         <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />
-        <LoggedInDialog 
-          open={showLoggedInDialog} 
+        <LoggedInDialog
+          open={showLoggedInDialog}
           onClose={() => {
             setShowLoggedInDialog(false);
             router.push('/');
-          }} 
+          }}
         />
         <ErrorDialog
           open={errorDialog.open}
@@ -509,12 +511,12 @@ function GeneratingPageContent() {
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
         <div className="spinner"></div>
       </div>
-      <LoggedInDialog 
-        open={showLoggedInDialog} 
+      <LoggedInDialog
+        open={showLoggedInDialog}
         onClose={() => {
           setShowLoggedInDialog(false);
           router.push('/');
-        }} 
+        }}
       />
       <ErrorDialog
         open={errorDialog.open}
