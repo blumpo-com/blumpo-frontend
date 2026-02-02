@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './photo-selection.module.css';
 
@@ -111,10 +112,13 @@ export function PhotoSelectionContent({
         <div className={`${styles.mainPhotoCard} ${styles.gradientBorder}`}>
           <div className={styles.mainPhotoContent}>
             {logoPhoto && (
-              <img
+              <Image
                 src={logoPhoto}
                 alt="Main product photo"
+                width={200}
+                height={200}
                 className={styles.mainPhoto}
+                sizes="200px"
               />
             )}
           </div>
@@ -128,10 +132,13 @@ export function PhotoSelectionContent({
               className={`${styles.photoCard} ${styles.gradientBorder}`}
             >
               <div className={styles.photoCardInner}>
-                <img
+                <Image
                   src={photo}
                   alt={photo === NO_IMAGE_SRC ? 'No image' : `Product photo ${index + 2}`}
+                  width={300}
+                  height={300}
                   className={styles.photoImage}
+                  sizes="150px"
                 />
               </div>
             </div>
@@ -171,10 +178,13 @@ export function PhotoSelectionContent({
         {previewPhoto ? (
           <div className={styles.previewPhotoContainer}>
             <div className={`${styles.previewPhotoCard} ${styles.gradientBorder}`}>
-              <img
+              <Image
                 src={previewPhoto}
                 alt="Preview"
+                fill
                 className={styles.previewPhoto}
+                sizes="256px"
+                unoptimized
               />
               <div className={styles.previewPhotoOverlay}></div>
               <button
