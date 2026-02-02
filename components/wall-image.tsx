@@ -17,7 +17,7 @@ export function WallImage({
 }: WallImageProps) {
   return (
     <Image
-      src={`/images/hero/${filename}`}
+      src={`/images/landing/hero/${filename}`}
       alt={alt}
       width={width}
       height={height}
