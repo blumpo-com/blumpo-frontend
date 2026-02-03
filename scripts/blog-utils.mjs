@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/**
+ * @deprecated This script is deprecated. Use Sanity Studio to add and manage blog posts.
+ * See docs/BLOG-SANITY-MIGRATION.md for the current blog workflow.
+ */
 
 import fs from 'fs';
 import path from 'path';

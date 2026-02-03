@@ -42,6 +42,8 @@ echo "╔═══════════════════════�
 echo "║   📝 Blog Post Submission Workflow     ║"
 echo "╚════════════════════════════════════════╝"
 echo ""
+warn "DEPRECATED: Use Sanity Studio to add new blog posts. See docs/BLOG-SANITY-MIGRATION.md"
+echo ""
 
 # Detect repository root
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || error "Not in a git repository"
