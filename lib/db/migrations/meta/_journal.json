@@ -71,6 +71,48 @@
       "when": 1768326619000,
       "tag": "0009_rename_token_period_to_subscription_period",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768400000000,
+      "tag": "0010_add_ad_clone",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1768410000000,
+      "tag": "0011_rename_ad_clone_is_meme",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1768420000000,
+      "tag": "0012_remove_ad_clone_is_meme",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1768440000000,
+      "tag": "0014_remove_ad_clone_is_good",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1768450000000,
+      "tag": "0015_add_ad_clone_is_good",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1768460000000,
+      "tag": "0016_remove_ad_clone_is_good",
+      "breakpoints": true
     }
   ]
 }

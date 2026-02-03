@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "dev:turbo": "next dev --turbopack",
-    "build": "next build --webpack",
+    "build": "pnpm db:migrate && next build --webpack",
     "start": "next start",
     "clean": "rm -rf .next",
     "clean:dev": "rm -rf .next/dev",
@@ -12,6 +12,7 @@
     "db:seed": "npx tsx lib/db/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:main": "echo 'Upewnij się, że DATABASE_URL w .env wskazuje na Neon main' && pnpm db:migrate",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
