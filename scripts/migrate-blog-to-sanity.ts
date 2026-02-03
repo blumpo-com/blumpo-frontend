@@ -174,6 +174,7 @@ async function migrateOne(slug: string): Promise<void> {
   const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : []
   const excerpt = frontmatter.excerpt ?? ''
   const coverPath = frontmatter.cover ? String(frontmatter.cover).trim() : ''
+  console.log(`[${slug}] cover from frontmatter:`, coverPath ? `"${coverPath}"` : '(empty)', coverPath ? `(length ${coverPath.length})` : '')
 
   const markdown = mdxContentToMarkdown(rawContent, slug)
   const html = await Promise.resolve(marked.parse(markdown, { async: false }) as string | Promise<string>)
@@ -224,15 +225,21 @@ async function migrateOne(slug: string): Promise<void> {
     _key: b._key || `block-${i}-${Date.now()}`,
   }))
 
-  let mainImageRef: { _type: 'reference'; _ref: string } | undefined
+  let mainImageValue: { _type: 'image'; asset: { _type: 'reference'; _ref: string } } | undefined
   if (coverPath) {
     const resolvedCover = resolveImagePath(coverPath, slug)
+    console.log(`[${slug}] cover resolveImagePath(${JSON.stringify(coverPath)}, ${slug}):`, resolvedCover ?? '(not found)')
     if (resolvedCover) {
       const ref = await uploadImage(resolvedCover)
-      if (ref) mainImageRef = { _type: 'reference', _ref: ref }
+      console.log(`[${slug}] cover upload "${resolvedCover}":`, ref ?? '(upload failed)')
+      if (ref) {
+        mainImageValue = { _type: 'image', asset: { _type: 'reference', _ref: ref } }
+      }
     } else {
-      console.warn('Cover image not found for', slug, 'path:', coverPath)
+      console.warn(`[${slug}] Cover image not found. Tried candidates for basename: ${path.basename(coverPath.replace(/^\/blog\/[^/]+\//, ''))}`)
     }
+  } else {
+    console.log(`[${slug}] No cover path in frontmatter, skipping mainImage`)
   }
 
   const existingId = await client.fetch<string | null>(
@@ -247,9 +254,10 @@ async function migrateOne(slug: string): Promise<void> {
     publishedAt: date.includes('T') ? date : `${date}T00:00:00.000Z`,
     excerpt: excerpt || undefined,
     tags: tags.length ? tags : undefined,
-    mainImage: mainImageRef,
+    mainImage: mainImageValue,
     body: blocksWithKeys,
   }
+  console.log(`[${slug}] docPayload.mainImage:`, mainImageValue ? `asset ref ${mainImageValue.asset._ref}` : '(none)')
 
   if (existingId) {
     await client.createOrReplace({ ...docPayload, _id: existingId })
