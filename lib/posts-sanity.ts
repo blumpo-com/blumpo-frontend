@@ -1,4 +1,4 @@
-import { client } from '@/sanity/lib/client'
+import { client, getPreviewClient } from '@/sanity/lib/client'
 
 export interface PostMeta {
   slug: string
@@ -58,18 +58,23 @@ function mapToPostMeta(row: {
 
 /**
  * Get all posts from Sanity.
+ * @param preview - When true, uses previewDrafts perspective (for Studio Presentation tool).
  */
-export async function getAllPosts(): Promise<PostMeta[]> {
-  const rows = await client.fetch<Array<Record<string, unknown>>>(POSTS_LIST_GROQ)
+export async function getAllPosts(preview = false): Promise<PostMeta[]> {
+  const c = preview ? getPreviewClient() : client
+  const rows = await c.fetch<Array<Record<string, unknown>>>(POSTS_LIST_GROQ)
   if (!Array.isArray(rows)) return []
   return rows.map((row) => mapToPostMeta(row as Parameters<typeof mapToPostMeta>[0]))
 }
 
 /**
  * Get a single post by slug from Sanity, including body for rendering.
+ * @param slug - Post slug
+ * @param preview - When true, uses previewDrafts perspective (for Studio Presentation tool).
  */
-export async function getPostBySlug(slug: string): Promise<SanityPost | null> {
-  const row = await client.fetch<Record<string, unknown> | null>(POST_BY_SLUG_GROQ, {
+export async function getPostBySlug(slug: string, preview = false): Promise<SanityPost | null> {
+  const c = preview ? getPreviewClient() : client
+  const row = await c.fetch<Record<string, unknown> | null>(POST_BY_SLUG_GROQ, {
     slug,
   })
   if (!row) return null

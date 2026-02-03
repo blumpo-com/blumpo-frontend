@@ -1,5 +1,6 @@
 import { getAllPosts, getPostBySlug } from '@/lib/posts-sanity';
 import { notFound } from 'next/navigation';
+import { draftMode } from 'next/headers';
 import type { Metadata } from 'next';
 import { PortableText } from 'next-sanity';
 import Image from 'next/image';
@@ -21,7 +22,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const { isEnabled: preview } = await draftMode();
+  const post = await getPostBySlug(slug, preview);
 
   if (!post) {
     return {
@@ -79,7 +81,8 @@ const portableTextComponents = {
 
 export default async function BlogPost({ params }: BlogPostProps) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const { isEnabled: preview } = await draftMode();
+  const post = await getPostBySlug(slug, preview);
 
   if (!post) {
     notFound();
