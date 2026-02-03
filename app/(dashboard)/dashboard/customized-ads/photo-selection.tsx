@@ -29,11 +29,13 @@ export function PhotoSelectionContent({
   const brandPhotos = currentBrand?.photos || [];
   const heroPhotos = currentBrand?.heroPhotos || [];
   const logoPhoto = currentBrand?.logoUrl || '';
-  
+
   // Combine all photos: logo first, then hero photos, then brand photos
   const allBrandPhotos = [...heroPhotos, ...brandPhotos];
-  
+
   const otherPhotos = allBrandPhotos.length > 4 ? allBrandPhotos.slice(allBrandPhotos.length - 4, allBrandPhotos.length).reverse() : allBrandPhotos.reverse();
+  const NO_IMAGE_SRC = '/images/dashboard/no-image.png';
+  const displayPhotos = Array.from({ length: 4 }, (_, i) => otherPhotos[i] ?? NO_IMAGE_SRC);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -53,13 +55,13 @@ export function PhotoSelectionContent({
     }
 
     setUploadError(null);
-    
+
     // Create preview URL
     const previewUrl = URL.createObjectURL(file);
     onPreviewPhotoChange(previewUrl);
     onPreviewFileChange(file);
     onSelectedSectionChange('new');
-    
+
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -91,7 +93,7 @@ export function PhotoSelectionContent({
   return (
     <div className={styles.photoSelectionContent}>
       {/* Current Product Photos Section */}
-      <div 
+      <div
         className={`${styles.currentPhotosSection} ${styles.gradientBorder} ${isCurrentSectionSelected ? styles.currentPhotosSectionSelected : ''}`}
         onClick={() => onSelectedSectionChange('current')}
         role="button"
@@ -104,35 +106,33 @@ export function PhotoSelectionContent({
         }}
       >
         <h2 className={styles.sectionTitle}>Current product photos</h2>
-        
+
         {/* Main photo display */}
         <div className={`${styles.mainPhotoCard} ${styles.gradientBorder}`}>
           <div className={styles.mainPhotoContent}>
             {logoPhoto && (
-              <img 
-                src={logoPhoto} 
-                alt="Main product photo" 
+              <img
+                src={logoPhoto}
+                alt="Main product photo"
                 className={styles.mainPhoto}
               />
             )}
           </div>
         </div>
 
-        {/* Photo collage */}
+        {/* Photo collage – always 4 slots, placeholder when fewer photos */}
         <div className={styles.photoCollage}>
-          {otherPhotos.map((photo, index) => (
-            <div 
-              key={`${photo}-${index}`}
+          {displayPhotos.map((photo, index) => (
+            <div
+              key={photo === NO_IMAGE_SRC ? `placeholder-${index}` : `${photo}-${index}`}
               className={`${styles.photoCard} ${styles.gradientBorder}`}
             >
               <div className={styles.photoCardInner}>
-                {photo && (
-                  <img 
-                    src={photo} 
-                    alt={`Product photo ${index + 2}`}
-                    className={styles.photoImage}
-                  />
-                )}
+                <img
+                  src={photo}
+                  alt={photo === NO_IMAGE_SRC ? 'No image' : `Product photo ${index + 2}`}
+                  className={styles.photoImage}
+                />
               </div>
             </div>
           ))}
@@ -152,7 +152,7 @@ export function PhotoSelectionContent({
         onChange={handleFileSelect}
         style={{ display: 'none' }}
       />
-      <div 
+      <div
         className={`${styles.addNewPhotoSection} ${styles.gradientBorder} ${isNewSectionSelected ? styles.currentPhotosSectionSelected : ''} ${previewPhoto ? styles.addNewPhotoSectionWithPreview : ''}`}
         onClick={() => !previewPhoto ? handleAddPhotoClick() : onSelectedSectionChange('new')}
         role="button"
@@ -167,13 +167,13 @@ export function PhotoSelectionContent({
         }}
       >
         <h2 className={styles.sectionTitle}>Add new product photo</h2>
-        
+
         {previewPhoto ? (
           <div className={styles.previewPhotoContainer}>
             <div className={`${styles.previewPhotoCard} ${styles.gradientBorder}`}>
-              <img 
-                src={previewPhoto} 
-                alt="Preview" 
+              <img
+                src={previewPhoto}
+                alt="Preview"
                 className={styles.previewPhoto}
               />
               <div className={styles.previewPhotoOverlay}></div>
@@ -187,7 +187,7 @@ export function PhotoSelectionContent({
                 aria-label="Remove photo"
               >
                 <svg width="35" height="35" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </button>
             </div>
@@ -196,23 +196,23 @@ export function PhotoSelectionContent({
           <>
             <div className={styles.addIconContainer}>
               <div className={styles.addIconCircle}>
-                <svg 
-                  viewBox="0 0 321 321" 
+                <svg
+                  viewBox="0 0 321 321"
                   fill="none"
                   className={styles.addIcon}
                 >
-                  <circle cx="160.5" cy="160.5" r="160.5" fill="url(#addGradient)"/>
-                  <path 
-                    d="M160.5 80V241M80 160.5H241" 
-                    stroke="white" 
-                    strokeWidth="20" 
+                  <circle cx="160.5" cy="160.5" r="160.5" fill="url(#addGradient)" />
+                  <path
+                    d="M160.5 80V241M80 160.5H241"
+                    stroke="white"
+                    strokeWidth="20"
                     strokeLinecap="round"
                   />
                   <defs>
                     <linearGradient id="addGradient" x1="0" y1="0" x2="321" y2="321" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#00BFA6"/>
-                      <stop offset="0.5" stopColor="#58C7FF"/>
-                      <stop offset="1" stopColor="#0D3B66"/>
+                      <stop stopColor="#00BFA6" />
+                      <stop offset="0.5" stopColor="#58C7FF" />
+                      <stop offset="1" stopColor="#0D3B66" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -223,11 +223,11 @@ export function PhotoSelectionContent({
             </p>
           </>
         )}
-        
+
         {uploadError && (
           <p className={styles.uploadError}>{uploadError}</p>
         )}
-        
+
         {/* Character illustration - placeholder */}
         <div className={styles.characterIllustration}>
           {/* Character will be added here */}

@@ -8,32 +8,31 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const buttons = [
   { id: "blue", label: "Problem-solution", gradient: "gradient-blue" },
-  { id: "green", label: "Testimonial", gradient: "gradient-green" },
-  { id: "purple", label: "Promotion", gradient: "gradient-purple" },
-  { id: "orange", label: "Product demonstration", gradient: "gradient-orange" },
+  { id: "green", label: "Testimonial", gradient: "gradient-purple" },
+  { id: "purple", label: "Meme", gradient: "gradient-blue" },
+  { id: "orange", label: "Value propositiom", gradient: "gradient-purple" },
 ];
 
-// 14 images total - 3-4 per section
+// 12 images total - 3 per section
 // Each image can be individually customized
 const allImages = [
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/hero/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/hero/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/hero/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/hero/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/problem-solution/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/problem-solution/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/problem-solution/3.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/testimonial/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/testimonial/2.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/testimonial/3.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/meme/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/meme/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/meme/3.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/value-proposition/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/value-proposition/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/value-proposition/3.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+
 ];
 
 // Images per section: 3, 4, 3, 4 = 14 total
-const imagesPerSection = [3, 4, 3, 4];
+const imagesPerSection = [3, 3, 3, 3];
 
 export function ContentProofSection() {
   const [activeButton, setActiveButton] = useState(0);
@@ -76,7 +75,7 @@ export function ContentProofSection() {
 
   const handleTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
-    
+
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
@@ -122,11 +121,9 @@ export function ContentProofSection() {
         {buttons.map((button, index) => (
           <div
             key={button.id}
-            className={`absolute inset-0 ${
-              button.gradient
-            } transition-opacity duration-500 ease-in-out ${
-              activeButton === index ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 ${button.gradient
+              } transition-opacity duration-500 ease-in-out ${activeButton === index ? "opacity-100" : "opacity-0"
+              }`}
           />
         ))}
         <div className="flex gap-6 lg:gap-12 items-center justify-center relative z-10 transition-all duration-500 ease-in-out">
@@ -147,8 +144,8 @@ export function ContentProofSection() {
                 <Image
                   src={image.src}
                   alt={image.alt}
-                  width={300}
-                  height={300}
+                  width={360}
+                  height={360}
                   className="rounded-lg object-cover"
                   priority={index === 1}
                 />
@@ -159,7 +156,7 @@ export function ContentProofSection() {
       </div>
 
       {/* Mobile: Swipeable carousel */}
-      <div 
+      <div
         className="md:hidden mt-8 w-full rounded-2xl relative overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -168,11 +165,10 @@ export function ContentProofSection() {
       >
         {/* Gradient background */}
         <div
-          className={`absolute inset-0 ${
-            buttons[activeButton].gradient
-          } transition-opacity duration-500 ease-in-out opacity-100`}
+          className={`absolute inset-0 ${buttons[activeButton].gradient
+            } transition-opacity duration-500 ease-in-out opacity-100`}
         />
-        
+
         {/* Carousel container */}
         <div className="relative h-[400px] overflow-hidden">
           {/* Images container with transform */}

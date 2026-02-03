@@ -12,13 +12,13 @@ interface ArchetypeCardProps {
   onClick: () => void;
 }
 
-function ArchetypeCard({ 
-  id, 
-  title, 
-  description, 
-  previewImages, 
-  isSelected, 
-  onClick 
+function ArchetypeCard({
+  id,
+  title,
+  description,
+  previewImages,
+  isSelected,
+  onClick
 }: ArchetypeCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
@@ -49,33 +49,31 @@ function ArchetypeCard({
         <h3 className={styles.cardTitle}>{title}</h3>
         <p className={styles.cardDescription}>{description}</p>
       </div>
-      
+
       <div className={styles.previewContainer}>
         {showTwoImagesForAnimation && previewImages.length > 1 ? (
           <>
-            <div 
-              className={`${styles.previewImageWrapper} ${
-                isAnimatingOut ? styles.firstImageReverse : styles.firstImageAnimate
-              }`}
+            <div
+              className={`${styles.previewImageWrapper} ${isAnimatingOut ? styles.firstImageReverse : styles.firstImageAnimate
+                }`}
               style={{ zIndex: 2 }}
             >
               <div className={styles.previewImageCard}>
-                <img 
-                  src={previewImages[0]} 
+                <img
+                  src={previewImages[0]}
                   alt={`${title} preview 1`}
                   className={styles.previewImage}
                 />
               </div>
             </div>
-            <div 
-              className={`${styles.previewImageWrapper} ${
-                isAnimatingOut ? styles.secondImageReverse : styles.secondImageAnimate
-              }`}
+            <div
+              className={`${styles.previewImageWrapper} ${isAnimatingOut ? styles.secondImageReverse : styles.secondImageAnimate
+                }`}
               style={{ zIndex: 1 }}
             >
               <div className={styles.previewImageCard}>
-                <img 
-                  src={previewImages[1]} 
+                <img
+                  src={previewImages[1]}
                   alt={`${title} preview 2`}
                   className={styles.previewImage}
                 />
@@ -83,13 +81,13 @@ function ArchetypeCard({
             </div>
           </>
         ) : (
-          <div 
+          <div
             className={`${styles.previewImageWrapper} ${styles.singleImageState}`}
             style={{ zIndex: 1 }}
           >
             <div className={styles.previewImageCard}>
-              <img 
-                src={previewImages[0]} 
+              <img
+                src={previewImages[0]}
                 alt={`${title} preview 1`}
                 className={styles.previewImage}
               />
@@ -116,8 +114,8 @@ export function ArchetypeSelectionContent({
       title: 'Problem-Solution',
       description: "Show user's pain point and how your product resolves it",
       previewImages: [
-        '/images/default_ads/ads_1.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/problem-solution/1.png',
+        '/images/dashboard/archetypes/problem-solution/2.png'
       ]
     },
     {
@@ -125,8 +123,8 @@ export function ArchetypeSelectionContent({
       title: 'Testimonial',
       description: 'Build the ad around a customer review/quote',
       previewImages: [
-        '/images/default_ads/ads_3.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/testimonial/1.png',
+        '/images/dashboard/archetypes/testimonial/2.png'
       ]
     },
     {
@@ -134,17 +132,17 @@ export function ArchetypeSelectionContent({
       title: 'Competitor Comparison',
       description: 'Visually present how the product works and delivers value',
       previewImages: [
-        '/images/default_ads/ads_4.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/competitor-comparison/1.png',
+        '/images/dashboard/archetypes/competitor-comparison/2.png'
       ]
     },
     {
-      id: 'promotion_offer',
-      title: 'Promotion (Offer)',
-      description: 'Communicate a clear, time-limited deal to prompt immediate action',
+      id: 'meme',
+      title: 'Meme',
+      description: 'Use a meme to make the ad more engaging',
       previewImages: [
-        '/images/default_ads/ads_5.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/meme/1.png',
+        '/images/dashboard/archetypes/meme/2.png'
       ]
     },
     {
@@ -152,8 +150,8 @@ export function ArchetypeSelectionContent({
       title: 'Value Proposition',
       description: 'Highlight the core benefit and what sets the product apart',
       previewImages: [
-        '/images/default_ads/ads_6.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/value-prop/1.png',
+        '/images/dashboard/archetypes/value-prop/2.png'
       ]
     },
     {
@@ -161,8 +159,8 @@ export function ArchetypeSelectionContent({
       title: 'Random',
       description: 'Use 2 random archetypes to generate ads',
       previewImages: [
-        '/images/default_ads/ads_1.png',
-        '/images/default_ads/ads_2.png'
+        '/images/dashboard/archetypes/random/1.png',
+        '/images/dashboard/archetypes/random/2.png'
       ]
     }
   ];

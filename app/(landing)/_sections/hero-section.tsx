@@ -53,43 +53,45 @@ export function HeroSection() {
               YT, and your website into $500+ worth ads.<br></br>
             </p>
             <p className="mt-5 text-base font-bold sm:mt-14 sm:text-xl lg:text-lg xl:text-xl">
-                Start for free now and create ads in 90s.
-              </p>
-            
+              Start for free now and create ads in 90s.
+            </p>
+
             {/* Desktop: URL input */}
             <div className="hidden lg:block lg:relative w-160 my-2">
               <Image
-                  src="/assets/animations/pointing-blumpo.webp"
-                  alt="Pointing Blumpo"
-                  width={210}
-                  height={140}
-                  className="absolute -top-40 right-2 z-10"
-                />
+                src="/assets/animations/pointing-blumpo.webp"
+                alt="Pointing Blumpo"
+                width={210}
+                height={140}
+                className="absolute -top-40 right-2 z-10"
+                style={{ clipPath: 'inset(0 40px 0 40px)' }}
+                unoptimized
+              />
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
                 <UrlInputSection />
               </Suspense>
               {/* Benefits list */}
-             
+
             </div>
             <p className="text-base font-bold sm:text-xl lg:text-lg xl:text-xl">
-                Yes, it is that simple.
+              Yes, it is that simple.
             </p>
             {/* Mobile: Button instead of URL input */}
             <div className="flex flex-col items-center lg:hidden mt-5">
-                <Button asChild variant="cta">
-                  <Link href="/dashboard" className="flex items-center gap-2">
-                    Make your first free Ad
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
-                </Button>
-                {/* Benefits list */}
+              <Button asChild variant="cta">
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  Make your first free Ad
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
+              {/* Benefits list */}
             </div>
 
             <div className="flex flex-col gap-3 mt-5 w-fit justify-center items-start">
-                <BenefitRow text="No credit card required" />
-                <BenefitRow text="300+ happy customers" />
-                <BenefitRow text="Start with just a URL" />
-              </div>
+              <BenefitRow text="No credit card required" />
+              <BenefitRow text="300+ happy customers" />
+              <BenefitRow text="Start with just a URL" />
+            </div>
           </div>
           <HeroPhotoWall />
         </div>
