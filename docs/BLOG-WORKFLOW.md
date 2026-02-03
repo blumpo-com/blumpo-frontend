@@ -4,6 +4,8 @@
 **Last Updated:** November 3, 2025  
 **Status:** ✅ Enhanced with markdown image conversion, interactive cover selection & improved git workflow
 
+**Note:** The blog is now powered by **Sanity**. The site reads posts from your Sanity dataset. To migrate existing MDX posts to Sanity or to create new posts in Studio, see [BLOG-SANITY-MIGRATION.md](./BLOG-SANITY-MIGRATION.md).
+
 ---
 
 ## Table of Contents

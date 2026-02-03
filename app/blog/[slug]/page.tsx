@@ -1,6 +1,9 @@
-import { getAllPosts, getPostBySlug } from '@/lib/posts';
+import { getAllPosts, getPostBySlug } from '@/lib/posts-sanity';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { PortableText } from 'next-sanity';
+import Image from 'next/image';
+import { urlFor } from '@/sanity/lib/image';
 import '@/styles/prose.css';
 
 interface BlogPostProps {
@@ -10,8 +13,7 @@ interface BlogPostProps {
 }
 
 export async function generateStaticParams() {
-  const posts = getAllPosts();
-  
+  const posts = await getAllPosts();
   return posts.map((post) => ({
     slug: post.slug
   }));
@@ -19,7 +21,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
     return {
@@ -27,25 +29,18 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
     };
   }
 
-  const ogImage = post.ogImage || post.cover;
-
   return {
     title: post.title,
     description: post.excerpt,
-    ...(post.canonicalUrl && {
-      alternates: {
-        canonical: post.canonicalUrl
-      }
-    }),
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: 'article',
       publishedTime: post.date,
-      ...(ogImage && {
+      ...(post.cover && {
         images: [
           {
-            url: ogImage,
+            url: post.cover,
             alt: post.title
           }
         ]
@@ -55,44 +50,44 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
       card: 'summary_large_image',
       title: post.title,
       description: post.excerpt,
-      ...(ogImage && {
-        images: [ogImage]
+      ...(post.cover && {
+        images: [post.cover]
       })
     }
   };
 }
 
+const portableTextComponents = {
+  types: {
+    image: ({ value }: { value: { asset?: { _ref: string }; alt?: string } }) => {
+      if (!value?.asset?._ref) return null
+      const src = urlFor(value).width(800).height(500).url()
+      return (
+        <span className="block my-6 relative w-full aspect-video rounded-lg overflow-hidden">
+          <Image
+            src={src}
+            alt={value.alt ?? ''}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 800px"
+          />
+        </span>
+      )
+    },
+  },
+}
+
 export default async function BlogPost({ params }: BlogPostProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
 
   if (!post) {
-    notFound();
-  }
-
-  // Check if draft in production
-  if (process.env.NODE_ENV === 'production' && post.draft) {
-    notFound();
-  }
-
-  // Dynamically import the MDX file
-  let MDXContent;
-  try {
-    MDXContent = (await import(`@/content/blog/${slug}.mdx`)).default;
-  } catch (error) {
-    console.error(`Error loading MDX for slug: ${slug}`, error);
     notFound();
   }
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-12">
       <header className="mb-8">
-        {post.draft && (
-          <div className="mb-4 px-4 py-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded text-yellow-800 dark:text-yellow-200">
-            ⚠️ Draft post - not visible in production
-          </div>
-        )}
-        
         <time 
           dateTime={post.date} 
           className="text-sm text-gray-600 dark:text-gray-400"
@@ -129,7 +124,9 @@ export default async function BlogPost({ params }: BlogPostProps) {
       </header>
       
       <div className="prose prose-lg dark:prose-invert max-w-none">
-        <MDXContent />
+        {post.body && post.body.length > 0 ? (
+          <PortableText value={post.body} components={portableTextComponents} />
+        ) : null}
       </div>
       
       <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">

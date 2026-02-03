@@ -47,6 +47,17 @@ export const postType = defineType({
       type: 'datetime',
     }),
     defineField({
+      name: 'excerpt',
+      type: 'text',
+      title: 'Excerpt',
+    }),
+    defineField({
+      name: 'tags',
+      type: 'array',
+      of: [{type: 'string'}],
+      title: 'Tags',
+    }),
+    defineField({
       name: 'body',
       type: 'blockContent',
     }),
