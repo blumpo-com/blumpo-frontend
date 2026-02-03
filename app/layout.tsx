@@ -8,6 +8,7 @@ import { PageTitle } from "@/components/page-title";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.BASE_URL ?? 'https://blumpo.com'),
   title: "Blumpo - AI-powered ad generator",
   description:
     "Blumpo turns customer insights from Reddit, YT, and your website into $500+ worth ads.",
