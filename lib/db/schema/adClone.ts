@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 import { adWorkflow } from './adWorkflow';
 
 export const adClone = pgTable(
@@ -13,7 +13,7 @@ export const adClone = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    workflowIdx: index('idx_ad_clone_workflow').on(table.workflowId),
+    workflowIdUnique: uniqueIndex('ad_clone_workflow_id_unique').on(table.workflowId),
   })
 );
 

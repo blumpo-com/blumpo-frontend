@@ -26,10 +26,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20.072px 28.455px 0 28.455px;
-    width: 261.48px;
-    height: 295.965px;
-    border-radius: 7.737px;
+    padding: 20px 28px 0 28px;
+    width: 261px;
+    height: 296px;
+    border-radius: 8px;
     background: white;
     cursor: pointer;
     transition: all 0.3s ease;

@@ -139,7 +139,7 @@ export function ArchetypeSelectionContent({
     {
       id: 'meme',
       title: 'Meme',
-      description: 'Use a meme to make the ad more engaging',
+      description: 'Use memes to make the ad more engaging',
       previewImages: [
         '/images/dashboard/archetypes/meme/1.png',
         '/images/dashboard/archetypes/meme/2.png'
