@@ -764,8 +764,8 @@ function CustomizedAdsPageContent() {
       <NavigationButtons
         onBack={handleBack}
         onNext={handleNext}
-        nextLabel={currentStep === 4 && selectedArchetype !== 'meme' && selectedInsights.length === 0 ? "Choose random" : "Next"}
-        showRandomIcon={currentStep === 4 && selectedArchetype !== 'meme' && selectedInsights.length === 0}
+        nextLabel={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3) ? "Choose random" : "Next"}
+        showRandomIcon={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3)}
       />
 
       {/* Coming Soon Dialog */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './meme-selection.module.css';
 
 const MEME_PLACEHOLDER = '/images/dashboard/no-image.png';
@@ -79,7 +79,7 @@ export interface MemeSelectionContentProps {
   onSelectedMemeTypesChange: (ids: string[]) => void;
 }
 
-const DEFAULT_SELECTION_COUNT = 3;
+const MIN_SELECTION_COUNT = 3;
 const MAX_SELECTION_COUNT = 5;
 
 export function MemeSelectionContent({
@@ -89,7 +89,6 @@ export function MemeSelectionContent({
   const [memeWorkflows, setMemeWorkflows] = useState<MemeWorkflowItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const hasInitializedSelectionRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,19 +117,6 @@ export function MemeSelectionContent({
     fetchMemeWorkflows();
     return () => { cancelled = true; };
   }, []);
-
-  // On first load, pre-select first 3 memes when none selected
-  useEffect(() => {
-    if (
-      memeWorkflows.length >= DEFAULT_SELECTION_COUNT &&
-      selectedMemeTypes.length === 0 &&
-      !hasInitializedSelectionRef.current
-    ) {
-      hasInitializedSelectionRef.current = true;
-      const initialIds = memeWorkflows.slice(0, DEFAULT_SELECTION_COUNT).map((m) => m.workflowId);
-      onSelectedMemeTypesChange(initialIds);
-    }
-  }, [memeWorkflows, selectedMemeTypes.length, onSelectedMemeTypesChange]);
 
   const handleToggle = (workflowId: string) => {
     if (selectedMemeTypes.includes(workflowId)) {
@@ -181,8 +167,8 @@ export function MemeSelectionContent({
       </div>
       {selectedMemeTypes.length > 0 && (
         <p className={styles.memeSelectionHint}>
-          {selectedMemeTypes.length < 3
-            ? `Choose ${DEFAULT_SELECTION_COUNT - selectedMemeTypes.length} more (3–5 total)`
+          {selectedMemeTypes.length < MIN_SELECTION_COUNT
+            ? `Choose ${MIN_SELECTION_COUNT - selectedMemeTypes.length} more (3–5 total) or use random`
             : selectedMemeTypes.length > MAX_SELECTION_COUNT
               ? `Select at most ${MAX_SELECTION_COUNT} meme types`
               : `${selectedMemeTypes.length} selected`}
