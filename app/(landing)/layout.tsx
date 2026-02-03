@@ -132,7 +132,7 @@ function Header() {
           </nav>
           <div className="hidden lg:flex items-center ">
             <Button asChild variant="cta">
-              <Link href="/dashboard">Make your first free Ad</Link>
+              <Link href="/sign-in?redirect=input-url">Make your first free Ad</Link>
             </Button>
           </div>
         </div>
@@ -175,7 +175,7 @@ function Header() {
                 </Link>
               ))}
                 <Button asChild variant="cta">
-                  <Link href="/dashboard" className="flex items-center gap-2">
+                  <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
                     Make your first free Ad
                     <ArrowRight className="w-6 h-6" />
                   </Link>

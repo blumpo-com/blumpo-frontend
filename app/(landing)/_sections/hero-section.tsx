@@ -77,7 +77,7 @@ export function HeroSection() {
             {/* Mobile: Button instead of URL input */}
             <div className="flex flex-col items-center lg:hidden mt-5">
                 <Button asChild variant="cta">
-                  <Link href="/dashboard" className="flex items-center gap-2">
+                  <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
                     Make your first free Ad
                     <ArrowRight className="w-6 h-6" />
                   </Link>
