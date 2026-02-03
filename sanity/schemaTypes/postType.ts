@@ -1,5 +1,6 @@
-import {DocumentTextIcon} from '@sanity/icons'
-import {defineArrayMember, defineField, defineType} from 'sanity'
+import { DocumentTextIcon } from '@sanity/icons'
+import { defineArrayMember, defineField, defineType } from 'sanity'
+import { MarkdownImportInput } from '../components/MarkdownImportInput'
 
 export const postType = defineType({
   name: 'post',
@@ -60,6 +61,11 @@ export const postType = defineType({
     defineField({
       name: 'body',
       type: 'blockContent',
+      title: 'Body',
+      description: 'Rich text body. Use "Import markdown" to paste markdown and convert to formatted blocks.',
+      components: {
+        input: MarkdownImportInput,
+      },
     }),
   ],
   preview: {
