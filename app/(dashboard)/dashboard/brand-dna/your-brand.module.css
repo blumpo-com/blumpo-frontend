@@ -513,7 +513,7 @@
   transition: all 0.2s;
 }
 
-.addPhotoButton:hover:not(:disable  d) {
+.addPhotoButton:hover:not(:disabled) {
   border-color: #9CA3AF;
   color: #4B5563;
 }

@@ -82,7 +82,6 @@ export function MarkdownImportInput(props: Props) {
                 value={markdown}
                 onChange={(e) => setMarkdown(e.currentTarget.value)}
                 placeholder={`## Heading\n\nParagraph with **bold** and *italic*.\n\n| Col A | Col B |\n|-------|-------|\n| a     | b     |`}
-                font={{ size: 2 }}
               />
               <Flex gap={2} align="center">
                 <Label>Mode:</Label>
