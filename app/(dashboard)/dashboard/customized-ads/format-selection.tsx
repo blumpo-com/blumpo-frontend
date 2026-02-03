@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import styles from './format-selection.module.css';
 
 interface FormatCardProps {
@@ -13,15 +14,15 @@ interface FormatCardProps {
   onClick: () => void;
 }
 
-function FormatCard({ 
-  id, 
-  format, 
-  description, 
-  credits, 
-  socialIcons, 
+function FormatCard({
+  id,
+  format,
+  description,
+  credits,
+  socialIcons,
   formatBoxes,
-  isSelected, 
-  onClick 
+  isSelected,
+  onClick
 }: FormatCardProps) {
   return (
     <button
@@ -48,12 +49,13 @@ function FormatCard({
           <div className={styles.socialIconsContainer}>
             {socialIcons.map((iconSrc, index) => (
               <div key={index} className={styles.socialIcon}>
-                <img 
-                  src={iconSrc} 
+                <Image
+                  src={iconSrc}
                   alt={`Social icon ${index + 1}`}
                   className={styles.socialIconImage}
+                  width={33}
+                  height={33}
                   onError={(e) => {
-                    // Fallback for missing icons - show placeholder
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />
@@ -65,9 +67,9 @@ function FormatCard({
         {formatBoxes && (
           <div className={styles.formatBoxesContainer}>
             {formatBoxes.map((box, index) => (
-              <div 
-                key={index} 
-                className={styles.formatBox} 
+              <div
+                key={index}
+                className={styles.formatBox}
                 style={{ width: box.width, height: box.height }}
               >
                 <span className={styles.formatBoxText}>{box.label}</span>

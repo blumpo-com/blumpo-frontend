@@ -1,18 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './page.module.css';
 
-// Image URLs from Figma - these will expire in 7 days
-// const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
-// const imgImage5 = "https://www.figma.com/api/mcp/asset/41a1e504-a3d1-4e92-9d5f-bf72e45ef0de";
-// const imgImage7 = "https://www.figma.com/api/mcp/asset/12be56dc-aa2b-497c-a5d7-866daeb52928";
-// const imgImage20 = "https://www.figma.com/api/mcp/asset/1684968d-406d-4dbc-838c-722ac4e63ce3";
-// const imgImage22 = "https://www.figma.com/api/mcp/asset/1831df1f-4459-4a4e-a85b-72cfb267706c";
-// const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
 const imgCharacter = "/assets/animations/sitting-blumpo.webp";
 
 const imgImage1 = "/images/dashboard/quick-ad1.png";
@@ -60,10 +54,12 @@ function FeatureCard({
     return (
       <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
         <div className={styles.cardCharacterIllustration}>
-          <img
+          <Image
             src={characterImage}
             alt="Character illustration"
             className={styles.cardCharacterImage}
+            width={200}
+            height={200}
           />
         </div>
         <div className={`${styles.card} ${styles.cardInWrapper} ${inactive ? `${styles.cardInactive} disabled` : ''}`.trim()}>
@@ -83,10 +79,12 @@ function FeatureCard({
               <div className={styles.imageBack}>
                 <div className={styles.imageTransform}>
                   <div className={styles.imageCard}>
-                    <img
+                    <Image
                       src={frontImage}
                       alt=""
                       className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                      width={200}
+                      height={200}
                     />
                   </div>
                 </div>
@@ -96,10 +94,12 @@ function FeatureCard({
                 <div className={`${styles.imageFront}`}>
                   <div className={styles.imageTransform}>
                     <div className={styles.imageCard}>
-                      <img
+                      <Image
                         src={backImage}
                         alt=""
                         className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                        width={200}
+                        height={200}
                       />
                     </div>
                   </div>
@@ -130,10 +130,12 @@ function FeatureCard({
           <div className={styles.imageBack}>
             <div className={styles.imageTransform}>
               <div className={styles.imageCard}>
-                <img
+                <Image
                   src={frontImage}
                   alt=""
                   className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                  width={200}
+                  height={200}
                 />
               </div>
             </div>
@@ -143,10 +145,12 @@ function FeatureCard({
             <div className={`${styles.imageFront}`}>
               <div className={styles.imageTransform}>
                 <div className={styles.imageCard}>
-                  <img
+                  <Image
                     src={backImage}
                     alt=""
                     className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                    width={200}
+                    height={200}
                   />
                 </div>
               </div>

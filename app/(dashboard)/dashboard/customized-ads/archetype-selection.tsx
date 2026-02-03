@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import styles from './archetype-selection.module.css';
 
 interface ArchetypeCardProps {
@@ -59,10 +60,12 @@ function ArchetypeCard({
               style={{ zIndex: 2 }}
             >
               <div className={styles.previewImageCard}>
-                <img
+                <Image
                   src={previewImages[0]}
                   alt={`${title} preview 1`}
                   className={styles.previewImage}
+                  width={129}
+                  height={132}
                 />
               </div>
             </div>
@@ -72,10 +75,12 @@ function ArchetypeCard({
               style={{ zIndex: 1 }}
             >
               <div className={styles.previewImageCard}>
-                <img
+                <Image
                   src={previewImages[1]}
                   alt={`${title} preview 2`}
                   className={styles.previewImage}
+                  width={129}
+                  height={132}
                 />
               </div>
             </div>
@@ -86,10 +91,12 @@ function ArchetypeCard({
             style={{ zIndex: 1 }}
           >
             <div className={styles.previewImageCard}>
-              <img
+              <Image
                 src={previewImages[0]}
                 alt={`${title} preview 1`}
                 className={styles.previewImage}
+                width={129}
+                height={132}
               />
             </div>
           </div>

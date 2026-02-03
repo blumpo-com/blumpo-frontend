@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -175,8 +176,8 @@ export default function YourBrandPage({
       const fontsArray = Array.isArray(brandData.fonts)
         ? brandData.fonts
         : brandData.fonts
-        ? [brandData.fonts]
-        : [];
+          ? [brandData.fonts]
+          : [];
       // Convert to object format: if string, convert to object; if already object, use as-is
       const fontsObjects = fontsArray
         .map((f: any) => {
@@ -777,10 +778,13 @@ export default function YourBrandPage({
                   {/* Display hero photos */}
                   {heroPhotos.map((photo, index) => (
                     <div key={`hero-${index}`} className={styles.photoItem}>
-                      <img
+                      <Image
                         src={photo}
                         alt={`Hero photo ${index + 1}`}
                         className={styles.photoImage}
+                        width={120}
+                        height={120}
+                        unoptimized={photo.startsWith('http') || photo.startsWith('blob:')}
                       />
                       {deletingPhotoUrl === photo && (
                         <div className={styles.photoLoadingOverlay}>
@@ -806,10 +810,13 @@ export default function YourBrandPage({
                   {/* Display product photos */}
                   {photos.map((photo, index) => (
                     <div key={`product-${index}`} className={styles.photoItem}>
-                      <img
+                      <Image
                         src={photo}
                         alt={`Product photo ${index + 1}`}
                         className={styles.photoImage}
+                        width={120}
+                        height={120}
+                        unoptimized={photo.startsWith('http') || photo.startsWith('blob:')}
                       />
                       {deletingPhotoUrl === photo && (
                         <div className={styles.photoLoadingOverlay}>

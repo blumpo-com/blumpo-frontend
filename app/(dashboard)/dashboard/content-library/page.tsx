@@ -76,7 +76,7 @@ function MultiSelectFilterTab({
       <label className={styles.filterLabel}>{label}</label>
       <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger className={styles.filterInput}>
-          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <Image src={iconSrc} alt={iconAlt} className={styles.tabIcon} width={20} height={20} />
           <span className={styles.filterValue}>{getDisplayValue()}</span>
           <ChevronDown className={styles.chevronIcon} size={16} />
         </DropdownMenuTrigger>
@@ -110,9 +110,8 @@ interface UnsavedButtonTabProps {
 function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
   return (
     <button
-      className={`${styles.unsavedButton} ${
-        isActive ? styles.unsavedButtonActive : ""
-      }`}
+      className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ""
+        }`}
       onClick={onClick}
     >
       <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
@@ -491,11 +490,11 @@ export default function ContentLibraryPage() {
                   [
                     ...(!showUnsaved
                       ? [
-                          <CreateNewCard
-                            key="create-new"
-                            onClick={handleCreateNew}
-                          />,
-                        ]
+                        <CreateNewCard
+                          key="create-new"
+                          onClick={handleCreateNew}
+                        />,
+                      ]
                       : []),
                     ...images.map((image) => (
                       <ImageCard

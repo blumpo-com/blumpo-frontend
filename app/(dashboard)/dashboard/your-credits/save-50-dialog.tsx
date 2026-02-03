@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './save-50-dialog.module.css';
 
@@ -34,13 +35,12 @@ export function Save50Dialog({
             <span className={styles.oldPrice}>${monthlyPrice}</span>
           </div>
           <div className={styles.arrowContainer}>
-            <img
+            <Image
               src="/assets/icons/arrow.svg"
               alt="Arrow"
               className={styles.arrow}
               width={41}
               height={25}
-              draggable={false}
             />
           </div>
           <span className={styles.newPrice}>${annualPrice}</span>
@@ -50,37 +50,35 @@ export function Save50Dialog({
           </div>
         </div>
 
-          {/* Description Text */}
-          <p className={styles.description}>
-            Save 50% with annual billing for your plan. You will be billed ${annualTotal} today for the next 12 months (charged once a year).
-          </p>
+        {/* Description Text */}
+        <p className={styles.description}>
+          Save 50% with annual billing for your plan. You will be billed ${annualTotal} today for the next 12 months (charged once a year).
+        </p>
 
-          {/* Action Buttons */}
-          <div className={styles.actions}>
-            <button
-              className={styles.confirmButton}
-              onClick={onConfirm}
-            >
-              <span className={styles.confirmButtonText}>Yes, upgrade</span>
-            </button>
-            <button
-              className={styles.cancelButton}
-              onClick={onContinue}
-            >
-              <span className={styles.cancelButtonText}>Continue</span>
-            </button>
-          </div>
+        {/* Action Buttons */}
+        <div className={styles.actions}>
+          <button
+            className={styles.confirmButton}
+            onClick={onConfirm}
+          >
+            <span className={styles.confirmButtonText}>Yes, upgrade</span>
+          </button>
+          <button
+            className={styles.cancelButton}
+            onClick={onContinue}
+          >
+            <span className={styles.cancelButtonText}>Continue</span>
+          </button>
+        </div>
 
         {/* Illustration */}
         <div className={styles.illustration}>
-          <img
+          <Image
             src="/images/temp/laying_blumpo.png"
             alt="Blumpo character"
             className={styles.illustrationImage}
-            onError={(e) => {
-              // Fallback if image doesn't exist
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
+            width={200}
+            height={200}
           />
         </div>
       </div>

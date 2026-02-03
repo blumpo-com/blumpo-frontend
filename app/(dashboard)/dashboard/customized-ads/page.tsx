@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
@@ -30,64 +31,64 @@ interface NavigationButtonsProps {
   nextLabel?: string;
 }
 
-function NavigationButtons({ 
-  onBack, 
-  onNext, 
-  backLabel = "Back", 
+function NavigationButtons({
+  onBack,
+  onNext,
+  backLabel = "Back",
   nextLabel = "Next",
   showRandomIcon = false
 }: NavigationButtonsProps & { showRandomIcon?: boolean }) {
   return (
     <div className={styles.navigationButtons}>
-      <button 
+      <button
         className={styles.backButton}
         onClick={onBack}
         type="button"
       >
-        <svg 
-          className={styles.arrowIcon} 
-          width="16" 
-          height="16" 
-          viewBox="0 0 11 11" 
+        <svg
+          className={styles.arrowIcon}
+          width="16"
+          height="16"
+          viewBox="0 0 11 11"
           fill="none"
         >
-          <path 
-            d="M6.5 2.5L4 5L6.5 7.5" 
-            stroke="#040404" 
-            strokeWidth="1.5" 
-            strokeLinecap="round" 
+          <path
+            d="M6.5 2.5L4 5L6.5 7.5"
+            stroke="#040404"
+            strokeWidth="1.5"
+            strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
         <span>{backLabel}</span>
       </button>
-      <button 
+      <button
         className={`${styles.nextButton} ${showRandomIcon ? styles.chooseRandom : ''}`}
         onClick={onNext}
         type="button"
       >
         <span>{nextLabel}</span>
         {showRandomIcon ? (
-          <img 
-            src="/assets/icons/Wand.svg" 
-            alt="Magic wand" 
+          <Image
+            src="/assets/icons/Wand.svg"
+            alt="Magic wand"
             className={styles.magicWandIcon}
             width={16}
             height={16}
           />
         ) : (
-          <svg 
-            className={styles.arrowIcon} 
-            width="16" 
-            height="16" 
-            viewBox="0 0 11 11" 
+          <svg
+            className={styles.arrowIcon}
+            width="16"
+            height="16"
+            viewBox="0 0 11 11"
             fill="none"
           >
-            <path 
-              d="M4.5 2.5L7 5L4.5 7.5" 
-              stroke="#F9FAFB" 
-              strokeWidth="1.5" 
-              strokeLinecap="round" 
+            <path
+              d="M4.5 2.5L7 5L4.5 7.5"
+              stroke="#F9FAFB"
+              strokeWidth="1.5"
+              strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
@@ -101,12 +102,12 @@ function CustomizedAdsPageContent() {
   const router = useRouter();
   const { currentBrand } = useBrand();
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // Generation job state
   const [jobId, setJobId] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Photo selection state - persisted across steps
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -114,15 +115,15 @@ function CustomizedAdsPageContent() {
   const [productPhotoUrls, setProductPhotoUrls] = useState<string[]>([]);
   const [previousPhotoUrls, setPreviousPhotoUrls] = useState<string[]>([]);
   const [productPhotoMode, setProductPhotoMode] = useState<'brand' | 'custom' | 'mixed'>('brand');
-  
+
   // Archetype selection state
   const [selectedArchetype, setSelectedArchetype] = useState<string>('problem_solution');
   const [archetypeMode, setArchetypeMode] = useState<'single' | 'random'>('single');
-  
+
   // Format selection state
   const [selectedFormat, setSelectedFormat] = useState<string>('1:1');
   const [formats, setFormats] = useState<string[]>([]);
-  
+
   // Insight selection state
   const [selectedInsights, setSelectedInsights] = useState<string[]>([]);
   const [headlines, setHeadlines] = useState<string[]>([]);
@@ -138,7 +139,7 @@ function CustomizedAdsPageContent() {
       }
     };
   }, [previewPhoto]);
-  
+
   // Determine product photo mode based on selection
   useEffect(() => {
     if (selectedSection === 'new' && previewFile) {
@@ -147,7 +148,7 @@ function CustomizedAdsPageContent() {
       setProductPhotoMode('brand');
     }
   }, [selectedSection, previewFile]);
-  
+
   // Determine archetype mode
   useEffect(() => {
     if (selectedArchetype === 'random') {
@@ -156,7 +157,7 @@ function CustomizedAdsPageContent() {
       setArchetypeMode('single');
     }
   }, [selectedArchetype]);
-  
+
   // Determine formats from selected format
   useEffect(() => {
     if (selectedFormat === '1:1-16:9') {
@@ -175,7 +176,7 @@ function CustomizedAdsPageContent() {
       prevBrandIdRef.current = currentBrand?.id || null;
       return;
     }
-    
+
     if (prevBrandIdRef.current && currentBrand?.id && prevBrandIdRef.current !== currentBrand.id) {
       router.push('/dashboard');
     }
@@ -206,7 +207,7 @@ function CustomizedAdsPageContent() {
       const response = await fetch('/api/headlines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           archetypeId: selectedArchetype,
           brandId: currentBrand.id
         }),
@@ -235,7 +236,7 @@ function CustomizedAdsPageContent() {
       fetchHeadlines();
     }
   }, [selectedArchetype, fetchHeadlines]);
-  
+
 
   // Archetype-specific titles and subtitles for insight selection
   const getInsightStepConfig = () => {
@@ -265,13 +266,13 @@ function CustomizedAdsPageContent() {
         subtitle: "Choose headlines for your ad"
       }
     };
-    
+
     return configs[selectedArchetype] || configs.problem_solution;
   };
 
   // Step configuration - can be extended for multiple steps
   const insightConfig = useMemo(() => getInsightStepConfig(), [selectedArchetype]);
-  
+
   const stepConfig = useMemo(() => ({
     1: {
       title: "Choose product photos",
@@ -337,32 +338,32 @@ function CustomizedAdsPageContent() {
 
   const handleNext = async () => {
     const maxSteps = Object.keys(stepConfig).length;
-    
+
     // Headlines are now fetched automatically when archetype changes via useEffect
     // No need to fetch here unless we need to ensure they're loaded before step 3
-    
+
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
       await handleFinalSubmit();
       return;
     }
-    
+
     // Otherwise, just advance to next step
     setCurrentStep(currentStep + 1);
   };
-  
+
   const handleFinalSubmit = async () => {
     if (!currentBrand?.id) {
       console.error('No brand selected');
       return;
     }
-    
+
     const brandId = currentBrand.id;
     setIsLoading(true);
     try {
       // Determine final photo URLs
       let finalPhotoUrls: string[] = [];
-      
+
       // Upload photo if there's a preview file
       if (previewFile) {
         const formData = new FormData();
@@ -387,16 +388,16 @@ function CustomizedAdsPageContent() {
         const heroPhotos = currentBrand.heroPhotos || [];
         finalPhotoUrls = [...heroPhotos, ...brandPhotos];
       }
-      
+
       // Determine insight source based on selection
       // If user selected insights manually, it's 'manual', otherwise 'auto'
       const insightSource = selectedInsights.length > 0 ? 'manual' : 'auto';
-      
+
       // Convert archetype code format (problem-solution -> problem_solution)
-      const archetypeCode = selectedArchetype === 'random' 
-        ? null 
+      const archetypeCode = selectedArchetype === 'random'
+        ? null
         : selectedArchetype.replace(/-/g, '_');
-      
+
       // Create generation job with all data
       const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
@@ -413,18 +414,18 @@ function CustomizedAdsPageContent() {
           promotionValueInsight: {}, // Can be extended later with specific promotion data
         }),
       });
-      
+
       if (!createResponse.ok) {
         const errorData = await createResponse.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create generation job');
       }
-      
+
       const newJob = await createResponse.json();
       setJobId(newJob.id);
       setProductPhotoUrls(finalPhotoUrls);
       setPreviousPhotoUrls(finalPhotoUrls);
       setIsUploaded(true);
-      
+
       // TODO: Navigate to results page or show success message
       console.log('Generation job created successfully');
     } catch (error) {
@@ -434,7 +435,7 @@ function CustomizedAdsPageContent() {
       setIsLoading(false);
     }
   };
-  
+
   // Cleanup on unmount - delete job if not uploaded
   useEffect(() => {
     return () => {
@@ -463,16 +464,16 @@ function CustomizedAdsPageContent() {
           </div>
         </div>
       )}
-      <PageHeader 
+      <PageHeader
         title={currentConfig.title}
         description={currentConfig.description}
       />
-      
+
       <div className={styles.contentArea}>
         {currentConfig.content}
       </div>
 
-      <NavigationButtons 
+      <NavigationButtons
         onBack={handleBack}
         onNext={handleNext}
         nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
