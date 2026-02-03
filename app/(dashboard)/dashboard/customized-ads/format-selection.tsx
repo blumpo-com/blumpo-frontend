@@ -14,15 +14,15 @@ interface FormatCardProps {
   onClick: () => void;
 }
 
-function FormatCard({ 
-  id, 
-  format, 
-  description, 
-  credits, 
-  socialIcons, 
+function FormatCard({
+  id,
+  format,
+  description,
+  credits,
+  socialIcons,
   formatBoxes,
-  isSelected, 
-  onClick 
+  isSelected,
+  onClick
 }: FormatCardProps) {
   return (
     <button
@@ -67,9 +67,9 @@ function FormatCard({
         {formatBoxes && (
           <div className={styles.formatBoxesContainer}>
             {formatBoxes.map((box, index) => (
-              <div 
-                key={index} 
-                className={styles.formatBox} 
+              <div
+                key={index}
+                className={styles.formatBox}
                 style={{ width: box.width, height: box.height }}
               >
                 <span className={styles.formatBoxText}>{box.label}</span>

@@ -81,7 +81,7 @@ export default function ContentWrapper({
     const adjustFontSize = () => {
       const textElement = brandNameTextRef.current;
       const containerElement = brandNameInnerRef.current;
-      
+
       if (!textElement || !containerElement) return;
 
       // Use requestAnimationFrame to ensure DOM is ready
@@ -119,7 +119,7 @@ export default function ContentWrapper({
 
     // Small delay to ensure container is rendered
     const timeoutId = setTimeout(adjustFontSize, 0);
-    
+
     // Adjust on window resize
     window.addEventListener('resize', adjustFontSize);
     return () => {
@@ -157,7 +157,7 @@ export default function ContentWrapper({
         </div>
         {isBrandDropdownOpen && (
           <div className={styles.brandDropdown}>
-           
+
             {isLoadingBrands ? (
               <div className={styles.brandDropdownEmpty}>
                 <span>Loading brands...</span>
@@ -176,13 +176,13 @@ export default function ContentWrapper({
                   }}
                 />
               )
-            )
+              )
             ) : Array.isArray(brands) && brands.length > 0 ? null : (
               <div className={styles.brandDropdownEmpty}>
                 <span>No brands yet</span>
               </div>
             )}
-             <BrandDropdownItem
+            <BrandDropdownItem
               iconSrc="/assets/icons/Add.svg"
               iconAlt="New brand"
               label="New brand"

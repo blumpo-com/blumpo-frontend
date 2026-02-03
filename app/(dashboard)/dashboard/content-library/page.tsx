@@ -110,9 +110,8 @@ interface UnsavedButtonTabProps {
 function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
   return (
     <button
-      className={`${styles.unsavedButton} ${
-        isActive ? styles.unsavedButtonActive : ""
-      }`}
+      className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ""
+        }`}
       onClick={onClick}
     >
       <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
@@ -499,11 +498,11 @@ export default function ContentLibraryPage() {
                   [
                     ...(!showUnsaved
                       ? [
-                          <CreateNewCard
-                            key="create-new"
-                            onClick={handleCreateNew}
-                          />,
-                        ]
+                        <CreateNewCard
+                          key="create-new"
+                          onClick={handleCreateNew}
+                        />,
+                      ]
                       : []),
                     ...images.map((image) => (
                       <ImageCard
