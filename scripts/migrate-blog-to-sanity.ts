@@ -44,7 +44,7 @@ const client = createClient({
   token,
 })
 
-// Portable text schema shape expected by htmlToBlocks and @portabletext/schema (block/span required for isTextBlock)
+// Portable text schema shape expected by htmlToBlocks (block/span required for isTextBlock)
 const portableTextSchema = {
   block: { name: 'block' },
   span: { name: 'span' },
@@ -59,13 +59,57 @@ const portableTextSchema = {
   decorators: [{ name: 'strong' }, { name: 'em' }],
   annotations: [{ name: 'link' }],
   blockObjects: [
+    { name: 'image', fields: [{ name: 'alt', type: 'string' }] },
     {
-      name: 'image',
-      fields: [{ name: 'alt', type: 'string' }],
+      name: 'tableBlock',
+      fields: [{ name: 'rows', type: 'array' }],
     },
   ],
   lists: [{ name: 'bullet' }],
   inlineObjects: [],
+}
+
+const SANITY_TABLE_PLACEHOLDER = 'data-sanity-table-index'
+
+/** Parse HTML <table> into Sanity tableBlock rows (tableRow with cells). Skips GFM separator rows (|---|---|). */
+function parseTableElement(tableEl: Element): Array<{ _type: 'tableRow'; _key: string; cells: string[] }> {
+  const rows: Array<{ _type: 'tableRow'; _key: string; cells: string[] }> = []
+  const trs = tableEl.querySelectorAll('tr')
+  trs.forEach((tr, i) => {
+    const cells: string[] = []
+    tr.querySelectorAll('td, th').forEach((cell) => {
+      cells.push((cell.textContent || '').trim())
+    })
+    if (cells.length === 0) return
+    const isSeparatorRow = cells.every((c) => /^-+$/.test(c) || c === '')
+    if (isSeparatorRow) return
+    rows.push({
+      _type: 'tableRow',
+      _key: `row-${i}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      cells,
+    })
+  })
+  return rows
+}
+
+/** Extract tables from DOM, replace with placeholders, return extracted table data and modified HTML (body innerHTML). */
+function extractTablesFromHtml(dom: Document): { tables: Array<{ _type: 'tableRow'; _key: string; cells: string[] }[]>; bodyHtml: string } {
+  const tables: Array<{ _type: 'tableRow'; _key: string; cells: string[] }[]> = []
+  const tableElements = Array.from(dom.querySelectorAll('table'))
+  tableElements.forEach((tableEl) => {
+    const rows = parseTableElement(tableEl)
+    if (rows.length > 0) {
+      const index = tables.length
+      tables.push(rows)
+      const placeholder = dom.createElement('div')
+      placeholder.setAttribute(SANITY_TABLE_PLACEHOLDER, String(index))
+      placeholder.textContent = ' ' // ensure it's not empty so it may be treated as block
+      tableEl.parentNode?.replaceChild(placeholder, tableEl)
+    }
+  })
+  const body = dom.body
+  const bodyHtml = body ? body.innerHTML : ''
+  return { tables, bodyHtml }
 }
 
 function getMdxSlugs(): string[] {
@@ -177,9 +221,18 @@ async function migrateOne(slug: string): Promise<void> {
   console.log(`[${slug}] cover from frontmatter:`, coverPath ? `"${coverPath}"` : '(empty)', coverPath ? `(length ${coverPath.length})` : '')
 
   const markdown = mdxContentToMarkdown(rawContent, slug)
-  const html = await Promise.resolve(marked.parse(markdown, { async: false }) as string | Promise<string>)
-  const dom = new JSDOM(html)
+  const html = await Promise.resolve(
+    marked.parse(markdown, { async: false, gfm: true }) as string | Promise<string>
+  )
+  const dom = new JSDOM(html.startsWith('<') ? html : `<body>${html}</body>`)
   const doc = dom.window.document
+  if (!doc.body && doc.documentElement) {
+    const body = doc.createElement('body')
+    body.innerHTML = html
+    doc.documentElement.appendChild(body)
+  }
+
+  const { tables: extractedTables, bodyHtml } = extractTablesFromHtml(doc)
 
   const imgElements = Array.from(doc.querySelectorAll('img'))
   const imageRefMap = new Map<string, string>()
@@ -201,7 +254,17 @@ async function migrateOne(slug: string): Promise<void> {
         block: (props: Record<string, unknown>) => unknown
       ) {
         const node = el as Element
-        if (node.tagName?.toLowerCase() !== 'img') return undefined
+        if (node.tagName?.toLowerCase() !== 'img') {
+          const tableIndex = node.getAttribute?.(SANITY_TABLE_PLACEHOLDER)
+          if (tableIndex != null && extractedTables[parseInt(tableIndex, 10)]) {
+            const rows = extractedTables[parseInt(tableIndex, 10)]
+            return block({
+              _type: 'tableBlock',
+              rows,
+            })
+          }
+          return undefined
+        }
         const src = node.getAttribute('src')
         const alt = node.getAttribute('alt') || undefined
         const ref = src ? imageRefMap.get(src) : undefined
@@ -215,8 +278,9 @@ async function migrateOne(slug: string): Promise<void> {
     },
   ]
 
-  const blocks = htmlToBlocks(html, portableTextSchema as never, {
-    parseHtml: (htmlString: string) => new JSDOM(htmlString).window.document,
+  const htmlForBlocks = doc.body ? doc.body.innerHTML : bodyHtml
+  const blocks = htmlToBlocks(htmlForBlocks, portableTextSchema as never, {
+    parseHtml: (htmlString: string) => new JSDOM(htmlString.startsWith('<') ? htmlString : `<body>${htmlString}</body>`).window.document,
     rules: rules as never,
   }) as Array<{ _type: string; _key?: string; [k: string]: unknown }>
 

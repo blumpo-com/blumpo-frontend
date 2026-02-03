@@ -59,6 +59,15 @@ export async function generateMetadata({ params }: BlogPostProps): Promise<Metad
   };
 }
 
+interface TableRowValue {
+  _type?: string
+  cells?: string[]
+}
+
+interface TableBlockValue {
+  rows?: TableRowValue[]
+}
+
 const portableTextComponents = {
   types: {
     image: ({ value }: { value: { asset?: { _ref: string }; alt?: string } }) => {
@@ -74,6 +83,48 @@ const portableTextComponents = {
             sizes="(max-width: 768px) 100vw, 800px"
           />
         </span>
+      )
+    },
+    tableBlock: ({ value }: { value: TableBlockValue }) => {
+      const rows = value?.rows ?? []
+      if (rows.length === 0) return null
+      const [headRow, ...bodyRows] = rows
+      return (
+        <div className="my-6 overflow-x-auto">
+          <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden prose-table:border prose dark:prose-invert max-w-none">
+            {headRow && (
+              <thead>
+                <tr className="bg-gray-100 dark:bg-gray-800">
+                  {(headRow.cells ?? []).map((cell, j) => (
+                    <th
+                      key={j}
+                      className="px-4 py-2 text-left font-semibold border-r last:border-r-0 border-gray-200 dark:border-gray-700"
+                    >
+                      {cell}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {bodyRows.map((row, i) => (
+                <tr
+                  key={i}
+                  className="border-t border-gray-200 dark:border-gray-700"
+                >
+                  {(row.cells ?? []).map((cell, j) => (
+                    <td
+                      key={j}
+                      className="px-4 py-2 text-left border-r last:border-r-0 border-gray-200 dark:border-gray-700"
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )
     },
   },

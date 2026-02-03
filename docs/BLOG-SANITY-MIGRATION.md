@@ -40,10 +40,36 @@ If a post with the same `slug.current` already exists in Sanity, the script **re
 - **Option A:** Create and edit posts in **Sanity Studio** (`/studio`). Use the Post document type (title, slug, body, excerpt, tags, mainImage, draft, etc.).
 - **Option B:** Keep using the existing MDX workflow (`scripts/new-post-macos.sh` etc.) to add files under `content/blog/`, then run the migration for the new slug (or `--all`) to push them to Sanity.
 
+## Tables
+
+Blog body content supports **tables** via a custom Portable Text block type (`tableBlock`).
+
+- **Schema:** `sanity/schemaTypes/tableBlockType.ts` defines `tableRow` (object with `cells` array) and `tableBlock` (object with `rows` array). Block content in `sanity/schemaTypes/blockContentType.ts` includes `tableBlock` so you can insert tables between paragraphs in Studio. See [Configure the Portable Text Editor](https://www.sanity.io/docs/studio/portable-text-editor-configuration#dde2a7a4c661) and [Add Portable Text plugins](https://www.sanity.io/docs/studio/add-portable-text-plugins).
+- **Migration:** The migration script converts Markdown (GFM) tables in MDX into `tableBlock` blocks. Tables are parsed from the HTML produced by `marked` and written as Sanity block content.
+- **Rendering:** `app/blog/[slug]/page.tsx` renders `tableBlock` as a semantic `<table>` (first row as `<thead>`, rest as `<tbody>`).
+
+### Finding MDX posts that contain tables
+
+To list posts under `content/blog/` that use Markdown table syntax (lines with `|`):
+
+```bash
+grep -l '|' content/blog/*.mdx 2>/dev/null || true
+```
+
+Re-run migration for those slugs (or `--all`) to bring tables into Sanity:
+
+```bash
+pnpm run migrate:blog -- <slug>
+# or
+pnpm run migrate:blog -- --all
+```
+
 ## Key files
 
-- `scripts/migrate-blog-to-sanity.ts` – migration script
+- `scripts/migrate-blog-to-sanity.ts` – migration script (includes table extraction)
 - `lib/posts-sanity.ts` – GROQ queries and types for blog list/post
 - `app/blog/page.tsx` – blog index (uses Sanity)
-- `app/blog/[slug]/page.tsx` – single post (Sanity + Portable Text)
-- `sanity/schemaTypes/postType.ts` – Post schema (title, slug, mainImage, body, excerpt, tags, draft, ogImage, canonicalUrl, etc.)
+- `app/blog/[slug]/page.tsx` – single post (Sanity + Portable Text, incl. tableBlock renderer)
+- `sanity/schemaTypes/postType.ts` – Post schema (title, slug, mainImage, body, excerpt, tags)
+- `sanity/schemaTypes/blockContentType.ts` – Block content (block, image, tableBlock)
+- `sanity/schemaTypes/tableBlockType.ts` – Table block and row types
