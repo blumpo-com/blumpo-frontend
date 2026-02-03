@@ -76,7 +76,7 @@ function MultiSelectFilterTab({
       <label className={styles.filterLabel}>{label}</label>
       <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger className={styles.filterInput}>
-          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <Image src={iconSrc} alt={iconAlt} className={styles.tabIcon} width={20} height={20} />
           <span className={styles.filterValue}>{getDisplayValue()}</span>
           <ChevronDown className={styles.chevronIcon} size={16} />
         </DropdownMenuTrigger>

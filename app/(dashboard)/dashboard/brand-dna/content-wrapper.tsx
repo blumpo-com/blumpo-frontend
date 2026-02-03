@@ -22,7 +22,7 @@ interface BrandDropdownItemProps {
 function BrandDropdownItem({ iconSrc, iconAlt, label, onClick }: BrandDropdownItemProps) {
   return (
     <div className={styles.brandDropdownItem} onClick={onClick}>
-      <img src={iconSrc} alt={iconAlt} className={styles.brandDropdownIcon} />
+      <Image src={iconSrc} alt={iconAlt} className={styles.brandDropdownIcon} width={24} height={24} />
       <span className={styles.brandDropdownLabel}>{label}</span>
     </div>
   );
@@ -201,10 +201,13 @@ export default function ContentWrapper({
         <div className={styles.logoInner}>
           {logoUrl ? (
             <div className={styles.logoDisplay}>
-              <img
+              <Image
                 src={logoUrl}
                 alt="Brand logo"
                 className={styles.logoImage}
+                width={80}
+                height={80}
+                unoptimized
               />
             </div>
           ) : (
@@ -232,10 +235,12 @@ export default function ContentWrapper({
             className={styles.logoEditOverlay}
             onClick={() => logoInputRef.current?.click()}
           >
-            <img
+            <Image
               src="/assets/icons/edit.svg"
               alt="Edit logo"
               className={styles.logoEditIcon}
+              width={24}
+              height={24}
             />
           </div>
         )}

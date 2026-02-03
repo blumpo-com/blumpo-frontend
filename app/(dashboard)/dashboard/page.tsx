@@ -61,10 +61,12 @@ function FeatureCard({
     return (
       <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
         <div className={styles.cardCharacterIllustration}>
-          <img
+          <Image
             src={characterImage}
             alt="Character illustration"
             className={styles.cardCharacterImage}
+            width={200}
+            height={200}
           />
         </div>
         <div className={`${styles.card} ${styles.cardInWrapper} ${inactive ? `${styles.cardInactive} disabled` : ''}`.trim()}>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import styles from './format-selection.module.css';
 
 interface FormatCardProps {
@@ -48,12 +49,13 @@ function FormatCard({
           <div className={styles.socialIconsContainer}>
             {socialIcons.map((iconSrc, index) => (
               <div key={index} className={styles.socialIcon}>
-                <img 
-                  src={iconSrc} 
+                <Image
+                  src={iconSrc}
                   alt={`Social icon ${index + 1}`}
                   className={styles.socialIconImage}
+                  width={24}
+                  height={24}
                   onError={(e) => {
-                    // Fallback for missing icons - show placeholder
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
                 />

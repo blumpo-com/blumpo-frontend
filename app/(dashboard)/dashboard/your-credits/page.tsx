@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
 import {Check} from 'lucide-react';
 import useSWR from 'swr';
@@ -462,10 +463,12 @@ function YourCreditsPageContent() {
             {/* Plan Icon and Name - Left */}
             <div className={styles.planIconName}>
               <div className={styles.planIcon}>
-                <img 
-                  src={getPlanIcon(currentPlanCode)} 
+                <Image
+                  src={getPlanIcon(currentPlanCode)}
                   alt={`${currentPlan?.displayName || 'Free'} plan icon`}
                   className={styles.planIconImage}
+                  width={24}
+                  height={24}
                 />
               </div>
               <p className={styles.planName}>
@@ -630,7 +633,7 @@ function YourCreditsPageContent() {
               <div className={styles.enterpriseLeftSection}>
                 <div className={styles.enterpriseHeader}>
                   <div className={styles.enterpriseIcon}>
-                    <img src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} />
+                    <Image src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} width={24} height={24} />
                   </div>
                   <div className={styles.enterpriseInfo}>
                     <h2 className={styles.enterpriseTitle}>
