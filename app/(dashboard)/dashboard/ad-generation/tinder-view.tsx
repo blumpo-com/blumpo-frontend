@@ -32,7 +32,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
   const [nextCardSide, setNextCardSide] = useState<'left' | 'right'>('left'); // Alternates between left and right
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
   const hasCompletedRef = useRef(false);
-  
+
   const cardRef = useRef<HTMLDivElement>(null);
   const startXRef = useRef<number>(0);
   const startYRef = useRef<number>(0);
@@ -55,7 +55,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
   const nextAd = filteredAds[currentIndex + 1];
   const nextNextAd = filteredAds[currentIndex + 2];
   const isLastAd = !nextAd;
-  
+
   // Determine which card goes on which side based on turn
   const leftAd = nextCardSide === 'left' ? nextAd : nextNextAd;
   const rightAd = nextCardSide === 'left' ? nextNextAd : nextAd;
@@ -71,11 +71,11 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
 
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (isAnimating || !currentAd) return;
-    
+
     setIsAnimating(true);
     setSwipeDirection(direction);
     setSwipeOffset(direction === 'left' ? -1000 : 1000);
-    
+
     // Animate the card on the active side to center (alternates)
     if (nextCardSide === 'left' && leftAd) {
       setLeftCardAnimating(true);
@@ -89,7 +89,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
       } else {
         onDelete?.(currentAd.id);
       }
-      
+
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       setSwipeOffset(0);
@@ -140,7 +140,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
 
   const handleTouchEnd = () => {
     if (!isDragging || isAnimating) return;
-    
+
     const threshold = 100;
     if (Math.abs(swipeOffset) > threshold) {
       handleSwipe(swipeOffset > 0 ? 'right' : 'left');
@@ -148,7 +148,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
       setSwipeOffset(0);
       setSwipeDirection(null);
     }
-    
+
     setIsDragging(false);
   };
 
@@ -173,7 +173,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
 
   const handleMouseUp = useCallback(() => {
     if (!isDragging || isAnimating) return;
-    
+
     const threshold = 100;
     if (Math.abs(swipeOffset) > threshold) {
       handleSwipe(swipeOffset > 0 ? 'right' : 'left');
@@ -181,7 +181,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
       setSwipeOffset(0);
       setSwipeDirection(null);
     }
-    
+
     setIsDragging(false);
   }, [isDragging, isAnimating, swipeOffset, handleSwipe]);
 
@@ -237,7 +237,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
             {rightAd && (() => {
               const size = getCardSize(rightAd.format);
               return (
-                <div 
+                <div
                   key={`right-${rightAd.id}`}
                   className={`${styles.card} ${styles.cardRight} ${rightCardAnimating ? styles.cardRightAnimating : ''}`}
                   data-format={rightAd.format}
@@ -251,6 +251,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
                       src={rightAd.imageUrl}
                       alt="Right ad"
                       fill
+                      quality={50}
                       className={styles.cardImage}
                       style={{ objectFit: 'cover', opacity: imageLoading[`right-${rightAd.id}`] ? 0 : 1 }}
                       onLoadStart={() => handleImageLoadStart(`right-${rightAd.id}`)}
@@ -265,7 +266,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
             {leftAd && (() => {
               const size = getCardSize(leftAd.format);
               return (
-                <div 
+                <div
                   key={`left-${leftAd.id}`}
                   className={`${styles.card} ${styles.cardLeft} ${leftCardAnimating ? styles.cardLeftAnimating : ''}`}
                   data-format={leftAd.format}
@@ -279,6 +280,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
                       src={leftAd.imageUrl}
                       alt="Left ad"
                       fill
+                      quality={50}
                       className={styles.cardImage}
                       style={{ objectFit: 'cover', opacity: imageLoading[`left-${leftAd.id}`] ? 0 : 1 }}
                       onLoadStart={() => handleImageLoadStart(`left-${leftAd.id}`)}
@@ -320,6 +322,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
                       src={currentAd.imageUrl}
                       alt="Current ad"
                       fill
+                      quality={50}
                       className={styles.cardImage}
                       style={{ objectFit: 'cover', opacity: imageLoading[`current-${currentAd.id}`] ? 0 : 1 }}
                       priority
@@ -360,7 +363,7 @@ export function TinderView({ ads, format, onAddToLibrary, onDelete, onSave, onCo
                 />
               </div>
             </button>
-            
+
             <button
               className={styles.saveButton}
               onClick={handleSave}
