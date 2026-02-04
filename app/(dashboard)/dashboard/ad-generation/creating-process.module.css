@@ -530,6 +530,60 @@
   }
 }
 
+/* Almost done – bouncing dots + text (last step when all previous done) */
+.almostDoneRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.bouncingDots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bouncingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #888E98;
+  animation: bounceDot 1.2s ease-in-out infinite both;
+}
+
+.bouncingDot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.bouncingDot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.bouncingDot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes bounceDot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-6px);
+  }
+}
+
+.almostDoneText {
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888E98;
+  letter-spacing: 0;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .stepWrapper {

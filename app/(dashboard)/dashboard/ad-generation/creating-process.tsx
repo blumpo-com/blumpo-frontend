@@ -12,49 +12,49 @@ interface StepIconProps {
 function StepIcon({ index, isActive }: StepIconProps) {
   const iconColor = isActive ? 'white' : '#B0B7C2';
   const strokeColor = isActive ? 'white' : '#B0B7C2';
-  
+
   // Box icon (for steps 0 and 4)
   if (index === 0 || index === 4) {
     return (
       <svg width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.stepIconSvg}>
-        <path d="M6.84693 13.5263C7.03618 13.6356 7.25086 13.6931 7.46939 13.6931C7.68793 13.6931 7.90261 13.6356 8.09186 13.5263L12.4491 11.0365C12.6382 10.9273 12.7952 10.7704 12.9045 10.5813C13.0137 10.3923 13.0714 10.1779 13.0716 9.95961V4.97987C13.0714 4.76155 13.0137 4.54713 12.9045 4.35812C12.7952 4.16911 12.6382 4.01215 12.4491 3.903L8.09186 1.41313C7.90261 1.30386 7.68793 1.24634 7.46939 1.24634C7.25086 1.24634 7.03618 1.30386 6.84693 1.41313L2.48965 3.903C2.30059 4.01215 2.14355 4.16911 2.0343 4.35812C1.92504 4.54713 1.86741 4.76155 1.86719 4.97987V9.95961C1.86741 10.1779 1.92504 10.3923 2.0343 10.5813C2.14355 10.7704 2.30059 10.9273 2.48965 11.0365L6.84693 13.5263Z" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M7.46875 13.6944V7.46973" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M2.04883 4.35718L7.47052 7.46951L12.8922 4.35718" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M4.66797 2.65796L10.2702 5.86367" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M6.84693 13.5263C7.03618 13.6356 7.25086 13.6931 7.46939 13.6931C7.68793 13.6931 7.90261 13.6356 8.09186 13.5263L12.4491 11.0365C12.6382 10.9273 12.7952 10.7704 12.9045 10.5813C13.0137 10.3923 13.0714 10.1779 13.0716 9.95961V4.97987C13.0714 4.76155 13.0137 4.54713 12.9045 4.35812C12.7952 4.16911 12.6382 4.01215 12.4491 3.903L8.09186 1.41313C7.90261 1.30386 7.68793 1.24634 7.46939 1.24634C7.25086 1.24634 7.03618 1.30386 6.84693 1.41313L2.48965 3.903C2.30059 4.01215 2.14355 4.16911 2.0343 4.35812C1.92504 4.54713 1.86741 4.76155 1.86719 4.97987V9.95961C1.86741 10.1779 1.92504 10.3923 2.0343 10.5813C2.14355 10.7704 2.30059 10.9273 2.48965 11.0365L6.84693 13.5263Z" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M7.46875 13.6944V7.46973" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2.04883 4.35718L7.47052 7.46951L12.8922 4.35718" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4.66797 2.65796L10.2702 5.86367" stroke={strokeColor} strokeWidth="1.24493" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
-  
+
   // Paint icon (for step 1)
   if (index === 1) {
     return (
       <svg width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.stepIconSvg}>
-        <path opacity="0.3" d="M3.70703 2.47119H9.88454V3.70669H3.70703V2.47119Z" fill={iconColor}/>
-        <path d="M10.5015 1.23535H3.08845C2.74869 1.23535 2.4707 1.51334 2.4707 1.8531V4.32411C2.4707 4.66387 2.74869 4.94186 3.08845 4.94186H10.5015C10.8412 4.94186 11.1192 4.66387 11.1192 4.32411V3.70636H11.737V6.17736H5.55946V12.9726C5.55946 13.3124 5.83745 13.5904 6.17721 13.5904H7.41271C7.75247 13.5904 8.03046 13.3124 8.03046 12.9726V7.41286H12.9725V2.47085H11.1192V1.8531C11.1192 1.51334 10.8412 1.23535 10.5015 1.23535ZM9.88371 3.70636H3.7062V2.47085H9.88371V3.70636Z" fill={iconColor}/>
+        <path opacity="0.3" d="M3.70703 2.47119H9.88454V3.70669H3.70703V2.47119Z" fill={iconColor} />
+        <path d="M10.5015 1.23535H3.08845C2.74869 1.23535 2.4707 1.51334 2.4707 1.8531V4.32411C2.4707 4.66387 2.74869 4.94186 3.08845 4.94186H10.5015C10.8412 4.94186 11.1192 4.66387 11.1192 4.32411V3.70636H11.737V6.17736H5.55946V12.9726C5.55946 13.3124 5.83745 13.5904 6.17721 13.5904H7.41271C7.75247 13.5904 8.03046 13.3124 8.03046 12.9726V7.41286H12.9725V2.47085H11.1192V1.8531C11.1192 1.51334 10.8412 1.23535 10.5015 1.23535ZM9.88371 3.70636H3.7062V2.47085H9.88371V3.70636Z" fill={iconColor} />
       </svg>
     );
   }
-  
+
   // Search icon (for step 2)
   if (index === 2) {
     return (
       <svg width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.stepIconSvg}>
         <g clipPath="url(#clip0_search)">
-          <path d="M10.1768 9.80029L13.5176 13.1499L13.1504 13.5171L9.80078 10.1753V9.80029H10.1768ZM5.71289 1.18799C8.21145 1.18825 10.2363 3.21378 10.2363 5.7124C10.2362 6.83236 9.82615 7.86173 9.14355 8.65576L8.91797 8.91748L8.65625 9.14307C7.86222 9.82566 6.83285 10.2357 5.71289 10.2358C3.21427 10.2358 1.18874 8.21096 1.18848 5.7124C1.18848 3.21362 3.21411 1.18799 5.71289 1.18799ZM5.71289 1.62354C3.45116 1.62354 1.62402 3.45068 1.62402 5.7124C1.62429 7.9739 3.45133 9.80029 5.71289 9.80029C7.97423 9.80003 9.80052 7.97374 9.80078 5.7124C9.80078 3.45084 7.97439 1.6238 5.71289 1.62354Z" fill={iconColor} stroke={strokeColor} strokeWidth="1.13025"/>
+          <path d="M10.1768 9.80029L13.5176 13.1499L13.1504 13.5171L9.80078 10.1753V9.80029H10.1768ZM5.71289 1.18799C8.21145 1.18825 10.2363 3.21378 10.2363 5.7124C10.2362 6.83236 9.82615 7.86173 9.14355 8.65576L8.91797 8.91748L8.65625 9.14307C7.86222 9.82566 6.83285 10.2357 5.71289 10.2358C3.21427 10.2358 1.18874 8.21096 1.18848 5.7124C1.18848 3.21362 3.21411 1.18799 5.71289 1.18799ZM5.71289 1.62354C3.45116 1.62354 1.62402 3.45068 1.62402 5.7124C1.62429 7.9739 3.45133 9.80029 5.71289 9.80029C7.97423 9.80003 9.80052 7.97374 9.80078 5.7124C9.80078 3.45084 7.97439 1.6238 5.71289 1.62354Z" fill={iconColor} stroke={strokeColor} strokeWidth="1.13025" />
         </g>
         <defs>
           <clipPath id="clip0_search">
-            <rect width="14.9392" height="14.9392" fill="white"/>
+            <rect width="14.9392" height="14.9392" fill="white" />
           </clipPath>
         </defs>
       </svg>
     );
   }
-  
+
   // Chart icon (for step 3)
   return (
     <svg width="20" height="20" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={styles.stepIconSvg}>
-      <path d="M7.46875 1.69434C10.6566 1.69434 13.2441 4.28186 13.2441 7.46973C13.2441 10.6576 10.6566 13.2451 7.46875 13.2451C4.28089 13.2451 1.69336 10.6576 1.69336 7.46973C1.69339 4.28189 4.28091 1.69437 7.46875 1.69434ZM6.79102 2.08789C4.11664 2.42049 2.04007 4.70653 2.04004 7.46973C2.04004 10.2329 4.11662 12.519 6.79102 12.8516L7.2959 12.915V2.02539L6.79102 2.08789ZM7.6416 12.915L8.14648 12.8516C10.5977 12.546 12.545 10.5986 12.8506 8.14746L12.9141 7.64258H7.6416V12.915ZM7.6416 7.29688H12.9141L12.8506 6.79199C12.545 4.34082 10.5977 2.39344 8.14648 2.08789L7.6416 2.02441V7.29688Z" fill={iconColor} stroke={strokeColor} strokeWidth="0.898551"/>
+      <path d="M7.46875 1.69434C10.6566 1.69434 13.2441 4.28186 13.2441 7.46973C13.2441 10.6576 10.6566 13.2451 7.46875 13.2451C4.28089 13.2451 1.69336 10.6576 1.69336 7.46973C1.69339 4.28189 4.28091 1.69437 7.46875 1.69434ZM6.79102 2.08789C4.11664 2.42049 2.04007 4.70653 2.04004 7.46973C2.04004 10.2329 4.11662 12.519 6.79102 12.8516L7.2959 12.915V2.02539L6.79102 2.08789ZM7.6416 12.915L8.14648 12.8516C10.5977 12.546 12.545 10.5986 12.8506 8.14746L12.9141 7.64258H7.6416V12.915ZM7.6416 7.29688H12.9141L12.8506 6.79199C12.545 4.34082 10.5977 2.39344 8.14648 2.08789L7.6416 2.02441V7.29688Z" fill={iconColor} stroke={strokeColor} strokeWidth="0.898551" />
     </svg>
   );
 }
@@ -315,7 +315,7 @@ export function CreatingProcess({
           }
           return step;
         }));
-        
+
         // Stop running but keep animation state
         setIsRunning(false);
         onComplete?.();
@@ -472,10 +472,10 @@ function ProcessStepComponent({
         {!isLast && (
           <div
             className={`${styles.connectorLine} ${showConnectorAnimation
-                ? styles.connectorLineAnimating
-                : isDone
-                  ? styles.connectorLineGradient
-                  : styles.connectorLinePending
+              ? styles.connectorLineAnimating
+              : isDone
+                ? styles.connectorLineGradient
+                : styles.connectorLinePending
               }`}
           />
         )}
@@ -505,6 +505,18 @@ function ProcessStepComponent({
               className={styles.progressBarFill}
               style={{ width: `${step.progress}%` }}
             />
+          </div>
+        )}
+
+        {/* Last step: bouncing dots + "almost done..." when all previous steps are done */}
+        {isLast && allPreviousStepsDone && step.status === 'inProgress' && (
+          <div className={styles.almostDoneRow}>
+            <span className={styles.bouncingDots}>
+              <span className={styles.bouncingDot} />
+              <span className={styles.bouncingDot} />
+              <span className={styles.bouncingDot} />
+            </span>
+            <span className={styles.almostDoneText}>Almost ready...</span>
           </div>
         )}
       </div>
