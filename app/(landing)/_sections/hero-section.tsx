@@ -43,7 +43,7 @@ export function HeroSection() {
               </div>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl xl:text-7xl text-center lg:text-left">
-              Create AI B2B SaaS
+              Create AI B2B
               <span className="block gradient-secondary bg-clip-text text-transparent">
                 ads that win
               </span>
