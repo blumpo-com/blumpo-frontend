@@ -523,6 +523,9 @@ function CustomizedAdsPageContent() {
   // Step configuration - can be extended for multiple steps
   const insightConfig = useMemo(() => getInsightStepConfig(), [selectedArchetype]);
 
+  // When random archetype is selected, skip insight step (submit after format)
+  const maxSteps = selectedArchetype === 'random' ? 3 : 4;
+
   const stepConfig = useMemo(() => ({
     1: {
       title: "Choose product photos",
@@ -590,27 +593,22 @@ function CustomizedAdsPageContent() {
   };
 
   const handleNext = async () => {
-    const maxSteps = Object.keys(stepConfig).length;
-
-    // Check if moving to insight selection step with unsupported archetype
-    if (currentStep === 3 && currentStep + 1 === maxSteps) {
-      const unsupportedArchetypes = ['promotion_offer', 'random'];
+    // Check if moving to insight selection step with unsupported archetype (random skips that step)
+    if (currentStep === 3 && selectedArchetype !== 'random') {
+      const unsupportedArchetypes = ['promotion_offer'];
       if (unsupportedArchetypes.includes(selectedArchetype)) {
         setShowComingSoon(true);
         return;
       }
     }
 
-    // Headlines are now fetched automatically when archetype changes via useEffect
-    // No need to fetch here unless we need to ensure they're loaded before step 3
-
-    // If on final step (insight selection), upload everything
+    // If on final step (format when random, insight otherwise), submit
     if (currentStep === maxSteps) {
       await handleFinalSubmit();
       return;
     }
 
-    // Otherwise, just advance to next step
+    // Otherwise, advance to next step
     setCurrentStep(currentStep + 1);
   };
 
@@ -667,9 +665,15 @@ function CustomizedAdsPageContent() {
         : selectedArchetype.replace(/-/g, '_');
 
       // Build archetype inputs based on archetype type
+      const RANDOM_ARCHETYPE_POOL = ['problem_solution', 'testimonial', 'competitor_comparison', 'meme', 'value_proposition'];
       let archetypeInputs: Record<string, any> = {};
-      if (selectedArchetype === 'testimonial') {
-        // Store testimonial-specific inputs
+      if (selectedArchetype === 'random') {
+        // Pick 2 distinct random archetypes for the job
+        const shuffled = [...RANDOM_ARCHETYPE_POOL].sort(() => Math.random() - 0.5);
+        archetypeInputs = {
+          randomArchetypes: shuffled.slice(0, 2),
+        };
+      } else if (selectedArchetype === 'testimonial') {
         archetypeInputs = {
           name1: testimonialName,
           cta1: testimonialCta,
@@ -755,8 +759,17 @@ function CustomizedAdsPageContent() {
       <NavigationButtons
         onBack={handleBack}
         onNext={handleNext}
-        nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
-        showRandomIcon={currentStep === 4 && selectedInsights.length === 0}
+        nextLabel={
+          currentStep === 3 && selectedArchetype === 'random'
+            ? 'Generate'
+            : currentStep === 4 && selectedInsights.length === 0
+              ? 'Choose random'
+              : 'Next'
+        }
+        showRandomIcon={
+          (currentStep === 3 && selectedArchetype === 'random') ||
+          (currentStep === 4 && selectedInsights.length === 0)
+        }
       />
 
       {/* Coming Soon Dialog */}
