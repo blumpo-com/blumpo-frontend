@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { draftMode } from 'next/headers';
 import type { Metadata } from 'next';
 import { PortableText } from 'next-sanity';
-import Image from 'next/image';
 import { urlFor } from '@/sanity/lib/image';
 import '@/styles/prose.css';
 
@@ -72,15 +71,14 @@ const portableTextComponents = {
   types: {
     image: ({ value }: { value: { asset?: { _ref: string }; alt?: string } }) => {
       if (!value?.asset?._ref) return null
-      const src = urlFor(value).width(800).height(500).url()
+      const src = urlFor(value).url()
       return (
-        <span className="block my-6 relative w-full aspect-video rounded-lg overflow-hidden">
-          <Image
+        <span className="block my-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={src}
             alt={value.alt ?? ''}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 800px"
+            className="max-w-full h-auto rounded-lg"
           />
         </span>
       )
