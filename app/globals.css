@@ -216,18 +216,7 @@
     @apply text-4xl text-center font-bold text-black tracking-tight md:text-5xl;
     line-height: 1.3;
   }
-  .gradient-blue {
-    @apply bg-gradient-to-b from-blue-200 via-blue-300 to-background;
-  }
-  .gradient-green {
-    @apply bg-gradient-to-b from-green-200 via-green-300 to-background;
-  }
-  .gradient-purple {
-    @apply bg-gradient-to-b from-purple-200 via-purple-300 to-background;
-  }
-  .gradient-orange {
-    @apply bg-gradient-to-b from-orange-200 via-orange-300 to-background;
-  }
+ 
 }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }

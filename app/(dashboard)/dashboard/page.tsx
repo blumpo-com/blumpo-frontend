@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
 import styles from './page.module.css';
@@ -60,10 +61,12 @@ function FeatureCard({
     return (
       <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
         <div className={styles.cardCharacterIllustration}>
-          <img
+          <Image
             src={characterImage}
             alt="Character illustration"
             className={styles.cardCharacterImage}
+            width={200}
+            height={200}
           />
         </div>
         <div className={`${styles.card} ${styles.cardInWrapper} ${inactive ? `${styles.cardInactive} disabled` : ''}`.trim()}>
@@ -83,10 +86,13 @@ function FeatureCard({
               <div className={styles.imageBack}>
                 <div className={styles.imageTransform}>
                   <div className={styles.imageCard}>
-                    <img
+                    <Image
                       src={frontImage}
                       alt=""
+                      width={530}
+                      height={351}
                       className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                      sizes="362px"
                     />
                   </div>
                 </div>
@@ -96,10 +102,13 @@ function FeatureCard({
                 <div className={`${styles.imageFront}`}>
                   <div className={styles.imageTransform}>
                     <div className={styles.imageCard}>
-                      <img
+                      <Image
                         src={backImage}
                         alt=""
+                        width={530}
+                        height={351}
                         className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                        sizes="337px"
                       />
                     </div>
                   </div>
@@ -130,10 +139,13 @@ function FeatureCard({
           <div className={styles.imageBack}>
             <div className={styles.imageTransform}>
               <div className={styles.imageCard}>
-                <img
+                <Image
                   src={frontImage}
                   alt=""
+                  width={530}
+                  height={351}
                   className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                  sizes="362px"
                 />
               </div>
             </div>
@@ -143,10 +155,13 @@ function FeatureCard({
             <div className={`${styles.imageFront}`}>
               <div className={styles.imageTransform}>
                 <div className={styles.imageCard}>
-                  <img
+                  <Image
                     src={backImage}
                     alt=""
+                    width={530}
+                    height={351}
                     className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                    sizes="337px"
                   />
                 </div>
               </div>
