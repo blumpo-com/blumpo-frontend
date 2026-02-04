@@ -343,6 +343,18 @@
   }
 }
 
+.stepIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepIconWrapper .stepIconSvg,
+.stepIconWrapper svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
 .stepIconSvg {
   width: 20px;
   height: 20px;
