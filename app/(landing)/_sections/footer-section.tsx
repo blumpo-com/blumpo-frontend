@@ -43,14 +43,14 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col items-center lg:hidden">
-                <Button asChild variant="cta">
-                  <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
-                    Make your first free Ad
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
-                </Button>
-                {/* Benefits list */}
-              </div>
+          <Button asChild variant="cta">
+            <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
+              Make your first free Ad
+              <ArrowRight className="w-6 h-6" />
+            </Link>
+          </Button>
+          {/* Benefits list */}
+        </div>
       </div>
 
       {/* Footer Content */}

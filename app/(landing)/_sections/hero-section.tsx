@@ -78,13 +78,13 @@ export function HeroSection() {
             </p>
             {/* Mobile: Button instead of URL input */}
             <div className="flex flex-col items-center lg:hidden mt-5">
-                <Button asChild variant="cta">
-                  <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
-                    Make your first free Ad
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
-                </Button>
-                {/* Benefits list */}
+              <Button asChild variant="cta">
+                <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
+                  Make your first free Ad
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
+              {/* Benefits list */}
             </div>
 
             <div className="flex flex-col gap-3 mt-5 w-fit justify-center items-start">
