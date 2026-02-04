@@ -1,5 +1,7 @@
 import { draftMode } from 'next/headers'
 import { VisualEditing } from 'next-sanity/visual-editing'
+import { SanityLive } from '@/sanity/lib/live'
+import { ExitPreview } from '@/components/exit-preview'
 
 export default async function BlogLayout({
   children,
@@ -10,7 +12,13 @@ export default async function BlogLayout({
   return (
     <>
       {children}
-      {isEnabled && <VisualEditing />}
+      {isEnabled && (
+        <>
+          <SanityLive />
+          <VisualEditing />
+          <ExitPreview />
+        </>
+      )}
     </>
   )
 }

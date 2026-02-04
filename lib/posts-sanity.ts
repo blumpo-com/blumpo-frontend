@@ -1,4 +1,5 @@
-import { client, getPreviewClient } from '@/sanity/lib/client'
+import { client } from '@/sanity/lib/client'
+import { sanityFetch } from '@/sanity/lib/live'
 
 export interface PostMeta {
   slug: string
@@ -58,25 +59,42 @@ function mapToPostMeta(row: {
 
 /**
  * Get all posts from Sanity.
- * @param preview - When true, uses previewDrafts perspective (for Studio Presentation tool).
+ * Production (preview=false): published posts only. Preview (preview=true): drafts + published, with live updates when used inside SanityLive.
  */
 export async function getAllPosts(preview = false): Promise<PostMeta[]> {
-  const c = preview ? getPreviewClient() : client
-  const rows = await c.fetch<Array<Record<string, unknown>>>(POSTS_LIST_GROQ)
+  if (preview) {
+    const { data: rows } = await sanityFetch({
+      query: POSTS_LIST_GROQ,
+      perspective: 'previewDrafts',
+    })
+    const list = Array.isArray(rows) ? rows : []
+    return list.map((row) => mapToPostMeta(row as Parameters<typeof mapToPostMeta>[0]))
+  }
+  const rows = await client.fetch<Array<Record<string, unknown>>>(POSTS_LIST_GROQ)
   if (!Array.isArray(rows)) return []
   return rows.map((row) => mapToPostMeta(row as Parameters<typeof mapToPostMeta>[0]))
 }
 
 /**
  * Get a single post by slug from Sanity, including body for rendering.
- * @param slug - Post slug
- * @param preview - When true, uses previewDrafts perspective (for Studio Presentation tool).
+ * Production (preview=false): published only. Preview (preview=true): draft if present, with live updates inside SanityLive.
  */
 export async function getPostBySlug(slug: string, preview = false): Promise<SanityPost | null> {
-  const c = preview ? getPreviewClient() : client
-  const row = await c.fetch<Record<string, unknown> | null>(POST_BY_SLUG_GROQ, {
-    slug,
-  })
+  if (preview) {
+    const { data: row } = await sanityFetch({
+      query: POST_BY_SLUG_GROQ,
+      params: { slug },
+      perspective: 'previewDrafts',
+    })
+    if (!row || typeof row !== 'object') return null
+    const meta = mapToPostMeta(row as Parameters<typeof mapToPostMeta>[0])
+    return {
+      ...meta,
+      _id: (row._id as string) ?? '',
+      body: (row.body as SanityPortableTextBlock | null) ?? null,
+    }
+  }
+  const row = await client.fetch<Record<string, unknown> | null>(POST_BY_SLUG_GROQ, { slug })
   if (!row) return null
   const meta = mapToPostMeta(row as Parameters<typeof mapToPostMeta>[0])
   return {
