@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './buy-credits-dialog.module.css';
 
@@ -161,10 +162,12 @@ export function BuyCreditsDialog({
 
       {/* Illustration - positioned at bottom of dialog */}
       <div className={styles.illustration}>
-        <img
+        <Image
           src="/images/temp/laying_blumpo.png"
           alt="Blumpo character"
           className={styles.illustrationImage}
+          width={200}
+          height={120}
           onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }}

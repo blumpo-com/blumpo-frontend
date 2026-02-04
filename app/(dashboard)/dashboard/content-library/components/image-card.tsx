@@ -41,9 +41,8 @@ export function ImageCard({
 
   return (
     <div
-      className={`${styles.imageCard} ${
-        image.format === "9:16" ? styles.format9x16 : ""
-      }`}
+      className={`${styles.imageCard} ${image.format === "9:16" ? styles.format9x16 : ""
+        }`}
     >
       <div className={styles.imageWrapper}>
         <Image
@@ -52,7 +51,7 @@ export function ImageCard({
           width={image.width}
           height={image.height}
           className={styles.image}
-          unoptimized
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1400px) 33vw, 400px"
         />
         {image.workflow?.archetypeCode && (
           <div className={styles.brandOverlay}>

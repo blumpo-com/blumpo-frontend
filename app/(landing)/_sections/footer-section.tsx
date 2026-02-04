@@ -27,13 +27,14 @@ export function Footer() {
           Ready to try Blumpo in action?
         </h2>
         <div className="w-full max-w-[712px] relative hidden lg:block">
-              <Image
-                src="/assets/animations/pointing-blumpo.webp"
-                alt="Pointing Blumpo"
-                width={210}
-                height={140}
-                className="absolute -top-40 right-2 z-10"
-              />
+          <Image
+            src="/assets/animations/pointing-blumpo.webp"
+            alt="Pointing Blumpo"
+            width={210}
+            height={140}
+            className="absolute -top-40 right-2 z-10"
+            style={{ clipPath: 'inset(0 40px 0 40px)' }}
+          />
           <div className="hidden lg:block">
             <Suspense fallback={<div>Loading...</div>}>
               <UrlInputSection />
@@ -130,44 +131,44 @@ export function Footer() {
               </form>
             </div>
 
-            
+
           </div>
 
           {/* Socials */}
           <div className="flex flex-col gap-6 ">
-              <h3 className="font-medium text-[20px] text-black">Socials</h3>
-              <div className="flex gap-3 items-center">
-                <Link
-                  href="https://linkedin.com/company/blumpo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-[30px] h-[30px]"
-                >
-                  <Image
-                    src="/assets/social/linkedin.svg"
-                    alt="LinkedIn"
-                    width={30}
-                    height={30}
-                    className="w-full h-full object-contain"
-                  />
-                </Link>
-                <span className="font-medium text-[32px] text-black">/</span>
-                <Link
-                  href="https://instagram.com/blumpo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-[30px] h-[30px]"
-                >
-                  <Image
-                    src="/assets/social/instagram.svg"
-                    alt="Instagram"
-                    width={30}
-                    height={30}
-                    className="w-full h-full object-contain"
-                  />
-                </Link>
-              </div>
+            <h3 className="font-medium text-[20px] text-black">Socials</h3>
+            <div className="flex gap-3 items-center">
+              <Link
+                href="https://linkedin.com/company/blumpo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-[30px] h-[30px]"
+              >
+                <Image
+                  src="/assets/social/linkedin.svg"
+                  alt="LinkedIn"
+                  width={30}
+                  height={30}
+                  className="w-full h-full object-contain"
+                />
+              </Link>
+              <span className="font-medium text-[32px] text-black">/</span>
+              <Link
+                href="https://instagram.com/blumpo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-[30px] h-[30px]"
+              >
+                <Image
+                  src="/assets/social/instagram.svg"
+                  alt="Instagram"
+                  width={30}
+                  height={30}
+                  className="w-full h-full object-contain"
+                />
+              </Link>
             </div>
+          </div>
 
           {/* Bottom Section */}
           <div className="flex flex-row items-end justify-between gap-4 py-4">
