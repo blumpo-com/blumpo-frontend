@@ -135,7 +135,7 @@ export default function InputUrlPage() {
       <div className={styles.rightPanel}>
         <div className={styles.contentBlock}>
           <h1 className={styles.headline}>
-            Create AI B2B SaaS <span className={styles.headlineAccent}>ads that win.</span>
+            Create AI B2B <span className={styles.headlineAccent}>ads that win.</span>
           </h1>
           <p className={styles.description}>
             Enter your website URL and we'll create a complete, consistent brand tailored to your business - from visuals to messaging.
