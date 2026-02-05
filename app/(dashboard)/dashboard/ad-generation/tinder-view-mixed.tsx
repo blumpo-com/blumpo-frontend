@@ -8,6 +8,7 @@ interface Ad {
   id: string;
   imageUrl: string;
   format: '1:1' | '9:16';
+  workflowId: string;
 }
 
 interface TinderViewMixedProps {
@@ -69,6 +70,37 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const leftAd16_9 = nextCardSide16_9 === 'left' ? nextAd16_9 : nextNextAd16_9;
   const rightAd16_9 = nextCardSide16_9 === 'left' ? nextNextAd16_9 : nextAd16_9;
 
+  // Validation: Ensure current ads have matching workflowIds (for mixed format)
+  // If they don't match, try to find and sync the correct index
+  useEffect(() => {
+    // Only sync if we have both ads and they don't match
+    if (!currentAd1_1 || !currentAd16_9) return;
+    
+    if (currentAd1_1.workflowId !== currentAd16_9.workflowId) {
+      console.warn('[TINDER-MIXED] Workflow mismatch detected:', {
+        '1:1': { id: currentAd1_1.id, workflowId: currentAd1_1.workflowId, index: currentIndex1_1 },
+        '9:16': { id: currentAd16_9.id, workflowId: currentAd16_9.workflowId, index: currentIndex16_9 }
+      });
+      
+      // Try to find matching workflowId in the other stack
+      // Prefer matching the 1:1 stack (primary)
+      const matchingIndex16_9 = ads16_9.findIndex(ad => ad.workflowId === currentAd1_1.workflowId);
+      
+      if (matchingIndex16_9 !== -1 && matchingIndex16_9 !== currentIndex16_9) {
+        console.log('[TINDER-MIXED] Syncing 9:16 stack to match 1:1 workflowId:', currentAd1_1.workflowId);
+        setCurrentIndex16_9(matchingIndex16_9);
+        return;
+      }
+      
+      // If that didn't work, try matching the 9:16 stack
+      const matchingIndex1_1 = ads1_1.findIndex(ad => ad.workflowId === currentAd16_9.workflowId);
+      if (matchingIndex1_1 !== -1 && matchingIndex1_1 !== currentIndex1_1) {
+        console.log('[TINDER-MIXED] Syncing 1:1 stack to match 9:16 workflowId:', currentAd16_9.workflowId);
+        setCurrentIndex1_1(matchingIndex1_1);
+      }
+    }
+  }, [currentAd1_1, currentAd16_9, currentIndex1_1, currentIndex16_9, ads1_1, ads16_9]);
+
   // Sync swipe offset between both stacks
   const syncSwipeOffset = useCallback((offset: number, direction: 'left' | 'right' | null) => {
     setSwipeOffset1_1(offset);
@@ -126,14 +158,15 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
         setNextCardSide16_9(prev => prev === 'left' ? 'right' : 'left');
       }
 
-      // Sync the other stack - find and update the matching ad by ID
+      // Sync the other stack - find and update the matching ad by workflowId
       const otherStack = stack === '1:1' ? '9:16' : '1:1';
       const otherAds = otherStack === '1:1' ? ads1_1 : ads16_9;
       const otherCurrentIndex = otherStack === '1:1' ? currentIndex1_1 : currentIndex16_9;
       const otherCurrentAd = otherAds[otherCurrentIndex];
-
-      // If the other stack has the same ID, advance it too
-      if (otherCurrentAd?.id === currentAd.id) {
+      
+      // Match by workflowId instead of ID to ensure same workflow ads stay together
+      if (otherCurrentAd && otherCurrentAd.workflowId === currentAd.workflowId) {
+        // Same workflow - advance the other stack too
         if (otherStack === '1:1') {
           setCurrentIndex1_1(prev => prev + 1);
           setSwipeOffset1_1(0);
@@ -150,13 +183,34 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
           setNextCardSide16_9(prev => prev === 'left' ? 'right' : 'left');
         }
       } else {
-        // Reset swipe offset for the other stack even if IDs don't match
-        if (otherStack === '1:1') {
-          setSwipeOffset1_1(0);
-          setSwipeDirection1_1(null);
+        // Different workflow - find the matching workflowId in the other stack
+        const matchingIndex = otherAds.findIndex(ad => ad.workflowId === currentAd.workflowId);
+        if (matchingIndex !== -1) {
+          // Found matching workflow - sync to that index
+          if (otherStack === '1:1') {
+            setCurrentIndex1_1(matchingIndex + 1);
+            setSwipeOffset1_1(0);
+            setSwipeDirection1_1(null);
+            setLeftCardAnimating1_1(false);
+            setRightCardAnimating1_1(false);
+            setNextCardSide1_1(prev => prev === 'left' ? 'right' : 'left');
+          } else {
+            setCurrentIndex16_9(matchingIndex + 1);
+            setSwipeOffset16_9(0);
+            setSwipeDirection16_9(null);
+            setLeftCardAnimating16_9(false);
+            setRightCardAnimating16_9(false);
+            setNextCardSide16_9(prev => prev === 'left' ? 'right' : 'left');
+          }
         } else {
-          setSwipeOffset16_9(0);
-          setSwipeDirection16_9(null);
+          // No matching workflow found - just reset swipe offset
+          if (otherStack === '1:1') {
+            setSwipeOffset1_1(0);
+            setSwipeDirection1_1(null);
+          } else {
+            setSwipeOffset16_9(0);
+            setSwipeDirection16_9(null);
+          }
         }
       }
 

@@ -1,0 +1,229 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useBrand } from '@/lib/contexts/brand-context';
+import { FormatSelectionContent } from '../customized-ads/format-selection';
+import styles from './page.module.css';
+import { CreatingProcess } from '../ad-generation/creating-process';
+
+interface PageHeaderProps {
+  title: string;
+  description: string;
+}
+
+const STEP_TIMINGS = {
+  'analyze-website': 15000,      // 15 seconds
+  'capture-tone': 20000,         // 20 seconds
+  'review-social': 25000,        // 25 seconds (longer, with progress bar)
+  'benchmark-competitors': 30000, // 30 seconds
+  'craft-cta': 70000,            // 70 seconds
+}; // T
+
+function PageHeader({ title, description }: PageHeaderProps) {
+  return (
+    <div className={styles.pageHeader}>
+      <h1 className={styles.pageTitle}>{title}</h1>
+      <p className={styles.pageDescription}>{description}</p>
+    </div>
+  );
+}
+
+interface NavigationButtonsProps {
+  onBack?: () => void;
+  onNext?: () => void;
+  backLabel?: string;
+  nextLabel?: string;
+}
+
+function NavigationButtons({ 
+  onBack, 
+  onNext, 
+  backLabel = "Back", 
+  nextLabel = "Next"
+}: NavigationButtonsProps) {
+  return (
+    <div className={styles.navigationButtons}>
+      <button 
+        className={styles.backButton}
+        onClick={onBack}
+        type="button"
+      >
+        <svg 
+          className={styles.arrowIcon} 
+          width="16" 
+          height="16" 
+          viewBox="0 0 11 11" 
+          fill="none"
+        >
+          <path 
+            d="M6.5 2.5L4 5L6.5 7.5" 
+            stroke="#040404" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span>{backLabel}</span>
+      </button>
+      <button 
+        className={styles.nextButton}
+        onClick={onNext}
+        type="button"
+      >
+        <span>{nextLabel}</span>
+        <svg 
+          className={styles.arrowIcon} 
+          width="16" 
+          height="16" 
+          viewBox="0 0 11 11" 
+          fill="none"
+        >
+          <path 
+            d="M4.5 2.5L7 5L4.5 7.5" 
+            stroke="#F9FAFB" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function QuickAdsGenerationPageContent() {
+  const router = useRouter();
+  const { currentBrand } = useBrand();
+  const [selectedFormat, setSelectedFormat] = useState<string>('1:1');
+  const [isCreatingJob, setIsCreatingJob] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Map format selection IDs to database format values
+  const mapFormatToDatabase = (formatId: string): string[] => {
+    switch (formatId) {
+      case '1:1':
+        return ['1:1'];
+      case '9:16':
+        return ['9:16'];
+      case '1:1-9:16':
+        return ['1:1', '9:16'];
+      default:
+        return ['1:1'];
+    }
+  };
+
+  // Handle format selection - only updates state
+  const handleFormatSelected = (formatId: string) => {
+    if (isCreatingJob) return;
+    setSelectedFormat(formatId);
+  };
+
+  // Handle back button - navigate to dashboard
+  const handleBack = () => {
+    router.push('/dashboard');
+  };
+
+  // Handle next button - check for existing ads or generate new ones
+  const handleNext = async () => {
+    if (isCreatingJob) return;
+    
+    setIsCreatingJob(true);
+
+    try {
+      const brandId = currentBrand?.id || null;
+      
+      if (!brandId) {
+        throw new Error('Brand ID required for quick ads generation');
+      }
+
+      // Determine the format(s) to check
+      const isMixedFormat = selectedFormat === '1:1-9:16';
+      const checkFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
+      
+      // Check if we have 5 ads ready for the selected format(s)
+      const checkResponse = await fetch(`/api/quick-ads?format=${checkFormat}${brandId ? `&brandId=${brandId}` : ''}`);
+      
+      if (!checkResponse.ok) {
+        throw new Error('Failed to check for existing ads');
+      }
+
+      const checkData = await checkResponse.json();
+
+      if (checkData.hasAds && checkData.jobIds && checkData.jobIds.length > 0) {
+        // We have ads ready - navigate to ad generation page with the job ID
+        // Use the first job ID (all ads should be from the same job for quick ads)
+        const jobId = checkData.jobIds[0];
+        
+        // For navigation, use the selected format
+        // If mixed, pass both formats as comma-separated
+        const pageFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
+        
+        router.push(`/dashboard/ad-generation?job_id=${jobId}&format=${pageFormat}&quick_ads=true`);
+      } else {
+        // No ads ready - create a QUEUED job and navigate to ad generation page
+        // Create a QUEUED quick ads job (tokens not deducted yet)
+        const createResponse = await fetch('/api/quick-ads/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandId, formats: mapFormatToDatabase(selectedFormat), autoGenerated: false }),
+        });
+
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to create quick ads job');
+        }
+
+        const createData = await createResponse.json();
+        
+        // Navigate to ad generation page - it will show creating process and trigger generation
+        // For navigation, use the selected format
+        // If mixed, pass both formats as comma-separated
+        const pageFormat = isMixedFormat ? '1:1,9:16' : selectedFormat;
+        router.push(`/dashboard/ad-generation?job_id=${createData.job_id}&format=${pageFormat}&quick_ads=true`);
+      }
+    } catch (error) {
+      console.error('Error in quick ads generation:', error);
+      setIsCreatingJob(false);
+      // TODO: Show error message to user
+    }
+  };
+
+  return (
+    <div className={styles.pageContainer}>
+      {isGenerating && (
+        <CreatingProcess stepTimings={STEP_TIMINGS} />
+      )}
+      {isCreatingJob && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingContent}>
+            <div className={styles.spinner}></div>
+            <p className={styles.loadingText}>Processing...</p>
+          </div>
+        </div>
+      )}
+      <PageHeader 
+        title="Select format"
+        description="Select the format for where you'll publish."
+      />
+      
+      <div className={styles.contentArea}>
+        <FormatSelectionContent
+          selectedFormat={selectedFormat}
+          onSelectedFormatChange={handleFormatSelected}
+        />
+      </div>
+
+      <NavigationButtons 
+        onBack={handleBack}
+        onNext={handleNext}
+      />
+    </div>
+  );
+}
+
+export default function QuickAdsGenerationPage() {
+  return <QuickAdsGenerationPageContent />;
+}
+

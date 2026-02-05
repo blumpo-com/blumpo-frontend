@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { User, TokenAccount } from '@/lib/db/schema';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -14,6 +14,7 @@ interface UserContextType {
   user: UserWithTokenAccount | null;
   isLoading: boolean;
   isInitialized: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -35,8 +36,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [isLoading]);
 
+  const refreshUser = async () => {
+    // Trigger SWR to revalidate the user data
+    await mutate('/api/user');
+  };
+
   return (
-    <UserContext.Provider value={{ user: user || null, isLoading, isInitialized }}>
+    <UserContext.Provider value={{ user: user || null, isLoading, isInitialized, refreshUser }}>
       {children}
     </UserContext.Provider>
   );
