@@ -1,4 +1,4 @@
-import { eq, sql, desc } from 'drizzle-orm';
+import { eq, sql, desc, and } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { user, tokenAccount, tokenLedger, subscriptionPlan, topupPlan } from '../schema/index';
 import { Timestamp } from 'next/dist/server/lib/cache-handlers/types';
@@ -188,6 +188,51 @@ export async function refundTokens(userId: string, tokensCost: number, jobId: st
     });
 
     // Update balance
+    await tx
+      .update(tokenAccount)
+      .set({ balance: newBalance })
+      .where(eq(tokenAccount.userId, userId));
+
+    return newBalance;
+  });
+}
+
+// Revert token refund when user chooses to keep partial images after failed generation.
+// Removes the JOB_REFUND ledger entry and deducts tokens from the account.
+export async function revertTokenRefund(userId: string, tokensCost: number, jobId: string) {
+  return await db.transaction(async (tx) => {
+    const existingRefund = await tx
+      .select()
+      .from(tokenLedger)
+      .where(and(eq(tokenLedger.reason, 'JOB_REFUND'), eq(tokenLedger.referenceId, jobId)))
+      .limit(1);
+
+    if (existingRefund.length === 0) {
+      return; // No JOB_REFUND to revert
+    }
+
+    const account = await tx
+      .select()
+      .from(tokenAccount)
+      .where(eq(tokenAccount.userId, userId))
+      .for('update')
+      .limit(1);
+
+    if (account.length === 0) {
+      throw new Error('Token account not found');
+    }
+
+    const currentBalance = account[0].balance;
+    const newBalance = currentBalance - tokensCost;
+
+    if (newBalance < 0) {
+      throw new Error('Insufficient token balance');
+    }
+
+    await tx
+      .delete(tokenLedger)
+      .where(and(eq(tokenLedger.reason, 'JOB_REFUND'), eq(tokenLedger.referenceId, jobId)));
+
     await tx
       .update(tokenAccount)
       .set({ balance: newBalance })
