@@ -14,19 +14,6 @@ interface InsightSelectionContentProps {
   onSelectedInsightsChange: (insights: string[]) => void;
 }
 
-// Archetype-specific titles
-const getArchetypeTitle = (archetype: string): string => {
-  const titles: Record<string, string> = {
-    problem_solution: 'Target group',
-    testimonial: 'Product review',
-    competitor_comparison: 'Competitors',
-    promotion_offer: 'Promotional offers',
-    value_proposition: 'Highlighted value insight (up to 4)',
-    random: 'Headlines',
-  };
-  return titles[archetype] || titles.problem_solution;
-};
-
 interface HeadlineCardProps {
   headline: string;
   isSelected: boolean;
@@ -35,35 +22,13 @@ interface HeadlineCardProps {
 }
 
 function HeadlineCard({ headline, isSelected, onClick, variant }: HeadlineCardProps) {
-  // Parse headline to extract prefix and quote if it follows the pattern
-  const parseHeadline = (text: string) => {
-    // Check if headline follows pattern like "Pain - \"quote\"" or "Pain - quote"
-    const matchWithQuotes = text.match(/^([^-]+)\s*-\s*"(.+)"$/);
-    if (matchWithQuotes) {
-      return {
-        prefix: matchWithQuotes[1].trim(),
-        quote: matchWithQuotes[2],
-        hasQuotes: true
-      };
-    }
-    // Check if headline follows pattern like "Pain - quote" (without quotes)
-    const matchWithoutQuotes = text.match(/^([^-]+)\s*-\s*(.+)$/);
-    if (matchWithoutQuotes) {
-      return {
-        prefix: matchWithoutQuotes[1].trim(),
-        quote: matchWithoutQuotes[2].trim(),
-        hasQuotes: false
-      };
-    }
-    // If no pattern match, return as is (no prefix, just the text)
-    return {
-      prefix: '',
-      quote: text,
-      hasQuotes: false
-    };
+  // Capitalize first letter of headline
+  const capitalizeFirstLetter = (text: string): string => {
+    if (!text) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1);
   };
 
-  const { prefix, quote, hasQuotes } = parseHeadline(headline);
+  const displayText = capitalizeFirstLetter(headline);
   
   const cardClass = variant === 'problem_solution' 
     ? `${styles.headlineCardProblem} ${isSelected ? styles.headlineCardSelected : ''}`
@@ -100,16 +65,7 @@ function HeadlineCard({ headline, isSelected, onClick, variant }: HeadlineCardPr
         )}
       </div>
       <span className={styles.headlineText}>
-        {prefix ? (
-          <>
-            <span className={styles.headlinePrefix}>{prefix} - </span>
-            <span className={styles.headlineQuote}>
-              {hasQuotes ? `"${quote}"` : quote}
-            </span>
-          </>
-        ) : (
-          <span>{quote}</span>
-        )}
+        {displayText}
       </span>
     </button>
   );
@@ -202,6 +158,7 @@ export function InsightSelectionContent({
     <div className={styles.insightSelectionWrapper}>
       {useMascotLayout ? (
         // Problem Solution / Value Proposition layout: 2 columns with mascot in center
+        <div className={styles.problemSolutionLayoutWrapper}>
         <div className={styles.problemSolutionLayout}>
           {/* Left column - first card */}
           {headlines[0] && (
@@ -255,8 +212,9 @@ export function InsightSelectionContent({
               isSelected={selectedInsights.includes(headlines[Math.ceil(headlines.length / 2) + 1])}
               onClick={() => handleHeadlineToggle(headlines[Math.ceil(headlines.length / 2) + 1])}
               variant="problem_solution"
-            />
-          )}
+               />
+            )}
+          </div>
         </div>
       ) : (
         // Default/Testimonial layout: 2-column grid

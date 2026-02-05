@@ -1,0 +1,138 @@
+/* Input URL page - Figma design specs (node 3302-9577, right panel 3299-9085) */
+
+.page {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+  width: 100%;
+  background: #fff;
+}
+
+/* Left panel - empty container for future animation */
+.leftPanel {
+  flex: 1;
+  min-width: 320px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+
+.animationContainer {
+  width: 100%;
+  max-width: 597px;
+  height: 486px;
+  min-height: 300px;
+  border-radius: 20px;
+  background: #f3f4f6;
+}
+
+/* Right panel - content */
+.rightPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+
+.contentBlock {
+  width: 486px;
+  max-width: 100%;
+  text-align: center;
+}
+
+.headline {
+  font-family: 'Roboto', sans-serif;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.headlineAccent {
+  background: linear-gradient(to right, hsl(var(--brand-secondary)), hsl(var(--brand-tertiary)), hsl(var(--brand-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.description {
+  font-family: 'Roboto', sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #4b5563;
+  margin: 20px 20px 40px 20px;
+}
+
+/* URL input - matches url-input.tsx: gradient-primary, rounded-xl, shadow-md, p-1 */
+.urlInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.urlInput {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: #fff;
+  font-size: 16px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.urlInput::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.urlInput:focus {
+  outline: none;
+}
+
+.submitButton {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-right: 16px;
+  border: none;
+  border-radius: 9999px;
+  background: #fff;
+  color: #0d3b66;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitButton.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #dc2626;
+  text-align: center;
+}

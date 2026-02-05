@@ -24,6 +24,11 @@
   flex-shrink: 0;
 }
 
+.problemSolutionLayoutWrapper {
+height: 100%;
+display: flex;
+align-items: center;
+}
 /* Problem Solution layout with mascot */
 .problemSolutionLayout {
   width: 100%;
@@ -40,8 +45,8 @@
 }
 
 /* Add margin-top to top row headlines */
-.problemSolutionLayout > *:nth-child(1),
-.problemSolutionLayout > *:nth-child(3) {
+.problemSolutionLayout>*:nth-child(1),
+.problemSolutionLayout>*:nth-child(3) {
   margin-top: 60px;
 }
 
@@ -79,19 +84,19 @@
   .headlinesGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .problemSolutionLayout {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto auto;
     gap: 40px;
   }
-  
+
   .mascotContainer {
     grid-column: 1;
     grid-row: 3;
     justify-self: center;
   }
-  
+
   .mascotImage {
     width: 150px;
     height: 255px;
@@ -99,23 +104,24 @@
 }
 
 @media (max-width: 480px) {
+
   .headlineCard,
   .headlineCardProblem {
     padding: 12px 20px;
     gap: 12px;
   }
-  
+
   .headlineText {
     font-size: 18px;
   }
-  
+
   .circleIndicator,
   .circleOutline,
   .checkIconContainer {
     width: 26px;
     height: 26px;
   }
-  
+
   .manualInput {
     font-size: 14px;
   }
@@ -226,13 +232,10 @@
   flex: 1;
   width: 100%;
   position: relative;
-  font-size: 21px;
+  font-size: 21.23px;
   line-height: 118.42%;
   color: #0a0a0a;
   text-align: left;
-  display: inline-block;
-  font-family: Roboto;
-  font-weight: 400;
 }
 
 .headlineCardSelected .headlineText {

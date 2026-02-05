@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './save-50-dialog.module.css';
 
@@ -34,7 +35,7 @@ export function Save50Dialog({
             <span className={styles.oldPrice}>${monthlyPrice}</span>
           </div>
           <div className={styles.arrowContainer}>
-            <img
+            <Image
               src="/assets/icons/arrow.svg"
               alt="Arrow"
               className={styles.arrow}
@@ -73,12 +74,13 @@ export function Save50Dialog({
 
         {/* Illustration */}
         <div className={styles.illustration}>
-          <img
+          <Image
             src="/images/temp/laying_blumpo.png"
             alt="Blumpo character"
             className={styles.illustrationImage}
+            width={200}
+            height={120}
             onError={(e) => {
-              // Fallback if image doesn't exist
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />

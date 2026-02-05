@@ -2,9 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
+import useSWR from 'swr';
 import styles from './page.module.css';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Image URLs from Figma - these will expire in 7 days
 // const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
@@ -15,10 +19,10 @@ import styles from './page.module.css';
 // const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
 const imgCharacter = "/assets/animations/sitting-blumpo.webp";
 
-const imgImage1 = "/images/default_ads/ads_1.png";
-const imgImage2 = "/images/default_ads/ads_2.png";
-const imgImage3 = "/images/default_ads/ads_3.png";
-const imgImage4 = "/images/default_ads/ads_4.png";
+const imgImage1 = "/images/dashboard/quick-ad1.png";
+const imgImage2 = "/images/dashboard/quick-ad2.png";
+const imgImage3 = "/images/dashboard/customized-ad1.png";
+const imgImage4 = "/images/dashboard/customized-ad2.png";
 const imgImage5 = "/images/default_ads/ads_5.png";
 const imgImage6 = "/images/default_ads/ads_6.png";
 
@@ -34,11 +38,12 @@ interface FeatureCardProps {
   onButtonClick?: () => void;
   showCharacter?: boolean;
   characterImage?: string;
-      }
+  inactive?: boolean;
+}
 
-function FeatureCard({ 
-  title, 
-  description, 
+function FeatureCard({
+  title,
+  description,
   gradientClass,
   frontImage,
   backImage,
@@ -46,33 +51,36 @@ function FeatureCard({
   backImageClass,
   onButtonClick,
   showCharacter = false,
-  characterImage
+  characterImage,
+  inactive = false,
 }: FeatureCardProps) {
-  const cardPositionClass = gradientClass === styles.cardImageGradient1 
-    ? styles.cardFirst 
-    : gradientClass === styles.cardImageGradient2 
-    ? styles.cardSecond 
-    : styles.cardThird;
+  const cardPositionClass = gradientClass === styles.cardImageGradient1
+    ? styles.cardFirst
+    : gradientClass === styles.cardImageGradient2
+      ? styles.cardSecond
+      : styles.cardThird;
 
   if (showCharacter && characterImage) {
     return (
       <div className={`${styles.cardWrapper} ${cardPositionClass}`}>
         <div className={styles.cardCharacterIllustration}>
-          <img 
-            src={characterImage} 
-            alt="Character illustration" 
+          <Image
+            src={characterImage}
+            alt="Character illustration"
             className={styles.cardCharacterImage}
+            width={200}
+            height={200}
           />
-              </div>
-        <div className={`${styles.card} ${styles.cardInWrapper}`}>
+        </div>
+        <div className={`${styles.card} ${styles.cardInWrapper} ${inactive ? `${styles.cardInactive} disabled` : ''}`.trim()}>
           <div className={styles.cardContent}>
             <h3 className={styles.cardTitle}>{title}</h3>
             <p className={styles.cardDescription}>{description}</p>
             <button
               onClick={onButtonClick}
-              className={styles.cardButton}
+              className={`${styles.cardButton} ${inactive ? 'disabled' : ''}`.trim()}
             >
-              Create now
+              {inactive ? 'Coming soon' : 'Create now'}
             </button>
           </div>
           <div className={`${styles.cardImageSection} ${gradientClass} ${gradientClass === styles.cardImageGradient3 ? styles.cardImageSectionThird : ''}`.trim()}>
@@ -81,10 +89,13 @@ function FeatureCard({
               <div className={styles.imageBack}>
                 <div className={styles.imageTransform}>
                   <div className={styles.imageCard}>
-                    <img 
-                      src={frontImage} 
-                      alt="" 
+                    <Image
+                      src={frontImage}
+                      alt=""
+                      width={530}
+                      height={351}
                       className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                      sizes="362px"
                     />
                   </div>
                 </div>
@@ -94,14 +105,17 @@ function FeatureCard({
                 <div className={`${styles.imageFront}`}>
                   <div className={styles.imageTransform}>
                     <div className={styles.imageCard}>
-                      <img 
-                        src={backImage} 
-                        alt="" 
+                      <Image
+                        src={backImage}
+                        alt=""
+                        width={530}
+                        height={351}
                         className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                        sizes="337px"
                       />
-              </div>
-            </div>
-          </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -128,41 +142,60 @@ function FeatureCard({
           <div className={styles.imageBack}>
             <div className={styles.imageTransform}>
               <div className={styles.imageCard}>
-                <img 
-                  src={frontImage} 
-                  alt="" 
+                <Image
+                  src={frontImage}
+                  alt=""
+                  width={530}
+                  height={351}
                   className={`${styles.imageCardBack} ${frontImageClass || ''}`}
+                  sizes="362px"
                 />
-          </div>
-        </div>
+              </div>
+            </div>
           </div>
           {/* Swapped: backImage now in front position */}
           {backImage && (
             <div className={`${styles.imageFront}`}>
               <div className={styles.imageTransform}>
                 <div className={styles.imageCard}>
-                  <img 
-                    src={backImage} 
-                    alt="" 
+                  <Image
+                    src={backImage}
+                    alt=""
+                    width={530}
+                    height={351}
                     className={`${styles.imageCardFront} ${backImageClass || ''}`}
+                    sizes="337px"
                   />
                 </div>
               </div>
             </div>
-            )}
-          </div>
+          )}
         </div>
+      </div>
     </div>
   );
 }
 
 export default function DashboardHomePage() {
   const router = useRouter();
-  const { currentBrand } = useBrand();
+  const { currentBrand, isInitialized } = useBrand();
   const [isCheckingAds, setIsCheckingAds] = useState(false);
   // Ref to prevent double execution (React Strict Mode)
   const hasCheckedBrandRef = useRef<string | null>(null);
-  
+  const { data: brands = [], isLoading: isLoadingBrands } = useSWR<{ id: string }[]>(
+    '/api/brands',
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Redirect to input-url when user has no brands
+  useEffect(() => {
+    if (!isInitialized || isLoadingBrands) return;
+    if (Array.isArray(brands) && brands.length === 0) {
+      router.replace('/input-url');
+    }
+  }, [isInitialized, isLoadingBrands, brands, router]);
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -256,6 +289,11 @@ export default function DashboardHomePage() {
   // Use NEXT_PUBLIC_ prefix for client-side access
   const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
 
+  // Don't render dashboard content while redirecting (no brands)
+  if (isInitialized && !isLoadingBrands && Array.isArray(brands) && brands.length === 0) {
+    return null;
+  }
+
  return (
     <div className={styles.homePage}>
       {/* Test button - only show in test mode */}
@@ -317,8 +355,9 @@ export default function DashboardHomePage() {
           onButtonClick={() => console.log('Insights clicked')}
           showCharacter={true}
           characterImage={imgCharacter}
+          inactive
         />
       </div>
-        </div>
+    </div>
   );
 }

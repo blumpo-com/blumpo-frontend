@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { getUser, hasEnoughTokens, createGenerationJob, updateGenerationJobStatus, refundTokens, getBrandByWebsiteUrl } from "@/lib/db/queries";
+import { getUser, hasEnoughTokens, createGenerationJob, updateGenerationJobStatus, refundTokens, getBrandsByUserId, getExistingGenerationJobByWebsiteUrl } from "@/lib/db/queries";
+import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds } from "@/lib/db/queries/ads";
+import { normalizeWebsiteUrl } from "@/lib/utils";
 import { randomUUID } from "crypto";
 import { waitForCallback } from "@/lib/api/callback-waiter";
 
@@ -54,12 +56,104 @@ export async function POST(req: Request) {
     }
     console.log('[GENERATE] User has sufficient tokens');
 
+    // Check for existing job with same website URL (any status)
+    const existingJob = await getExistingGenerationJobByWebsiteUrl(
+      user.id,
+      url,
+      normalizeWebsiteUrl
+    );
+    if (existingJob) {
+      console.log('[GENERATE] Existing job found:', existingJob.id, 'status:', existingJob.status);
+
+      if (existingJob.status === 'SUCCEEDED') {
+        const adImages = await getAdImagesByJobId(existingJob.id);
+        const validImages = adImages.filter(
+          (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
+        );
+        const workflowIds = validImages
+          .map((img) => img.workflowId)
+          .filter((id): id is string => Boolean(id));
+        const workflowsWithArchetypes =
+          workflowIds.length > 0
+            ? await getWorkflowsAndArchetypesByWorkflowIds(workflowIds)
+            : [];
+        const images = validImages.map((img) => {
+          const workflowMatch = img.workflowId
+            ? workflowsWithArchetypes.find((w) => w.ad_workflow.id === img.workflowId)
+            : null;
+          const archetype = workflowMatch?.ad_archetype || null;
+          return {
+            id: img.id,
+            title: img.title,
+            publicUrl: img.publicUrl,
+            width: img.width,
+            height: img.height,
+            format: img.format,
+            workflowId: img.workflowId,
+            createdAt: img.createdAt,
+            archetype: archetype
+              ? { code: archetype.code, displayName: archetype.displayName, description: archetype.description }
+              : null,
+          };
+        });
+        return NextResponse.json({
+          job_id: existingJob.id,
+          status: 'SUCCEEDED',
+          images,
+          tokens_used: TOKENS_COST_PER_GENERATION,
+        });
+      }
+
+      if (existingJob.status === 'FAILED' || existingJob.status === 'CANCELED') {
+        return NextResponse.json({
+          job_id: existingJob.id,
+          status: existingJob.status,
+          images: [],
+          error_message: existingJob.errorMessage || `Generation ${existingJob.status.toLowerCase()}`,
+          error_code: existingJob.errorCode || null,
+        }, { status: existingJob.status === 'FAILED' ? 500 : 200 });
+      }
+
+      // QUEUED or RUNNING - wait for callback (uses same Redis key as original job)
+      console.log('[GENERATE] Existing job in progress, waiting for callback...');
+      try {
+        const callbackResult = await waitForCallback(existingJob.id, MAX_WAIT_TIME);
+        if (callbackResult.status === 'SUCCEEDED') {
+          return NextResponse.json({
+            job_id: existingJob.id,
+            status: 'SUCCEEDED',
+            images: callbackResult.images,
+            tokens_used: TOKENS_COST_PER_GENERATION,
+          });
+        }
+        return NextResponse.json({
+          job_id: existingJob.id,
+          status: callbackResult.status,
+          images: callbackResult.images || [],
+          error_message: callbackResult.error_message,
+          error_code: callbackResult.error_code,
+        }, { status: callbackResult.status === 'FAILED' ? 500 : 200 });
+      } catch (callbackError) {
+        console.error('[GENERATE] Callback wait error for existing job:', callbackError);
+        return NextResponse.json({
+          error: "Generation timeout",
+          job_id: existingJob.id,
+          status: 'FAILED',
+          error_code: 'TIMEOUT',
+        }, { status: 504 });
+      }
+    }
+
     // Generate a unique job ID for this generation
     const jobId = randomUUID();
     console.log('[GENERATE] Created job ID:', jobId);
 
-    // Find existing brand by website URL
-    const existingBrand = await getBrandByWebsiteUrl(user.id, url);
+    // Try to find existing brand by website URL (optional - brandId can be null)
+    const normalizedUrl = normalizeWebsiteUrl(url);
+    const userBrands = await getBrandsByUserId(user.id);
+    const existingBrand = userBrands.find(
+      (b) => normalizeWebsiteUrl(b.websiteUrl) === normalizedUrl
+    ) ?? null;
     console.log('[GENERATE] Existing brand found:', existingBrand?.id || 'none');
 
     let job;
@@ -69,7 +163,7 @@ export async function POST(req: Request) {
       job = await createGenerationJob(user.id, {
         id: jobId,
         prompt: undefined, // Will be generated by n8n
-        params: {}, // Default params
+        params: { website_url: normalizedUrl },
         tokensCost: TOKENS_COST_PER_GENERATION,
         brandId: existingBrand?.id,
         insightSource: 'auto',

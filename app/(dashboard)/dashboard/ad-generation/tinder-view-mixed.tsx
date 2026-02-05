@@ -121,18 +121,18 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
     // Set animating for both stacks
     setIsAnimating1_1(true);
     setIsAnimating16_9(true);
-    
+
     syncSwipeOffset(direction === 'left' ? -1000 : 1000, direction);
 
     // Animate the card on the active side to center (alternates)
 
-      if (nextCardSide === 'left' && leftAd) {
-        setLeftCardAnimating1_1(true);
-        setLeftCardAnimating16_9(true);
-      } else if (nextCardSide === 'right' && rightAd) {
-        setRightCardAnimating1_1(true);
-        setRightCardAnimating16_9(true);
-      }
+    if (nextCardSide === 'left' && leftAd) {
+      setLeftCardAnimating1_1(true);
+      setLeftCardAnimating16_9(true);
+    } else if (nextCardSide === 'right' && rightAd) {
+      setRightCardAnimating1_1(true);
+      setRightCardAnimating16_9(true);
+    }
 
     setTimeout(() => {
       if (direction === 'right') {
@@ -255,12 +255,12 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const handleTouchMove = (e: React.TouchEvent) => {
     const draggingStack = isDraggingRef.current;
     if (!draggingStack) return;
-    
+
     const isAnimating = draggingStack === '1:1' ? isAnimating1_1 : isAnimating16_9;
     const isDragging = draggingStack === '1:1' ? isDragging1_1 : isDragging16_9;
-    
+
     if (!isDragging || isAnimating) return;
-    
+
     const touch = e.touches[0];
     const deltaX = touch.clientX - startXRef.current;
     const deltaY = touch.clientY - startYRef.current;
@@ -273,15 +273,15 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const handleTouchEnd = () => {
     const draggingStack = isDraggingRef.current;
     if (!draggingStack) return;
-    
+
     const isDragging = draggingStack === '1:1' ? isDragging1_1 : isDragging16_9;
     const isAnimating = draggingStack === '1:1' ? isAnimating1_1 : isAnimating16_9;
-    
+
     if (!isDragging || isAnimating) return;
 
     const threshold = 100;
     const swipeOffset = draggingStack === '1:1' ? swipeOffset1_1 : swipeOffset16_9;
-    
+
     if (Math.abs(swipeOffset) > threshold) {
       handleSwipe(swipeOffset > 0 ? 'right' : 'left', draggingStack);
     } else {
@@ -312,12 +312,12 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const draggingStack = isDraggingRef.current;
     if (!draggingStack) return;
-    
+
     const isAnimating = draggingStack === '1:1' ? isAnimating1_1 : isAnimating16_9;
     const isDragging = draggingStack === '1:1' ? isDragging1_1 : isDragging16_9;
-    
+
     if (!isDragging || isAnimating) return;
-    
+
     const deltaX = e.clientX - startXRef.current;
     const deltaY = e.clientY - startYRef.current;
 
@@ -329,15 +329,15 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
   const handleMouseUp = useCallback(() => {
     const draggingStack = isDraggingRef.current;
     if (!draggingStack) return;
-    
+
     const isDragging = draggingStack === '1:1' ? isDragging1_1 : isDragging16_9;
     const isAnimating = draggingStack === '1:1' ? isAnimating1_1 : isAnimating16_9;
-    
+
     if (!isDragging || isAnimating) return;
 
     const threshold = 100;
     const swipeOffset = draggingStack === '1:1' ? swipeOffset1_1 : swipeOffset16_9;
-    
+
     if (Math.abs(swipeOffset) > threshold) {
       handleSwipe(swipeOffset > 0 ? 'right' : 'left', draggingStack);
     } else {
@@ -422,6 +422,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
                 src={rightAd.imageUrl}
                 alt="Right ad"
                 fill
+                quality={50}
                 className={styles.cardImage}
                 style={{ objectFit: 'cover', opacity: imageLoading[`right-${rightAd.id}-${stack}`] ? 0 : 1 }}
                 onLoadStart={() => handleImageLoadStart(`right-${rightAd.id}-${stack}`)}
@@ -447,6 +448,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
                 src={leftAd.imageUrl}
                 alt="Left ad"
                 fill
+                quality={50}
                 className={styles.cardImage}
                 style={{ objectFit: 'cover', opacity: imageLoading[`left-${leftAd.id}-${stack}`] ? 0 : 1 }}
                 onLoadStart={() => handleImageLoadStart(`left-${leftAd.id}-${stack}`)}
@@ -484,6 +486,7 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
               src={currentAd.imageUrl}
               alt="Current ad"
               fill
+              quality={50}
               className={styles.cardImage}
               style={{ objectFit: 'cover', opacity: imageLoading[`current-${currentAd.id}-${stack}`] ? 0 : 1 }}
               priority

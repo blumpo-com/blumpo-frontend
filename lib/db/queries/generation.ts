@@ -1,7 +1,8 @@
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, or, sql } from 'drizzle-orm';
 import { db } from '../drizzle';
-import { generationJob, adImage, JobStatus } from '../schema/index';
+import { generationJob, adImage } from '../schema/index';
 import { appendTokenLedgerEntry } from './tokens';
+import { getBrandsByUserId } from './brand';
 
 // Generation job operations
 export async function createGenerationJob(
@@ -65,6 +66,37 @@ export async function createGenerationJob(
 
     return job[0];
   });
+}
+
+/** Find any job (any status) for user with this website URL - most recent first */
+export async function getExistingGenerationJobByWebsiteUrl(
+  userId: string,
+  websiteUrl: string,
+  normalizeUrl: (url: string) => string
+) {
+  const normalizedUrl = normalizeUrl(websiteUrl);
+  const userBrands = await getBrandsByUserId(userId);
+  const matchingBrand = userBrands.find(
+    (b) => normalizeUrl(b.websiteUrl) === normalizedUrl
+  );
+  const brandId = matchingBrand?.id;
+
+  const result = await db
+    .select()
+    .from(generationJob)
+    .where(
+      and(
+        eq(generationJob.userId, userId),
+        or(
+          sql`(${generationJob.params}->>'website_url')::text = ${normalizedUrl}`,
+          brandId ? eq(generationJob.brandId, brandId) : sql`1 = 0`
+        )!
+      )
+    )
+    .orderBy(desc(generationJob.createdAt))
+    .limit(1);
+
+  return result[0] ?? null;
 }
 
 export async function getGenerationJobById(jobId: string) {
@@ -141,6 +173,14 @@ export async function updateGenerationJobStatus(
 }
 
 export async function deleteGenerationJob(jobId: string) {
-  // Update status to CANCELED instead of hard delete
+  // Update status to CANCELED (soft delete)
   await updateGenerationJobStatus(jobId, 'CANCELED');
+}
+
+export async function hardDeleteGenerationJob(jobId: string) {
+  const [deleted] = await db
+    .delete(generationJob)
+    .where(eq(generationJob.id, jobId))
+    .returning({ id: generationJob.id });
+  return deleted;
 }
