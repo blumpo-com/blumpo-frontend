@@ -53,6 +53,12 @@ export function ErrorDialog({
     onClose();
   };
 
+  // Custom action for BRAND_LIMIT_REACHED - navigate to your-credits
+  const handleUpgradeToCredits = () => {
+    router.push('/dashboard/your-credits');
+    onClose();
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
       <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '16px', color: '#000' }}>
@@ -61,13 +67,40 @@ export function ErrorDialog({
       <p style={{ fontSize: '16px', color: '#666', marginBottom: '24px' }}>
         {message}
       </p>
-      {errorCode && (
+      {errorCode && errorCode !== 'EXISTING_BRAND' && (
         <p style={{ fontSize: '14px', color: '#999', marginBottom: '24px' }}>
           Error code: {errorCode}
         </p>
       )}
       <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-        {errorCode === 'INSUFFICIENT_TOKENS' ? (
+        {errorCode === 'BRAND_LIMIT_REACHED' ? (
+          <>
+            <Button
+              onClick={handleUpgradeToCredits}
+              variant="cta"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              Upgrade Plan
+            </Button>
+            <Button
+              onClick={handlePrimaryAction}
+              variant="outline"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              {primaryActionLabel}
+            </Button>
+          </>
+        ) : errorCode === 'INSUFFICIENT_TOKENS' ? (
           <>
             <Button
               onClick={handleUpgrade}

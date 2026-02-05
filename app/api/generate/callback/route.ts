@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { updateGenerationJobStatus } from "@/lib/db/queries/generation";
-import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds } from "@/lib/db/queries/ads";
-import { getGenerationJobById } from "@/lib/db/queries/generation";
+import { updateGenerationJobStatus, getGenerationJobById } from "@/lib/db/queries/generation";
+import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds, markAdImagesAsDeleted } from "@/lib/db/queries/ads";
+import { getUserWithTokenBalance } from "@/lib/db/queries/tokens";
 import { resolveCallback } from "@/lib/api/callback-waiter";
 
 // Callback endpoint - receives POST from n8n
@@ -204,6 +204,14 @@ export async function POST(req: Request) {
     }
 
     console.log('[CALLBACK] Found', validImages.length, 'valid images');
+
+    // FREE plan: mark all newly generated images as deleted (soft delete for content library)
+    const userWithTokens = await getUserWithTokenBalance(job.userId);
+    const planCode = userWithTokens?.tokenAccount?.planCode ?? '';
+    if (planCode === 'FREE' && validImages.length > 0) {
+      await markAdImagesAsDeleted(validImages.map((img) => img.id));
+      console.log('[CALLBACK] Marked', validImages.length, 'images as deleted (FREE plan)');
+    }
 
     // Get archetypes for each image from workflow_id
     const workflowIds = validImages

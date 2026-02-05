@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
+import useSWR from 'swr';
 import styles from './page.module.css';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Image URLs from Figma - these will expire in 7 days
 // const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
@@ -175,7 +178,20 @@ function FeatureCard({
 
 export default function DashboardHomePage() {
   const router = useRouter();
-  const { currentBrand } = useBrand();
+  const { currentBrand, isInitialized } = useBrand();
+  const { data: brands = [], isLoading: isLoadingBrands } = useSWR<{ id: string }[]>(
+    '/api/brands',
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Redirect to input-url when user has no brands
+  useEffect(() => {
+    if (!isInitialized || isLoadingBrands) return;
+    if (Array.isArray(brands) && brands.length === 0) {
+      router.replace('/input-url');
+    }
+  }, [isInitialized, isLoadingBrands, brands, router]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -190,7 +206,12 @@ export default function DashboardHomePage() {
   // Use NEXT_PUBLIC_ prefix for client-side access
   const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
 
-  return (
+  // Don't render dashboard content while redirecting (no brands)
+  if (isInitialized && !isLoadingBrands && Array.isArray(brands) && brands.length === 0) {
+    return null;
+  }
+
+ return (
     <div className={styles.homePage}>
       {/* Test button - only show in test mode */}
       {IS_TEST_MODE && (

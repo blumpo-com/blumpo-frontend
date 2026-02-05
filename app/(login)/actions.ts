@@ -112,6 +112,11 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
     redirect(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
   }
 
+  // Handle input-url redirect (after CTA "Make your first free Ad")
+  if (redirectTo === 'input-url') {
+    redirect('/input-url');
+  }
+
   // Handle checkout redirect
   if (redirectTo === 'checkout') {
     const planCode = formData.get('plan') as string | null;
