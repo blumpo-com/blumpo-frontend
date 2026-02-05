@@ -79,7 +79,7 @@ export interface MemeSelectionContentProps {
   onSelectedMemeTypesChange: (ids: string[]) => void;
 }
 
-const MIN_SELECTION_COUNT = 3;
+const MIN_SELECTION_COUNT = 1;
 const MAX_SELECTION_COUNT = 5;
 
 export function MemeSelectionContent({
@@ -168,10 +168,8 @@ export function MemeSelectionContent({
       {selectedMemeTypes.length > 0 && (
         <p className={styles.memeSelectionHint}>
           {selectedMemeTypes.length < MIN_SELECTION_COUNT
-            ? `Choose ${MIN_SELECTION_COUNT - selectedMemeTypes.length} more (3–5 total) or use random`
-            : selectedMemeTypes.length > MAX_SELECTION_COUNT
-              ? `Select at most ${MAX_SELECTION_COUNT} meme types`
-              : `${selectedMemeTypes.length} selected`}
+            ? `Choose ${MIN_SELECTION_COUNT - selectedMemeTypes.length} more (1–5 total) or use random`
+            : `${selectedMemeTypes.length} / ${MAX_SELECTION_COUNT} selected`}
         </p>
       )}
     </div>

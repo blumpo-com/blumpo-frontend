@@ -514,7 +514,7 @@ function CustomizedAdsPageContent() {
       },
       meme: {
         title: "Select memes",
-        subtitle: "Choose 3–5 meme types that we’ll use to create ad creatives for you"
+        subtitle: "Choose 1-5 meme types that we’ll use to create ad creatives for you"
       },
       random: {
         title: "Select Insight",
