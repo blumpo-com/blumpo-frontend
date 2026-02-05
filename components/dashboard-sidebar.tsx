@@ -311,7 +311,7 @@ export function DashboardSidebar() {
           isActive={pathname === "/dashboard/refer"}
         />
         <SidebarItem
-          href="/dashboard/general"
+          href="/dashboard/settings"
           iconSrc="/assets/icons/Settings.svg"
           iconAlt="Settings"
           label="Settings"

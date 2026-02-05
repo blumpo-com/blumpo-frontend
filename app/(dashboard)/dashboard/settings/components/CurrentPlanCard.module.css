@@ -1,0 +1,85 @@
+.card {
+  flex: 1;
+  min-height: 90px;
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 2px 7.3px 0px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+ 
+  overflow: hidden;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clickable:hover {
+  opacity: 0.9;
+}
+
+.clickable:active {
+  transform: scale(0.99);
+}
+
+.cardContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.planIconWrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(96deg, #00BFA6 5%, #58C7FF 51%, #0D3B66 98%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.planName {
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 26px;
+  background: linear-gradient(105deg, #00BFA6 5%, #58C7FF 51%, #0D3B66 98%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.planInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 25px;
+  text-align: right;
+}
+
+.planBilling {
+  color: #616772;
+}
+
+.planRenewal {
+  color: #0a0a0a;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 20px 20px;
+  }
+}

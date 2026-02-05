@@ -76,21 +76,28 @@
       "idx": 10,
       "version": "7",
       "when": 1768400000000,
-      "tag": "0010_add_ad_clone",
+      "tag": "0010_add_cancellation_reasons",
       "breakpoints": true
     },
     {
       "idx": 11,
       "version": "7",
-      "when": 1768410000000,
-      "tag": "0011_rename_ad_clone_is_meme",
+      "when": 1768400100000,
+      "tag": "0011_add_pending_cancellation_reasons",
       "breakpoints": true
     },
     {
       "idx": 12,
       "version": "7",
-      "when": 1768420000000,
-      "tag": "0012_remove_ad_clone_is_meme",
+      "when": 1768400200000,
+      "tag": "0012_add_retention_offer_applied_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1768400300000,
+      "tag": "0013_add_retention_discount_renewal_at",
       "breakpoints": true
     },
     {

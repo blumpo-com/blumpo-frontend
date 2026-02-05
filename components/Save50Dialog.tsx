@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Dialog } from '@/components/ui/dialog';
-import styles from './save-50-dialog.module.css';
+import styles from './Save50Dialog.module.css';
 
 interface Save50DialogProps {
   open: boolean;
@@ -11,7 +11,7 @@ interface Save50DialogProps {
   onContinue: () => void;
   monthlyPrice: number;
   annualPrice: number;
-  annualPriceId: string;
+  annualPriceId?: string;
 }
 
 export function Save50Dialog({
@@ -22,14 +22,11 @@ export function Save50Dialog({
   monthlyPrice,
   annualPrice,
 }: Save50DialogProps) {
-  // Calculate annual total (annualPrice is monthly equivalent, so multiply by 12 for total)
-  // This is what will be charged today for the full year
   const annualTotal = annualPrice * 12;
 
   return (
     <Dialog open={open} onClose={onClose} contentClassName={styles.dialogContent}>
       <div className={styles.contentWrapper}>
-        {/* Pricing Header */}
         <div className={styles.pricingHeader}>
           <div className={styles.priceComparison}>
             <span className={styles.oldPrice}>${monthlyPrice}</span>
@@ -45,34 +42,30 @@ export function Save50Dialog({
             />
           </div>
           <span className={styles.newPrice}>${annualPrice}</span>
-          {/* Save 50% Badge */}
           <div className={styles.saveBadge}>
             <span className={styles.saveBadgeText}>Save 50%</span>
           </div>
         </div>
 
-          {/* Description Text */}
-          <p className={styles.description}>
-            Save 50% with annual billing for your plan. You will be billed ${annualTotal} today for the next 12 months (charged once a year).
-          </p>
+        <p className={styles.description}>
+          Save 50% with annual billing for your plan. You will be billed ${annualTotal} today for the next 12 months (charged once a year).
+        </p>
 
-          {/* Action Buttons */}
-          <div className={styles.actions}>
-            <button
-              className={styles.confirmButton}
-              onClick={onConfirm}
-            >
-              <span className={styles.confirmButtonText}>Yes, upgrade</span>
-            </button>
-            <button
-              className={styles.cancelButton}
-              onClick={onContinue}
-            >
-              <span className={styles.cancelButtonText}>Continue</span>
-            </button>
-          </div>
+        <div className={styles.actions}>
+          <button
+            className={styles.confirmButton}
+            onClick={onConfirm}
+          >
+            <span className={styles.confirmButtonText}>Yes, upgrade</span>
+          </button>
+          <button
+            className={styles.cancelButton}
+            onClick={onContinue}
+          >
+            <span className={styles.cancelButtonText}>Continue</span>
+          </button>
+        </div>
 
-        {/* Illustration */}
         <div className={styles.illustration}>
           <Image
             src="/images/temp/laying_blumpo.png"
@@ -89,4 +82,3 @@ export function Save50Dialog({
     </Dialog>
   );
 }
-
