@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
     
     // Determine redirect URL (same logic as OTP)
     let redirectUrl = '/dashboard'; // Default to dashboard
-    if (redirect === 'checkout') {
+    if (redirect === 'input-url') {
+      redirectUrl = '/input-url';
+    } else if (redirect === 'checkout') {
       // Redirect to your-credits page after login for checkout
       if (plan) {
         const params = new URLSearchParams();

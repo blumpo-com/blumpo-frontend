@@ -6,6 +6,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Normalizes a website URL for consistent comparison.
+ * Trims, lowercases, adds https:// if no protocol, removes trailing slash.
+ */
+export function normalizeWebsiteUrl(url: string): string {
+  let u = url.trim().toLowerCase();
+  if (!u) return u;
+  if (!/^https?:\/\//i.test(u)) {
+    u = 'https://' + u;
+  }
+  return u.replace(/\/+$/, '');
+}
+
+/**
  * Shuffles an array using Fisher-Yates algorithm
  */
 export function shuffle<T>(array: T[]): T[] {

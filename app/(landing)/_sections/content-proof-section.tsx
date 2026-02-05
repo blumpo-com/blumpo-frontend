@@ -7,10 +7,10 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const buttons = [
-  { id: "blue", label: "Problem-solution", gradient: "gradient-blue" },
-  { id: "green", label: "Testimonial", gradient: "gradient-purple" },
-  { id: "purple", label: "Meme", gradient: "gradient-blue" },
-  { id: "orange", label: "Value propositiom", gradient: "gradient-purple" },
+  { id: 1, label: "Problem-solution" },
+  { id: 2, label: "Testimonial" },
+  { id: 3, label: "Meme" },
+  { id: 4, label: "Value propositiom" },
 ];
 
 // 12 images total - 3 per section
@@ -97,7 +97,7 @@ export function ContentProofSection() {
   };
 
   return (
-    <div className="mt-12 flex flex-col items-center">
+    <div className="mt-12 flex flex-col items-center bg-background">
       <div className="grid grid-cols-2 md:grid-cols-4 md:flex md:flex-row gap-4 max-w-md md:max-w-none md:justify-center">
         {buttons.map((button, index) => (
           <Button
@@ -117,15 +117,6 @@ export function ContentProofSection() {
 
       {/* Desktop: Stacked images */}
       <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center transition-all duration-500 ease-in-out px-8">
-        {/* Gradient backgrounds with opacity transition */}
-        {buttons.map((button, index) => (
-          <div
-            key={button.id}
-            className={`absolute inset-0 ${button.gradient
-              } transition-opacity duration-500 ease-in-out ${activeButton === index ? "opacity-100" : "opacity-0"
-              }`}
-          />
-        ))}
         <div className="flex gap-6 lg:gap-12 items-center justify-center relative z-10 transition-all duration-500 ease-in-out">
           {displayImages.map((image, index) => {
             // Fixed delays for each position to prevent animation reset
@@ -163,11 +154,6 @@ export function ContentProofSection() {
         onTouchEnd={handleTouchEnd}
         ref={carouselRef}
       >
-        {/* Gradient background */}
-        <div
-          className={`absolute inset-0 ${buttons[activeButton].gradient
-            } transition-opacity duration-500 ease-in-out opacity-100`}
-        />
 
         {/* Carousel container */}
         <div className="relative h-[400px] overflow-hidden">

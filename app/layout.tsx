@@ -4,9 +4,11 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { getUser } from "@/lib/db/queries";
 import { SWRConfig } from "swr";
+import { PageTitle } from "@/components/page-title";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.BASE_URL ?? 'https://blumpo.com'),
   title: "Blumpo - AI-powered ad generator",
   description:
     "Blumpo turns customer insights from Reddit, YT, and your website into $500+ worth ads.",
@@ -21,17 +23,31 @@ export const viewport: Viewport = {
 
 // const manrope = Manrope({ subsets: ['latin'] });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getUser();
+  const gtmUserId = user?.id ?? "";
+  const gtmUserStatus = user ? "logged_in" : "guest";
+
   return (
     <html
       lang="en"
       className="bg-white dark:bg-gray-950 text-black dark:text-white font-sans scroll-smooth"
     >
       <head>
+        {/* Data Layer: user_id & user_status (before GTM so GA can use them) */}
+        <Script id="data-layer-user" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+              'user_id': ${JSON.stringify(gtmUserId)},
+              'user_status': ${JSON.stringify(gtmUserStatus)}
+            });
+          `}
+        </Script>
         {/* GTM - HEAD */}
         <Script id="gtm-head" strategy="afterInteractive">
           {`
@@ -53,13 +69,12 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+        <PageTitle />
         <Providers>
           <SWRConfig
             value={{
               fallback: {
-                // We do NOT await here
-                // Only components that read this data will suspend
-                "/api/user": getUser(),
+                "/api/user": user,
               },
             }}
           >

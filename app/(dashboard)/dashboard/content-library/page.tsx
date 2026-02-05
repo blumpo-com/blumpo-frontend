@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useBrand } from "@/lib/contexts/brand-context";
+import { useUser } from "@/lib/contexts/user-context";
 import { useRouter } from "next/navigation";
 import TrashRestore from "@/assets/icons/Trash-restore.svg";
 import {
@@ -18,6 +19,7 @@ import { ImageCard } from "./components/image-card";
 import { SkeletonCard } from "./components/skeleton-card";
 import { WarningBox } from "./components/warning-box";
 import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
+import { ErrorDialog } from "@/components/error-dialog";
 import { AdImage, archetypes, ContentLibraryResponse, formats } from "./types";
 import styles from "./page.module.css";
 
@@ -76,7 +78,7 @@ function MultiSelectFilterTab({
       <label className={styles.filterLabel}>{label}</label>
       <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger className={styles.filterInput}>
-          <img src={iconSrc} alt={iconAlt} className={styles.tabIcon} />
+          <Image src={iconSrc} alt={iconAlt} className={styles.tabIcon} width={20} height={20} />
           <span className={styles.filterValue}>{getDisplayValue()}</span>
           <ChevronDown className={styles.chevronIcon} size={16} />
         </DropdownMenuTrigger>
@@ -110,9 +112,8 @@ interface UnsavedButtonTabProps {
 function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
   return (
     <button
-      className={`${styles.unsavedButton} ${
-        isActive ? styles.unsavedButtonActive : ""
-      }`}
+      className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ""
+        }`}
       onClick={onClick}
     >
       <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
@@ -124,6 +125,8 @@ function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
 export default function ContentLibraryPage() {
   const router = useRouter();
   const { currentBrand, isInitialized } = useBrand();
+  const { user } = useUser();
+  const planCode = user?.tokenAccount?.planCode ?? "FREE";
   const [allImages, setAllImages] = useState<AdImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,6 +141,11 @@ export default function ContentLibraryPage() {
     imageId: string;
     jobId: string | null;
   } | null>(null);
+  const [restoreUpgradeDialog, setRestoreUpgradeDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+  }>({ open: false, title: "", message: "" });
   const [columnsCount, setColumnsCount] = useState(4);
 
   // Fetch all images once on mount (including deleted for unsaved filter)
@@ -299,6 +307,16 @@ export default function ContentLibraryPage() {
 
     if (!jobId) {
       console.error("No jobId found for image");
+      return;
+    }
+
+    if (planCode === "FREE") {
+      setRestoreUpgradeDialog({
+        open: true,
+        title: "Restore Not Available",
+        message:
+          "Restoring ads is available on paid plans. Upgrade your plan to restore unsaved ads to your content library.",
+      });
       return;
     }
 
@@ -499,11 +517,11 @@ export default function ContentLibraryPage() {
                   [
                     ...(!showUnsaved
                       ? [
-                          <CreateNewCard
-                            key="create-new"
-                            onClick={handleCreateNew}
-                          />,
-                        ]
+                        <CreateNewCard
+                          key="create-new"
+                          onClick={handleCreateNew}
+                        />,
+                      ]
                       : []),
                     ...images.map((image) => (
                       <ImageCard
@@ -537,6 +555,23 @@ export default function ContentLibraryPage() {
           setImageToDelete(null);
         }}
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* Restore upgrade dialog - shown when FREE plan user tries to restore */}
+      <ErrorDialog
+        open={restoreUpgradeDialog.open}
+        onClose={() =>
+          setRestoreUpgradeDialog((prev) => ({ ...prev, open: false }))
+        }
+        title={restoreUpgradeDialog.title}
+        message={restoreUpgradeDialog.message}
+        onPrimaryAction={() => router.push("/dashboard/your-credits")}
+        primaryActionLabel="Upgrade Plan"
+        showSecondaryButton={true}
+        secondaryActionLabel="Close"
+        onSecondaryAction={() =>
+          setRestoreUpgradeDialog((prev) => ({ ...prev, open: false }))
+        }
       />
     </div>
   );
