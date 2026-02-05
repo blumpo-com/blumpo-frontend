@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './Save50Dialog.module.css';
 
@@ -31,7 +32,7 @@ export function Save50Dialog({
             <span className={styles.oldPrice}>${monthlyPrice}</span>
           </div>
           <div className={styles.arrowContainer}>
-            <img
+            <Image
               src="/assets/icons/arrow.svg"
               alt="Arrow"
               className={styles.arrow}
@@ -66,10 +67,12 @@ export function Save50Dialog({
         </div>
 
         <div className={styles.illustration}>
-          <img
+          <Image
             src="/images/temp/laying_blumpo.png"
             alt="Blumpo character"
             className={styles.illustrationImage}
+            width={200}
+            height={120}
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}

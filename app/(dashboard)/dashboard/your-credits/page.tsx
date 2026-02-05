@@ -2,8 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
-import {Check} from 'lucide-react';
+import { Check } from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { Save50Dialog } from '@/components/Save50Dialog';
@@ -132,7 +133,7 @@ function YourCreditsPageContent() {
 
   // Map subscription plans to Stripe price IDs
   const planPrices: Record<string, { monthly: string | null; annual: string | null }> = {};
-  
+
   subscriptionPlans.forEach(plan => {
     if (plan.stripeProductId) {
       const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
@@ -148,8 +149,8 @@ function YourCreditsPageContent() {
 
 
   // Get Stripe prices for current plan (for action buttons)
-  const currentPlanPrices = currentPlanCode && planPrices[currentPlanCode] 
-    ? planPrices[currentPlanCode] 
+  const currentPlanPrices = currentPlanCode && planPrices[currentPlanCode]
+    ? planPrices[currentPlanCode]
     : { monthly: null, annual: null };
   const annualPriceId = currentPlanPrices.annual;
 
@@ -170,7 +171,7 @@ function YourCreditsPageContent() {
   // Wrapper checkoutAction that checks if price is annual or monthly
   const checkoutAction = async (formData: FormData) => {
     const priceId = formData.get('priceId') as string;
-    
+
     if (!priceId) {
       console.error('No price ID provided');
       return;
@@ -178,7 +179,7 @@ function YourCreditsPageContent() {
 
     // Find the price in stripePrices to check if it's annual or monthly
     const price = stripePrices.find(p => p.id === priceId);
-    
+
     if (!price) {
       console.error('Price not found');
       return;
@@ -186,7 +187,7 @@ function YourCreditsPageContent() {
 
     // Check if it's annual (interval === 'year' and intervalCount === 1)
     const isAnnual = price.interval === 'year' && price.intervalCount === 1;
-    
+
     if (isAnnual) {
       // If annual, proceed with checkout directly
       setIsLoading(true);
@@ -345,39 +346,39 @@ function YourCreditsPageContent() {
     const planCode = searchParams.get('plan');
     if (!planCode) return;
     setIsLoading(true);
-    
+
     // Only process if we have all required data and haven't processed yet
     if (planCode && subscriptionPlans.length > 0 && stripePrices.length > 0 && !hasProcessedPlan) {
       setHasProcessedPlan(true);
-      
+
       // Find the plan by planCode
       const plan = subscriptionPlans.find(p => p.planCode === planCode);
       if (plan && plan.stripeProductId) {
         // Get the interval preference from URL (default to annual if not specified)
         const intervalParam = searchParams.get('interval');
         const preferAnnual = intervalParam !== 'monthly';
-        
+
         // Get the prices for this plan
         const prices = stripePrices.filter(sp => sp.productId === plan.stripeProductId);
         const annualPrice = prices.find(p => p.interval === 'year' && p.intervalCount === 1);
         const monthlyPrice = prices.find(p => p.interval === 'month' && p.intervalCount === 1);
-        
+
         // Select price based on interval preference
-        const selectedPrice = preferAnnual 
+        const selectedPrice = preferAnnual
           ? (annualPrice || monthlyPrice)  // Prefer annual, fallback to monthly
           : (monthlyPrice || annualPrice); // Prefer monthly, fallback to annual
-        
+
         if (selectedPrice) {
           // Remove plan and interval params from URL
           const newSearchParams = new URLSearchParams(searchParams.toString());
           newSearchParams.delete('plan');
           newSearchParams.delete('interval');
           router.replace(`/dashboard/your-credits${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`, { scroll: false });
-          
+
           // Trigger checkout with the selected price
           const formData = new FormData();
           formData.append('priceId', selectedPrice.id);
-          
+
           // Use the checkoutAction logic to handle annual/monthly dialog
           checkoutAction(formData);
         }
@@ -449,7 +450,7 @@ function YourCreditsPageContent() {
             <div className={styles.billingInfo}>
               {currentPlanCode === 'FREE' ? (
 
-                  <p className={styles.renewalDate}>Free trial</p>
+                <p className={styles.renewalDate}>Free trial</p>
               ) : (
                 <>
                   <p className={styles.billedMonthly}>
@@ -470,10 +471,12 @@ function YourCreditsPageContent() {
             {/* Plan Icon and Name - Left */}
             <div className={styles.planIconName}>
               <div className={styles.planIcon}>
-                <img 
-                  src={getPlanIcon(currentPlanCode)} 
+                <Image
+                  src={getPlanIcon(currentPlanCode)}
                   alt={`${currentPlan?.displayName || 'Free'} plan icon`}
                   className={styles.planIconImage}
+                  width={24}
+                  height={24}
                 />
               </div>
               <p className={styles.planName}>
@@ -492,7 +495,7 @@ function YourCreditsPageContent() {
                 </p>
               </div>
               <div className={styles.progressBarContainer}>
-                <div 
+                <div
                   className={styles.progressBarFill}
                   style={{
                     width: `${Math.min(Math.max(progressPercentage, 0), 100)}%`,
@@ -594,8 +597,8 @@ function YourCreditsPageContent() {
               Upgrade your plan to create more ads
             </p>
           </div>
-          
-          <PricingSection 
+
+          <PricingSection
             checkoutAction={checkoutAction}
             currentPlanCode={currentPlanCode}
             showEnterprise={false}
@@ -631,65 +634,65 @@ function YourCreditsPageContent() {
         </div>
       ) : (
         <div className={styles.enterpriseSection}>
-        <div className={styles.enterpriseCardContainer}>
-          <div className={styles.enterpriseCard}>
-            <div className={styles.enterpriseCardContent}>
-              {/* Left Section - Icon, Info, and Button */}
-              <div className={styles.enterpriseLeftSection}>
-                <div className={styles.enterpriseHeader}>
-                  <div className={styles.enterpriseIcon}>
-                    <img src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} />
-                  </div>
-                  <div className={styles.enterpriseInfo}>
-                    <h2 className={styles.enterpriseTitle}>
-                      Enterprise
-                    </h2>
-                    <p className={styles.enterpriseDescription}>
-                      For big agencies and internal marketing teams - custom integrations
-                    </p>
-                  </div>
-                  
-                </div>
-                
-                {/* Let's talk button in left section */}
-                <button 
-                  className={styles.enterpriseButton}
-                  onClick={() => {
-                    router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
-                  }}
-                >
-                  <span className={styles.enterpriseButtonText}>
-                    Let's talk
-                  </span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className={styles.enterpriseDivider} />
-
-              {/* Right Section - Features in Column */}
-              <div className={styles.enterpriseRightSection}>
-                {[
-                  "Everything from Team plan",
-                  "10+ users",
-                  "Custom integrations",
-                ].map((feature, index) => (
-                  <div key={index} className={styles.enterpriseFeature}>
-                    <div className={styles.enterpriseFeatureCheck}>
-                      <div className={styles.enterpriseFeatureCheckCircle}>
-                        <Check className={styles.enterpriseFeatureCheckIcon} strokeWidth={3} />
-                      </div>
+          <div className={styles.enterpriseCardContainer}>
+            <div className={styles.enterpriseCard}>
+              <div className={styles.enterpriseCardContent}>
+                {/* Left Section - Icon, Info, and Button */}
+                <div className={styles.enterpriseLeftSection}>
+                  <div className={styles.enterpriseHeader}>
+                    <div className={styles.enterpriseIcon}>
+                      <Image src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} width={24} height={24} />
                     </div>
-                    <span className={styles.enterpriseFeatureText}>
-                      {feature}
-                    </span>
+                    <div className={styles.enterpriseInfo}>
+                      <h2 className={styles.enterpriseTitle}>
+                        Enterprise
+                      </h2>
+                      <p className={styles.enterpriseDescription}>
+                        For big agencies and internal marketing teams - custom integrations
+                      </p>
+                    </div>
+
                   </div>
-                ))}
+
+                  {/* Let's talk button in left section */}
+                  <button
+                    className={styles.enterpriseButton}
+                    onClick={() => {
+                      router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
+                    }}
+                  >
+                    <span className={styles.enterpriseButtonText}>
+                      Let's talk
+                    </span>
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className={styles.enterpriseDivider} />
+
+                {/* Right Section - Features in Column */}
+                <div className={styles.enterpriseRightSection}>
+                  {[
+                    "Everything from Team plan",
+                    "10+ users",
+                    "Custom integrations",
+                  ].map((feature, index) => (
+                    <div key={index} className={styles.enterpriseFeature}>
+                      <div className={styles.enterpriseFeatureCheck}>
+                        <div className={styles.enterpriseFeatureCheckCircle}>
+                          <Check className={styles.enterpriseFeatureCheckIcon} strokeWidth={3} />
+                        </div>
+                      </div>
+                      <span className={styles.enterpriseFeatureText}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
       )}
 
       {/* Save 50% Dialog */}

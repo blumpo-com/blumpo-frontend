@@ -56,6 +56,8 @@ Write-Host "   Blog Post Submission Workflow"
 Write-Host "         (Windows Version)"
 Write-Host "============================================"
 Write-Host ""
+Write-Warn "DEPRECATED: Use Sanity Studio to add new blog posts. See docs/BLOG-SANITY-MIGRATION.md"
+Write-Host ""
 
 # Detect repository root
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

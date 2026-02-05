@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
+import { MemeSelectionContent } from './meme-selection';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './page.module.css';
 
@@ -31,64 +33,64 @@ interface NavigationButtonsProps {
   nextLabel?: string;
 }
 
-function NavigationButtons({ 
-  onBack, 
-  onNext, 
-  backLabel = "Back", 
+function NavigationButtons({
+  onBack,
+  onNext,
+  backLabel = "Back",
   nextLabel = "Next",
   showRandomIcon = false
 }: NavigationButtonsProps & { showRandomIcon?: boolean }) {
   return (
     <div className={styles.navigationButtons}>
-      <button 
+      <button
         className={styles.backButton}
         onClick={onBack}
         type="button"
       >
-        <svg 
-          className={styles.arrowIcon} 
-          width="16" 
-          height="16" 
-          viewBox="0 0 11 11" 
+        <svg
+          className={styles.arrowIcon}
+          width="16"
+          height="16"
+          viewBox="0 0 11 11"
           fill="none"
         >
-          <path 
-            d="M6.5 2.5L4 5L6.5 7.5" 
-            stroke="#040404" 
-            strokeWidth="1.5" 
-            strokeLinecap="round" 
+          <path
+            d="M6.5 2.5L4 5L6.5 7.5"
+            stroke="#040404"
+            strokeWidth="1.5"
+            strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
         <span>{backLabel}</span>
       </button>
-      <button 
+      <button
         className={`${styles.nextButton} ${showRandomIcon ? styles.chooseRandom : ''}`}
         onClick={onNext}
         type="button"
       >
         <span>{nextLabel}</span>
         {showRandomIcon ? (
-          <img 
-            src="/assets/icons/Wand.svg" 
-            alt="Magic wand" 
+          <Image
+            src="/assets/icons/Wand.svg"
+            alt="Magic wand"
             className={styles.magicWandIcon}
             width={16}
             height={16}
           />
         ) : (
-          <svg 
-            className={styles.arrowIcon} 
-            width="16" 
-            height="16" 
-            viewBox="0 0 11 11" 
+          <svg
+            className={styles.arrowIcon}
+            width="16"
+            height="16"
+            viewBox="0 0 11 11"
             fill="none"
           >
-            <path 
-              d="M4.5 2.5L7 5L4.5 7.5" 
-              stroke="#F9FAFB" 
-              strokeWidth="1.5" 
-              strokeLinecap="round" 
+            <path
+              d="M4.5 2.5L7 5L4.5 7.5"
+              stroke="#F9FAFB"
+              strokeWidth="1.5"
+              strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
@@ -102,12 +104,12 @@ function CustomizedAdsPageContent() {
   const router = useRouter();
   const { currentBrand } = useBrand();
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // Generation job state
   const [jobId, setJobId] = useState<string | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Photo selection state - persisted across steps
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -115,32 +117,32 @@ function CustomizedAdsPageContent() {
   const [productPhotoUrls, setProductPhotoUrls] = useState<string[]>([]);
   const [previousPhotoUrls, setPreviousPhotoUrls] = useState<string[]>([]);
   const [productPhotoMode, setProductPhotoMode] = useState<'brand' | 'custom' | 'mixed'>('brand');
-  
+
   // Archetype selection state
   const [selectedArchetype, setSelectedArchetype] = useState<string>('problem_solution');
   const [archetypeMode, setArchetypeMode] = useState<'single' | 'random'>('single');
-  
+
   // Format selection state
   const [selectedFormat, setSelectedFormat] = useState<string>('1:1');
   const [formats, setFormats] = useState<string[]>([]);
-  
+
   // Insight selection state
   const [selectedInsights, setSelectedInsights] = useState<string[]>([]);
   const [headlines, setHeadlines] = useState<string[]>([]);
   const [isLoadingHeadlines, setIsLoadingHeadlines] = useState(false);
   const [headlinesError, setHeadlinesError] = useState<string | null>(null);
   const prevArchetypeRef = useRef<string | null>(null);
-  
+
   // Testimonial-specific state (name1 and cta1)
   const [testimonialName, setTestimonialName] = useState<string>('');
   const [testimonialCta, setTestimonialCta] = useState<string>('');
-  
+
   // Brand insights state (cached for reuse across archetypes)
   const [brandInsights, setBrandInsights] = useState<any>(null);
   const [isLoadingBrandInsights, setIsLoadingBrandInsights] = useState(false);
   const brandInsightsBrandIdRef = useRef<string | null>(null);
   const fetchingBrandInsightsRef = useRef<boolean>(false);
-  
+
   // Coming soon dialog state
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -152,7 +154,7 @@ function CustomizedAdsPageContent() {
       }
     };
   }, [previewPhoto]);
-  
+
   // Determine product photo mode based on selection
   useEffect(() => {
     if (selectedSection === 'new' && previewFile) {
@@ -161,7 +163,7 @@ function CustomizedAdsPageContent() {
       setProductPhotoMode('brand');
     }
   }, [selectedSection, previewFile]);
-  
+
   // Determine archetype mode
   useEffect(() => {
     if (selectedArchetype === 'random') {
@@ -170,7 +172,7 @@ function CustomizedAdsPageContent() {
       setArchetypeMode('single');
     }
   }, [selectedArchetype]);
-  
+
   // Determine formats from selected format
   useEffect(() => {
     if (selectedFormat === '1:1-9:16') {
@@ -189,7 +191,7 @@ function CustomizedAdsPageContent() {
       prevBrandIdRef.current = currentBrand?.id || null;
       return;
     }
-    
+
     if (prevBrandIdRef.current && currentBrand?.id && prevBrandIdRef.current !== currentBrand.id) {
       // Clear brand insights when brand changes
       setBrandInsights(null);
@@ -212,7 +214,7 @@ function CustomizedAdsPageContent() {
       setHeadlinesError('No brand selected');
       return;
     }
-    
+
     // Don't fetch if already loading or if headlines are already loaded for this archetype
     if (isLoadingHeadlines) return;
     if (headlines.length > 0 && prevArchetypeRef.current === 'testimonial' && testimonialName) {
@@ -233,7 +235,7 @@ function CustomizedAdsPageContent() {
       const response = await fetch('/api/headlines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           archetypeId: selectedArchetype,
           brandId: currentBrand.id
         }),
@@ -288,18 +290,18 @@ function CustomizedAdsPageContent() {
     try {
       // Fetch brand with insights
       const response = await fetch(`/api/brand/${currentBrand.id}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch brand insights');
       }
 
       const brandData = await response.json();
       const insights = brandData.insights || null;
-      
+
       // Store insights for later use
       setBrandInsights(insights);
       brandInsightsBrandIdRef.current = currentBrand.id;
-      
+
       console.log('brand insights fetched', insights);
     } catch (err) {
       console.error('Error fetching brand insights:', err);
@@ -321,7 +323,7 @@ function CustomizedAdsPageContent() {
         const redditTargetGroup = brandInsights.targetCustomers || [];
         // Convert to string array
         let painPointsArray: string[] = [];
-        
+
         if (Array.isArray(redditTargetGroup)) {
           painPointsArray = redditTargetGroup.map((item: any) => {
             if (typeof item === 'string') {
@@ -334,7 +336,7 @@ function CustomizedAdsPageContent() {
             return String(item);
           }).filter(Boolean);
         }
-        
+
         // Shuffle and get 6 random items
         const shuffled = [...painPointsArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
@@ -343,7 +345,7 @@ function CustomizedAdsPageContent() {
         const targetCustomers = brandInsights.targetCustomers || [];
         // Convert to string array (same logic as problem_solution)
         let customerGroupArray: string[] = [];
-        
+
         if (Array.isArray(targetCustomers)) {
           customerGroupArray = targetCustomers.map((item: any) => {
             if (typeof item === 'string') {
@@ -356,7 +358,7 @@ function CustomizedAdsPageContent() {
             return String(item);
           }).filter(Boolean);
         }
-        
+
         // Shuffle and get 4 random items
         const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
@@ -365,7 +367,7 @@ function CustomizedAdsPageContent() {
         const competitors = brandInsights.competitors || [];
         // Convert to string array
         let competitorsArray: string[] = [];
-        
+
         if (Array.isArray(competitors)) {
           competitorsArray = competitors.map((item: any) => {
             if (typeof item === 'string') {
@@ -378,7 +380,7 @@ function CustomizedAdsPageContent() {
             return String(item);
           }).filter(Boolean);
         }
-        
+
         // Return all competitors (or shuffle if needed)
         return competitorsArray;
       }
@@ -438,7 +440,7 @@ function CustomizedAdsPageContent() {
         setTestimonialCta('');
         setHeadlinesError(null); // Clear error when switching archetypes
       }
-      
+
       if (selectedArchetype === 'testimonial') {
         // Fetch headlines for testimonial (only if not already loaded and no error)
         if (!headlines.length || prevArchetypeRef.current !== 'testimonial' || !testimonialName) {
@@ -472,9 +474,9 @@ function CustomizedAdsPageContent() {
   // Extract insights once brand insights are loaded for problem_solution/value_proposition/competitor_comparison (on step 3 or later)
   useEffect(() => {
     if (
-      currentStep >= 3 && 
-      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') && 
-      brandInsights && 
+      currentStep >= 3 &&
+      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') &&
+      brandInsights &&
       brandInsightsBrandIdRef.current === currentBrand?.id &&
       !isLoadingBrandInsights &&
       (!headlines.length || prevArchetypeRef.current !== selectedArchetype)
@@ -485,7 +487,7 @@ function CustomizedAdsPageContent() {
       prevArchetypeRef.current = selectedArchetype;
     }
   }, [currentStep, selectedArchetype, brandInsights, currentBrand?.id, isLoadingBrandInsights, extractInsightsForArchetype, headlines.length]);
-  
+
 
   // Archetype-specific titles and subtitles for insight selection
   const getInsightStepConfig = () => {
@@ -510,18 +512,22 @@ function CustomizedAdsPageContent() {
         title: "Select target group",
         subtitle: "Customer segments you want to target with your ad"
       },
+      meme: {
+        title: "Select memes",
+        subtitle: "Choose 1-5 meme types that we’ll use to create ad creatives for you"
+      },
       random: {
         title: "Select Insight",
         subtitle: "Choose headlines for your ad"
       }
     };
-    
+
     return configs[selectedArchetype] || configs.problem_solution;
   };
 
   // Step configuration - can be extended for multiple steps
   const insightConfig = useMemo(() => getInsightStepConfig(), [selectedArchetype]);
-  
+
   const stepConfig = useMemo(() => ({
     1: {
       title: "Choose product photos",
@@ -560,7 +566,12 @@ function CustomizedAdsPageContent() {
     4: {
       title: insightConfig.title,
       description: insightConfig.subtitle,
-      content: (
+      content: selectedArchetype === 'meme' ? (
+        <MemeSelectionContent
+          selectedMemeTypes={selectedInsights}
+          onSelectedMemeTypesChange={setSelectedInsights}
+        />
+      ) : (
         <InsightSelectionContent
           selectedArchetype={selectedArchetype}
           headlines={headlines}
@@ -590,7 +601,7 @@ function CustomizedAdsPageContent() {
 
   const handleNext = async () => {
     const maxSteps = Object.keys(stepConfig).length;
-    
+
     // Check if moving to insight selection step with unsupported archetype
     if (currentStep === 3 && currentStep + 1 === maxSteps) {
       const unsupportedArchetypes = ['promotion_offer', 'random'];
@@ -599,32 +610,32 @@ function CustomizedAdsPageContent() {
         return;
       }
     }
-    
+
     // Headlines are now fetched automatically when archetype changes via useEffect
     // No need to fetch here unless we need to ensure they're loaded before step 3
-    
+
     // If on final step (insight selection), upload everything
     if (currentStep === maxSteps) {
       await handleFinalSubmit();
       return;
     }
-    
+
     // Otherwise, just advance to next step
     setCurrentStep(currentStep + 1);
   };
-  
+
   const handleFinalSubmit = async () => {
     if (!currentBrand?.id) {
       console.error('No brand selected');
       return;
     }
-    
+
     const brandId = currentBrand.id;
     setIsLoading(true);
     try {
       // Determine final photo URLs
       let finalPhotoUrls: string[] = [];
-      
+
       // Upload photo if there's a preview file
       if (previewFile) {
         const formData = new FormData();
@@ -649,7 +660,7 @@ function CustomizedAdsPageContent() {
         const heroPhotos = currentBrand.heroPhotos || [];
         finalPhotoUrls = [...heroPhotos, ...brandPhotos];
       }
-      
+
       // Determine insight source based on selection
       // If user selected insights manually, it's 'manual', otherwise 'auto'
       const insightSource = selectedInsights.length > 0 ? 'manual' : 'auto';
@@ -659,12 +670,12 @@ function CustomizedAdsPageContent() {
       if (insightSource === 'auto') {
         autoSelectedInsights = headlines.slice(0, 2);
       }
-      
+
       // Convert archetype code format (problem-solution -> problem_solution)
-      const archetypeCode = selectedArchetype === 'random' 
-        ? null 
+      const archetypeCode = selectedArchetype === 'random'
+        ? null
         : selectedArchetype.replace(/-/g, '_');
-      
+
       // Build archetype inputs based on archetype type
       let archetypeInputs: Record<string, any> = {};
       if (selectedArchetype === 'testimonial') {
@@ -674,7 +685,15 @@ function CustomizedAdsPageContent() {
           cta1: testimonialCta,
         };
       }
-      
+
+      // For meme + "Choose random", send empty selected_insights so n8n uses get_random_workflows_ids
+      const payloadSelectedInsights =
+        archetypeCode === 'meme' && insightSource === 'auto'
+          ? []
+          : insightSource === 'auto'
+            ? autoSelectedInsights
+            : selectedInsights;
+
       // Create generation job with all data
       const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
@@ -686,24 +705,24 @@ function CustomizedAdsPageContent() {
           archetypeCode,
           archetypeMode,
           formats,
-          selectedInsights: insightSource === 'auto' ? autoSelectedInsights : selectedInsights,
+          selectedInsights: payloadSelectedInsights,
           insightSource,
           promotionValueInsight: {}, // Can be extended later with specific promotion data
           archetypeInputs,
         }),
       });
-      
+
       if (!createResponse.ok) {
         const errorData = await createResponse.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create generation job');
       }
-      
+
       const newJob = await createResponse.json();
       setJobId(newJob.id);
       setProductPhotoUrls(finalPhotoUrls);
       setPreviousPhotoUrls(finalPhotoUrls);
       setIsUploaded(true);
-      
+
       // TODO: Navigate to results page or show success message
       console.log('Generation job created successfully');
     } catch (error) {
@@ -713,7 +732,7 @@ function CustomizedAdsPageContent() {
       setIsLoading(false);
     }
   };
-  
+
   // Cleanup on unmount - delete job if not uploaded
   useEffect(() => {
     return () => {
@@ -742,20 +761,20 @@ function CustomizedAdsPageContent() {
           </div>
         </div>
       )}
-      <PageHeader 
+      <PageHeader
         title={currentConfig.title}
         description={currentConfig.description}
       />
-      
+
       <div className={styles.contentArea}>
         {currentConfig.content}
       </div>
 
-      <NavigationButtons 
+      <NavigationButtons
         onBack={handleBack}
         onNext={handleNext}
-        nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
-        showRandomIcon={currentStep === 4 && selectedInsights.length === 0}
+        nextLabel={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3) ? "Choose random" : "Next"}
+        showRandomIcon={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3)}
       />
 
       {/* Coming Soon Dialog */}

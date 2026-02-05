@@ -209,6 +209,8 @@
   transform: scale(0.98);
 }
 
+
+
 /* Card Image Sections */
 .cardImageSection {
   height: 258px;
@@ -224,15 +226,15 @@
 
 /* Gradient backgrounds for each card */
 .cardImageGradient1 {
-  background: linear-gradient(to bottom, #ffffff 0%, #046262 65.897%);
+  background: linear-gradient(to bottom, #ffffff 0%, #8184F4 65.897%);
 }
 
 .cardImageGradient2 {
-  background: linear-gradient(to bottom, #ffffff 0%, #f8f1d2 65.897%);
+  background: linear-gradient(to bottom, #ffffff 0%, #FF7857 65.897%);
 }
 
 .cardImageGradient3 {
-  background: linear-gradient(to bottom, #ffffff 0%, #fc8782 65.897%);
+  background: linear-gradient(to bottom, #ffffff 0%, #A2D37E 65.897%);
 }
 
 .imageContainer {

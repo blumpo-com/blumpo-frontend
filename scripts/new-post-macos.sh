@@ -43,6 +43,8 @@ echo "║   📝 Blog Post Submission Workflow     ║"
 echo "║          (macOS Version)               ║"
 echo "╚════════════════════════════════════════╝"
 echo ""
+warn "DEPRECATED: Use Sanity Studio to add new blog posts. See docs/BLOG-SANITY-MIGRATION.md"
+echo ""
 
 # Detect repository root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

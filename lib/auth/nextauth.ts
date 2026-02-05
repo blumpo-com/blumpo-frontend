@@ -116,6 +116,11 @@ export const authOptions: NextAuthOptions = {
         const interval = urlObj.searchParams.get('interval');
         const websiteUrl = urlObj.searchParams.get('website_url');
         
+        // Handle input-url redirect (after CTA "Make your first free Ad")
+        if (redirectParam === 'input-url') {
+          return `${baseUrl}/input-url`;
+        }
+
         // Handle checkout redirect
         if (redirectParam === 'checkout') {
           if (plan) {

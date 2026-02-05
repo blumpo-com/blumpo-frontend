@@ -16,6 +16,7 @@ export { adArchetype } from './adArchetype';
 export { adWorkflow } from './adWorkflow';
 export { adImage } from './adImage';
 export { adEvent } from './adEvent';
+export { adClone } from './adClone';
 
 // Export individual relations
 export { tokenAccountRelations, tokenLedgerRelations } from './tokens';
@@ -38,6 +39,7 @@ import { adArchetype } from './adArchetype';
 import { adWorkflow } from './adWorkflow';
 import { adImage } from './adImage';
 import { adEvent } from './adEvent';
+import { adClone } from './adClone';
 
 // Define user relations now that all tables are available
 export const userRelations = relations(user, ({ one, many }) => ({
@@ -110,6 +112,15 @@ export const adWorkflowCompleteRelations = relations(adWorkflow, ({ one, many })
     relationName: 'archetypeWorkflows',
   }),
   adEvents: many(adEvent, { relationName: 'workflowEvents' }),
+  adClones: many(adClone),
+}));
+
+// Ad clone relations
+export const adCloneCompleteRelations = relations(adClone, ({ one }) => ({
+  workflow: one(adWorkflow, {
+    fields: [adClone.workflowId],
+    references: [adWorkflow.id],
+  }),
 }));
 
 // Ad image relations
@@ -172,3 +183,4 @@ export type { AdArchetype, NewAdArchetype } from './adArchetype';
 export type { AdWorkflow, NewAdWorkflow } from './adWorkflow';
 export type { AdImage, NewAdImage } from './adImage';
 export type { AdEvent, NewAdEvent } from './adEvent';
+export type { AdClone, NewAdClone } from './adClone';
