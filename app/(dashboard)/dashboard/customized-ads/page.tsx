@@ -686,6 +686,14 @@ function CustomizedAdsPageContent() {
         };
       }
 
+      // For meme + "Choose random", send empty selected_insights so n8n uses get_random_workflows_ids
+      const payloadSelectedInsights =
+        archetypeCode === 'meme' && insightSource === 'auto'
+          ? []
+          : insightSource === 'auto'
+            ? autoSelectedInsights
+            : selectedInsights;
+
       // Create generation job with all data
       const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
@@ -697,7 +705,7 @@ function CustomizedAdsPageContent() {
           archetypeCode,
           archetypeMode,
           formats,
-          selectedInsights: insightSource === 'auto' ? autoSelectedInsights : selectedInsights,
+          selectedInsights: payloadSelectedInsights,
           insightSource,
           promotionValueInsight: {}, // Can be extended later with specific promotion data
           archetypeInputs,
