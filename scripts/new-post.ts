@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+/**
+ * @deprecated This script is deprecated. Use Sanity Studio to add new blog posts.
+ * See docs/BLOG-SANITY-MIGRATION.md for the current blog workflow.
+ */
 
 import fs from 'fs';
 import path from 'path';
@@ -77,8 +81,12 @@ Happy blogging!
  * Main script
  */
 async function main() {
+  console.warn(
+    '⚠️  DEPRECATED: Use Sanity Studio to add new blog posts. See docs/BLOG-SANITY-MIGRATION.md'
+  );
+
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.error('❌ Error: Please provide a post title');
     console.log('\nUsage: pnpm new:post "Your Post Title"');

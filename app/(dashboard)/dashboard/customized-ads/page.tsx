@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useBrand } from '@/lib/contexts/brand-context';
 import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
@@ -70,7 +71,7 @@ function NavigationButtons({
       >
         <span>{nextLabel}</span>
         {showRandomIcon ? (
-          <img
+          <Image
             src="/assets/icons/Wand.svg"
             alt="Magic wand"
             className={styles.magicWandIcon}

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
     // Filter out images with errors and without publicUrl
     // Return all valid images (client-side filtering will handle the rest)
     const validImages = adImages
-      .filter((item) => !item.adImage.errorFlag && item.adImage.publicUrl)
+      .filter((item) => !item.adImage.errorFlag && item.adImage.publicUrl && item.adImage.readyToDisplay)
       .map((item) => ({
         id: item.adImage.id,
         title: item.adImage.title,
