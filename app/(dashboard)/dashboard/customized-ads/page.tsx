@@ -8,6 +8,7 @@ import { PhotoSelectionContent } from './photo-selection';
 import { ArchetypeSelectionContent } from './archetype-selection';
 import { FormatSelectionContent } from './format-selection';
 import { InsightSelectionContent } from './insight-selection';
+import { MemeSelectionContent } from './meme-selection';
 import { Dialog } from '@/components/ui/dialog';
 import styles from './page.module.css';
 
@@ -511,6 +512,10 @@ function CustomizedAdsPageContent() {
         title: "Select target group",
         subtitle: "Customer segments you want to target with your ad"
       },
+      meme: {
+        title: "Select memes",
+        subtitle: "Choose 1-5 meme types that we’ll use to create ad creatives for you"
+      },
       random: {
         title: "Select Insight",
         subtitle: "Choose headlines for your ad"
@@ -561,7 +566,12 @@ function CustomizedAdsPageContent() {
     4: {
       title: insightConfig.title,
       description: insightConfig.subtitle,
-      content: (
+      content: selectedArchetype === 'meme' ? (
+        <MemeSelectionContent
+          selectedMemeTypes={selectedInsights}
+          onSelectedMemeTypesChange={setSelectedInsights}
+        />
+      ) : (
         <InsightSelectionContent
           selectedArchetype={selectedArchetype}
           headlines={headlines}
@@ -676,6 +686,14 @@ function CustomizedAdsPageContent() {
         };
       }
 
+      // For meme + "Choose random", send empty selected_insights so n8n uses get_random_workflows_ids
+      const payloadSelectedInsights =
+        archetypeCode === 'meme' && insightSource === 'auto'
+          ? []
+          : insightSource === 'auto'
+            ? autoSelectedInsights
+            : selectedInsights;
+
       // Create generation job with all data
       const createResponse = await fetch('/api/generation-job', {
         method: 'POST',
@@ -687,7 +705,7 @@ function CustomizedAdsPageContent() {
           archetypeCode,
           archetypeMode,
           formats,
-          selectedInsights: insightSource === 'auto' ? autoSelectedInsights : selectedInsights,
+          selectedInsights: payloadSelectedInsights,
           insightSource,
           promotionValueInsight: {}, // Can be extended later with specific promotion data
           archetypeInputs,
@@ -755,8 +773,8 @@ function CustomizedAdsPageContent() {
       <NavigationButtons
         onBack={handleBack}
         onNext={handleNext}
-        nextLabel={currentStep === 4 && selectedInsights.length === 0 ? "Choose random" : "Next"}
-        showRandomIcon={currentStep === 4 && selectedInsights.length === 0}
+        nextLabel={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3) ? "Choose random" : "Next"}
+        showRandomIcon={currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3)}
       />
 
       {/* Coming Soon Dialog */}

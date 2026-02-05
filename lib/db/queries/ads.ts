@@ -3,6 +3,7 @@ import { db } from "../drizzle";
 import {
   adArchetype,
   adWorkflow,
+  adClone,
   adImage,
   adEvent,
   generationJob,
@@ -340,6 +341,24 @@ export async function getWorkflowsAndArchetypesByWorkflowIds(
     .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code));
 }
 
+/** Ad clones for meme archetype only (workflows with archetype_code = 'meme'). workflow_id is unique in ad_clone, so one row per workflow. */
+export async function getMemeWorkflowsWithPreview() {
+  return await db
+    .select({
+      workflowId: adWorkflow.id,
+      variantKey: adWorkflow.variantKey,
+      storageUrl: adClone.storageUrl,
+    })
+    .from(adClone)
+    .innerJoin(adWorkflow, eq(adClone.workflowId, adWorkflow.id))
+    .where(
+      and(
+        eq(adWorkflow.archetypeCode, "meme"),
+        eq(adWorkflow.isActive, true)
+      )
+    )
+    .orderBy(adWorkflow.variantKey);
+}
 // Quick ads operations
 export async function getQuickAdsForFormat(
   userId: string,
