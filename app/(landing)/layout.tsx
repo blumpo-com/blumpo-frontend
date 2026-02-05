@@ -106,11 +106,13 @@ function Header() {
         <div className="w-full max-w-8xl bg-white/80 backdrop-blur-sm rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
           {/* Logo - always a link */}
           <Link href="/" className="flex items-center">
-            <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
-              blumpo.com
-            </span>
+            <img
+              src="/assets/logo/Blumpo_Logo.svg"
+              alt="Blumpo"
+              className="h-8 md:h-9"
+            />
           </Link>
-          
+
           {/* Mobile: Burger menu button */}
           <button
             onClick={() => setIsMenuOpen(true)}
@@ -140,18 +142,19 @@ function Header() {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div 
-          className={`fixed inset-0 z-[60] bg-background shadow-[0px_4px_4px_0px_rgba(0,0,0,0.04)] ${
-            isClosing ? 'animate-slide-up-to-top' : 'animate-slide-down-from-top'
-          }`}
+        <div
+          className={`fixed inset-0 z-[60] bg-background shadow-[0px_4px_4px_0px_rgba(0,0,0,0.04)] ${isClosing ? 'animate-slide-up-to-top' : 'animate-slide-down-from-top'
+            }`}
         >
           <div className="flex flex-col gap-[36px] h-full px-[40px] py-[17px]">
             {/* Header with logo and close button */}
             <div className="flex items-center justify-between mt-4">
               <Link href="/" className="flex items-center">
-                <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
-                  blumpo.com
-                </span>
+                <img
+                  src="/assets/logo/Blumpo_Logo.svg"
+                  alt="Blumpo"
+                  className="h-8 md:h-9"
+                />
               </Link>
               <button
                 onClick={closeMenu}
@@ -174,12 +177,12 @@ function Header() {
                   {item.label}
                 </Link>
               ))}
-                <Button asChild variant="cta">
-                  <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
-                    Make your first free Ad
-                    <ArrowRight className="w-6 h-6" />
-                  </Link>
-                </Button>
+              <Button asChild variant="cta">
+                <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
+                  Make your first free Ad
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -193,7 +196,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // Hide header on dashboard routes (routes starting with /dashboard) and generating page
   const isDashboardRoute = pathname?.startsWith('/dashboard');
   const isGeneratingRoute = pathname?.startsWith('/generating');
-  
+
   return (
     <section className="flex flex-col min-h-screen">
       {!isDashboardRoute && !isGeneratingRoute && <Header />}

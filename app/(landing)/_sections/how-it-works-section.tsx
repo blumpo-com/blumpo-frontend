@@ -6,6 +6,7 @@ interface Step {
   number: string;
   title: string;
   description: string;
+  asset: string; // path relative to /public/images/landing/how-it-works
 }
 
 const steps: Step[] = [
@@ -13,28 +14,55 @@ const steps: Step[] = [
     number: "01",
     title: "Input your URL",
     description: "Paste your website link, and Blumpo will automatically scan your site to gather your brand assets — including logo, typography, and colors.",
+    asset: "input.mp4",
   },
   {
     number: "02",
     title: "Market research",
     description: "Blumpo AI researches Reddit, Facebook, and YouTube to uncover customer pain points, desired benefits, and your key differentiators — so your ads not only look beautiful but also convert!",
+    asset: "jetpack-canvas.webp",
   },
   {
     number: "03",
     title: "Create high-converting ads",
-    description: "Turn real customer insights into a set of high-performing static ads — crafted using proven creative strategies that consistently drive conversions.",
+    description: "Turn real customer insights into high-performing static ads - pick the ones you like, and let the AI engine learn your preferences.",
+    asset: "tinder-swipe.mov",
   },
   {
     number: "04",
-    title: "Edit & customize",
-    description: "Edit created ads - no design skills required. Pick the ones you like, and Blumpo will generate new variations for you.",
-  },
-  {
-    number: "05",
     title: "Download & publish",
     description: "Launch 10x more content across platforms, 70% faster.",
+    asset: "content-gallery.mov",
   },
 ];
+
+const basePath = "/images/landing/how-it-works";
+
+function StepAsset({ asset }: { asset: string }) {
+  const isVideo = asset.endsWith(".mov") || asset.endsWith(".mp4") || asset.endsWith(".webm");
+  const src = `${basePath}/${asset}`;
+
+  if (isVideo) {
+    return (
+      <video
+        src={src}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="h-full w-full object-cover rounded-[20px]"
+      />
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className="object-cover rounded-[20px]"
+    />
+  );
+}
 
 export function HowItWorksSection() {
   return (
@@ -52,7 +80,7 @@ export function HowItWorksSection() {
                 {step.number}
               </p>
               {/* Long vertical line with gradient - directly below number, extends down */}
-              {step.number !== "05" && (
+              {step.number !== "04" && (
                 <div
                   aria-hidden="true"
                   className={cn(
@@ -83,8 +111,10 @@ export function HowItWorksSection() {
                 </div>
               </div>
 
-              {/* Right side: Image placeholder - aligned to top with title */}
-              <div className="bg-[#c8c8c8] h-[200px] md:h-[249px] rounded-[20px] w-full md:w-auto md:flex-1 md:max-w-[450px] self-start" />
+              {/* Right side: Asset - aligned to top with title */}
+              <div className="h-[200px] md:h-[249px] rounded-[20px] w-full md:w-auto md:flex-1 md:max-w-[450px] self-start overflow-visible">
+                <StepAsset asset={step.asset} />
+              </div>
             </div>
           </div>
         </div>
