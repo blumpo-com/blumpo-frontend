@@ -422,7 +422,8 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
                 src={rightAd.imageUrl}
                 alt="Right ad"
                 fill
-                quality={50}
+                quality={80}
+                sizes={stack === '1:1' ? '(max-width: 768px) 280px, 374px' : '(max-width: 768px) 188px, 252px'}
                 className={styles.cardImage}
                 style={{ objectFit: 'cover', opacity: imageLoading[`right-${rightAd.id}-${stack}`] ? 0 : 1 }}
                 onLoadStart={() => handleImageLoadStart(`right-${rightAd.id}-${stack}`)}
@@ -448,7 +449,8 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
                 src={leftAd.imageUrl}
                 alt="Left ad"
                 fill
-                quality={50}
+                quality={80}
+                sizes={stack === '1:1' ? '(max-width: 768px) 280px, 374px' : '(max-width: 768px) 188px, 252px'}
                 className={styles.cardImage}
                 style={{ objectFit: 'cover', opacity: imageLoading[`left-${leftAd.id}-${stack}`] ? 0 : 1 }}
                 onLoadStart={() => handleImageLoadStart(`left-${leftAd.id}-${stack}`)}
@@ -486,7 +488,8 @@ export function TinderViewMixed({ ads1_1, ads16_9, onAddToLibrary, onDelete, onS
               src={currentAd.imageUrl}
               alt="Current ad"
               fill
-              quality={50}
+              quality={80}
+              sizes={stack === '1:1' ? '(max-width: 768px) 280px, 374px' : '(max-width: 768px) 188px, 252px'}
               className={styles.cardImage}
               style={{ objectFit: 'cover', opacity: imageLoading[`current-${currentAd.id}-${stack}`] ? 0 : 1 }}
               priority
