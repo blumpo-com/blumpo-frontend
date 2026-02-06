@@ -7,6 +7,14 @@ import { findOrCreateJobForMigration, migrateFailedJobAds, cleanupFailedJob } fr
 
 // Callback endpoint - receives POST from n8n
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
+    console.log("[CALLBACK] Skipping callback (test mode)");
+    return NextResponse.json(
+      { error: "Callback disabled in test mode", error_code: "TEST_MODE" },
+      { status: 503 }
+    );
+  }
+
   const callbackStartTime = Date.now();
   console.log('[CALLBACK] Received callback at', new Date().toISOString());
 
