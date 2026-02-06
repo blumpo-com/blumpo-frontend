@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
+import useSWR from 'swr';
 import styles from './page.module.css';
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Image URLs from Figma - these will expire in 7 days
 // const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
@@ -175,7 +178,23 @@ function FeatureCard({
 
 export default function DashboardHomePage() {
   const router = useRouter();
-  const { currentBrand } = useBrand();
+  const { currentBrand, isInitialized } = useBrand();
+  const [isCheckingAds, setIsCheckingAds] = useState(false);
+  // Ref to prevent double execution (React Strict Mode)
+  const hasCheckedBrandRef = useRef<string | null>(null);
+  const { data: brands = [], isLoading: isLoadingBrands } = useSWR<{ id: string }[]>(
+    '/api/brands',
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  // Redirect to input-url when user has no brands
+  useEffect(() => {
+    if (!isInitialized || isLoadingBrands) return;
+    if (Array.isArray(brands) && brands.length === 0) {
+      router.replace('/input-url');
+    }
+  }, [isInitialized, isLoadingBrands, brands, router]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -183,14 +202,99 @@ export default function DashboardHomePage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
+  
+  // Check and maintain quick ads for paid users
+  useEffect(() => {
+    const brandId = currentBrand?.id || null;
+    
+    // Reset ref if brand changed
+    if (brandId && hasCheckedBrandRef.current !== null && hasCheckedBrandRef.current !== brandId) {
+      hasCheckedBrandRef.current = null;
+    }
+    
+    // Don't run if no brand or if we've already checked this brand
+    if (!brandId || hasCheckedBrandRef.current === brandId) {
+      return;
+    }
+    
+    // Don't run if already checking
+    if (isCheckingAds) {
+      return;
+    }
+    
+    // Mark as checked for this brand to prevent double execution
+    hasCheckedBrandRef.current = brandId;
+    
+    const checkAndGenerateQuickAds = async () => {
+      try {
+        setIsCheckingAds(true);
+        
+        const checkResponse = await fetch(`/api/quick-ads/check-paid-user?brandId=${brandId}`);
+        
+        if (!checkResponse.ok) {
+          return;
+        }
 
-  // Example: Access current brand data
-  // console.log('Current brand:', currentBrand);
+        const checkData = await checkResponse.json();
+
+        console.log('checkData', checkData);
+        if (!checkData.isPaid || !checkData.needsGeneration) {
+          return;
+        }
+
+        console.log('brandId', brandId);
+        // User is paid and needs more ads - trigger generation
+        
+        // Generate ads for formats that need them
+        const generatePromises = [];
+        
+        if (checkData.needsGeneration) {
+          // Create quick ads job (generates both formats)
+          generatePromises.push(
+            fetch('/api/quick-ads/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ brandId }),
+            }).then(async (res) => {
+              if (res.ok) {
+                const data = await res.json();
+                // Trigger generation in background
+                return fetch('/api/generate/quick-ads', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ jobId: data.job_id }),
+                }).catch((err) => {
+                  console.error('Background generation error:', err);
+                });
+              }
+            })
+          );
+        }
+
+        // Fire generation requests (don't wait for completion)
+        await Promise.all(generatePromises);
+      } catch (error) {
+        console.error('Error checking/maintaining quick ads:', error);
+      } finally {
+        setIsCheckingAds(false);
+      }
+    };
+
+    checkAndGenerateQuickAds();
+    
+    // Only run once when brand changes, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentBrand?.id]);
 
   // Use NEXT_PUBLIC_ prefix for client-side access
   const IS_TEST_MODE = process.env.NEXT_PUBLIC_IS_TEST_MODE === 'true';
 
-  return (
+  // Don't render dashboard content while redirecting (no brands)
+  if (isInitialized && !isLoadingBrands && Array.isArray(brands) && brands.length === 0) {
+    return null;
+  }
+
+ return (
     <div className={styles.homePage}>
       {/* Test button - only show in test mode */}
       {IS_TEST_MODE && (
@@ -230,7 +334,7 @@ export default function DashboardHomePage() {
           gradientClass={styles.cardImageGradient1}
           frontImage={imgImage2}
           backImage={imgImage1}
-          onButtonClick={() => console.log('Quick Ads clicked')}
+          onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
         />
         <FeatureCard
           title="Customized Ads Generation"

@@ -18,7 +18,7 @@ export function OAuthRedirectHandler() {
       
       if (oauthRedirectCookie) {
         // Parse the cookie value (URLSearchParams format)
-        // Cookie format: "oauth_redirect=redirect=generate&website_url=..."
+        // Cookie format: "oauth_redirect=redirect=generate&website_url=..." or "oauth_redirect=redirect=input-url"
         const cookieValue = oauthRedirectCookie.split('=').slice(1).join('='); // Handle values with = in them
         const params = new URLSearchParams(decodeURIComponent(cookieValue));
         
@@ -28,9 +28,10 @@ export function OAuthRedirectHandler() {
         // Clear the cookie
         document.cookie = 'oauth_redirect=; path=/; max-age=0';
         
-        // Redirect with generation params if needed - redirect to root with params
-        // The url-input-section component will handle starting the generation
-        if (redirect === 'generate' && websiteUrl) {
+        if (redirect === 'input-url') {
+          router.replace('/input-url');
+        } else if (redirect === 'generate' && websiteUrl) {
+          // Redirect with generation params - the generating page will handle the API call
           router.replace(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
         }
       }

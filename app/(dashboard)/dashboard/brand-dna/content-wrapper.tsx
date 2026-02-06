@@ -6,6 +6,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useBrand } from '@/lib/contexts/brand-context';
+import { useUser } from '@/lib/contexts/user-context';
+import { getBrandLimit } from '@/lib/constants/brand-limits';
+import { ErrorDialog } from '@/components/error-dialog';
 import { Brand } from '@/lib/db/schema';
 import styles from './content-wrapper.module.css';
 
@@ -42,6 +45,7 @@ export default function ContentWrapper({
   isUploadingLogo = false
 }: ContentWrapperProps) {
   const { currentBrand, setCurrentBrand } = useBrand();
+  const { user } = useUser();
   const router = useRouter();
   const { data: brands, isLoading: isLoadingBrands } = useSWR<Brand[]>('/api/brands', fetcher, {
     revalidateOnFocus: false,
@@ -52,7 +56,17 @@ export default function ContentWrapper({
     keepPreviousData: true,
   });
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
+  const [brandLimitDialog, setBrandLimitDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    errorCode: string | null;
+  }>({ open: false, title: '', message: '', errorCode: null });
   const brandDropdownRef = useRef<HTMLDivElement>(null);
+
+  const planCode = user?.tokenAccount?.planCode ?? 'FREE';
+  const brandLimit = getBrandLimit(planCode);
+  const isAtBrandLimit = Array.isArray(brands) && brands.length >= brandLimit;
   const logoInputRef = useRef<HTMLInputElement>(null);
   const brandNameTextRef = useRef<HTMLSpanElement>(null);
   const brandNameInnerRef = useRef<HTMLDivElement>(null);
@@ -187,9 +201,17 @@ export default function ContentWrapper({
               iconAlt="New brand"
               label="New brand"
               onClick={() => {
-                console.log('New brand clicked');
                 setIsBrandDropdownOpen(false);
-                // TODO: Navigate to create new brand page or open modal
+                if (isAtBrandLimit) {
+                  setBrandLimitDialog({
+                    open: true,
+                    title: 'Brand Limit Reached',
+                    message: `Your ${planCode} plan allows up to ${brandLimit === Infinity ? 'unlimited' : brandLimit} brand(s). Upgrade your plan to add more brands.`,
+                    errorCode: 'BRAND_LIMIT_REACHED',
+                  });
+                } else {
+                  router.push('/input-url');
+                }
               }}
             />
           </div>
@@ -260,6 +282,16 @@ export default function ContentWrapper({
           </div>
         )}
       </div>
+
+      <ErrorDialog
+        open={brandLimitDialog.open}
+        onClose={() =>
+          setBrandLimitDialog((prev) => ({ ...prev, open: false }))
+        }
+        title={brandLimitDialog.title}
+        message={brandLimitDialog.message}
+        errorCode={brandLimitDialog.errorCode}
+      />
     </>
   );
 }

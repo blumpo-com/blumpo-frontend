@@ -93,6 +93,29 @@ export async function appendTokenLedgerEntry(
   });
 }
 
+
+// Save cancellation reasons from cancel feedback form.
+export async function updateCancellationReasons(userId: string, reasons: string[]) {
+  await db
+    .update(tokenAccount)
+    .set({ cancellationReasons: reasons })
+    .where(eq(tokenAccount.userId, userId));
+}
+
+// Mark retention offer (70% off + 200 credits) as applied; store which renewal has the discount.
+export async function setRetentionOfferApplied(
+  userId: string,
+  retentionDiscountRenewalAt: Date | null
+) {
+  await db
+    .update(tokenAccount)
+    .set({
+      retentionOfferAppliedAt: new Date(),
+      retentionDiscountRenewalAt: retentionDiscountRenewalAt ?? null,
+    })
+    .where(eq(tokenAccount.userId, userId));
+  }
+  
 // Get ledger entry by referenceId and reason
 export async function getLedgerEntryByReference(referenceId: string, reason: string) {
   const result = await db
@@ -103,6 +126,7 @@ export async function getLedgerEntryByReference(referenceId: string, reason: str
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
+
 }
 
 export async function createOrUpdateTokenAccount(

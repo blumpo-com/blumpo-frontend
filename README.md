@@ -15,7 +15,7 @@ This is a starter template for building a SaaS application using **Next.js** wit
 - Global middleware to protect logged-in routes
 - Local middleware to protect Server Actions or validate Zod schemas
 - Activity logging system for any user events
-- **MDX Blog** with automated post submission workflow (`/blog`)
+- **Blog** powered by Sanity CMS (`/blog`)
 
 ## Tech Stack
 
@@ -61,13 +61,13 @@ This will create the following user and team:
 
 You can also create new users through the `/sign-up` route.
 
-Finally, run the Next.js development server:
+Finally, run the Next.js development server (Turbopack):
 
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Use `pnpm dev:webpack` for Webpack if needed.
 
 You can listen for Stripe webhooks locally through their CLI to handle subscription change events:
 
@@ -129,44 +129,13 @@ N8N_WEBHOOK_KEY=superHardPassword
 
 ## Blog Feature
 
-This template includes a full-featured MDX blog system with automated submission workflow.
+The blog is powered by **Sanity CMS**. Create and edit posts in Sanity Studio.
 
-### Quick Start
+- **Studio**: Run the app and open `/studio` to manage blog content, or use a separate Studio deployment.
+- **Docs**: See `docs/BLOG-SANITY-MIGRATION.md` for the Sanity blog workflow and migration from MDX.
+- **View posts**: Visit `http://localhost:3000/blog`
 
-Create a new blog post:
-
-**Linux/macOS:**
-```bash
-bash scripts/new-post-linux.sh    # or new-post-macos.sh
-```
-
-**Windows:**
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/new-post-windows.ps1
-```
-
-The workflow will:
-- Guide you through creating a post (paste content or provide a file path)
-- Auto-generate frontmatter with SEO fields
-- Normalize image paths and copy images to the post directory
-- Create a git branch and push
-- Open a GitHub Pull Request with a checklist
-
-### Manual Post Creation
-
-Alternatively, use the simple script:
-
-```bash
-pnpm new:post "Your Post Title"
-```
-
-This creates a basic post scaffold with draft mode enabled.
-
-### Documentation
-
-- **Blog Usage**: See `docs/blog-post-workflow.md` for complete workflow documentation
-- **Development**: Run `pnpm dev:webpack` for full MDX plugin support
-- **View Posts**: Visit `http://localhost:3000/blog`
+Legacy scripts (`scripts/new-post*.ts`, `scripts/new-post-*.sh`, `scripts/new-post-windows.ps1`, `scripts/blog-utils.mjs`) are **deprecated**; use Sanity to add new posts.
 
 ## Other Templates
 

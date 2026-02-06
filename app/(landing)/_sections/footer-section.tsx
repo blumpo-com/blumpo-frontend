@@ -44,7 +44,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center lg:hidden">
           <Button asChild variant="cta">
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
               Make your first free Ad
               <ArrowRight className="w-6 h-6" />
             </Link>
@@ -175,7 +175,7 @@ export function Footer() {
             {/* Logo */}
             <Link href="/" className="flex items-center">
               <Image
-                src="/assets/logo/Blumpo Logo.svg"
+                src="/assets/logo/Blumpo_Logo.svg"
                 alt="Blumpo"
                 width={144}
                 height={56}

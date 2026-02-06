@@ -43,7 +43,7 @@ export function HeroSection() {
               </div>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl xl:text-7xl text-center lg:text-left">
-              Create AI B2B SaaS
+              Create AI B2B
               <span className="block gradient-secondary bg-clip-text text-transparent">
                 ads that win
               </span>
@@ -79,7 +79,7 @@ export function HeroSection() {
             {/* Mobile: Button instead of URL input */}
             <div className="flex flex-col items-center lg:hidden mt-5">
               <Button asChild variant="cta">
-                <Link href="/dashboard" className="flex items-center gap-2">
+                <Link href="/sign-in?redirect=input-url" className="flex items-center gap-2">
                   Make your first free Ad
                   <ArrowRight className="w-6 h-6" />
                 </Link>

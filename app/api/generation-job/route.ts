@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/db/queries';
-import { updateGenerationJob, getGenerationJobById, deleteGenerationJob } from '@/lib/db/queries/generation';
+import { updateGenerationJob, getGenerationJobById, deleteGenerationJob, hardDeleteGenerationJob } from '@/lib/db/queries/generation';
 import { db } from '@/lib/db/drizzle';
 import { generationJob } from '@/lib/db/schema';
 import { randomUUID } from 'crypto';
@@ -132,8 +132,12 @@ export async function DELETE(req: Request) {
     if (!job || job.userId !== user.id) {
       return NextResponse.json({ error: 'Job not found' }, { status: 404 });
     }
-
-    await deleteGenerationJob(jobId);
+    // Hard delete for FAILED/CANCELED so user can regenerate (create new job with same URL)
+    if (job.status === 'FAILED' || job.status === 'CANCELED') {
+      await hardDeleteGenerationJob(jobId);
+    } else {
+      await deleteGenerationJob(jobId);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting generation job:', error);

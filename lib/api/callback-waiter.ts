@@ -60,15 +60,16 @@ const isRedisAvailable = () => {
 };
 
 // Fallback in-memory store for local development
+// Supports multiple concurrent waiters per job (e.g. page reload during generation)
 declare global {
   // eslint-disable-next-line no-var
   var __blumpoPendingCallbacks: Map<
     string,
-    {
+    Array<{
       resolve: (data: any) => void;
       reject: (error: Error) => void;
       timeout: NodeJS.Timeout;
-    }
+    }>
   > | undefined;
 }
 
@@ -76,11 +77,11 @@ const pendingCallbacks =
   globalThis.__blumpoPendingCallbacks ??
   (globalThis.__blumpoPendingCallbacks = new Map<
     string,
-    {
+    Array<{
       resolve: (data: any) => void;
       reject: (error: Error) => void;
       timeout: NodeJS.Timeout;
-    }
+    }>
   >());
 
 // Function to wait for callback (called from generate route)
@@ -147,10 +148,8 @@ async function waitForCallbackRedis(
           const waitDuration = Date.now() - startTime;
           console.log('[CALLBACK-WAITER] Callback result found in Redis after', waitDuration, 'ms for job:', jobId);
           
-          // Clean up Redis key
-          await redis.del(redisKey).catch((err: unknown) => {
-            console.warn('[CALLBACK-WAITER] Error cleaning up Redis key:', err);
-          });
+          // Do NOT delete the key here - multiple concurrent waiters may be polling for the same job
+          // (e.g. page reload while generation in progress). TTL will clean up the key automatically.
           
           if (result.error) {
             reject(new Error(result.error));
@@ -189,47 +188,39 @@ function waitForCallbackMemory(
   maxWaitTime: number
 ): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
   return new Promise((resolve, reject) => {
-    // Check if callback already arrived (race condition protection)
-    const existing = pendingCallbacks.get(jobId);
-    if (existing) {
-      console.warn('[CALLBACK-WAITER] Job ID already exists, cleaning up old entry:', jobId);
-      clearTimeout(existing.timeout);
-      pendingCallbacks.delete(jobId);
-    }
-
     console.log('[CALLBACK-WAITER] Creating timeout for job:', jobId);
-    // Set timeout
     const timeout = setTimeout(() => {
-      const pending = pendingCallbacks.get(jobId);
-      console.log('[CALLBACK-WAITER] Timeout fired for job:', jobId, 'pending exists:', !!pending);
-      if (pending) {
-        console.error('[CALLBACK-WAITER] Timeout fired for job:', jobId, 'after', maxWaitTime, 'ms');
-        pendingCallbacks.delete(jobId);
-        reject(new Error('Callback timeout - exceeded maximum wait time'));
-      } else {
-        console.warn('[CALLBACK-WAITER] Timeout fired but no pending callback found for job:', jobId);
+      const handlers = pendingCallbacks.get(jobId);
+      if (handlers) {
+        const idx = handlers.findIndex((h) => h.timeout === timeout);
+        if (idx >= 0) {
+          handlers.splice(idx, 1);
+          if (handlers.length === 0) pendingCallbacks.delete(jobId);
+          console.error('[CALLBACK-WAITER] Timeout fired for job:', jobId, 'after', maxWaitTime, 'ms');
+          reject(new Error('Callback timeout - exceeded maximum wait time'));
+        }
       }
     }, maxWaitTime);
 
-    // Store the promise handlers
     const callbackHandlers = {
       resolve: (data: any) => {
-        console.log('[CALLBACK-WAITER] Resolve handler called for job:', jobId);
         clearTimeout(timeout);
-        console.log('[CALLBACK-WAITER] Resolving promise for job:', jobId);
         resolve(data);
       },
       reject: (error: Error) => {
-        console.log('[CALLBACK-WAITER] Reject handler called for job:', jobId);
         clearTimeout(timeout);
-        console.log('[CALLBACK-WAITER] Rejecting promise for job:', jobId);
         reject(error);
       },
       timeout,
     };
-    
-    pendingCallbacks.set(jobId, callbackHandlers);
-    console.log('[CALLBACK-WAITER] Stored pending callback for job:', jobId, 'total pending:', pendingCallbacks.size);
+
+    const existing = pendingCallbacks.get(jobId);
+    if (existing) {
+      existing.push(callbackHandlers);
+    } else {
+      pendingCallbacks.set(jobId, [callbackHandlers]);
+    }
+    console.log('[CALLBACK-WAITER] Stored pending callback for job:', jobId, 'waiters:', pendingCallbacks.get(jobId)?.length ?? 0);
   });
 }
 
@@ -279,22 +270,20 @@ async function resolveCallbackRedis(jobId: string, data: { status: string; image
 
 // In-memory implementation (for local development)
 function resolveCallbackMemory(jobId: string, data: { status: string; images: any[]; error_message?: string; error_code?: string }) {
-  const pending = pendingCallbacks.get(jobId);
-  if (pending) {
-    console.log('[CALLBACK-WAITER] Found pending callback for job:', jobId);
-    // Remove from map BEFORE calling resolve to prevent double resolution
+  const handlers = pendingCallbacks.get(jobId);
+  if (handlers && handlers.length > 0) {
     pendingCallbacks.delete(jobId);
-    console.log('[CALLBACK-WAITER] Removed from map, calling pending.resolve for job:', jobId);
-    try {
-      pending.resolve(data);
-      console.log('[CALLBACK-WAITER] Resolve called successfully, remaining callbacks:', pendingCallbacks.size);
-    } catch (error) {
-      console.error('[CALLBACK-WAITER] Error calling resolve handler:', error);
-      throw error;
+    console.log('[CALLBACK-WAITER] Resolving', handlers.length, 'waiter(s) for job:', jobId);
+    for (const h of handlers) {
+      try {
+        clearTimeout(h.timeout);
+        h.resolve(data);
+      } catch (error) {
+        console.error('[CALLBACK-WAITER] Error calling resolve handler:', error);
+      }
     }
   } else {
-    console.warn('[CALLBACK-WAITER] No pending callback found for job:', jobId, '- callback arrived after timeout or request was cancelled');
-    console.warn('[CALLBACK-WAITER] Available job IDs:', Array.from(pendingCallbacks.keys()));
+    console.warn('[CALLBACK-WAITER] No pending callback found for job:', jobId);
   }
 }
 
@@ -340,10 +329,17 @@ async function rejectCallbackRedis(jobId: string, error: Error) {
 
 // In-memory implementation (for local development)
 function rejectCallbackMemory(jobId: string, error: Error) {
-  const pending = pendingCallbacks.get(jobId);
-  if (pending) {
+  const handlers = pendingCallbacks.get(jobId);
+  if (handlers && handlers.length > 0) {
     pendingCallbacks.delete(jobId);
-    pending.reject(error);
+    for (const h of handlers) {
+      try {
+        clearTimeout(h.timeout);
+        h.reject(error);
+      } catch (_) {
+        /* ignore */
+      }
+    }
   } else {
     console.warn('[CALLBACK-WAITER] No pending callback found to reject for job:', jobId);
   }
