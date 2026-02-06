@@ -57,22 +57,24 @@ export async function findOrCreateJobForMigration(
       job: generationJob,
       format1x1Count: sql<number>`
         COALESCE((
-          SELECT COUNT(*)::int FROM ${adImage} 
-          WHERE ${adImage.jobId} = ${generationJob.id} 
-          AND ${adImage.format} = '1:1' 
-          AND ${adImage.isDeleted} = false
-          AND ${adImage.readyToDisplay} = false
+          SELECT COUNT(*)::int 
+          FROM ad_image ai
+          WHERE ai.job_id = generation_job.id
+            AND ai.format = '1:1'
+            AND ai.is_deleted = false
+            AND ai.ready_to_display = false
         ), 0)
-      `,
+      `.as('format1x1Count'),
       format9x16Count: sql<number>`
         COALESCE((
-          SELECT COUNT(*)::int FROM ${adImage} 
-          WHERE ${adImage.jobId} = ${generationJob.id} 
-          AND ${adImage.format} = '9:16' 
-          AND ${adImage.isDeleted} = false
-          AND ${adImage.readyToDisplay} = false
+          SELECT COUNT(*)::int 
+          FROM ad_image ai
+          WHERE ai.job_id = generation_job.id
+            AND ai.format = '9:16'
+            AND ai.is_deleted = false
+            AND ai.ready_to_display = false
         ), 0)
-      `,
+      `.as('format9x16Count'),
     })
     .from(generationJob)
     .where(
@@ -142,14 +144,18 @@ export async function findOrCreateJobForMigration(
 /**
  * Migrate ads from a failed job to an existing or new job
  * - Matches ads by workflowId to ensure format pairs (1:1 and 9:16)
+ * - Only migrates enough pairs to reach 5 ads per format in target job (doesn't exceed)
+ * - Creates new jobs for remaining pairs if needed
+ * - Sets target job status to SUCCEEDED if it reaches 5 ads in each format
  * - Removes orphaned ads (ads without matching format pair)
- * - Updates ads to point to the target job
- * - Returns the number of ads migrated
+ * - Returns the number of ads migrated and jobs created
  */
 export async function migrateFailedJobAds(
   failedJobId: string,
-  targetJobId: string
-): Promise<{ migrated: number; orphaned: number }> {
+  targetJobId: string,
+  userId: string,
+  brandId: string | null
+): Promise<{ migrated: number; orphaned: number; newJobsCreated: number }> {
   // Get all ads from the failed job
   const failedJobAds = await getAdImagesByJobId(failedJobId);
   
@@ -157,8 +163,23 @@ export async function migrateFailedJobAds(
   const validAds = failedJobAds.filter(ad => !ad.isDeleted);
 
   if (validAds.length === 0) {
-    return { migrated: 0, orphaned: 0 };
+    return { migrated: 0, orphaned: 0, newJobsCreated: 0 };
   }
+
+  // Get current ad counts for target job
+  const targetJobAds = await getAdImagesByJobId(targetJobId);
+  const targetJobValidAds = targetJobAds.filter(ad => !ad.isDeleted && !ad.readyToDisplay);
+  const targetJob1x1Count = targetJobValidAds.filter(ad => ad.format === '1:1').length;
+  const targetJob9x16Count = targetJobValidAds.filter(ad => ad.format === '9:16').length;
+
+  console.log(`[QUICK-ADS-MIGRATION] Target job ${targetJobId} has ${targetJob1x1Count} 1:1 ads and ${targetJob9x16Count} 9:16 ads`);
+
+  // Calculate how many pairs we need to reach 5 per format
+  const needed1x1 = Math.max(0, 5 - targetJob1x1Count);
+  const needed9x16 = Math.max(0, 5 - targetJob9x16Count);
+  const pairsNeeded = Math.max(needed1x1, needed9x16);
+
+  console.log(`[QUICK-ADS-MIGRATION] Need ${pairsNeeded} pairs to fill target job (need ${needed1x1} 1:1, ${needed9x16} 9:16)`);
 
   // Group ads by workflowId
   const adsByWorkflow = new Map<string, typeof validAds>();
@@ -188,9 +209,12 @@ export async function migrateFailedJobAds(
     }
   }
 
-  // Migrate pairs to target job
+  // Migrate only the pairs needed to fill the target job (up to 5 per format)
+  const pairsToMigrate = pairs.slice(0, pairsNeeded);
+  const remainingPairs = pairs.slice(pairsNeeded);
+
   const adsToMigrate: string[] = [];
-  for (const pair of pairs) {
+  for (const pair of pairsToMigrate) {
     adsToMigrate.push(pair.ad1x1.id);
     adsToMigrate.push(pair.ad9x16.id);
   }
@@ -201,6 +225,75 @@ export async function migrateFailedJobAds(
       .update(adImage)
       .set({ jobId: targetJobId })
       .where(inArray(adImage.id, adsToMigrate));
+    
+    console.log(`[QUICK-ADS-MIGRATION] Migrated ${pairsToMigrate.length} pairs (${adsToMigrate.length} ads) to target job ${targetJobId}`);
+  }
+
+  // Check if target job now has 5 ads in each format and update status to SUCCEEDED
+  const updatedTargetJobAds = await getAdImagesByJobId(targetJobId);
+  const updatedTargetJobValidAds = updatedTargetJobAds.filter(ad => !ad.isDeleted && !ad.readyToDisplay);
+  const updatedTargetJob1x1Count = updatedTargetJobValidAds.filter(ad => ad.format === '1:1').length;
+  const updatedTargetJob9x16Count = updatedTargetJobValidAds.filter(ad => ad.format === '9:16').length;
+
+  if (updatedTargetJob1x1Count >= 5 && updatedTargetJob9x16Count >= 5) {
+    const targetJob = await getGenerationJobById(targetJobId);
+    if (targetJob && targetJob.status !== 'SUCCEEDED') {
+      await db
+        .update(generationJob)
+        .set({
+          status: 'SUCCEEDED',
+          completedAt: new Date(),
+        })
+        .where(eq(generationJob.id, targetJobId));
+      console.log(`[QUICK-ADS-MIGRATION] Target job ${targetJobId} now has 5+ ads in both formats, setting status to SUCCEEDED`);
+    }
+  }
+
+  // Create new jobs for remaining pairs
+  let newJobsCreated = 0;
+  let currentNewJob: { id: string; status: string } | null = null;
+  let currentNewJobAds: typeof validAds = [];
+
+  for (const pair of remainingPairs) {
+    // Check if we need a new job or can use the current one
+    if (!currentNewJob || currentNewJobAds.length >= 10) {
+      // Create a new job
+      currentNewJob = await findOrCreateJobForMigration(userId, brandId);
+      currentNewJobAds = [];
+      newJobsCreated++;
+      console.log(`[QUICK-ADS-MIGRATION] Created/found new job ${currentNewJob.id} for remaining pairs`);
+    }
+
+    // Migrate pair to current new job
+    await db
+      .update(adImage)
+      .set({ jobId: currentNewJob.id })
+      .where(inArray(adImage.id, [pair.ad1x1.id, pair.ad9x16.id]));
+    
+    currentNewJobAds.push(pair.ad1x1, pair.ad9x16);
+
+    // Check if this new job now has 5 ads in each format
+    const newJobAds = await getAdImagesByJobId(currentNewJob.id);
+    const newJobValidAds = newJobAds.filter(ad => !ad.isDeleted && !ad.readyToDisplay);
+    const newJob1x1Count = newJobValidAds.filter(ad => ad.format === '1:1').length;
+    const newJob9x16Count = newJobValidAds.filter(ad => ad.format === '9:16').length;
+
+    if (newJob1x1Count >= 5 && newJob9x16Count >= 5) {
+      const newJob = await getGenerationJobById(currentNewJob.id);
+      if (newJob && newJob.status !== 'SUCCEEDED') {
+        await db
+          .update(generationJob)
+          .set({
+            status: 'SUCCEEDED',
+            completedAt: new Date(),
+          })
+          .where(eq(generationJob.id, currentNewJob.id));
+        console.log(`[QUICK-ADS-MIGRATION] New job ${currentNewJob.id} now has 5+ ads in both formats, setting status to SUCCEEDED`);
+        // Reset to create a new job for next pairs
+        currentNewJob = null;
+        currentNewJobAds = [];
+      }
+    }
   }
 
   // Delete orphaned ads from Vercel Blob and mark as deleted in DB
@@ -236,6 +329,7 @@ export async function migrateFailedJobAds(
   return {
     migrated: adsToMigrate.length,
     orphaned: orphanedIds.length,
+    newJobsCreated,
   };
 }
 
