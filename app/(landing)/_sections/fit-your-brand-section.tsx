@@ -182,7 +182,7 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
   return (
     <div
       className={cn(
-        "bg-white border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]",
+        "bg-white border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 regular-shadow",
         // Mobile
         "w-full",
         // Desktop
@@ -366,7 +366,7 @@ export function FitYourBrandSection() {
         <div className="flex justify-center mt-[45px]">
           <div
             className={cn(
-              "bg-[#f9fafb] border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]",
+              "bg-[#f9fafb] border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 regular-shadow",
               "w-[538px] h-[178px] items-center text-center justify-center"
             )}
           >

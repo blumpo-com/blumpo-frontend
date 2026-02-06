@@ -66,28 +66,30 @@ function StepAsset({ asset }: { asset: string }) {
 
 export function HowItWorksSection() {
   return (
-    <div className="mt-9 flex flex-col gap-14 md:gap-30">
+    <div className="mt-9 flex flex-col gap-26 md:gap-36">
       {steps.map((step, index) => (
         <div
           key={index}
+          className="relative overflow-visible"
         >
           {/* Content area */}
-          <div className="flex gap-[26px] w-full md:w-auto md:flex-1  relative">
-            {/* Left: Number and long gradient line */}
+          <div className="flex gap-[26px] w-full md:w-auto md:flex-1 relative">
+            {/* Left: Number and long gradient line - line extends beyond video height */}
             <div className="flex flex-col items-center relative w-[78px] shrink-0 self-stretch">
               {/* Number */}
               <p className="text-[30px] font-bold text-[#0a0a0a] w-[78px] shrink-0 leading-[50px] text-center">
                 {step.number}
               </p>
-              {/* Long vertical line with gradient - directly below number, extends down */}
+              {/* Long vertical line with gradient - extends 160px beyond video/asset height */}
               {step.number !== "04" && (
                 <div
                   aria-hidden="true"
                   className={cn(
-                    "absolute bottom-0 left-1/2 top-[50px] w-[3px] -translate-x-1/2",
-                    index % 2 === 0 ? "bg-gradient-to-b" : "bg-gradient-to-t",
-                    "from-brand-secondary via-brand-tertiary to-brand-primary"
+                    "absolute left-1/2 top-[50px] w-[3px] -translate-x-1/2 h-[100%] md:h-[120%]",
+                    "from-brand-secondary via-brand-tertiary to-brand-primary",
+                    index % 2 === 0 ? "bg-gradient-to-b" : "bg-gradient-to-t"
                   )}
+
                 />
               )}
             </div>
@@ -112,7 +114,7 @@ export function HowItWorksSection() {
               </div>
 
               {/* Right side: Asset */}
-              <div className="aspect-[450/249] rounded-[20px] w-full md:flex-1 md:max-w-[450px] self-start overflow-hidden min-h-0">
+              <div className="aspect-[450/300] rounded-[20px] w-full md:flex-1 md:max-w-[450px] self-start overflow-hidden min-h-0">
                 <StepAsset asset={step.asset} />
               </div>
             </div>

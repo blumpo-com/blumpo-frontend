@@ -28,9 +28,9 @@ interface PricingCardProps {
 
 function EnterpriseTalkButton() {
   const router = useRouter();
-  
+
   return (
-    <button 
+    <button
       className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
       onClick={() => {
         router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
@@ -131,7 +131,7 @@ function PricingCard({
       </div>
 
       {isCurrentPlan ? (
-        <button 
+        <button
           disabled
           className="bg-[#0a0a0a] h-[45px] flex items-center justify-center gap-2 rounded-[8px] w-full my-4 cursor-not-allowed"
         >
@@ -145,7 +145,7 @@ function PricingCard({
           <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
           {planCode && <input type="hidden" name="planCode" value={planCode} className="hidden" />}
           <input type="hidden" name="interval" value={isAnnual ? "annual" : "monthly"} className="hidden" />
-          <button 
+          <button
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
           >
@@ -157,7 +157,7 @@ function PricingCard({
       ) : buttonText === "Let's talk" ? (
         <EnterpriseTalkButton />
       ) : (
-        <button 
+        <button
           disabled
           className="bg-gray-300 h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-not-allowed"
         >
@@ -211,65 +211,65 @@ const subscriptionPlans: Array<{
   features: string[];
   planCode?: string;
 }> = [
-  {
-    id: "starter",
-    name: "Starter",
-    icon: "bolt",
-    price: { monthly: 34, annual: 17 },
-    credits: "500 credits (50 ads) / month",
-    description: "For individual creators",
-    features: [
-      "Ads creation in 10+ archetypes",
-      "Various sizes and formats\n(1:1, 9:16)",
-      "1 Brand",
-    ],
-    planCode: "STARTER",
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    icon: "star",
-    price: { monthly: 79, annual: 39 },
-    credits: "1500 credits (150 ads) / month",
-    description: "For small businesses and marketers",
-    features: [
-      "Ads creation in 10+ archetypes",
-      "Various sizes and formats\n(1:1, 9:16)",
-      "Customer & competitor insight\naccess",
-      "Up to 3 brands",
-    ],
-    planCode: "GROWTH",
-  },
-  {
-    id: "team",
-    name: "Team Plan",
-    icon: "team",
-    price: { monthly: 399, annual: 199 },
-    credits: "20,000 credits (2000 ads) / month",
-    description: "Ideal for medium size agencies and marketing teams",
-    features: [
-      "Ads creation in 10+ archetypes",
-      "Various sizes and formats\n(1:1, 9:16)",
-      "Customer & competitor insight\naccess",
-      "Unlimited number of brands",
-      "Up to 5 users",
-    ],
-    planCode: "TEAM",
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    icon: "enterprise",
-    price: null,
-    credits: null,
-    description: "For big agencies and internal marketing teams - custom integrations",
-    features: [
-      "Everything from Team plan",
-      "10+ users",
-      "Custom integrations",
-    ],
-  },
-];
+    {
+      id: "starter",
+      name: "Starter",
+      icon: "bolt",
+      price: { monthly: 34, annual: 17 },
+      credits: "500 credits (50 ads) / month",
+      description: "For individual creators",
+      features: [
+        "Ads creation in 10+ archetypes",
+        "Various sizes and formats\n(1:1, 9:16)",
+        "1 Brand",
+      ],
+      planCode: "STARTER",
+    },
+    {
+      id: "growth",
+      name: "Growth",
+      icon: "star",
+      price: { monthly: 79, annual: 39 },
+      credits: "1500 credits (150 ads) / month",
+      description: "For small businesses and marketers",
+      features: [
+        "Ads creation in 10+ archetypes",
+        "Various sizes and formats\n(1:1, 9:16)",
+        "Customer & competitor insight\naccess",
+        "Up to 3 brands",
+      ],
+      planCode: "GROWTH",
+    },
+    {
+      id: "team",
+      name: "Team Plan",
+      icon: "team",
+      price: { monthly: 399, annual: 199 },
+      credits: "20,000 credits (2000 ads) / month",
+      description: "Ideal for medium size agencies and marketing teams",
+      features: [
+        "Ads creation in 10+ archetypes",
+        "Various sizes and formats\n(1:1, 9:16)",
+        "Customer & competitor insight\naccess",
+        "Unlimited number of brands",
+        "Up to 5 users",
+      ],
+      planCode: "TEAM",
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      icon: "enterprise",
+      price: null,
+      credits: null,
+      description: "For big agencies and internal marketing teams - custom integrations",
+      features: [
+        "Everything from Team plan",
+        "10+ users",
+        "Custom integrations",
+      ],
+    },
+  ];
 
 interface PricingSectionProps {
   checkoutAction?: (formData: FormData) => Promise<void>;
@@ -279,18 +279,18 @@ interface PricingSectionProps {
   allowCheckoutWithoutPriceId?: boolean;
 }
 
-export function PricingSection({ 
+export function PricingSection({
   checkoutAction,
   currentPlanCode,
   showEnterprise = false,
   planPrices = {},
   allowCheckoutWithoutPriceId = false,
-}: PricingSectionProps = {}) { 
+}: PricingSectionProps = {}) {
   const [isAnnual, setIsAnnual] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
-  const displayPlans = showEnterprise 
-    ? subscriptionPlans 
+  const displayPlans = showEnterprise
+    ? subscriptionPlans
     : subscriptionPlans.filter(p => p.id !== "enterprise");
 
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
@@ -345,7 +345,7 @@ export function PricingSection({
         ))}
       </div>
 
-      <div className="max-[1300px]:block min-[1301px]:hidden">
+      <div className="max-[1300px]:flex min-[1301px]:hidden justify-center">
         <PricingCard
           name={currentPlan.name}
           icon={currentPlan.icon}
@@ -370,7 +370,7 @@ export function PricingSection({
         {displayPlans.map((plan) => {
           const planPriceMap = plan.planCode ? planPrices[plan.planCode] : null;
           const isCurrent = currentPlanCode ? plan.planCode === currentPlanCode : false;
-          
+
           return (
             <PricingCard
               key={plan.id}

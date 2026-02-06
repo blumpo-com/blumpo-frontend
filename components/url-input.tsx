@@ -41,8 +41,8 @@ export function UrlInput({ onSubmit, isLoading = false, placeholder = 'example.c
 
   return (
     <div>
-      <div className="relative rounded-xl shadow-md p-[2px] bg-gradient-to-r from-brand-secondary via-brand-tertiary to-brand-primary">
-        <div className="flex items-center rounded-[10px] bg-[#ffffff] py-1">
+      <div className="relative rounded-xl p-[2px] bg-gradient-to-r from-brand-secondary via-brand-tertiary to-brand-primary sexy-shadow">
+        <div className="flex items-center rounded-[10px] bg-[#ffffff] py-2">
           <Input
             type="text"
             value={url}
@@ -53,7 +53,7 @@ export function UrlInput({ onSubmit, isLoading = false, placeholder = 'example.c
             placeholder={placeholder}
             aria-invalid={isInvalid}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-0 text-black placeholder:text-gray-500 py-6 px-6 rounded-l-[10px] focus-visible:ring-0 focus-visible:outline-none"
+            className="flex-1 bg-transparent border-0 shadow-none text-black placeholder:text-black py-6 px-6 rounded-l-[10px] focus-visible:ring-0 focus-visible:outline-none"
           />
           <button
             onClick={handleSubmit}
