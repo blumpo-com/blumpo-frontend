@@ -38,9 +38,10 @@ const steps: Step[] = [
 
 const basePath = "/images/landing/how-it-works";
 
-function StepAsset({ asset }: { asset: string }) {
+function StepAsset({ asset, objectFit = "cover" }: { asset: string; objectFit?: "cover" | "contain" }) {
   const isVideo = asset.endsWith(".mov") || asset.endsWith(".mp4") || asset.endsWith(".webm");
   const src = `${basePath}/${asset}`;
+  const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
 
   if (isVideo) {
     return (
@@ -50,7 +51,7 @@ function StepAsset({ asset }: { asset: string }) {
         loop
         muted
         playsInline
-        className="h-full w-full object-cover rounded-[20px]"
+        className={cn("h-full w-full rounded-[18px]", fitClass)}
       />
     );
   }
@@ -59,7 +60,7 @@ function StepAsset({ asset }: { asset: string }) {
     <img
       src={src}
       alt=""
-      className="h-full w-full object-cover rounded-[20px]"
+      className={cn("h-full w-full rounded-[18px]", fitClass)}
     />
   );
 }
@@ -113,9 +114,22 @@ export function HowItWorksSection() {
                 </div>
               </div>
 
-              {/* Right side: Asset */}
-              <div className="aspect-[450/300] rounded-[20px] w-full md:flex-1 md:max-w-[450px] self-start overflow-hidden min-h-0">
-                <StepAsset asset={step.asset} />
+              {/* Right side: Asset - 2px gradient border; step 02: blue bg, animation takes half */}
+              <div className="rounded-[20px] p-[2px] gradient-primary w-full md:flex-1 md:max-w-[450px] self-start min-h-0">
+                <div
+                  className={cn(
+                    "aspect-[560/300] rounded-[18px] w-full h-full overflow-hidden min-h-0",
+                    step.number === "02" ? "bg-[#6391B9] flex items-center justify-center" : "bg-background"
+                  )}
+                >
+                  {step.number === "02" ? (
+                    <div className="w-[100%] h-[100%] flex items-center justify-center min-w-0 min-h-0 rounded-[18px] overflow-hidden">
+                      <StepAsset asset={step.asset} objectFit="contain" />
+                    </div>
+                  ) : (
+                    <StepAsset asset={step.asset} />
+                  )}
+                </div>
               </div>
             </div>
           </div>
