@@ -34,22 +34,29 @@ export function JetpackAdIllustration({
       <div className="relative w-full max-w-[460px] h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.4]">
         {/* Layer 1: ad template (back) – size via adImageClassName, no stretch */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className={cn("relative", adImageClassName ?? "w-full h-full")}>
+          <div
+            className={cn(
+              "relative",
+              adImageClassName ?? "w-full max-h-full aspect-[16/10]"
+            )}
+          >
             <Image
               src={adImageSrc}
               alt={adImageAlt}
               fill
               className="object-contain"
+              priority
+              sizes="(max-width: 460px) 100vw, 460px"
             />
           </div>
         </div>
-        {/* Layer 2: jetpack animation (front, stacked on top, 2x scale) */}
-        <Image
+        {/* Layer 2: jetpack animation (front) – native img so animated WebP plays immediately, no lazy-load flash */}
+        <img
           src={animationSrc}
           alt={animationAlt}
-          fill
-          className="object-contain z-10 scale-[1.3] origin-center translate-y-19"
-          unoptimized
+          className="absolute inset-0 w-full h-full object-contain z-10 scale-[1.3] origin-center translate-y-19"
+          fetchPriority="high"
+          loading="eager"
         />
       </div>
     </div>

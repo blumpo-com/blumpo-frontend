@@ -41,7 +41,6 @@
   align-items: center;
   text-align: center;
   margin-top: 0;
-  margin-bottom: 56px;
   gap: 10px;
   width: 100%;
   z-index: 2;
@@ -103,16 +102,15 @@
 }
 
 .illustrationWrapper {
-  position: relative;
   width: 100%;
   max-width: 580px;
   height: auto;
-  min-height: 400px;
+  min-height: 460px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-  margin: 0 auto 40px auto;
+ 
+  margin: 0 auto 100px auto;
   flex-shrink: 0;
 }
 
