@@ -4,7 +4,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_ANIMATION_SRC = "/assets/animations/jetpack-canvas.webp";
-const DEFAULT_AD_IMAGE_SRC = "/images/temp/ad-template2.png";
+const DEFAULT_AD_IMAGE_SRC = "/images/dashboard/monday-horizontal-ad.png";
 
 export interface JetpackAdIllustrationProps {
   className?: string;

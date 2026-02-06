@@ -202,35 +202,35 @@ export default function DashboardHomePage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
-  
+
   // Check and maintain quick ads for paid users
   useEffect(() => {
     const brandId = currentBrand?.id || null;
-    
+
     // Reset ref if brand changed
     if (brandId && hasCheckedBrandRef.current !== null && hasCheckedBrandRef.current !== brandId) {
       hasCheckedBrandRef.current = null;
     }
-    
+
     // Don't run if no brand or if we've already checked this brand
     if (!brandId || hasCheckedBrandRef.current === brandId) {
       return;
     }
-    
+
     // Don't run if already checking
     if (isCheckingAds) {
       return;
     }
-    
+
     // Mark as checked for this brand to prevent double execution
     hasCheckedBrandRef.current = brandId;
-    
+
     const checkAndGenerateQuickAds = async () => {
       try {
         setIsCheckingAds(true);
-        
+
         const checkResponse = await fetch(`/api/quick-ads/check-paid-user?brandId=${brandId}`);
-        
+
         if (!checkResponse.ok) {
           return;
         }
@@ -244,10 +244,10 @@ export default function DashboardHomePage() {
 
         console.log('brandId', brandId);
         // User is paid and needs more ads - trigger generation
-        
+
         // Generate ads for formats that need them
         const generatePromises = [];
-        
+
         if (checkData.needsGeneration) {
           // Create quick ads job (generates both formats)
           generatePromises.push(
@@ -281,7 +281,7 @@ export default function DashboardHomePage() {
     };
 
     checkAndGenerateQuickAds();
-    
+
     // Only run once when brand changes, not on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBrand?.id]);
@@ -294,7 +294,7 @@ export default function DashboardHomePage() {
     return null;
   }
 
- return (
+  return (
     <div className={styles.homePage}>
       {/* Test button - only show in test mode */}
       {IS_TEST_MODE && (
@@ -328,35 +328,37 @@ export default function DashboardHomePage() {
 
       {/* Feature Cards */}
       <div className={styles.cardsContainer}>
-        <FeatureCard
-          title="Quick Ads Generation"
-          description="Only 25 seconds to get the ready ad."
-          gradientClass={styles.cardImageGradient1}
-          frontImage={imgImage2}
-          backImage={imgImage1}
-          onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
-        />
-        <FeatureCard
-          title="Customized Ads Generation"
-          description="Content tailored to your needs. Choose between several archetypes."
-          gradientClass={styles.cardImageGradient2}
-          frontImage={imgImage4}
-          backImage={imgImage3}
-          onButtonClick={() => router.push('/dashboard/customized-ads')}
-        />
-        <FeatureCard
-          title="Customer & Competitor Insights"
-          description="Get to know about your audience and the market itself."
-          gradientClass={styles.cardImageGradient3}
-          frontImage={imgImage6}
-          backImage={imgImage5}
-          frontImageClass={styles.imageCardThirdFront}
-          backImageClass={styles.imageCardThirdBack}
-          onButtonClick={() => console.log('Insights clicked')}
-          showCharacter={true}
-          characterImage={imgCharacter}
-          inactive
-        />
+        <div className={styles.cardsInner}>
+          <FeatureCard
+            title="Quick Ads Generation"
+            description="Only 25 seconds to get the ready ad."
+            gradientClass={styles.cardImageGradient1}
+            frontImage={imgImage2}
+            backImage={imgImage1}
+            onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
+          />
+          <FeatureCard
+            title="Customized Ads Generation"
+            description="Content tailored to your needs. Choose between several archetypes."
+            gradientClass={styles.cardImageGradient2}
+            frontImage={imgImage4}
+            backImage={imgImage3}
+            onButtonClick={() => router.push('/dashboard/customized-ads')}
+          />
+          <FeatureCard
+            title="Customer & Competitor Insights"
+            description="Get to know about your audience and the market itself."
+            gradientClass={styles.cardImageGradient3}
+            frontImage={imgImage6}
+            backImage={imgImage5}
+            frontImageClass={styles.imageCardThirdFront}
+            backImageClass={styles.imageCardThirdBack}
+            onButtonClick={() => console.log('Insights clicked')}
+            showCharacter={true}
+            characterImage={imgCharacter}
+            inactive
+          />
+        </div>
       </div>
     </div>
   );

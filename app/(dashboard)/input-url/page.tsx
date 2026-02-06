@@ -2,22 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
 import { useUser } from '@/lib/contexts/user-context';
 import { getBrandLimit } from '@/lib/constants/brand-limits';
 import { ErrorDialog } from '@/components/error-dialog';
+import { UrlInput } from '@/components/url-input';
+import { JetpackAdIllustration } from '@/components/jetpack-ad-illustration';
 import useSWR from 'swr';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
-function isValidUrl(value: string): boolean {
-  const v = value.trim();
-  if (!v) return false;
-  const pattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(?:[:#/?].*)?$/i;
-  const localhost = /^(https?:\/\/)?localhost(?:[:#/?].*)?$/i;
-  return pattern.test(v) || localhost.test(v);
-}
 
 export default function InputUrlPage() {
   const router = useRouter();
@@ -27,8 +20,7 @@ export default function InputUrlPage() {
     fetcher,
     { revalidateOnFocus: false }
   );
-  const [url, setUrl] = useState('');
-  const [isInvalid, setIsInvalid] = useState(false);
+  const [lastSubmittedUrl, setLastSubmittedUrl] = useState('');
   const [isLoadingUrlCheck, setIsLoadingUrlCheck] = useState(false);
   const [errorDialog, setErrorDialog] = useState<{
     open: boolean;
@@ -60,14 +52,8 @@ export default function InputUrlPage() {
     }
   }, [isAtLimit, isLoadingUser, isLoadingBrands, planCode, brandLimit]);
 
-  const handleSubmit = async () => {
+  const handleSubmitUrl = async (urlValue: string) => {
     setIsLoadingUrlCheck(true);
-    const valid = isValidUrl(url);
-    if (!valid) {
-      setIsInvalid(true);
-      setIsLoadingUrlCheck(false);
-      return;
-    }
     if (isAtLimit) {
       setErrorDialog({
         open: true,
@@ -78,15 +64,14 @@ export default function InputUrlPage() {
       setIsLoadingUrlCheck(false);
       return;
     }
-    setIsInvalid(false);
-    const trimmedUrl = url.trim();
+    const trimmedUrl = urlValue.trim();
 
-    // Check if user already has a brand with this URL
     try {
       const checkRes = await fetch(`/api/brands/check-url?url=${encodeURIComponent(trimmedUrl)}`);
       if (checkRes.ok) {
         const data = await checkRes.json();
         if (data.exists && data.brand) {
+          setLastSubmittedUrl(trimmedUrl);
           setErrorDialog({
             open: true,
             title: 'Brand Already Exists',
@@ -115,20 +100,14 @@ export default function InputUrlPage() {
 
   const handleExistingBrandContinue = () => {
     setErrorDialog((prev) => ({ ...prev, open: false }));
-    router.push(`/generating?website_url=${encodeURIComponent(url.trim())}`);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSubmit();
-    }
+    router.push(`/generating?website_url=${encodeURIComponent(lastSubmittedUrl)}`);
   };
 
   return (
     <div className={styles.page}>
-      {/* Left: empty container for future animation */}
+      {/* Left: Jetpack ad illustration */}
       <div className={styles.leftPanel}>
-        <div className={styles.animationContainer} />
+        <JetpackAdIllustration className="w-full max-w-[597px] h-[486px] min-h-[300px]" />
       </div>
 
       {/* Right: content */}
@@ -140,35 +119,11 @@ export default function InputUrlPage() {
           <p className={styles.description}>
             Enter your website URL and we'll create a complete, consistent brand tailored to your business - from visuals to messaging.
           </p>
-          <div>
-            <div className={`${styles.urlInputWrapper} gradient-primary`}>
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => {
-                  setUrl(e.target.value);
-                  setIsInvalid(false);
-                }}
-                placeholder="https://example.com/my-webpage"
-                aria-invalid={isInvalid}
-                onKeyDown={handleKeyDown}
-                className={styles.urlInput}
-              />
-              <button
-                type="button"
-                onClick={handleSubmit}
-                className={`${styles.submitButton} ${isLoadingUrlCheck ? styles.disabled : ''}`}
-                aria-label="Submit URL"
-              >
-                <ArrowRight size={20} strokeWidth={2} />
-              </button>
-            </div>
-            {isInvalid && (
-              <p className={styles.errorMessage}>
-                We'll need a valid URL, like "blumpo.com/home".
-              </p>
-            )}
-          </div>
+          <UrlInput
+            onSubmit={handleSubmitUrl}
+            isLoading={isLoadingUrlCheck}
+            placeholder="https://example.com/my-webpage"
+          />
         </div>
       </div>
 
@@ -182,9 +137,9 @@ export default function InputUrlPage() {
         errorCode={errorDialog.errorCode}
         onPrimaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandGoToBrand : undefined}
         primaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Go to Brand' : undefined}
-        // showSecondaryButton={errorDialog.errorCode === 'EXISTING_BRAND'}
-        // secondaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Generate New Ads Anyway' : undefined}
-        // onSecondaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandContinue : undefined}
+      // showSecondaryButton={errorDialog.errorCode === 'EXISTING_BRAND'}
+      // secondaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Generate New Ads Anyway' : undefined}
+      // onSecondaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandContinue : undefined}
       />
     </div>
   );
