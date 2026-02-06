@@ -52,6 +52,19 @@ export async function createCheckoutSession({
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
     allow_promotion_codes: true,
+    customer_update: {
+      name: 'auto',
+      address: 'auto',
+      shipping: 'auto',
+    },
+    billing_address_collection: 'auto',
+    tax_id_collection: {
+      enabled: true,
+      // required: 'never'
+    },
+    automatic_tax: {
+      enabled: true,
+    },
   };
 
   // Don't add trial for subscription
