@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TinderView, AdFormat } from '../tinder-view';
 import { TinderViewMixed } from '../tinder-view-mixed';
-import { AdReviewFinishedState } from './ad-review-finished-state';
+import { GenerationStatusView } from '../generation-status-view';
 import { useUser } from '@/lib/contexts/user-context';
 import styles from '../tinder-view.module.css';
 
@@ -336,7 +336,13 @@ function TinderPageContent() {
   }, [hasCompleted, isTest, jobId, savedIds, deletedIds, downloadedIds]);
 
   if (isFinished) {
-    return <AdReviewFinishedState />;
+    return (
+      <GenerationStatusView
+        title="No more ads to review."
+        description="All ads have been reviewed."
+        primaryAction={{ label: 'Go to content library', href: '/dashboard/content-library' }}
+      />
+    );
   }
 
   if (loading || isCompleting) {
