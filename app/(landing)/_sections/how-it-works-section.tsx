@@ -13,14 +13,14 @@ const steps: Step[] = [
   {
     number: "01",
     title: "Input your URL",
-    description: "Paste your website link, and Blumpo will automatically scan your site to gather your brand assets — including logo, typography, and colors.",
-    asset: "input.mp4",
+    description: "Paste your website link, and Blumpo will automatically scan your site to gather your brand assets including logo, typography, and colors.",
+    asset: "animated-input.mp4",
   },
   {
     number: "02",
     title: "Market research",
-    description: "Blumpo AI researches Reddit, Facebook, and YouTube to uncover customer pain points, desired benefits, and your key differentiators — so your ads not only look beautiful but also convert!",
-    asset: "jetpack-canvas.webp",
+    description: "Blumpo AI researches Reddit, Facebook, and YouTube to uncover customer pain points, desired benefits, and your key differentiators - so your ads not only look beautiful but also convert!",
+    asset: "jetpack-bg.webm",
   },
   {
     number: "03",
@@ -59,14 +59,14 @@ function StepAsset({ asset }: { asset: string }) {
     <img
       src={src}
       alt=""
-      className="object-cover rounded-[20px]"
+      className="h-full w-full object-cover rounded-[20px]"
     />
   );
 }
 
 export function HowItWorksSection() {
   return (
-    <div className="mt-9 flex flex-col gap-9 md:gap-16">
+    <div className="mt-9 flex flex-col gap-14 md:gap-30">
       {steps.map((step, index) => (
         <div
           key={index}
@@ -111,8 +111,8 @@ export function HowItWorksSection() {
                 </div>
               </div>
 
-              {/* Right side: Asset - aligned to top with title */}
-              <div className="h-[200px] md:h-[249px] rounded-[20px] w-full md:w-auto md:flex-1 md:max-w-[450px] self-start overflow-visible">
+              {/* Right side: Asset */}
+              <div className="aspect-[450/249] rounded-[20px] w-full md:flex-1 md:max-w-[450px] self-start overflow-hidden min-h-0">
                 <StepAsset asset={step.asset} />
               </div>
             </div>
