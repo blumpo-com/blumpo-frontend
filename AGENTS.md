@@ -41,3 +41,4 @@
 
 ## Figma and Designs
 - Round px values eg. 23.453px becomes 23px
+- Ignore line-height properties and never add them to texts, when you base your design on figma layouts

@@ -1,6 +1,7 @@
 import { eq, sql, desc } from 'drizzle-orm';
 import { db } from '../drizzle';
 import { user, tokenAccount, tokenLedger, subscriptionPlan, topupPlan } from '../schema/index';
+import type { NewTokenAccount } from '../schema/tokens';
 import { Timestamp } from 'next/dist/server/lib/cache-handlers/types';
 
 // Get all active subscription plans
@@ -317,9 +318,11 @@ export async function updateUserSubscription(
     stripePriceId?: string | null;
     subscriptionStatus?: string | null;
     planCode?: string;
+    period?: string | null;
     lastRefillAt?: Date | null;
     nextRefillAt?: Date | null;
     cancellationTime?: Date | null;
+    retentionOfferAppliedAt?: Date | null;
   }
 ) {
   // First ensure token account exists
@@ -330,16 +333,28 @@ export async function updateUserSubscription(
     .limit(1);
 
   if (existingAccount.length === 0) {
-    // Create token account if it doesn't exist
-    await db.insert(tokenAccount).values({
+    // Create token account if it doesn't exist (omit period if null – schema default is MONTHLY)
+    const { period, ...rest } = subscriptionData;
+    const periodValue: 'MONTHLY' | 'YEARLY' | undefined =
+      period === 'MONTHLY' || period === 'YEARLY' ? period : undefined;
+    const insertData = {
       userId,
-      ...subscriptionData,
-    });
+      ...rest,
+      ...(periodValue !== undefined ? { period: periodValue } : {}),
+    };
+    await db.insert(tokenAccount).values(insertData as NewTokenAccount);
   } else {
-    // Update existing token account
+    // Update existing token account (omit period if null so schema default stays)
+    const { period, ...rest } = subscriptionData;
+    const periodValue: 'MONTHLY' | 'YEARLY' | undefined =
+      period === 'MONTHLY' || period === 'YEARLY' ? period : undefined;
+    const updateData = {
+      ...rest,
+      ...(periodValue !== undefined ? { period: periodValue } : {}),
+    };
     await db
       .update(tokenAccount)
-      .set(subscriptionData)
+      .set(updateData)
       .where(eq(tokenAccount.userId, userId));
   }
 }
