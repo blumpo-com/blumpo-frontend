@@ -10,21 +10,7 @@ export function UrlInputSection() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  // const [autoGenerateUrl, setAutoGenerateUrl] = useState<string | null>(null);
   const [showLoggedInDialog, setShowLoggedInDialog] = useState(false);
-
-  // // Check for auto-generation params (after login redirect)
-  // useEffect(() => {
-  //     const websiteUrl = searchParams.get('website_url');
-  //     const shouldGenerate = searchParams.get('generate') === 'true';
-
-  //     if (shouldGenerate && websiteUrl) {
-  //         // Clear the query params but stay on the same page (root /)
-  //         router.replace('/', { scroll: false });
-  //         // Set state to trigger generation
-  //         setAutoGenerateUrl(websiteUrl);
-  //     }
-  // }, [searchParams, router]);
 
   const handleSubmit = async (url: string) => {
     if (isLoading) return;
@@ -70,7 +56,7 @@ export function UrlInputSection() {
       <UrlInput
         onSubmit={handleSubmit}
         isLoading={isLoading}
-        placeholder="Paste your website URL here (e.g. yourcompany.com)"
+        placeholder="Paste your website URL here (e.g. www.yourcompany.com)"
       />
 
 

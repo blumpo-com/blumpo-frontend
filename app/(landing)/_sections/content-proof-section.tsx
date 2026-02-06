@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -52,9 +52,6 @@ export function ContentProofSection() {
   };
 
   const images = getImagesForSection(activeButton);
-
-  // Get first 3 images for desktop display, memoized to prevent unnecessary re-renders
-  const displayImages = useMemo(() => images.slice(0, 3), [images]);
 
   // Reset image index when section changes
   useEffect(() => {
@@ -115,38 +112,46 @@ export function ContentProofSection() {
         ))}
       </div>
 
-      {/* Desktop: Stacked images */}
-      <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center transition-all duration-500 ease-in-out px-8">
-        <div className="flex gap-6 lg:gap-12 items-center justify-center relative z-10 transition-all duration-500 ease-in-out">
-          {displayImages.map((image, index) => {
-            // Fixed delays for each position to prevent animation reset
-            const fixedDelays = ["0s", "0.5s", "1s"];
-            return (
-              <div
-                key={index}
-                className={cn(
-                  "relative rounded-lg shadow-lg animate-float-up-down",
-                  index === 0 && "-rotate-5",
-                  index === 1 && "rotate-0",
-                  index === 2 && "rotate-5"
-                )}
-                style={{ animationDelay: fixedDelays[index] }}
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  width={360}
-                  height={360}
-                  className="rounded-lg object-cover"
-                  priority={index === 1}
-                />
-              </div>
-            );
-          })}
-        </div>
+      {/* Desktop: All sections pre-rendered and stacked - only active visible (images load on mount for instant switching) */}
+      <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center px-8">
+        {buttons.map((_, sectionIndex) => {
+          const sectionImages = getImagesForSection(sectionIndex).slice(0, 3);
+          const fixedDelays = ["0s", "0.5s", "1s"];
+          const rotations = ["-rotate-5", "rotate-0", "rotate-5"];
+          return (
+            <div
+              key={sectionIndex}
+              aria-hidden={activeButton !== sectionIndex}
+              className={cn(
+                "absolute inset-0 flex gap-6 lg:gap-12 items-center justify-center z-10 transition-opacity duration-300",
+                activeButton === sectionIndex ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+            >
+              {sectionImages.map((image, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    "relative rounded-lg shadow-lg animate-float-up-down",
+                    rotations[index]
+                  )}
+                  style={{ animationDelay: fixedDelays[index] }}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    width={360}
+                    height={360}
+                    className="rounded-lg object-cover"
+                    priority={sectionIndex === 0 && index === 1}
+                  />
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Mobile: Swipeable carousel */}
+      {/* Mobile: All carousels pre-rendered and stacked - only active visible (images load on mount for instant switching) */}
       <div
         className="md:hidden mt-8 w-full rounded-2xl relative overflow-hidden"
         onTouchStart={handleTouchStart}
@@ -154,50 +159,61 @@ export function ContentProofSection() {
         onTouchEnd={handleTouchEnd}
         ref={carouselRef}
       >
-
-        {/* Carousel container */}
         <div className="relative h-[400px] overflow-hidden">
-          {/* Images container with transform */}
-          <div
-            className="flex h-full transition-transform duration-300 ease-in-out"
-            style={{
-              transform: `translateX(-${currentImageIndex * 100}%)`,
-            }}
-          >
-            {images.map((image, index) => (
+          {buttons.map((_, sectionIndex) => {
+            const sectionImages = getImagesForSection(sectionIndex);
+            return (
               <div
-                key={index}
-                className="w-full flex-shrink-0 flex items-center justify-center px-8"
+                key={sectionIndex}
+                aria-hidden={activeButton !== sectionIndex}
+                className={cn(
+                  "absolute inset-0 transition-opacity duration-300",
+                  activeButton === sectionIndex ? "opacity-100" : "opacity-0 pointer-events-none"
+                )}
               >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  width={300}
-                  height={300}
-                  className="rounded-lg object-cover shadow-lg w-80 h-auto max-h-[350px]"
-                />
+                <div
+                  className="flex h-full transition-transform duration-300 ease-in-out"
+                  style={{
+                    transform: `translateX(-${currentImageIndex * 100}%)`,
+                  }}
+                >
+                  {sectionImages.map((image, index) => (
+                    <div
+                      key={index}
+                      className="w-full flex-shrink-0 flex items-center justify-center px-8"
+                    >
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        width={300}
+                        height={300}
+                        className="rounded-lg object-cover shadow-lg w-80 h-auto max-h-[350px]"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
 
           {/* Navigation arrows */}
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
             aria-label="Previous image"
           >
             <ChevronLeft className="w-6 h-6 text-gray-800" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
             aria-label="Next image"
           >
             <ChevronRight className="w-6 h-6 text-gray-800" />
           </button>
 
           {/* Dots indicator */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
             {images.map((_, index) => (
               <button
                 key={index}

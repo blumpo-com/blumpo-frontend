@@ -52,12 +52,12 @@ export function HeroSection() {
               Blumpo turns customer insights from Reddit,<br></br>
               YT, and your website into $500+ worth ads.<br></br>
             </p>
-            <p className="mt-5 text-base font-bold sm:mt-14 sm:text-xl lg:text-lg xl:text-xl">
+            <p className="mt-5 text-base font-bold sm:mt-18 sm:text-xl lg:text-lg xl:text-xl">
               Start for free now and create ads in 90s.
             </p>
 
             {/* Desktop: URL input */}
-            <div className="hidden lg:block lg:relative w-160 my-2">
+            <div className="hidden lg:block lg:relative w-160 my-6">
               <Image
                 src="/assets/animations/pointing-blumpo.webp"
                 alt="Pointing Blumpo"
