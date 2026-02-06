@@ -115,6 +115,19 @@ function BlumpoAnimation({ className }: { className?: string }) {
     </div>
   );
 }
+
+function FounderCardIcon({ src }: { src: string }) {
+  const path = "/images/landing/founders/" + src;
+
+  return <div className="border-2 border-[#00bfa6] rounded-full w-8 h-8 flex items-center justify-center overflow-hidden">
+    <img
+      src={path}
+      alt="Search"
+      className="w-full h-full object-cover"
+    />
+  </div>
+}
+
 function UnderstandCard({ title, description, type }: UnderstandCardProps) {
   const renderIcon = () => {
     switch (type) {
@@ -164,14 +177,10 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
       case "team":
         return (
           <div className="flex items-center gap-3 justify-center">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="border-2 border-[#00bfa6] rounded-full w-8 h-8 flex items-center justify-center"
-              >
-                <img src="/assets/icons/person.svg" alt="Search" className="h-[20px] object-cover" />
-              </div>
-            ))}
+            <FounderCardIcon src="dominik.png" />
+            <FounderCardIcon src="kuba.png" />
+            <FounderCardIcon src="dominik.png" />
+            <FounderCardIcon src="kuba.png" />
           </div>
         );
       default:
@@ -377,14 +386,10 @@ export function FitYourBrandSection() {
               {cards[4].description}
             </p>
             <div className="flex items-center gap-[34px] justify-center mt-auto">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="border-2 border-[#00bfa6] rounded-full w-[34px] h-[34px] flex items-center justify-center"
-                >
-                  <img src="/assets/icons/person.svg" alt="Search" className="h-[20px] object-cover" />
-                </div>
-              ))}
+              <FounderCardIcon src="dominik.png" />
+              <FounderCardIcon src="kuba.png" />
+              <FounderCardIcon src="dominik.png" />
+              <FounderCardIcon src="kuba.png" />
             </div>
           </div>
         </div>
