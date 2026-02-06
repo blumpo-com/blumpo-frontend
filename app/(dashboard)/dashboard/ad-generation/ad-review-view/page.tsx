@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TinderView, AdFormat } from '../tinder-view';
 import { TinderViewMixed } from '../tinder-view-mixed';
+import { AdReviewFinishedState } from './ad-review-finished-state';
 import { useUser } from '@/lib/contexts/user-context';
 import styles from '../tinder-view.module.css';
 
@@ -334,14 +335,8 @@ function TinderPageContent() {
     saveActions();
   }, [hasCompleted, isTest, jobId, savedIds, deletedIds, downloadedIds]);
 
-  // Show completion message if finished
   if (isFinished) {
-    return (
-      <div className={styles.emptyState}>
-        <h2>No more ads to review</h2>
-        <p>All ads have been reviewed!</p>
-      </div>
-    );
+    return <AdReviewFinishedState />;
   }
 
   if (loading || isCompleting) {
