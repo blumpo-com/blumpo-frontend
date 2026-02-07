@@ -178,8 +178,8 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
         return (
           <div className="flex items-center gap-3 justify-center">
             <FounderCardIcon src="dominik.png" />
-            <FounderCardIcon src="kuba.png" />
-            <FounderCardIcon src="dominik.png" />
+            <FounderCardIcon src="przemek.png" />
+            <FounderCardIcon src="franek.png" />
             <FounderCardIcon src="kuba.png" />
           </div>
         );
@@ -387,8 +387,8 @@ export function FitYourBrandSection() {
             </p>
             <div className="flex items-center gap-[34px] justify-center mt-auto">
               <FounderCardIcon src="dominik.png" />
-              <FounderCardIcon src="kuba.png" />
-              <FounderCardIcon src="dominik.png" />
+              <FounderCardIcon src="przemek.png" />
+              <FounderCardIcon src="franek.png" />
               <FounderCardIcon src="kuba.png" />
             </div>
           </div>
