@@ -26,7 +26,7 @@ interface Obstacle {
   y: number;
   width: number;
   height: number;
-  type: "rocket" | "shield";
+  type: "rocket" | "kpiRing";
 }
 
 interface Coin {
@@ -50,14 +50,14 @@ export function JetpackGame() {
   const [gameState, setGameState] = useState<"menu" | "playing" | "paused" | "gameOver">("menu");
   const [score, setScore] = useState(0);
   const [distance, setDistance] = useState(0);
-  const gameLoopRef = useRef<number>();
+  const gameLoopRef = useRef<number | undefined>(undefined);
   const gameStateRef = useRef(gameState);
 
   const playerRef = useRef<Player>({
     x: 150,
     y: CANVAS_HEIGHT / 2,
-    width: 60,
-    height: 70,
+    width: 120,
+    height: 140,
     velocityY: 0,
     isFlying: false,
   });
@@ -68,10 +68,53 @@ export function JetpackGame() {
   const scrollOffsetRef = useRef(0);
   const distanceRef = useRef(0);
   const scoreRef = useRef(0);
+  const spriteOffRef = useRef<HTMLImageElement | null>(null);
+  const spriteOnRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     gameStateRef.current = gameState;
+    if (gameState !== "playing") {
+      playerRef.current.isFlying = false;
+    }
   }, [gameState]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        if (gameStateRef.current === "playing") {
+          playerRef.current.isFlying = true;
+        }
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.key === " ") {
+        e.preventDefault();
+        if (gameStateRef.current === "playing") {
+          playerRef.current.isFlying = false;
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    const imgOff = new Image();
+    imgOff.src = "/images/blumpo/blumpo-jetpack-off.png";
+    imgOff.onload = () => { spriteOffRef.current = imgOff; };
+    const imgOn = new Image();
+    imgOn.src = "/images/blumpo/blumpo-jetpack-on.png";
+    imgOn.onload = () => { spriteOnRef.current = imgOn; };
+    return () => {
+      imgOff.onload = null;
+      imgOn.onload = null;
+    };
+  }, []);
 
   useEffect(() => {
     const clouds: Cloud[] = [];
@@ -107,137 +150,19 @@ export function JetpackGame() {
     const x = player.x;
     const y = player.y;
     const tilt = player.isFlying ? -10 : 5;
+    const sprite = player.isFlying ? spriteOnRef.current : spriteOffRef.current;
 
     ctx.save();
     ctx.translate(x + player.width / 2, y + player.height / 2);
     ctx.rotate((tilt * Math.PI) / 180);
     ctx.translate(-(x + player.width / 2), -(y + player.height / 2));
 
-    if (player.isFlying) {
-      const flameHeight = 15 + Math.random() * 10;
-      ctx.fillStyle = "#FF6B35";
-      ctx.beginPath();
-      ctx.ellipse(x + 15, y + player.height - 10, 8, flameHeight, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#FFA500";
-      ctx.beginPath();
-      ctx.ellipse(x + 15, y + player.height - 10, 5, flameHeight * 0.7, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#FFD700";
-      ctx.beginPath();
-      ctx.ellipse(x + 15, y + player.height - 10, 3, flameHeight * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
+    if (sprite?.complete && sprite.naturalWidth > 0) {
+      ctx.drawImage(sprite, x, y, player.width, player.height);
+    } else {
+      ctx.fillStyle = "#4A90E2";
+      ctx.fillRect(x, y, player.width, player.height);
     }
-
-    ctx.fillStyle = "#4A90E2";
-    ctx.fillRect(x + 5, y + 25, 20, 30);
-    ctx.fillStyle = "#357ABD";
-    ctx.fillRect(x + 7, y + 27, 16, 26);
-
-    ctx.strokeStyle = "#2E5C8A";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(x + 25, y + 30);
-    ctx.lineTo(x + 35, y + 25);
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.ellipse(x + 30, y + 35, 18, 22, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.ellipse(x + 35, y + 15, 15, 17, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.ellipse(x + 30, y - 5, 5, 15, (-20 * Math.PI) / 180, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFB6C1";
-    ctx.beginPath();
-    ctx.ellipse(x + 30, y - 3, 3, 10, (-20 * Math.PI) / 180, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.ellipse(x + 40, y - 5, 5, 15, (20 * Math.PI) / 180, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFB6C1";
-    ctx.beginPath();
-    ctx.ellipse(x + 40, y - 3, 3, 10, (20 * Math.PI) / 180, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#2C3E50";
-    ctx.beginPath();
-    ctx.arc(x + 30, y + 13, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x + 40, y + 13, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.arc(x + 31, y + 12, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x + 41, y + 12, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#FFB6C1";
-    ctx.beginPath();
-    ctx.arc(x + 35, y + 20, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "#2C3E50";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(x + 35, y + 21, 4, 0, Math.PI);
-    ctx.stroke();
-
-    ctx.fillStyle = "#FFFFFF";
-    ctx.beginPath();
-    ctx.ellipse(x + 22, y + 55, 6, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.ellipse(x + 38, y + 55, 6, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.strokeStyle = "#E0E0E0";
-    ctx.lineWidth = 6;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(x + 20, y + 30);
-    ctx.lineTo(x + 15, y + 40);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x + 45, y + 30);
-    ctx.lineTo(x + 52, y + 38);
-    ctx.stroke();
 
     ctx.restore();
   };
@@ -286,48 +211,58 @@ export function JetpackGame() {
     ctx.fill();
   };
 
-  const drawShield = (ctx: CanvasRenderingContext2D, obstacle: Obstacle) => {
+  const drawKpiRing = (ctx: CanvasRenderingContext2D, obstacle: Obstacle) => {
     const x = obstacle.x;
     const y = obstacle.y;
     const centerX = x + obstacle.width / 2;
     const centerY = y + obstacle.height / 2;
+    const time = Date.now() / 200;
 
-    ctx.strokeStyle = "#9B59B6";
-    ctx.lineWidth = 8;
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(time);
+
+    const outerRadius = obstacle.width / 2;
+    const innerRadius = outerRadius - 12;
+
+    ctx.strokeStyle = "#2563EB";
+    ctx.lineWidth = 10;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, obstacle.width / 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, outerRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.strokeStyle = "#8E44AD";
+    ctx.strokeStyle = "#60A5FA";
     ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, obstacle.width / 2 - 10, 0, Math.PI * 2);
+    ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.fillStyle = "#A569BD";
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-    ctx.fill();
-
-    const time = Date.now() / 100;
-    ctx.strokeStyle = "#E8DAEF";
+    const tickCount = 6;
+    ctx.strokeStyle = "#DBEAFE";
     ctx.lineWidth = 2;
-    for (let i = 0; i < 4; i += 1) {
-      const angle = (i * Math.PI) / 2 + time;
-      const innerRadius = 15;
-      const outerRadius = obstacle.width / 2 - 5;
-
+    for (let i = 0; i < tickCount; i += 1) {
+      const angle = (i * Math.PI * 2) / tickCount;
       ctx.beginPath();
-      ctx.moveTo(
-        centerX + Math.cos(angle) * innerRadius,
-        centerY + Math.sin(angle) * innerRadius
-      );
-      ctx.lineTo(
-        centerX + Math.cos(angle) * outerRadius,
-        centerY + Math.sin(angle) * outerRadius
-      );
+      ctx.moveTo(Math.cos(angle) * (innerRadius - 6), Math.sin(angle) * (innerRadius - 6));
+      ctx.lineTo(Math.cos(angle) * (outerRadius + 2), Math.sin(angle) * (outerRadius + 2));
       ctx.stroke();
     }
+
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.fillStyle = "#E0F2FE";
+    ctx.beginPath();
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#0F172A";
+    ctx.font = "bold 14px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("KPI", 0, 1);
+    ctx.restore();
   };
 
   const drawCoin = (ctx: CanvasRenderingContext2D, coin: Coin) => {
@@ -363,9 +298,9 @@ export function JetpackGame() {
   };
 
   const generateObstacle = () => {
-    const type = Math.random() > 0.5 ? "rocket" : "shield";
-    const height = type === "rocket" ? 40 : 60;
-    const width = type === "rocket" ? 60 : 60;
+    const type = Math.random() > 0.5 ? "rocket" : "kpiRing";
+    const height = type === "rocket" ? 40 : 62;
+    const width = type === "rocket" ? 60 : 62;
 
     obstaclesRef.current.push({
       x: CANVAS_WIDTH + scrollOffsetRef.current,
@@ -465,11 +400,11 @@ export function JetpackGame() {
         setGameState("gameOver");
       }
 
-      if (obstacle.type === "rocket") {
-        drawRocket(ctx, obstacle);
-      } else {
-        drawShield(ctx, obstacle);
-      }
+        if (obstacle.type === "rocket") {
+          drawRocket(ctx, obstacle);
+        } else {
+          drawKpiRing(ctx, obstacle);
+        }
 
       return true;
     });
@@ -585,8 +520,8 @@ export function JetpackGame() {
       playerRef.current = {
         x: 150,
         y: CANVAS_HEIGHT / 2,
-        width: 60,
-        height: 70,
+        width: 120,
+        height: 140,
         velocityY: 0,
         isFlying: false,
       };
@@ -650,7 +585,7 @@ export function JetpackGame() {
         {gameState === "menu" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl backdrop-blur-sm">
             <div className="bg-white rounded-3xl p-8 shadow-2xl text-center max-w-md">
-              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold gradient-secondary bg-clip-text text-transparent mb-4">
                 Jetpack Bunny
               </h1>
               <p className="text-gray-700 mb-6">
@@ -661,7 +596,7 @@ export function JetpackGame() {
               <button
                 onClick={handleStart}
                 type="button"
-                className="bg-gradient-to-br from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto mb-4"
+                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto mb-4"
               >
                 <Play className="w-5 h-5" />
                 Start
@@ -691,10 +626,10 @@ export function JetpackGame() {
         {gameState === "gameOver" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-3xl backdrop-blur-sm">
             <div className="bg-white rounded-3xl p-8 shadow-2xl text-center">
-              <h2 className="text-4xl font-bold text-red-600 mb-4">Game Over</h2>
+              <h2 className="text-4xl font-bold mb-4">Game Over</h2>
               <div className="mb-6">
                 <div className="text-gray-600">Score:</div>
-                <div className="text-5xl font-bold bg-gradient-to-r from-yellow-500 to-orange-600 bg-clip-text text-transparent">
+                <div className="text-5xl font-bold text-gray-800 bg-clip-text">
                   {score}
                 </div>
                 <div className="text-gray-600 mt-2">Distance: {distance}m</div>
@@ -702,7 +637,7 @@ export function JetpackGame() {
               <button
                 onClick={handleStart}
                 type="button"
-                className="bg-gradient-to-br from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
+                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
               >
                 <RotateCcw className="w-5 h-5" />
                 Play Again
@@ -710,30 +645,6 @@ export function JetpackGame() {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 text-center text-sm text-gray-600 max-w-2xl">
-        <p className="font-medium">
-          Controls: hold mouse or touch to activate jetpack and rise. Release to glide.
-        </p>
-        <div className="mt-2 flex items-center justify-center gap-3 text-sm">
-          <button
-            onClick={handleStart}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            <Play className="h-4 w-4" />
-            Start
-          </button>
-          <button
-            onClick={handlePause}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
-            <Pause className="h-4 w-4" />
-            Pause
-          </button>
-        </div>
       </div>
     </div>
   );

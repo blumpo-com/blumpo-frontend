@@ -7,8 +7,7 @@ import PaintIcon from '@/assets/icons/Paint.svg';
 import SearchIcon from '@/assets/icons/Search.svg';
 import ChartIcon from '@/assets/icons/Chart.svg';
 import MegaphoneIcon from '@/assets/icons/Megaphone.svg';
-import { Dialog } from '@/components/ui/dialog';
-import { JetpackGame } from '@/components/JetpackGame';
+import { GameDialog } from '@/components/GameDialog';
 
 // Icon component that renders the appropriate SVG based on step index
 interface StepIconProps {
@@ -408,26 +407,7 @@ export function CreatingProcess({
           </div>
         </div>
       </div>
-      <Dialog
-        open={isGameOpen}
-        onClose={() => setIsGameOpen(false)}
-        contentClassName="w-[min(92vw,980px)] p-4 sm:p-6 bg-white/95 rounded-3xl shadow-2xl"
-      >
-        <div className="flex items-center justify-between gap-4 pb-3">
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">Blumpo Jetpack Run</h2>
-            <p className="text-sm text-slate-500">Hold to fly, release to glide. Avoid rockets and shields.</p>
-          </div>
-          <button
-            onClick={() => setIsGameOpen(false)}
-            type="button"
-            className="rounded-full border border-slate-200 px-3 py-1 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
-          >
-            Close
-          </button>
-        </div>
-        <JetpackGame />
-      </Dialog>
+      <GameDialog open={isGameOpen} onClose={() => setIsGameOpen(false)} />
     </div>
   );
 }
