@@ -40,10 +40,10 @@ interface Coin {
 
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
-const GRAVITY = 0.5;
-const LIFT = -8;
+const GRAVITY = 0.3;
+const LIFT = -6;
 const MAX_VELOCITY = 12;
-const SCROLL_SPEED = 3;
+const SCROLL_SPEED = 2;
 
 export function JetpackGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -56,8 +56,8 @@ export function JetpackGame() {
   const playerRef = useRef<Player>({
     x: 150,
     y: CANVAS_HEIGHT / 2,
-    width: 120,
-    height: 140,
+    width: 80,
+    height: 93,
     velocityY: 0,
     isFlying: false,
   });
@@ -505,8 +505,8 @@ export function JetpackGame() {
       playerRef.current = {
         x: 150,
         y: CANVAS_HEIGHT / 2,
-        width: 120,
-        height: 140,
+        width: 90,
+        height: 100,
         velocityY: 0,
         isFlying: false,
       };
@@ -581,7 +581,7 @@ export function JetpackGame() {
               <button
                 onClick={handleStart}
                 type="button"
-                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto mb-4"
+                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto mb-4 cursor-pointer"
               >
                 <Play className="w-5 h-5" />
                 Start
@@ -622,7 +622,7 @@ export function JetpackGame() {
               <button
                 onClick={handleStart}
                 type="button"
-                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
+                className="gradient-secondary text-white px-8 py-3 rounded-2xl font-bold shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto cursor-pointer"
               >
                 <RotateCcw className="w-5 h-5" />
                 Play Again
