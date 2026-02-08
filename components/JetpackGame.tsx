@@ -26,7 +26,7 @@ interface Obstacle {
   y: number;
   width: number;
   height: number;
-  type: "rocket" | "kpiRing";
+  type: "writerBlock" | "kpiRing";
 }
 
 interface Coin {
@@ -43,7 +43,7 @@ const CANVAS_HEIGHT = 600;
 const GRAVITY = 0.5;
 const LIFT = -8;
 const MAX_VELOCITY = 12;
-const SCROLL_SPEED = 4;
+const SCROLL_SPEED = 3;
 
 export function JetpackGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -167,48 +167,54 @@ export function JetpackGame() {
     ctx.restore();
   };
 
-  const drawRocket = (ctx: CanvasRenderingContext2D, obstacle: Obstacle) => {
+  const drawWriterBlock = (ctx: CanvasRenderingContext2D, obstacle: Obstacle) => {
     const x = obstacle.x;
     const y = obstacle.y;
+    const cursorOn = Math.floor(Date.now() / 400) % 2 === 0;
 
-    ctx.fillStyle = "#E74C3C";
+    ctx.save();
+    ctx.fillStyle = "#F8FAFC";
+    ctx.strokeStyle = "#CBD5F5";
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(x + obstacle.width, y + obstacle.height / 2);
-    ctx.lineTo(x + obstacle.width * 0.7, y);
-    ctx.lineTo(x, y);
-    ctx.lineTo(x, y + obstacle.height);
-    ctx.lineTo(x + obstacle.width * 0.7, y + obstacle.height);
+    ctx.roundRect(x, y, obstacle.width, obstacle.height, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "#E2E8F0";
+    ctx.beginPath();
+    ctx.moveTo(x + obstacle.width - 18, y);
+    ctx.lineTo(x + obstacle.width, y);
+    ctx.lineTo(x + obstacle.width, y + 18);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = "#C0392B";
-    ctx.fillRect(x + 10, y, 8, obstacle.height);
-    ctx.fillRect(x + 25, y, 8, obstacle.height);
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "bold 12px Arial";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText("2h later...", x + 10, y + 8);
 
-    ctx.fillStyle = "#3498DB";
+    ctx.strokeStyle = "#94A3B8";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(x + 40, y + obstacle.height / 2, 8, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(x + 10, y + 28);
+    ctx.lineTo(x + obstacle.width - 10, y + 28);
+    ctx.stroke();
 
-    ctx.fillStyle = "#5DADE2";
-    ctx.beginPath();
-    ctx.arc(x + 41, y + obstacle.height / 2 - 2, 4, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillStyle = "#64748B";
+    ctx.fillText("draft...", x + 10, y + 34);
 
-    ctx.fillStyle = "#95A5A6";
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - 10, y - 8);
-    ctx.lineTo(x, y + 15);
-    ctx.closePath();
-    ctx.fill();
+    if (cursorOn) {
+      ctx.strokeStyle = "#0F172A";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + 66, y + 36);
+      ctx.lineTo(x + 66, y + 50);
+      ctx.stroke();
+    }
 
-    ctx.beginPath();
-    ctx.moveTo(x, y + obstacle.height);
-    ctx.lineTo(x - 10, y + obstacle.height + 8);
-    ctx.lineTo(x, y + obstacle.height - 15);
-    ctx.closePath();
-    ctx.fill();
+    ctx.restore();
   };
 
   const drawKpiRing = (ctx: CanvasRenderingContext2D, obstacle: Obstacle) => {
@@ -298,9 +304,9 @@ export function JetpackGame() {
   };
 
   const generateObstacle = () => {
-    const type = Math.random() > 0.5 ? "rocket" : "kpiRing";
-    const height = type === "rocket" ? 40 : 62;
-    const width = type === "rocket" ? 60 : 62;
+    const type = Math.random() > 0.5 ? "writerBlock" : "kpiRing";
+    const height = type === "writerBlock" ? 64 : 62;
+    const width = type === "writerBlock" ? 88 : 62;
 
     obstaclesRef.current.push({
       x: CANVAS_WIDTH + scrollOffsetRef.current,
@@ -400,11 +406,11 @@ export function JetpackGame() {
         setGameState("gameOver");
       }
 
-        if (obstacle.type === "rocket") {
-          drawRocket(ctx, obstacle);
-        } else {
-          drawKpiRing(ctx, obstacle);
-        }
+      if (obstacle.type === "writerBlock") {
+        drawWriterBlock(ctx, obstacle);
+      } else {
+        drawKpiRing(ctx, obstacle);
+      }
 
       return true;
     });
@@ -591,7 +597,7 @@ export function JetpackGame() {
               <p className="text-gray-700 mb-6">
                 Hold to fly. Release to glide.
                 <br />
-                Avoid obstacles and collect coins.
+                Avoid writer’s block and KPI rings. Collect coins.
               </p>
               <button
                 onClick={handleStart}
