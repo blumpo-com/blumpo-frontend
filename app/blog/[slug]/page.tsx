@@ -2,6 +2,8 @@ import { getAllPosts, getPostBySlug } from '@/lib/posts-sanity';
 import { notFound } from 'next/navigation';
 import { draftMode } from 'next/headers';
 import type { Metadata } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 import { PortableText } from 'next-sanity';
 import { urlFor } from '@/sanity/lib/image';
 import '@/styles/prose.css';
@@ -73,12 +75,11 @@ const portableTextComponents = {
       if (!value?.asset?._ref) return null
       const src = urlFor(value).url()
       return (
-        <span className="block my-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        <span className="block mb-6">
           <img
             src={src}
             alt={value.alt ?? ''}
-            className="max-w-full h-auto rounded-lg"
+            className="max-w-[80%] md:max-w-[60%] rounded-lg m-auto"
           />
         </span>
       )
@@ -138,11 +139,23 @@ export default async function BlogPost({ params }: BlogPostProps) {
   }
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-12">
-      <header className="mb-8">
-        <time 
-          dateTime={post.date} 
-          className="text-sm text-gray-600 dark:text-gray-400"
+    <article className="relative max-w-5xl mx-auto px-4 py-14">
+      <Link
+        href="/"
+        className="cursor-pointer inline-block w-fit"
+      >
+        <Image
+          src="/images/blumpo/blumpo-background.png"
+          alt="Strona główna"
+          width={120}
+          height={120}
+          className="size-20 object-contain md:size-30"
+        />
+      </Link>
+      <header>
+        <time
+          dateTime={post.date}
+          className="block text-sm text-gray-900 dark:text-gray-400 text-center"
         >
           {new Date(post.date).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -150,17 +163,17 @@ export default async function BlogPost({ params }: BlogPostProps) {
             day: 'numeric'
           })}
         </time>
-        
-        <h1 className="text-4xl font-bold mt-2 mb-4">
+
+        <h1 className="text-2xl lg:text-4xl font-bold mt-2 mb-4 text-foreground text-center">
           {post.title}
         </h1>
-        
+
         {post.excerpt && (
-          <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-lg lg:text-xl text-gray-900 dark:text-gray-900 leading-relaxed text-center px-4 md:px-16">
             {post.excerpt}
           </p>
         )}
-        
+
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-6">
             {post.tags.map((tag) => (
@@ -174,17 +187,17 @@ export default async function BlogPost({ params }: BlogPostProps) {
           </div>
         )}
       </header>
-      
+
       <div className="prose prose-lg dark:prose-invert max-w-none">
         {post.body && post.body.length > 0 ? (
           <PortableText value={post.body} components={portableTextComponents} />
         ) : null}
       </div>
-      
+
       <footer className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-        <a 
+        <a
           href="/blog"
-          className="text-blue-600 dark:text-blue-400 hover:underline"
+          className="text-primary underline-offset-4 transition-colors duration-200 hover:text-[#00A892] hover:underline"
         >
           ← Back to all posts
         </a>
@@ -192,5 +205,3 @@ export default async function BlogPost({ params }: BlogPostProps) {
     </article>
   );
 }
-
-
