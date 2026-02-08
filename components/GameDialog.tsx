@@ -15,7 +15,7 @@ export function GameDialog({ open, onClose }: GameDialogProps) {
     <Dialog
       open={open}
       onClose={onClose}
-      contentClassName="w-[min(92vw,980px)] p-4 sm:p-6 bg-white/95 rounded-3xl shadow-2xl"
+      contentClassName="w-[min(92vw,800px)] p-4 sm:p-6 bg-white/95 rounded-3xl shadow-2xl"
     >
       <div className="flex items-center justify-end gap-4 pb-3">
         <Button
@@ -35,7 +35,10 @@ export function GameDialog({ open, onClose }: GameDialogProps) {
           />
         </Button>
       </div>
-      <JetpackGame />
+      <div className="mb-4">
+        <JetpackGame />
+      </div>
+
     </Dialog>
   );
 }

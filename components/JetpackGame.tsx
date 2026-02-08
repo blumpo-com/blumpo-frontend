@@ -438,9 +438,9 @@ export function JetpackGame() {
 
     ctx.save();
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
-    ctx.shadowBlur = 10;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
+    ctx.shadowBlur = 8;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 2;
 
@@ -454,27 +454,19 @@ export function JetpackGame() {
     ctx.roundRect(padding, padding, scoreBoxWidth, boxHeight, 12);
     ctx.fill();
 
-    const scoreGradient = ctx.createLinearGradient(padding, padding, padding, padding + boxHeight);
-    scoreGradient.addColorStop(0, "#FBBF24");
-    scoreGradient.addColorStop(1, "#F97316");
-    ctx.fillStyle = scoreGradient;
-    ctx.beginPath();
-    ctx.roundRect(padding + 3, padding + 3, scoreBoxWidth - 6, boxHeight - 6, 10);
-    ctx.fill();
-
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.fillStyle = "#0F172A";
     ctx.font = "bold 11px Arial";
     ctx.textAlign = "left";
     ctx.fillText("SCORE", padding + 10, padding + 20);
 
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = "#0F172A";
     ctx.font = "bold 24px Arial";
     ctx.fillText(scoreRef.current.toString(), padding + 10, padding + 48);
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
-    ctx.shadowBlur = 10;
+    ctx.fillStyle = "#FFFFFF";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
+    ctx.shadowBlur = 8;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 2;
 
@@ -482,25 +474,12 @@ export function JetpackGame() {
     ctx.roundRect(padding + scoreBoxWidth + gap, padding, distanceBoxWidth, boxHeight, 12);
     ctx.fill();
 
-    const distanceGradient = ctx.createLinearGradient(
-      padding + scoreBoxWidth + gap,
-      padding,
-      padding + scoreBoxWidth + gap,
-      padding + boxHeight
-    );
-    distanceGradient.addColorStop(0, "#60A5FA");
-    distanceGradient.addColorStop(1, "#A855F7");
-    ctx.fillStyle = distanceGradient;
-    ctx.beginPath();
-    ctx.roundRect(padding + scoreBoxWidth + gap + 3, padding + 3, distanceBoxWidth - 6, boxHeight - 6, 10);
-    ctx.fill();
-
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.fillStyle = "#0F172A";
     ctx.font = "bold 11px Arial";
     ctx.fillText("DISTANCE", padding + scoreBoxWidth + gap + 10, padding + 20);
 
-    ctx.fillStyle = "#FFFFFF";
+    ctx.fillStyle = "#0F172A";
     ctx.font = "bold 24px Arial";
     ctx.fillText(`${distanceRef.current}m`, padding + scoreBoxWidth + gap + 10, padding + 48);
 
