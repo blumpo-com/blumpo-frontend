@@ -4,6 +4,8 @@ import { draftMode } from 'next/headers';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PortableText } from 'next-sanity';
 import { urlFor } from '@/sanity/lib/image';
 import '@/styles/prose.css';
@@ -139,19 +141,24 @@ export default async function BlogPost({ params }: BlogPostProps) {
   }
 
   return (
-    <article className="relative max-w-5xl mx-auto px-4 py-14">
-      <Link
-        href="/"
-        className="cursor-pointer inline-block w-fit"
-      >
-        <Image
-          src="/images/blumpo/blumpo-background.png"
-          alt="Strona główna"
-          width={120}
-          height={120}
-          className="size-20 object-contain md:size-30"
-        />
-      </Link>
+    <article className="max-w-5xl mx-auto px-4 py-14">
+      <div className="flex items-center justify-between mb-8">
+        <Link href="/" className="cursor-pointer inline-block w-fit">
+          <Image
+            src="/images/blumpo/blumpo-background.png"
+            alt="Strona główna"
+            width={120}
+            height={120}
+            className="size-20 object-contain md:size-30"
+          />
+        </Link>
+        <Button asChild variant="cta" className="flex items-center gap-2">
+          <Link href="/sign-in?redirect=input-url">
+            Make your first free Ad
+
+          </Link>
+        </Button>
+      </div>
       <header>
         <time
           dateTime={post.date}
@@ -164,7 +171,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
           })}
         </time>
 
-        <h1 className="text-2xl lg:text-4xl font-bold mt-2 mb-4 text-foreground text-center">
+        <h1 className="text-2xl tracking-tight lg:text-5xl font-black mt-2 mb-4 text-foreground text-center">
           {post.title}
         </h1>
 

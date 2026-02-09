@@ -20,7 +20,7 @@ export default async function BlogPage() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="mb-12 flex items-center">
           <div>
-            <h1 className="text-4xl font-bold mb-4 text-foreground">Your marketing growth playbooks</h1>
+            <h1 className="font-black mb-4 header-gradient text-left">Your marketing growth playbooks</h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
               Learn from our experiences and best practices to grow your business.
             </p>
