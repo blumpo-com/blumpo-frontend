@@ -45,6 +45,10 @@ const LIFT = -6;
 const MAX_VELOCITY = 12;
 const SCROLL_SPEED = 2;
 
+/** Hitbox as fraction of player size (image has transparent padding). */
+const PLAYER_COLLISION_SCALE_X = 0.65;
+const PLAYER_COLLISION_SCALE_Y = 0.75;
+
 export function JetpackGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<"menu" | "playing" | "paused" | "gameOver">("menu");
@@ -328,6 +332,18 @@ export function JetpackGame() {
     });
   };
 
+  /** Player collision box: centered, smaller than sprite (transparent padding). */
+  const getPlayerCollisionRect = (player: Player) => {
+    const w = player.width * PLAYER_COLLISION_SCALE_X;
+    const h = player.height * PLAYER_COLLISION_SCALE_Y;
+    return {
+      x: player.x + (player.width - w) / 2,
+      y: player.y + (player.height - h) / 2,
+      width: w,
+      height: h,
+    };
+  };
+
   const checkCollision = (
     rect1: { x: number; y: number; width: number; height: number },
     rect2: { x: number; y: number; width: number; height: number }
@@ -336,6 +352,20 @@ export function JetpackGame() {
     rect1.x + rect1.width > rect2.x &&
     rect1.y < rect2.y + rect2.height &&
     rect1.y + rect1.height > rect2.y;
+
+  /** Circle (KPI ring) vs rectangle (player) collision. */
+  const checkCircleRectCollision = (
+    centerX: number,
+    centerY: number,
+    radius: number,
+    rect: { x: number; y: number; width: number; height: number }
+  ) => {
+    const closestX = Math.max(rect.x, Math.min(centerX, rect.x + rect.width));
+    const closestY = Math.max(rect.y, Math.min(centerY, rect.y + rect.height));
+    const dx = centerX - closestX;
+    const dy = centerY - closestY;
+    return dx * dx + dy * dy <= radius * radius;
+  };
 
   const gameLoop = () => {
     if (gameStateRef.current !== "playing") return;
@@ -402,7 +432,17 @@ export function JetpackGame() {
         return false;
       }
 
-      if (checkCollision(player, obstacle)) {
+      const playerBox = getPlayerCollisionRect(player);
+      const hit =
+        obstacle.type === "kpiRing"
+          ? checkCircleRectCollision(
+            obstacle.x + obstacle.width / 2,
+            obstacle.y + obstacle.height / 2,
+            obstacle.width / 2,
+            playerBox
+          )
+          : checkCollision(playerBox, obstacle);
+      if (hit) {
         setGameState("gameOver");
       }
 
@@ -423,7 +463,7 @@ export function JetpackGame() {
         return false;
       }
 
-      if (!coin.collected && checkCollision(player, coin)) {
+      if (!coin.collected && checkCollision(getPlayerCollisionRect(player), coin)) {
         coin.collected = true;
         scoreRef.current += 10;
         setScore(scoreRef.current);
