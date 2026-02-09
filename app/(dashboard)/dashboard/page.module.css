@@ -1,11 +1,10 @@
 .homePage {
-  min-height: 100vh;
   width: 100%;
   background: #f9fafb;
-  padding: 91px 58px 209px 58px;
+  padding: 91px 58px 0 58px;
   display: flex;
   flex-direction: column;
-  gap: 120px;
+  gap: 80px;
   align-items: center;
   overflow-x: hidden;
 }
