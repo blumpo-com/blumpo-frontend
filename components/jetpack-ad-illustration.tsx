@@ -11,6 +11,8 @@ const DEFAULT_AD_IMAGE_SRC = "/images/dashboard/monday-horizontal-ad.png";
 const videoBaseClass =
   "absolute inset-0 w-full h-full object-contain z-10 scale-[1.3] origin-center translate-y-19";
 
+const VIDEO_OVERLAY_MAX = "max-w-[460px]";
+
 export interface JetpackAdIllustrationProps {
   className?: string;
   animationSrc?: string;
@@ -19,7 +21,9 @@ export interface JetpackAdIllustrationProps {
   adImageSrc?: string;
   animationAlt?: string;
   adImageAlt?: string;
-  /** Optional: Tailwind classes to size the ad image, e.g. "w-[280px] h-[180px]" or "max-w-[90%] max-h-[50%]" */
+  /** Optional: Tailwind classes to size the whole image container (image only; video overlay stays fixed). E.g. "max-w-[600px] max-h-[400px]" */
+  illustrationClassName?: string;
+  /** Optional: Tailwind classes for the ad image wrapper, e.g. "aspect-[16/10]" */
   adImageClassName?: string;
 }
 
@@ -30,6 +34,7 @@ export function JetpackAdIllustration({
   adImageSrc = DEFAULT_AD_IMAGE_SRC,
   animationAlt = "Jetpack illustration",
   adImageAlt = "Ad template preview",
+  illustrationClassName,
   adImageClassName,
 }: JetpackAdIllustrationProps) {
   const video1Ref = useRef<HTMLVideoElement>(null);
@@ -48,8 +53,13 @@ export function JetpackAdIllustration({
         className
       )}
     >
-      <div className="relative w-full max-w-[460px] h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.4]">
-        {/* Layer 1: ad template (back) – size via adImageClassName, no stretch */}
+      <div
+        className={cn(
+          "relative w-full h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.4]",
+          illustrationClassName ?? "max-w-[520px]"
+        )}
+      >
+        {/* Layer 1: ad template (back) – container can grow via illustrationClassName */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
             className={cn(
@@ -63,33 +73,36 @@ export function JetpackAdIllustration({
               fill
               className="object-contain"
               priority
-              sizes="(max-width: 460px) 100vw, 460px"
             />
           </div>
         </div>
-        {/* Layer 2: two videos – first plays, second preloads; switch without changing src to avoid flicker */}
-        <video
-          ref={video1Ref}
-          src={animationSrc}
-          className={cn(videoBaseClass, showSecond && "opacity-0 pointer-events-none")}
-          autoPlay
-          loop={false}
-          muted
-          playsInline
-          aria-hidden={showSecond}
-          onEnded={handleFirstEnded}
-        />
-        <video
-          ref={video2Ref}
-          src={animationSecondSrc}
-          preload="auto"
-          className={cn(videoBaseClass, !showSecond && "opacity-0 pointer-events-none")}
-          loop={true}
-          muted
-          playsInline
-          aria-label={animationAlt}
-          aria-hidden={!showSecond}
-        />
+        {/* Layer 2: video overlay – fixed size (460px), centered; does not grow with image */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className={cn("relative w-full h-full", VIDEO_OVERLAY_MAX)}>
+            <video
+              ref={video1Ref}
+              src={animationSrc}
+              className={cn(videoBaseClass, showSecond && "opacity-0 pointer-events-none")}
+              autoPlay
+              loop={false}
+              muted
+              playsInline
+              aria-hidden={showSecond}
+              onEnded={handleFirstEnded}
+            />
+            <video
+              ref={video2Ref}
+              src={animationSecondSrc}
+              preload="auto"
+              className={cn(videoBaseClass, !showSecond && "opacity-0 pointer-events-none")}
+              loop={true}
+              muted
+              playsInline
+              aria-label={animationAlt}
+              aria-hidden={!showSecond}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
