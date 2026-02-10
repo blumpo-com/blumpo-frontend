@@ -35,6 +35,10 @@ interface AdImage {
 
 type JobStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'CANCELED';
 
+function hasValidImages(images: unknown): images is AdImage[] {
+  return Array.isArray(images) && images.length > 0 && images.some((img) => img && typeof (img as { publicUrl?: unknown }).publicUrl === 'string');
+}
+
 interface UserWithTokenAccount {
   id: string;
   email: string;
@@ -67,6 +71,7 @@ function GeneratingPageContent() {
     message: string;
     errorCode: string | null;
     canRegenerate?: boolean;
+    canSeeValidImages?: boolean;
   }>({
     open: false,
     title: 'Error',
@@ -226,14 +231,16 @@ function GeneratingPageContent() {
               setIsLoading(false);
               return;
             } else {
-              // Show error dialog for other errors
+              const hasImages = hasValidImages(j?.images) && !!j?.job_id;
               setErrorDialog({
                 open: true,
                 title: 'Generation Failed',
                 message: msg,
                 errorCode: errorCode || 'UNKNOWN',
                 canRegenerate: true,
+                canSeeValidImages: hasImages,
               });
+              if (hasImages && j?.images) setImages(shuffle(j.images));
               setIsLoading(false);
               return;
             }
@@ -269,19 +276,19 @@ function GeneratingPageContent() {
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
           const errorMessage = data.error_message || `Generation ${data.status.toLowerCase()}`;
           setError(errorMessage);
+          const hasValidImages = data.images && data.images.length > 0;
+          if (hasValidImages) {
+            setImages(shuffle(data.images));
+          }
 
-          // Show error dialog for failed/canceled status
           setErrorDialog({
             open: true,
             title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
             message: errorMessage,
             errorCode: data.error_code || null,
             canRegenerate: true,
+            canSeeValidImages: hasValidImages,
           });
-
-          if (data.images && data.images.length > 0) {
-            setImages(shuffle(data.images));
-          }
         }
       } catch (e: any) {
         console.error('Error generating ads:', e);
@@ -309,6 +316,45 @@ function GeneratingPageContent() {
     setShowGeneratedAds(true);
   };
 
+  // See valid images: charge tokens for partial result, then navigate to job view
+  const handleSeeValidImages = async () => {
+    if (!actualJobId) return;
+    try {
+      const res = await fetch('/api/generate/charge-partial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jobId: actualJobId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data?.error || 'Failed to charge for images';
+        setErrorDialog({
+          open: true,
+          title: 'Error',
+          message: data?.error_code === 'INSUFFICIENT_TOKENS'
+            ? 'Insufficient tokens to view images. Please upgrade your plan.'
+            : msg,
+          errorCode: data?.error_code || null,
+        });
+        return;
+      }
+      setError(null);
+      setErrorDialog({ open: false, title: '', message: '', errorCode: null });
+      setStatus('SUCCEEDED');
+      setShowGeneratedAds(true);
+      router.replace(`/generating?job_id=${actualJobId}`);
+    } catch (e: any) {
+      setErrorDialog({
+        open: true,
+        title: 'Error',
+        message: e?.message || 'Failed to load images',
+        errorCode: null,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Regenerate: delete failed/canceled job, then create new generation
   const handleRegenerate = async () => {
     if (!actualJobId || !websiteUrl) return;
@@ -330,13 +376,17 @@ function GeneratingPageContent() {
       if (!res.ok) {
         const msg = data?.error || 'Generation request failed';
         setError(msg);
+        const hasImages = hasValidImages(data?.images) && !!data?.job_id;
+        setActualJobId(data?.job_id ?? null);
         setErrorDialog({
           open: true,
           title: 'Generation Failed',
           message: msg,
           errorCode: data?.error_code || null,
           canRegenerate: !['INSUFFICIENT_TOKENS', 'AUTH_REQUIRED'].includes(data?.error_code || ''),
+          canSeeValidImages: hasImages,
         });
+        if (hasImages && data?.images) setImages(shuffle(data.images));
         return;
       }
       setError(null);
@@ -351,14 +401,16 @@ function GeneratingPageContent() {
         if (!data.images?.length) setError('Generation completed but no images were created.');
       } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
         setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
+        const hasValidImages = (data.images?.length ?? 0) > 0;
+        if (hasValidImages) setImages(shuffle(data.images));
         setErrorDialog({
           open: true,
           title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
           message: data.error_message || `Generation ${data.status.toLowerCase()}`,
           errorCode: data.error_code || null,
           canRegenerate: true,
+          canSeeValidImages: hasValidImages,
         });
-        if (data.images?.length) setImages(shuffle(data.images));
       }
     } catch (e: any) {
       setError(e?.message || 'Regeneration failed');
@@ -392,6 +444,8 @@ function GeneratingPageContent() {
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
+          onTertiaryAction={errorDialog.canSeeValidImages && actualJobId ? handleSeeValidImages : undefined}
+          tertiaryActionLabel={errorDialog.canSeeValidImages && actualJobId ? 'See valid images' : undefined}
           onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
           primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
           showSecondaryButton={true}
@@ -419,6 +473,14 @@ function GeneratingPageContent() {
               </p>
             )}
             <div className="flex flex-col gap-2">
+              {images.length > 0 && actualJobId && (
+                <button
+                  onClick={handleSeeValidImages}
+                  className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600"
+                >
+                  See valid images
+                </button>
+              )}
               {websiteUrl && (
                 <button
                   onClick={handleRegenerate}
@@ -449,6 +511,8 @@ function GeneratingPageContent() {
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
+          onTertiaryAction={errorDialog.canSeeValidImages && actualJobId ? handleSeeValidImages : undefined}
+          tertiaryActionLabel={errorDialog.canSeeValidImages && actualJobId ? 'See valid images' : undefined}
           onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
           primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
           showSecondaryButton={true}

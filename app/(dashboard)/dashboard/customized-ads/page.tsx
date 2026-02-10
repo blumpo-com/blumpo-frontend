@@ -780,13 +780,13 @@ function CustomizedAdsPageContent() {
         nextLabel={
           currentStep === 3 && selectedArchetype === 'random'
             ? 'Generate'
-            : currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3)
+            : currentStep === 4 && selectedInsights.length === 0
               ? 'Choose random'
               : 'Next'
         }
         showRandomIcon={
           (currentStep === 3 && selectedArchetype === 'random') ||
-          (currentStep === 4 && (selectedArchetype !== 'meme' ? selectedInsights.length === 0 : selectedInsights.length < 3))
+          (currentStep === 4 && selectedInsights.length === 0)
         }
       />
 

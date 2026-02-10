@@ -75,11 +75,17 @@ export async function POST(req: Request) {
       }
 
       // Find or create target job
-      const targetJob = await findOrCreateJobForMigration(job.userId, job.brandId);
-      console.log(`[MIGRATE-FAILED] Migrating from job ${jobId} to job ${targetJob.id}`);
+      const targetJobInfo = await findOrCreateJobForMigration(job.userId, job.brandId);
+      console.log(`[MIGRATE-FAILED] Migrating from job ${jobId} to job ${targetJobInfo.id}`);
+      
+      // Get full target job to access brandId
+      const targetJob = await getGenerationJobById(targetJobInfo.id);
+      if (!targetJob) {
+        throw new Error(`Target job ${targetJobInfo.id} not found`);
+      }
 
       // Migrate ads
-      const migrationResult = await migrateFailedJobAds(jobId, targetJob.id);
+      const migrationResult = await migrateFailedJobAds(jobId, targetJob.id, job.userId, targetJob.brandId || null);
       console.log(`[MIGRATE-FAILED] Migration result:`, migrationResult);
 
       // Clean up failed job (mark as CANCELED)
@@ -150,10 +156,16 @@ export async function POST(req: Request) {
         }
 
         // Find or create target job
-        const targetJob = await findOrCreateJobForMigration(failedJob.userId, failedJob.brandId);
+        const targetJobInfo = await findOrCreateJobForMigration(failedJob.userId, failedJob.brandId);
+        
+        // Get full target job to access brandId
+        const targetJob = await getGenerationJobById(targetJobInfo.id);
+        if (!targetJob) {
+          throw new Error(`Target job ${targetJobInfo.id} not found`);
+        }
 
         // Migrate ads
-        const migrationResult = await migrateFailedJobAds(failedJob.id, targetJob.id);
+        const migrationResult = await migrateFailedJobAds(failedJob.id, targetJob.id, failedJob.userId, targetJob.brandId || null);
 
         // Clean up failed job
         await cleanupFailedJob(failedJob.id);

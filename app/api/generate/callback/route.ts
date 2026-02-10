@@ -222,14 +222,20 @@ export async function POST(req: Request) {
       validImages.length > 0 &&
       job.status !== 'SUCCEEDED' // Double-check: don't migrate from SUCCEEDED jobs
     ) {
-      console.log('[CALLBACK] Attempting to migrate ads from failed quick ads job:', job_id, 'status:', jobStatus);
+      console.log('[CALLBACK] Attempting to migrate ads from failed quick ads job:', job_id, 'status:', jobStatus, 'brandId:', job.brandId);
       try {
         // Find or create a job to migrate ads to
-        const targetJob = await findOrCreateJobForMigration(job.userId, job.brandId);
-        console.log('[CALLBACK] Target job for migration:', targetJob.id);
+        const targetJobInfo = await findOrCreateJobForMigration(job.userId, job.brandId);
+        console.log('[CALLBACK] Target job for migration:', targetJobInfo.id);
+        
+        // Get full target job to access brandId
+        const targetJob = await getGenerationJobById(targetJobInfo.id);
+        if (!targetJob) {
+          throw new Error(`Target job ${targetJobInfo.id} not found`);
+        }
 
         // Migrate ads (pairs only, remove orphaned)
-        const migrationResult = await migrateFailedJobAds(job_id, targetJob.id);
+        const migrationResult = await migrateFailedJobAds(job_id, targetJob.id, job.userId, targetJob.brandId || null);
         console.log('[CALLBACK] Migration result:', migrationResult);
 
         // Clean up the failed job
