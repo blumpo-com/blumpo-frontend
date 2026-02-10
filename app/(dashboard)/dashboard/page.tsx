@@ -353,35 +353,37 @@ export default function DashboardHomePage() {
 
       {/* Feature Cards */}
       <div className={styles.cardsContainer}>
-        <FeatureCard
-          title="Quick Ads Generation"
-          description="Only 25 seconds to get the ready ad."
-          gradientClass={styles.cardImageGradient1}
-          frontImage={imgImage2}
-          backImage={imgImage1}
-          onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
-        />
-        <FeatureCard
-          title="Customized Ads Generation"
-          description="Content tailored to your needs. Choose between several archetypes."
-          gradientClass={styles.cardImageGradient2}
-          frontImage={imgImage4}
-          backImage={imgImage3}
-          onButtonClick={() => router.push('/dashboard/customized-ads')}
-        />
-        <FeatureCard
-          title="Customer & Competitor Insights"
-          description="Get to know about your audience and the market itself."
-          gradientClass={styles.cardImageGradient3}
-          frontImage={imgImage6}
-          backImage={imgImage5}
-          frontImageClass={styles.imageCardThirdFront}
-          backImageClass={styles.imageCardThirdBack}
-          onButtonClick={() => console.log('Insights clicked')}
-          showCharacter={true}
-          characterImage={imgCharacter}
-          inactive
-        />
+        <div className={styles.cardsInner}>
+          <FeatureCard
+            title="Quick Ads Generation"
+            description="Only 25 seconds to get the ready ad."
+            gradientClass={styles.cardImageGradient1}
+            frontImage={imgImage2}
+            backImage={imgImage1}
+            onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
+          />
+          <FeatureCard
+            title="Customized Ads Generation"
+            description="Content tailored to your needs. Choose between several archetypes."
+            gradientClass={styles.cardImageGradient2}
+            frontImage={imgImage4}
+            backImage={imgImage3}
+            onButtonClick={() => router.push('/dashboard/customized-ads')}
+          />
+          <FeatureCard
+            title="Customer & Competitor Insights"
+            description="Get to know about your audience and the market itself."
+            gradientClass={styles.cardImageGradient3}
+            frontImage={imgImage6}
+            backImage={imgImage5}
+            frontImageClass={styles.imageCardThirdFront}
+            backImageClass={styles.imageCardThirdBack}
+            onButtonClick={() => console.log('Insights clicked')}
+            showCharacter={true}
+            characterImage={imgCharacter}
+            inactive
+          />
+        </div>
       </div>
     </div>
   );

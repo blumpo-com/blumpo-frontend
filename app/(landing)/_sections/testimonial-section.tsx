@@ -62,7 +62,7 @@ const testimonials: Testimonial[] = [
 function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
   return (
     <div className="rounded-[20px] p-[2px] gradient-primary h-full">
-      <div className="bg-white rounded-[18px] p-6 h-full shadow-lg pb-12 sm:pb-20">
+      <div className="bg-white rounded-[18px] p-6 h-full pb-12 sm:pb-20 shadow-lg">
         {/* Avatar and name */}
         <div className="flex items-center gap-4 mb-4">
           <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
@@ -179,6 +179,11 @@ export function TestimonialSection() {
                 );
               })}
             </div>
+            {/* Gradient fade on right edge */}
+            <div
+              className="absolute right-0 top-0 bottom-0 w-24 pointer-events-none z-[1] bg-gradient-to-r from-transparent to-background"
+              aria-hidden
+            />
           </div>
 
           {/* Right arrow */}

@@ -154,7 +154,7 @@ export function Footer() {
               </Link>
               <span className="font-medium text-[32px] text-black">/</span>
               <Link
-                href="https://instagram.com/blumpo"
+                href="https://instagram.com/blumpoai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-[30px] h-[30px]"

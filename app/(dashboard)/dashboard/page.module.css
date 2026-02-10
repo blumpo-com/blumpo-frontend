@@ -1,37 +1,34 @@
 .homePage {
-  height: 100vh;
+  width: 100%;
   background: #f9fafb;
-  padding: 91px 58px 209px 58px;
+  padding: 91px 58px 0 58px;
   display: flex;
   flex-direction: column;
-  gap: 82px;
-  align-items: flex-start;
-  overflow: hidden;
+  gap: 80px;
+  align-items: center;
+  overflow-x: hidden;
 }
 
 .greetingContainer {
-  height: 40px;
   position: relative;
   width: 100%;
-  overflow: hidden;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: left;
+  justify-content: center;
   text-align: center;
-  font-size: 34.99px;
-  font-family: 'Roboto', sans-serif;
-  width: 710px;
+  font-size: 35px;
 }
 
 .greeting {
-  width: 700px;
+  max-width: 700px;
+  width: 100%;
   position: relative;
-  line-height: 23.69px;
+  line-height: 1.3;
   font-weight: 600;
   display: inline-block;
-  font-family: 'Roboto', sans-serif;
-  flex-shrink: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
   color: #040404;
 }
 
@@ -40,13 +37,32 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  font-family: 'Roboto', sans-serif;
 }
 
 .cardsContainer {
   width: 100%;
-  height: 573px;
+  min-height: 573px;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.cardsInner {
+  display: flex;
+  justify-content: center;
+  align-items: top;
+  gap: 33.5px;
+  flex-direction: row;
+}
+
+.cardsInner .card,
+.cardsInner .cardWrapper {
+  position: relative;
+  left: auto;
+  top: auto;
 }
 
 /* Card wrapper for character illustration */
@@ -54,7 +70,6 @@
   position: absolute;
   width: 340px;
   height: 613px; /* Card height (573px) + space above (40px) */
-  padding-top: 40px; /* Empty space above card */
   transition: all 0.3s ease;
 }
 
@@ -73,8 +88,8 @@
 }
 
 .cardWrapper.cardThird {
-  left: 747px;
-  top: 0;
+  left: auto;
+  top: auto;
 }
 
 .cardInWrapper {
@@ -143,8 +158,28 @@
 }
 
 .cardThird {
-  left: 747px;
-  top: 0;
+  left: auto;
+  top: auto;
+}
+
+/* Cards 20% smaller below 1380px */
+@media (max-width: 1380px) {
+  .cardsInner {
+    gap: 27px;
+    scale: 0.8;
+  }
+
+}
+@media (max-width: 1150px) {
+  .cardsInner {
+    flex-direction: column;
+    scale: 1;
+  }
+
+  .homePage {
+    gap: 80px;
+  }
+
 }
 
 .cardContent {
@@ -157,7 +192,6 @@
 }
 
 .cardTitle {
-  font-family: 'Roboto', sans-serif;
   font-size: 28px;
   font-weight: 500;
   line-height: normal;
@@ -169,7 +203,6 @@
 }
 
 .cardDescription {
-  font-family: 'Roboto', sans-serif;
   font-size: 20px;
   font-weight: 500;
   line-height: normal;
@@ -193,7 +226,6 @@
   cursor: pointer;
   background: #0a0a0a;
   transition: all 0.2s;
-  font-family: 'Roboto', sans-serif;
   font-size: 17.6px;
   font-weight: 500;
   line-height: 22px;

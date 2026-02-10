@@ -16,8 +16,8 @@ export default function DashboardLayout({
           {/* Sidebar */}
           <DashboardSidebar />
 
-          {/* Main content */}
-          <main className="flex-1 ml-[267px] overflow-hidden">
+          {/* Main content - overflow-y-auto for scroll when cards stack vertically */}
+          <main className="flex-1 ml-[267px] min-h-0 overflow-y-auto overflow-x-hidden">
             {children}
           </main>
         </div>

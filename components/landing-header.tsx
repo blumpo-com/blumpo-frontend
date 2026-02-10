@@ -30,9 +30,11 @@ export function LandingHeader() {
       <header className="sticky top-0 z-50 flex justify-center py-4 px-4 bg-transparent">
         <div className="w-full max-w-8xl bg-white/80 backdrop-blur-sm rounded-full shadow-md px-4 md:px-6 py-4 flex justify-between items-center border-1 border-[#E5E7E]">
           <Link href="/" className="flex items-center">
-            <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
-              blumpo.com
-            </span>
+            <img
+              src="/assets/logo/Blumpo_Logo.svg"
+              alt="Blumpo"
+              className="h-8 md:h-9"
+            />
           </Link>
 
           <button
@@ -69,9 +71,11 @@ export function LandingHeader() {
           <div className="flex flex-col gap-[36px] h-full px-[40px] py-[17px]">
             <div className="flex items-center justify-between mt-4">
               <Link href="/" className="flex items-center">
-                <span className="text-xl md:text-2xl font-semibold text-[#00BFA6]">
-                  blumpo.com
-                </span>
+                <img
+                  src="/assets/logo/Blumpo_Logo.svg"
+                  alt="Blumpo"
+                  className="h-8 md:h-9"
+                />
               </Link>
               <button
                 onClick={closeMenu}

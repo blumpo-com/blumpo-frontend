@@ -7,6 +7,7 @@ import PaintIcon from '@/assets/icons/Paint.svg';
 import SearchIcon from '@/assets/icons/Search.svg';
 import ChartIcon from '@/assets/icons/Chart.svg';
 import MegaphoneIcon from '@/assets/icons/Megaphone.svg';
+import { JetpackAdIllustration } from '@/components/jetpack-ad-illustration';
 import { GameDialog } from '@/components/GameDialog';
 
 // Icon component that renders the appropriate SVG based on step index
@@ -53,56 +54,7 @@ const LeftPanel = memo(function LeftPanel({ onPlay }: LeftPanelProps) {
 
         {/* Illustration */}
         <div className={styles.illustrationWrapper}>
-          <div className={styles.illustrationCard}>
-            <div className={styles.vectorContainer}>
-              <div className="flex-none rotate-[151.388deg]">
-                <div className="h-[327.266px] relative w-[470.453px]">
-                  {/* 
-                  <img
-                    alt=""
-                    className={styles.vectorImage}
-                    height={327.266}
-                    src={imgVector3}
-                    width={470.453}
-                    loading="eager"
-                    key="vector3"
-                  />
-                  */}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className={styles.rabbitContainer}>
-            <div className="absolute flex h-[50.878px] items-center justify-center left-[73.41px] top-[36.15px] w-[27.447px]">
-              <div className="flex-none rotate-[180deg] scale-y-[-100%]">
-                <div className="h-[50.878px] relative w-[27.447px]">
-                  {/*
-                  <img alt="" className="block max-w-none size-full" src={imgVector1} loading="eager" key="vector1" />
-                  */}
-                </div>
-              </div>
-            </div>
-            <div className="absolute flex h-[57.088px] items-center justify-center left-[28.92px] top-[32.37px] w-[43.193px]">
-              <div className="flex-none rotate-[159.059deg] scale-y-[-100%]">
-                <div className="h-[50.878px] relative w-[26.778px]">
-                  {/*
-                  <img alt="" className="block max-w-none size-full" src={imgVector2} loading="eager" key="vector2" />
-                  */}
-                </div>
-              </div>
-            </div>
-            <div className="absolute h-[361.5px] left-[-25px] top-0 w-[241px]">
-              {/*
-              <img
-                alt=""
-                className={styles.rabbitImage}
-                src={imgChatGptImage3Lis2025232050Photoroom1}
-                loading="eager"
-                key="rabbit"
-              />
-              */}
-            </div>
-          </div>
+          <JetpackAdIllustration className="w-full h-full min-h-0" />
         </div>
 
         {/* CTA Button */}
