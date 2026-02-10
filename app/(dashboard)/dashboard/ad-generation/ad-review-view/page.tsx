@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TinderView, AdFormat } from '../tinder-view';
 import { TinderViewMixed } from '../tinder-view-mixed';
+import { GenerationStatusView } from '../generation-status-view';
 import { useUser } from '@/lib/contexts/user-context';
 import styles from '../tinder-view.module.css';
 
@@ -334,13 +335,13 @@ function TinderPageContent() {
     saveActions();
   }, [hasCompleted, isTest, jobId, savedIds, deletedIds, downloadedIds]);
 
-  // Show completion message if finished
   if (isFinished) {
     return (
-      <div className={styles.emptyState}>
-        <h2>No more ads to review</h2>
-        <p>All ads have been reviewed!</p>
-      </div>
+      <GenerationStatusView
+        title="No more ads to review."
+        description="All ads have been reviewed."
+        primaryAction={{ label: 'Go to content library', href: '/dashboard/content-library' }}
+      />
     );
   }
 

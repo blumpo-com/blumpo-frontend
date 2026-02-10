@@ -82,12 +82,13 @@ export async function POST(req: Request) {
     }
 
     const archetypeCode = job.archetypeCode;
-    if(!archetypeCode) {
+    const archetypeMode = job.archetypeMode;
+    if(!archetypeCode && archetypeMode === 'single') {
       console.error('[GENERATE-CUSTOMIZED] Archetype code not found');
       return NextResponse.json({ error: "Archetype code not found" }, { status: 404 });
     }
 
-    const webhookUrl = process.env.N8N_WEBHOOK_URL + archetypeCode;
+    const webhookUrl = process.env.N8N_WEBHOOK_URL + (archetypeCode || 'random');
     if(!webhookUrl) {
       console.error('[GENERATE-CUSTOMIZED] Webhook URL not found for archetype:', archetypeCode);
       return NextResponse.json({ error: "Webhook URL not found for archetype" }, { status: 404 });
