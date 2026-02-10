@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { HeroPhotoWall } from "@/components/hero-photo-wall";
+import { JetpackAdIllustrationMobile } from "@/components/jetpack-ad-illustration-mobile";
 import { UrlInputSection } from "./url-input-section";
 import { Button } from "@/components/ui/button";
+import { JetpackAdIllustration } from "@/components/jetpack-ad-illustration";
 
 function BenefitRow({ text }: { text: string }) {
   return (
@@ -23,24 +25,9 @@ export function HeroSection() {
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between flex-col lg:flex-row  items-center lg:items-start">
           <div className="text-center md:max-w-2xl lg:col-span-6 lg:text-left relative z-10 lg:mr-10 flex flex-col items-center lg:items-start">
-            {/* Mobile: Images above headline */}
-            <div className="lg:hidden relative w-full flex justify-center items-center mb-6">
-              <div className="relative">
-                <Image
-                  src="/images/temp/half-img.png"
-                  alt="Half image"
-                  width={260}
-                  height={200}
-                  className="relative z-10"
-                />
-                <Image
-                  src="/images/temp/blumpo-ladder.png"
-                  alt="Blumpo with ladder"
-                  width={180}
-                  height={250}
-                  className="absolute animate-float-up-down z-20 top-4 -right-15"
-                />
-              </div>
+            {/* Mobile: Jetpack ad illustration (9-b only, smaller) */}
+            <div className="lg:hidden relative w-full flex justify-center items-center">
+              <JetpackAdIllustrationMobile />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl xl:text-7xl text-center lg:text-left">
               Create AI B2B
