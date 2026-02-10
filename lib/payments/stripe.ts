@@ -62,9 +62,6 @@ export async function createCheckoutSession({
       enabled: true,
       // required: 'never'
     },
-    automatic_tax: {
-      enabled: true,
-    },
   };
 
   // Don't add trial for subscription
