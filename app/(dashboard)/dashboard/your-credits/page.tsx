@@ -7,10 +7,12 @@ import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@
 import { Check } from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
+import { gtmEvent } from '@/lib/gtm';
 import { Save50Dialog } from '@/components/Save50Dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
 import { SupportCategory } from '@/lib/constants/support-categories';
+import { GTMPurchaseTracker } from '@/components/gtm-purchase-tracker';
 import styles from './page.module.css';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 import { PricingSection } from '@/app/(landing)/_sections/pricing-section';
@@ -185,6 +187,18 @@ function YourCreditsPageContent() {
       return;
     }
 
+    // Find matching plan for GTM event
+    const matchingPlan = subscriptionPlans.find(p => p.stripeProductId === price.productId);
+
+    // Fire begin_checkout event
+    gtmEvent('begin_checkout', {
+      plan: matchingPlan?.planCode || 'unknown',
+      price_id: priceId,
+      mode: 'subscription',
+      currency: price.currency || 'usd',
+      value: price.unitAmount ? price.unitAmount / 100 : undefined,
+    });
+
     // Check if it's annual (interval === 'year' and intervalCount === 1)
     const isAnnual = price.interval === 'year' && price.intervalCount === 1;
 
@@ -236,6 +250,19 @@ function YourCreditsPageContent() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.annualPriceId);
+      
+      // Fire begin_checkout event for annual plan
+      const annualPrice = stripePrices.find(p => p.id === save50DialogData.annualPriceId);
+      const matchingPlan = annualPrice ? subscriptionPlans.find(p => p.stripeProductId === annualPrice.productId) : null;
+      
+      gtmEvent('begin_checkout', {
+        plan: matchingPlan?.planCode || 'unknown',
+        price_id: save50DialogData.annualPriceId,
+        mode: 'subscription',
+        currency: annualPrice?.currency || 'usd',
+        value: annualPrice?.unitAmount ? annualPrice.unitAmount / 100 : undefined,
+      });
+      
       setSave50DialogOpen(false);
       setSave50DialogData(null);
       setIsLoading(true);
@@ -252,6 +279,19 @@ function YourCreditsPageContent() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.monthlyPriceId);
+      
+      // Fire begin_checkout event for monthly plan
+      const monthlyPrice = stripePrices.find(p => p.id === save50DialogData.monthlyPriceId);
+      const matchingPlan = monthlyPrice ? subscriptionPlans.find(p => p.stripeProductId === monthlyPrice.productId) : null;
+      
+      gtmEvent('begin_checkout', {
+        plan: matchingPlan?.planCode || 'unknown',
+        price_id: save50DialogData.monthlyPriceId,
+        mode: 'subscription',
+        currency: monthlyPrice?.currency || 'usd',
+        value: monthlyPrice?.unitAmount ? monthlyPrice.unitAmount / 100 : undefined,
+      });
+      
       setSave50DialogOpen(false);
       setSave50DialogData(null);
       setIsLoading(true);
@@ -280,6 +320,19 @@ function YourCreditsPageContent() {
   const handleBuyCredits = async (priceId: string) => {
     const formData = new FormData();
     formData.append('priceId', priceId);
+    
+    // Fire begin_checkout event for topup
+    const topupPrice = stripeTopupPrices.find(p => p.id === priceId);
+    const matchingTopup = topupPrice ? topupPlans.find(t => t.stripeProductId === topupPrice.productId) : null;
+    
+    gtmEvent('begin_checkout', {
+      plan: matchingTopup?.displayName || 'topup',
+      price_id: priceId,
+      mode: 'payment',
+      currency: topupPrice?.currency || 'usd',
+      value: topupPrice?.unitAmount ? topupPrice.unitAmount / 100 : undefined,
+    });
+    
     setBuyCreditsDialogOpen(false);
     setIsLoading(true);
     try {
@@ -390,6 +443,11 @@ function YourCreditsPageContent() {
 
   return (
     <div className={styles.container}>
+      {/* GTM Purchase Tracker */}
+      <Suspense fallback={null}>
+        <GTMPurchaseTracker />
+      </Suspense>
+      
       {/* Loading Overlay */}
       {isLoading && (
         <div className={styles.loadingOverlay}>
@@ -540,10 +598,14 @@ function YourCreditsPageContent() {
           <div className={`${styles.actionButtons} ${!annualPriceId || period !== SubscriptionPeriod.MONTHLY ? styles.actionButtonsCentered : ''}`}>
             {/* Get Annual Plan Button */}
             {annualPriceId && period === SubscriptionPeriod.MONTHLY ? (
-              <form action={checkoutAction} className={styles.annualPlanForm}>
-                <input type="hidden" name="priceId" value={annualPriceId} />
+              <div className={styles.annualPlanForm}>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={async () => {
+                    const formData = new FormData();
+                    formData.append('priceId', annualPriceId);
+                    await checkoutAction(formData);
+                  }}
                   className={styles.annualPlanButton}
                 >
                   <span className={styles.annualPlanButtonText}>
@@ -556,7 +618,7 @@ function YourCreditsPageContent() {
                     Save 50%
                   </span>
                 </div>
-              </form>
+              </div>
             ) : null}
 
             {/* Upgrade Plan Button */}

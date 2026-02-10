@@ -135,7 +135,14 @@ export async function GET(request: NextRequest) {
     }
 
     await setSession(userRecord[0]);
-    return NextResponse.redirect(new URL('/dashboard/your-credits', request.url));
+    
+    // Add purchase success params for GTM tracking
+    const successParams = new URLSearchParams();
+    successParams.set('purchase', 'success');
+    successParams.set('session_id', sessionId);
+    successParams.set('mode', session.mode);
+    
+    return NextResponse.redirect(new URL(`/dashboard/your-credits?${successParams.toString()}`, request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
     const errorCode = error instanceof Error && error.message.includes('subscription') 
