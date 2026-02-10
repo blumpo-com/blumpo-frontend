@@ -8,6 +8,7 @@ import SearchIcon from '@/assets/icons/Search.svg';
 import ChartIcon from '@/assets/icons/Chart.svg';
 import MegaphoneIcon from '@/assets/icons/Megaphone.svg';
 import { JetpackAdIllustration } from '@/components/jetpack-ad-illustration';
+import { GameDialog } from '@/components/GameDialog';
 
 // Icon component that renders the appropriate SVG based on step index
 interface StepIconProps {
@@ -34,7 +35,11 @@ function StepIcon({ index, isActive }: StepIconProps) {
 }
 
 // Memoized Left Panel component - with header and button
-const LeftPanel = memo(function LeftPanel() {
+interface LeftPanelProps {
+  onPlay: () => void;
+}
+
+const LeftPanel = memo(function LeftPanel({ onPlay }: LeftPanelProps) {
   return (
     <div className={styles.leftPanel}>
       <div className={styles.leftPanelContent}>
@@ -53,11 +58,8 @@ const LeftPanel = memo(function LeftPanel() {
         </div>
 
         {/* CTA Button */}
-        <button className={styles.playButton}>
-          <span>Play with Blumpo</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        <button className={styles.playButton} onClick={onPlay} type="button">
+          Play the game
         </button>
       </div>
     </div>
@@ -136,6 +138,7 @@ export function CreatingProcess({
 }: CreatingProcessProps) {
   const isControlled = !!externalSteps;
   const prevRestartTriggerRef = useRef(restartTrigger);
+  const [isGameOpen, setIsGameOpen] = useState(false);
 
   // Merge custom step timings with defaults
   const effectiveStepTimings = customStepTimings || STEP_TIMINGS;
@@ -324,7 +327,7 @@ export function CreatingProcess({
 
   return (
     <div className={styles.creatingProcessContainer}>
-      <LeftPanel />
+      <LeftPanel onPlay={() => setIsGameOpen(true)} />
       <div className={styles.rightPanel}>
         <div className={styles.rightPanelInner}>
           <div className={styles.contentArea}>
@@ -353,6 +356,7 @@ export function CreatingProcess({
           </div>
         </div>
       </div>
+      <GameDialog open={isGameOpen} onClose={() => setIsGameOpen(false)} />
     </div>
   );
 }
@@ -448,4 +452,3 @@ function ProcessStepComponent({
     </div>
   );
 }
-

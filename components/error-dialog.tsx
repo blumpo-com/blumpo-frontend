@@ -15,6 +15,9 @@ interface ErrorDialogProps {
   showSecondaryButton?: boolean;
   secondaryActionLabel?: string;
   onSecondaryAction?: () => void;
+  /** Optional tertiary action (e.g. "See valid images" when FAILED with partial images) */
+  onTertiaryAction?: () => void;
+  tertiaryActionLabel?: string;
 }
 
 export function ErrorDialog({
@@ -28,6 +31,8 @@ export function ErrorDialog({
   showSecondaryButton = false,
   secondaryActionLabel = 'Close',
   onSecondaryAction,
+  onTertiaryAction,
+  tertiaryActionLabel,
 }: ErrorDialogProps) {
   const router = useRouter();
 
@@ -126,6 +131,52 @@ export function ErrorDialog({
             >
               {primaryActionLabel}
             </Button>
+          </>
+        ) : onTertiaryAction && tertiaryActionLabel ? (
+          <>
+            <Button
+              onClick={() => {
+                onTertiaryAction();
+                onClose();
+              }}
+              variant="cta"
+              style={{
+                width: '100%',
+                padding: '12px 24px',
+                fontSize: '16px',
+                fontWeight: 500,
+              }}
+            >
+              {tertiaryActionLabel}
+            </Button>
+            {onPrimaryAction && (
+              <Button
+                onClick={handlePrimaryAction}
+                variant="outline"
+                style={{
+                  width: '100%',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {primaryActionLabel}
+              </Button>
+            )}
+            {showSecondaryButton && (
+              <Button
+                onClick={handleSecondaryAction}
+                variant="outline"
+                style={{
+                  width: '100%',
+                  padding: '12px 24px',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {secondaryActionLabel}
+              </Button>
+            )}
           </>
         ) : (
           <>

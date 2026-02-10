@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     
     // Filter out deleted and error images
     const validImages = adImages.filter(
-      (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
+      (img) => !img.errorFlag && img.publicUrl
     );
 
     return NextResponse.json(validImages);

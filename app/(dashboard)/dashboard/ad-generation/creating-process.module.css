@@ -74,7 +74,7 @@
   height: 48.3px;
   position: relative;
   border-radius: 20.95px;
-  background: linear-gradient(180deg, #00bfa6, #0d3b66);
+  background: linear-gradient(135deg, #00bfa6, #0d3b66);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,15 +84,20 @@
   text-align: center;
   font-size: 19.87px;
   color: #f9fafb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #00bfa64d;
+  border: 1px solid #626d7c;
 }
 
 .playButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 .playButton:active {
   transform: translateY(0);
+  transition-duration: 0.1s;
 }
 
 .playButton svg {

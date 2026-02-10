@@ -75,57 +75,8 @@
     {
       "idx": 10,
       "version": "7",
-      "when": 1768400000000,
-      "tag": "0010_add_cancellation_reasons",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1768400100000,
-      "tag": "0011_add_pending_cancellation_reasons",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "7",
-      "when": 1768400200000,
-      "tag": "0012_add_retention_offer_applied_at",
-      "breakpoints": true
-    },
-    {
-      "idx": 13,
-      "version": "7",
-      "when": 1768400300000,
-      "tag": "0013_add_retention_discount_renewal_at",
-      "breakpoints": true
-    },
-    {
-      "idx": 14,
-      "version": "7",
-      "when": 1768440000000,
-      "tag": "0014_remove_ad_clone_is_good",
-      "breakpoints": true
-    },
-    {
-      "idx": 15,
-      "version": "7",
-      "when": 1768450000000,
-      "tag": "0015_add_ad_clone_is_good",
-      "breakpoints": true
-    },
-    {
-      "idx": 16,
-      "version": "7",
-      "when": 1768460000000,
-      "tag": "0016_remove_ad_clone_is_good",
-      "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1768470000000,
-      "tag": "0017_ad_clone_workflow_id_unique",
+      "when": 1768660790000,
+      "tag": "0010_consolidated_ads_and_token_account",
       "breakpoints": true
     }
   ]

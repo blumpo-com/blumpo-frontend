@@ -3,6 +3,7 @@
 import { useState, Suspense, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CreatingProcess } from './creating-process';
+import { GenerationStatusView } from './generation-status-view';
 import { ReadyAdsView } from './ready-ads-view';
 
 // Use NEXT_PUBLIC_ prefix for client-side access
@@ -333,23 +334,14 @@ function AdGenerationPageContent() {
     }
   };
 
-  // Show error if generation failed
   if (generationError && !isGenerating) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        flexDirection: 'column',
-        gap: '20px'
-      }}>
-        <h1>Generation Failed</h1>
-        <p>{generationError}</p>
-        <button onClick={() => router.push('/dashboard')}>
-          Go to Dashboard
-        </button>
-      </div>
+      <GenerationStatusView
+        title="Generation Failed"
+        description={generationError}
+        primaryAction={{ label: 'Go to Dashboard', onClick: () => router.push('/dashboard') }}
+        titleGradient={false}
+      />
     );
   }
 

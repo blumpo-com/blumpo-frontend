@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Home, LogOut, X, Menu, ArrowRight } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { Footer } from "./_sections/footer-section";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import { signOut } from "@/app/(login)/actions";
 import { useRouter } from "next/navigation";
 import { User } from "@/lib/db/schema";
 import useSWR, { mutate } from "swr";
+import { LandingHeader } from "@/components/landing-header";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -192,16 +193,12 @@ function Header() {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  // Hide header on dashboard routes (routes starting with /dashboard) and generating page
-  const isDashboardRoute = pathname?.startsWith('/dashboard');
-  const isGeneratingRoute = pathname?.startsWith('/generating');
 
   return (
     <section className="flex flex-col min-h-screen">
-      {!isDashboardRoute && !isGeneratingRoute && <Header />}
+      {<LandingHeader />}
       {children}
-      {!isDashboardRoute && <Footer />}
+      {<Footer />}
     </section>
   );
 }
