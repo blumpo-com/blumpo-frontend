@@ -160,16 +160,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
         </Button>
       </div>
       <header>
-        <time
-          dateTime={post.date}
-          className="block text-sm text-gray-900 dark:text-gray-400 text-center"
-        >
-          {new Date(post.date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })}
-        </time>
+
 
         <h1 className="text-2xl tracking-tight lg:text-5xl font-black mt-2 mb-4 text-foreground text-center">
           {post.title}
@@ -180,6 +171,16 @@ export default async function BlogPost({ params }: BlogPostProps) {
             {post.excerpt}
           </p>
         )}
+        <time
+          dateTime={post.date}
+          className="block text-sm text-gray-500 dark:text-gray-400 text-center"
+        >
+          {new Date(post.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </time>
 
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-6">
