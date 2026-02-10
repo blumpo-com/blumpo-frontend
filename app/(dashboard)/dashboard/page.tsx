@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
 import useSWR from 'swr';
+import { GameDialog } from '@/components/GameDialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -180,6 +181,7 @@ export default function DashboardHomePage() {
   const router = useRouter();
   const { currentBrand, isInitialized } = useBrand();
   const [isCheckingAds, setIsCheckingAds] = useState(false);
+  const [isGameOpen, setIsGameOpen] = useState(false);
   // Ref to prevent double execution (React Strict Mode)
   const hasCheckedBrandRef = useRef<string | null>(null);
   const { data: brands = [], isLoading: isLoadingBrands } = useSWR<{ id: string }[]>(
@@ -202,35 +204,35 @@ export default function DashboardHomePage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
-  
+
   // Check and maintain quick ads for paid users
   useEffect(() => {
     const brandId = currentBrand?.id || null;
-    
+
     // Reset ref if brand changed
     if (brandId && hasCheckedBrandRef.current !== null && hasCheckedBrandRef.current !== brandId) {
       hasCheckedBrandRef.current = null;
     }
-    
+
     // Don't run if no brand or if we've already checked this brand
     if (!brandId || hasCheckedBrandRef.current === brandId) {
       return;
     }
-    
+
     // Don't run if already checking
     if (isCheckingAds) {
       return;
     }
-    
+
     // Mark as checked for this brand to prevent double execution
     hasCheckedBrandRef.current = brandId;
-    
+
     const checkAndGenerateQuickAds = async () => {
       try {
         setIsCheckingAds(true);
-        
+
         const checkResponse = await fetch(`/api/quick-ads/check-paid-user?brandId=${brandId}`);
-        
+
         if (!checkResponse.ok) {
           return;
         }
@@ -244,10 +246,10 @@ export default function DashboardHomePage() {
 
         console.log('brandId', brandId);
         // User is paid and needs more ads - trigger generation
-        
+
         // Generate ads for formats that need them
         const generatePromises = [];
-        
+
         if (checkData.needsGeneration) {
           // Create quick ads job (generates both formats)
           generatePromises.push(
@@ -281,7 +283,7 @@ export default function DashboardHomePage() {
     };
 
     checkAndGenerateQuickAds();
-    
+
     // Only run once when brand changes, not on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBrand?.id]);
@@ -294,31 +296,54 @@ export default function DashboardHomePage() {
     return null;
   }
 
- return (
+  return (
     <div className={styles.homePage}>
-      {/* Test button - only show in test mode */}
+      {/* Test buttons - only show in test mode */}
       {IS_TEST_MODE && (
-        <button
-          onClick={() => router.push('/dashboard/ad-generation?job_id=ed0166d8-4530-48ef-b0e0-69d183cd0477')}
-          style={{
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            zIndex: 9999,
-            padding: '10px 20px',
-            backgroundColor: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
-          TEST: Ad Generation
-        </button>
+        <>
+          <button
+            onClick={() => router.push('/dashboard/ad-generation?job_id=ed0166d8-4530-48ef-b0e0-69d183cd0477')}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              zIndex: 9999,
+              padding: '10px 20px',
+              backgroundColor: '#ff6b6b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            }}
+          >
+            TEST: Ad Generation
+          </button>
+          <button
+            onClick={() => setIsGameOpen(true)}
+            style={{
+              position: 'fixed',
+              top: '20px',
+              right: '200px',
+              zIndex: 9999,
+              padding: '10px 20px',
+              backgroundColor: '#4ecdc4',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            }}
+          >
+            TEST: Game
+          </button>
+        </>
       )}
+      {IS_TEST_MODE && <GameDialog open={isGameOpen} onClose={() => setIsGameOpen(false)} />}
       {/* Header Section */}
       <div className={styles.greetingContainer}>
         <h1 className={styles.greeting}>
