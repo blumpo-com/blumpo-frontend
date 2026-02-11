@@ -291,6 +291,16 @@ export default function ContentWrapper({
         title={brandLimitDialog.title}
         message={brandLimitDialog.message}
         errorCode={brandLimitDialog.errorCode}
+        primaryButton={{
+          label: 'Upgrade Plan',
+          onClick: () => router.push('/dashboard/your-credits'),
+          variant: 'cta',
+        }}
+        secondaryButton={{
+          label: 'Go Back',
+          onClick: () => {},
+          variant: 'outline',
+        }}
       />
     </>
   );

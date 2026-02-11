@@ -1,8 +1,21 @@
 'use client';
 
 import { Dialog } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import type { VariantProps } from 'class-variance-authority';
+
+type ButtonVariant = VariantProps<typeof buttonVariants>['variant'];
+type ButtonSize = VariantProps<typeof buttonVariants>['size'];
+
+interface ButtonConfig {
+  label: string;
+  onClick: () => void;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  className?: string;
+  style?: React.CSSProperties;
+}
 
 interface ErrorDialogProps {
   open: boolean;
@@ -10,15 +23,20 @@ interface ErrorDialogProps {
   title?: string;
   message: string;
   errorCode?: string | null;
-  onPrimaryAction?: () => void;
-  primaryActionLabel?: string;
-  showSecondaryButton?: boolean;
-  secondaryActionLabel?: string;
-  onSecondaryAction?: () => void;
-  /** Optional tertiary action (e.g. "See valid images" when FAILED with partial images) */
-  onTertiaryAction?: () => void;
-  tertiaryActionLabel?: string;
+  /** Primary button configuration */
+  primaryButton?: ButtonConfig;
+  /** Secondary button configuration */
+  secondaryButton?: ButtonConfig;
+  /** Tertiary button configuration (e.g. "See valid images" when FAILED with partial images) */
+  tertiaryButton?: ButtonConfig;
 }
+
+const defaultButtonStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 24px',
+  fontSize: '16px',
+  fontWeight: 500,
+};
 
 export function ErrorDialog({
   open,
@@ -26,43 +44,58 @@ export function ErrorDialog({
   title = 'Error',
   message,
   errorCode,
-  onPrimaryAction,
-  primaryActionLabel = 'Go Back',
-  showSecondaryButton = false,
-  secondaryActionLabel = 'Close',
-  onSecondaryAction,
-  onTertiaryAction,
-  tertiaryActionLabel,
+  primaryButton,
+  secondaryButton,
+  tertiaryButton,
 }: ErrorDialogProps) {
   const router = useRouter();
 
-  const handlePrimaryAction = () => {
-    if (onPrimaryAction) {
-      onPrimaryAction();
-    } else {
+  // Default primary button if none provided
+  const defaultPrimaryButton: ButtonConfig = {
+    label: 'Go Back',
+    onClick: () => {
       router.push('/');
-    }
-    onClose();
+      onClose();
+    },
+    variant: 'cta',
+    style: defaultButtonStyle,
   };
 
-  const handleSecondaryAction = () => {
-    if (onSecondaryAction) {
-      onSecondaryAction();
-    }
-    onClose();
-  };
+  // Use provided primary button or default
+  const finalPrimaryButton = primaryButton || defaultPrimaryButton;
 
-  // Custom action for INSUFFICIENT_TOKENS - navigate to pricing
-  const handleUpgrade = () => {
-    router.push('/pricing');
-    onClose();
-  };
-
-  // Custom action for BRAND_LIMIT_REACHED - navigate to your-credits
-  const handleUpgradeToCredits = () => {
-    router.push('/dashboard/your-credits');
-    onClose();
-  };
+  // Build button list (tertiary first, then primary, then secondary)
+  const buttons: ButtonConfig[] = [];
+  
+  if (tertiaryButton) {
+    buttons.push({
+      ...tertiaryButton,
+      onClick: () => {
+        tertiaryButton.onClick();
+        onClose();
+      },
+    });
+  }
+  
+  if (finalPrimaryButton) {
+    buttons.push({
+      ...finalPrimaryButton,
+      onClick: () => {
+        finalPrimaryButton.onClick();
+        onClose();
+      },
+    });
+  }
+  
+  if (secondaryButton) {
+    buttons.push({
+      ...secondaryButton,
+      onClick: () => {
+        secondaryButton.onClick();
+        onClose();
+      },
+    });
+  }
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -78,136 +111,18 @@ export function ErrorDialog({
         </p>
       )}
       <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-        {errorCode === 'BRAND_LIMIT_REACHED' ? (
-          <>
-            <Button
-              onClick={handleUpgradeToCredits}
-              variant="cta"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              Upgrade Plan
-            </Button>
-            <Button
-              onClick={handlePrimaryAction}
-              variant="outline"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              {primaryActionLabel}
-            </Button>
-          </>
-        ) : errorCode === 'INSUFFICIENT_TOKENS' ? (
-          <>
-            <Button
-              onClick={handleUpgrade}
-              variant="cta"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              Upgrade Plan
-            </Button>
-            <Button
-              onClick={handlePrimaryAction}
-              variant="outline"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              {primaryActionLabel}
-            </Button>
-          </>
-        ) : onTertiaryAction && tertiaryActionLabel ? (
-          <>
-            <Button
-              onClick={() => {
-                onTertiaryAction();
-                onClose();
-              }}
-              variant="cta"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              {tertiaryActionLabel}
-            </Button>
-            {onPrimaryAction && (
-              <Button
-                onClick={handlePrimaryAction}
-                variant="outline"
-                style={{
-                  width: '100%',
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                }}
-              >
-                {primaryActionLabel}
-              </Button>
-            )}
-            {showSecondaryButton && (
-              <Button
-                onClick={handleSecondaryAction}
-                variant="outline"
-                style={{
-                  width: '100%',
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                }}
-              >
-                {secondaryActionLabel}
-              </Button>
-            )}
-          </>
-        ) : (
-          <>
-            <Button
-              onClick={handlePrimaryAction}
-              variant="cta"
-              style={{
-                width: '100%',
-                padding: '12px 24px',
-                fontSize: '16px',
-                fontWeight: 500,
-              }}
-            >
-              {primaryActionLabel}
-            </Button>
-            {showSecondaryButton && (
-              <Button
-                onClick={handleSecondaryAction}
-                variant="outline"
-                style={{
-                  width: '100%',
-                  padding: '12px 24px',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                }}
-              >
-                {secondaryActionLabel}
-              </Button>
-            )}
-          </>
-        )}
+        {buttons.map((button, index) => (
+          <Button
+            key={index}
+            onClick={button.onClick}
+            variant={button.variant || 'cta'}
+            size={button.size}
+            className={button.className}
+            style={button.style || defaultButtonStyle}
+          >
+            {button.label}
+          </Button>
+        ))}
       </div>
     </Dialog>
   );

@@ -723,8 +723,11 @@ function YourCreditsPageContent() {
         title={errorDialog.title}
         message={errorDialog.message}
         errorCode={errorDialog.errorCode}
-        primaryActionLabel="OK"
-        onPrimaryAction={() => setErrorDialog({ ...errorDialog, open: false })}
+        primaryButton={{
+          label: 'OK',
+          onClick: () => setErrorDialog({ ...errorDialog, open: false }),
+          variant: 'cta',
+        }}
       />
     </div>
   );
