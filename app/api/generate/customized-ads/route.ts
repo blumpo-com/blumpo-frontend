@@ -23,6 +23,14 @@ function calculateTokenCost(formats: string[]): number {
 }
 
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
+    console.log("[GENERATE-CUSTOMIZED] Skipping generation (test mode)");
+    return NextResponse.json(
+      { error: "Generation disabled in test mode", error_code: "TEST_MODE" },
+      { status: 503 }
+    );
+  }
+
   const requestStartTime = Date.now();
   console.log('[GENERATE-CUSTOMIZED] Request started at', new Date().toISOString());
   

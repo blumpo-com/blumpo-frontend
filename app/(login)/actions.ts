@@ -64,6 +64,7 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
 
   // Check if user exists
   let foundUser = await getUserByEmail(email);
+  const isNewUser = !foundUser;
 
   if (!foundUser) {
     // User doesn't exist - create new user
@@ -105,16 +106,24 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
   const redirectTo = formData.get('redirect') as string | null;
   const websiteUrl = formData.get('website_url') as string | null;
 
+  // Build auth success params for GTM tracking
+  const authParams = new URLSearchParams();
+  authParams.set('auth', 'success');
+  authParams.set('method', 'email');
+  if (isNewUser) {
+    authParams.set('isNewUser', 'true');
+  }
+
   // Handle generation redirect - start generation and redirect to generating page
   if (redirectTo === 'generate' && websiteUrl) {
     // Note: We can't call fetch in a server action, so we'll redirect to a page that handles it
     // The oauth-redirect-handler will handle the actual generation start
-    redirect(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`);
+    redirect(`/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true&${authParams.toString()}`);
   }
 
   // Handle input-url redirect (after CTA "Make your first free Ad")
   if (redirectTo === 'input-url') {
-    redirect('/input-url');
+    redirect(`/input-url?${authParams.toString()}`);
   }
 
   // Handle checkout redirect
@@ -129,14 +138,16 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       if (interval) {
         params.set('interval', interval);
       }
+      // Add auth params
+      authParams.forEach((value, key) => params.set(key, value));
       redirect(`/dashboard/your-credits?${params.toString()}`);
     } else {
-      redirect('/dashboard/your-credits');
+      redirect(`/dashboard/your-credits?${authParams.toString()}`);
     }
   }
 
   // Default redirect - go to dashboard
-  redirect('/dashboard');
+  redirect(`/dashboard?${authParams.toString()}`);
 });
 
 // Legacy exports for backward compatibility (will be removed after UI update)

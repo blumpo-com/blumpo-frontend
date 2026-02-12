@@ -11,6 +11,9 @@ importers:
       '@cospired/i18n-iso-languages':
         specifier: ^4.2.0
         version: 4.2.0
+      '@next/third-parties':
+        specifier: ^16.1.6
+        version: 16.1.6(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
@@ -1962,6 +1965,12 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+
+  '@next/third-parties@16.1.6':
+    resolution: {integrity: sha512-/cLY1egaH529ylSMSK+C8dA3nWDLL4hOFR4fca9OLWWxjcNwzsbuq2pPb/tmdWL9Zj3K1nTjd1pWQoSlaDQ0VA==}
+    peerDependencies:
+      next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0-beta.0
+      react: ^18.2.0 || 19.0.0-rc-de68d2f4-20241204 || ^19.0.0
 
   '@noble/ed25519@3.0.0':
     resolution: {integrity: sha512-QyteqMNm0GLqfa5SoYbSC3+Pvykwpn95Zgth4MFVSMKBB75ELl9tX1LAVsN4c3HXOrakHsF2gL4zWDAYCcsnzg==}
@@ -6531,6 +6540,9 @@ packages:
   text-decoder@1.2.3:
     resolution: {integrity: sha512-3/o9z3X0X0fTupwsYvR03pJ/DjWuqqrfwBgTQzdWDiQSm9KitAyz/9WqsT2JQW7KV2m+bC2ol/zqpW37NHxLaA==}
 
+  third-party-capital@1.0.20:
+    resolution: {integrity: sha512-oB7yIimd8SuGptespDAZnNkzIz+NWaJCu2RMsbs4Wmp9zSDUM8Nhi3s2OOcqYuv3mN4hitXc8DVx+LyUmbUDiA==}
+
   throttleit@2.1.0:
     resolution: {integrity: sha512-nt6AMGKW1p/70DF/hGBdJB57B8Tspmbp5gfJ8ilhLnt7kkr2ye7hzD6NVG8GGErk2HWF34igrL2CXmNIkzKqKw==}
     engines: {node: '>=18'}
@@ -8825,6 +8837,12 @@ snapshots:
 
   '@next/swc-win32-x64-msvc@16.1.6':
     optional: true
+
+  '@next/third-parties@16.1.6(next@16.1.6(@babel/core@7.29.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1))(react@19.2.1)':
+    dependencies:
+      next: 16.1.6(@babel/core@7.29.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      react: 19.2.1
+      third-party-capital: 1.0.20
 
   '@noble/ed25519@3.0.0': {}
 
@@ -13945,6 +13963,8 @@ snapshots:
       b4a: 1.7.3
     transitivePeerDependencies:
       - react-native-b4a
+
+  third-party-capital@1.0.20: {}
 
   throttleit@2.1.0: {}
 

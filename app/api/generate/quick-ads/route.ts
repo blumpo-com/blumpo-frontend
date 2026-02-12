@@ -7,6 +7,14 @@ const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
 const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received the request
 
 export async function POST(req: Request) {
+  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
+    console.log("[GENERATE-QUICK-ADS] Skipping generation (test mode)");
+    return NextResponse.json(
+      { error: "Generation disabled in test mode", error_code: "TEST_MODE" },
+      { status: 503 }
+    );
+  }
+
   const requestStartTime = Date.now();
   console.log('[GENERATE-QUICK-ADS] Request started at', new Date().toISOString());
   

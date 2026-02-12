@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 import { updateAccount, signOut } from '@/app/(login)/actions';
 import { useUser } from '@/lib/contexts/user-context';
 import { Suspense } from 'react';
+import { gtmEvent } from '@/lib/gtm';
 
 type ActionState = {
   name?: string;
@@ -119,7 +120,13 @@ export default function GeneralPage() {
           <CardTitle>Sign Out</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={signOut}>
+          <form
+            action={async () => {
+              // Fire logout event before signing out
+              gtmEvent('logout', {});
+              await signOut();
+            }}
+          >
             <Button
               type="submit"
               variant="destructive"
