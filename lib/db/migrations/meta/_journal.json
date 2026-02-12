@@ -78,6 +78,13 @@
       "when": 1768660790000,
       "tag": "0010_consolidated_ads_and_token_account",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1770894832134,
+      "tag": "0011_n8n_workflow_errors",
+      "breakpoints": true
     }
   ]
 }
