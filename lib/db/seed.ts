@@ -177,9 +177,13 @@ async function seedSubscriptionPlans() {
   const plans = [
     {
       planCode: 'FREE',
-      displayName: 'Free',
+      displayName: 'Free Plan',
       monthlyTokens: 50,
-      description: ['50 tokens per month', '1 ad per month', 'Basic ad generation', 'Email support'],
+      description: [
+        '50 tokens per month',
+        'Basic ad generation',
+        'Email support',
+      ],
       stripeProductId: null,
       isActive: true,
       isDefault: true,
@@ -188,8 +192,13 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'STARTER',
       displayName: 'Starter',
-      monthlyTokens: 500,
-      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', '1 Brand'],
+      monthlyTokens: 1000,
+      description: [
+        '100 ads created per month',
+        'Ads creation in +10 archetypes',
+        'Various sizes and formats supported (1:1, 9:16)',
+        '1 Brand',
+      ],
       stripeProductId: process.env.STRIPE_STARTER_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -198,8 +207,14 @@ async function seedSubscriptionPlans() {
     {
       planCode: 'GROWTH',
       displayName: 'Growth',
-      monthlyTokens: 1500,
-      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', 'Customer & competitor insight\naccess', 'Up to 3 brands'],
+      monthlyTokens: 3000,
+      description: [
+        '300 ads created per month',
+        'Ads creation in +10 archetypes',
+        'Various sizes and formats supported (1:1, 9:16)',
+        'Customer & competitor insight access',
+        'Up to 3 brands',
+      ],
       stripeProductId: process.env.STRIPE_GROWTH_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
@@ -207,14 +222,21 @@ async function seedSubscriptionPlans() {
     },
     {
       planCode: 'TEAM',
-      displayName: 'TEAM',
-      monthlyTokens: 20000,
-      description: ['Ads creation in 10+ archetypes', 'Various sizes and formats\n(1:1, 9:16)', 'Customer & competitor insight\naccess', 'Unlimited number of brands', 'Up to 5 users'],
+      displayName: 'Team',
+      monthlyTokens: 30000,
+      description: [
+        '3000 ads created per month',
+        'Ads creation in +10 archetypes',
+        'Various sizes and formats supported (1:1, 9:16)',
+        'Customer & competitor insight access',
+        'Unlimited number of brands',
+        'Up to 5 users',
+      ],
       stripeProductId: process.env.STRIPE_TEAM_PRODUCT_ID || null,
       isActive: true,
       isDefault: false,
       sortOrder: 4,
-    }
+    },
   ];
 
   for (const plan of plans) {

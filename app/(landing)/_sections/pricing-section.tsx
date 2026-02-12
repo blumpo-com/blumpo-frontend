@@ -216,7 +216,7 @@ const subscriptionPlans: Array<{
       name: "Starter",
       icon: "bolt",
       price: { monthly: 34, annual: 17 },
-      credits: "500 credits (50 ads) / month",
+      credits: "1000 credits (100 ads) / month",
       description: "For individual creators",
       features: [
         "Ads creation in 10+ archetypes",
@@ -230,7 +230,7 @@ const subscriptionPlans: Array<{
       name: "Growth",
       icon: "star",
       price: { monthly: 79, annual: 39 },
-      credits: "1500 credits (150 ads) / month",
+      credits: "3000 credits (300 ads) / month",
       description: "For small businesses and marketers",
       features: [
         "Ads creation in 10+ archetypes",
@@ -245,7 +245,7 @@ const subscriptionPlans: Array<{
       name: "Team Plan",
       icon: "team",
       price: { monthly: 399, annual: 199 },
-      credits: "20,000 credits (2000 ads) / month",
+      credits: "30,000 credits (3000 ads) / month",
       description: "Ideal for medium size agencies and marketing teams",
       features: [
         "Ads creation in 10+ archetypes",
