@@ -444,13 +444,21 @@ function GeneratingPageContent() {
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
-          onTertiaryAction={errorDialog.canSeeValidImages && actualJobId ? handleSeeValidImages : undefined}
-          tertiaryActionLabel={errorDialog.canSeeValidImages && actualJobId ? 'See valid images' : undefined}
-          onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
-          primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
-          showSecondaryButton={true}
-          secondaryActionLabel="Go Back"
-          onSecondaryAction={() => router.push('/')}
+          tertiaryButton={errorDialog.canSeeValidImages && actualJobId ? {
+            label: 'See valid images',
+            onClick: handleSeeValidImages,
+            variant: 'cta',
+          } : undefined}
+          primaryButton={errorDialog.canRegenerate && websiteUrl ? {
+            label: 'Regenerate',
+            onClick: handleRegenerate,
+            variant: 'outline',
+          } : undefined}
+          secondaryButton={{
+            label: 'Go Back',
+            onClick: () => router.push('/'),
+            variant: 'outline',
+          }}
         />
       </>
     );
@@ -511,13 +519,21 @@ function GeneratingPageContent() {
           title={errorDialog.title}
           message={errorDialog.message}
           errorCode={errorDialog.errorCode}
-          onTertiaryAction={errorDialog.canSeeValidImages && actualJobId ? handleSeeValidImages : undefined}
-          tertiaryActionLabel={errorDialog.canSeeValidImages && actualJobId ? 'See valid images' : undefined}
-          onPrimaryAction={errorDialog.canRegenerate && websiteUrl ? handleRegenerate : undefined}
-          primaryActionLabel={errorDialog.canRegenerate && websiteUrl ? 'Regenerate' : undefined}
-          showSecondaryButton={true}
-          secondaryActionLabel="Go Back"
-          onSecondaryAction={() => router.push('/')}
+          tertiaryButton={errorDialog.canSeeValidImages && actualJobId ? {
+            label: 'See valid images',
+            onClick: handleSeeValidImages,
+            variant: 'cta',
+          } : undefined}
+          primaryButton={errorDialog.canRegenerate && websiteUrl ? {
+            label: 'Regenerate',
+            onClick: handleRegenerate,
+            variant: 'outline',
+          } : undefined}
+          secondaryButton={{
+            label: 'Go Back',
+            onClick: () => router.push('/'),
+            variant: 'outline',
+          }}
         />
       </>
     );

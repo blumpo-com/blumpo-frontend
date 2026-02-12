@@ -135,11 +135,30 @@ export default function InputUrlPage() {
         title={errorDialog.title}
         message={errorDialog.message}
         errorCode={errorDialog.errorCode}
-        onPrimaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandGoToBrand : undefined}
-        primaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Go to Brand' : undefined}
-      // showSecondaryButton={errorDialog.errorCode === 'EXISTING_BRAND'}
-      // secondaryActionLabel={errorDialog.errorCode === 'EXISTING_BRAND' ? 'Generate New Ads Anyway' : undefined}
-      // onSecondaryAction={errorDialog.errorCode === 'EXISTING_BRAND' ? handleExistingBrandContinue : undefined}
+        primaryButton={
+          errorDialog.errorCode === 'EXISTING_BRAND'
+            ? {
+                label: 'Go to Brand',
+                onClick: handleExistingBrandGoToBrand,
+                variant: 'cta',
+              }
+            : errorDialog.errorCode === 'BRAND_LIMIT_REACHED'
+            ? {
+                label: 'Upgrade Plan',
+                onClick: () => router.push('/dashboard/your-credits'),
+                variant: 'cta',
+              }
+            : undefined
+        }
+        secondaryButton={
+          errorDialog.errorCode === 'BRAND_LIMIT_REACHED'
+            ? {
+                label: 'Go Back',
+                onClick: () => {},
+                variant: 'outline',
+              }
+            : undefined
+        }
       />
     </div>
   );

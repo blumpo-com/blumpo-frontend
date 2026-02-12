@@ -565,13 +565,16 @@ export default function ContentLibraryPage() {
         }
         title={restoreUpgradeDialog.title}
         message={restoreUpgradeDialog.message}
-        onPrimaryAction={() => router.push("/dashboard/your-credits")}
-        primaryActionLabel="Upgrade Plan"
-        showSecondaryButton={true}
-        secondaryActionLabel="Close"
-        onSecondaryAction={() =>
-          setRestoreUpgradeDialog((prev) => ({ ...prev, open: false }))
-        }
+        primaryButton={{
+          label: 'Upgrade Plan',
+          onClick: () => router.push("/dashboard/your-credits"),
+          variant: 'cta',
+        }}
+        secondaryButton={{
+          label: 'Close',
+          onClick: () => setRestoreUpgradeDialog((prev) => ({ ...prev, open: false })),
+          variant: 'outline',
+        }}
       />
     </div>
   );

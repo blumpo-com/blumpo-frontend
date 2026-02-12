@@ -71,9 +71,9 @@ INSERT INTO "public"."subscription_plan" (
   "is_active", "is_default", "sort_order"
 ) VALUES 
   ('FREE', 'Free Plan', 50, '["50 tokens per month", "Basic ad generation", "Email support"]'::jsonb, NULL, TRUE, TRUE, 1),
-  ('STARTER', 'Starter', 1000, '["50 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "1 Brand"]'::jsonb, 'prod_starter', TRUE, FALSE, 2),
-  ('GROWTH', 'Growth', 3000, '["150 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "Customer & competitor insight access", "Up to 3 brands"]'::jsonb, 'prod_growth', TRUE, FALSE, 3),
-  ('TEAM', 'Team', 40000, '["2000 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "Customer & competitor insight access", "Unlimited number of brands", "Up to 5 users"]'::jsonb, 'prod_team', TRUE, FALSE, 4)
+  ('STARTER', 'Starter', 1000, '["100 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "1 Brand"]'::jsonb, 'prod_starter', TRUE, FALSE, 2),
+  ('GROWTH', 'Growth', 3000, '["300 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "Customer & competitor insight access", "Up to 3 brands"]'::jsonb, 'prod_growth', TRUE, FALSE, 3),
+  ('TEAM', 'Team', 30000, '["3000 ads created per month", "Ads creation in +10 archetypes", "Various sizes and formats supported (1:1, 9:16)", "Customer & competitor insight access", "Unlimited number of brands", "Up to 5 users"]'::jsonb, 'prod_team', TRUE, FALSE, 4)
 ON CONFLICT ("plan_code") DO UPDATE SET
   "display_name" = EXCLUDED."display_name",
   "monthly_tokens" = EXCLUDED."monthly_tokens",

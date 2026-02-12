@@ -363,27 +363,6 @@ function CustomizedAdsPageContent() {
         const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
       }
-      case 'competitor_comparison': {
-        const competitors = brandInsights.competitors || [];
-        // Convert to string array
-        let competitorsArray: string[] = [];
-
-        if (Array.isArray(competitors)) {
-          competitorsArray = competitors.map((item: any) => {
-            if (typeof item === 'string') {
-              return item;
-            } else if (item && typeof item === 'object' && item.text) {
-              return item.text;
-            } else if (item && typeof item === 'object' && item.name) {
-              return item.name;
-            }
-            return String(item);
-          }).filter(Boolean);
-        }
-
-        // Return all competitors (or shuffle if needed)
-        return competitorsArray;
-      }
       // Add other archetypes here as needed
       default:
         return [];
@@ -449,7 +428,7 @@ function CustomizedAdsPageContent() {
             fetchHeadlines();
           }
         }
-      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') {
+      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') {
         // Extract insights from stored brand insights
         if (brandInsights) {
           const extractedInsights = extractInsightsForArchetype(selectedArchetype);
@@ -471,11 +450,11 @@ function CustomizedAdsPageContent() {
       prevStepRef.current = currentStep;
     }
   }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, headlines.length, testimonialName, headlinesError, isLoadingHeadlines]);
-  // Extract insights once brand insights are loaded for problem_solution/value_proposition/competitor_comparison (on step 3 or later)
+  // Extract insights once brand insights are loaded for problem_solution/value_proposition (on step 3 or later)
   useEffect(() => {
     if (
       currentStep >= 3 &&
-      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'competitor_comparison') &&
+      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') &&
       brandInsights &&
       brandInsightsBrandIdRef.current === currentBrand?.id &&
       !isLoadingBrandInsights &&
@@ -529,7 +508,7 @@ function CustomizedAdsPageContent() {
   const insightConfig = useMemo(() => getInsightStepConfig(), [selectedArchetype]);
 
   // When random archetype is selected, skip insight step (submit after format)
-  const maxSteps = selectedArchetype === 'random' ? 3 : 4;
+  const maxSteps = selectedArchetype === 'random' || selectedArchetype === 'competitor_comparison' ? 3 : 4;
 
   const stepConfig = useMemo(() => ({
     1: {
@@ -604,7 +583,7 @@ function CustomizedAdsPageContent() {
 
   const handleNext = async () => {
     // Check if moving to insight selection step with unsupported archetype (random skips that step)
-    if (currentStep === 3 && selectedArchetype !== 'random') {
+    if (currentStep === 3 && (selectedArchetype !== 'random' && selectedArchetype !== 'competitor_comparison')) {
       const unsupportedArchetypes = ['promotion_offer'];
       if (unsupportedArchetypes.includes(selectedArchetype)) {
         setShowComingSoon(true);
@@ -778,14 +757,14 @@ function CustomizedAdsPageContent() {
         onBack={handleBack}
         onNext={handleNext}
         nextLabel={
-          currentStep === 3 && selectedArchetype === 'random'
+          currentStep === 3 && (selectedArchetype === 'random' || selectedArchetype === 'competitor_comparison')
             ? 'Generate'
             : currentStep === 4 && selectedInsights.length === 0
               ? 'Choose random'
               : 'Next'
         }
         showRandomIcon={
-          (currentStep === 3 && selectedArchetype === 'random') ||
+          (currentStep === 3 && (selectedArchetype === 'random' || selectedArchetype === 'competitor_comparison')) ||
           (currentStep === 4 && selectedInsights.length === 0)
         }
       />

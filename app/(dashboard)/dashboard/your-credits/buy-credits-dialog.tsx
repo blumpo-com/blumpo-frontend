@@ -38,7 +38,7 @@ export function BuyCreditsDialog({
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Calculate ads from tokens (assuming 50 tokens per ad)
-  const calculateAds = (tokens: number) => Math.floor(tokens / 50);
+  const calculateAds = (tokens: number) => Math.floor(tokens / 10);
 
   // Format price from cents to dollars
   const formatPrice = (unitAmount: number | null) => {
