@@ -4,12 +4,19 @@ import type { MetadataRoute } from 'next'
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPosts(false)
 
-  const blogUrls = posts.map((post) => ({
-    url: `https://blumpo.com/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }))
+  const blogUrls = posts
+    .filter((post) => {
+      // Filter out posts with invalid or missing dates
+      if (!post.date) return false
+      const date = new Date(post.date)
+      return !isNaN(date.getTime())
+    })
+    .map((post) => ({
+      url: `https://blumpo.com/blog/${post.slug}`,
+      lastModified: new Date(post.date!),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
 
   return [
     {
