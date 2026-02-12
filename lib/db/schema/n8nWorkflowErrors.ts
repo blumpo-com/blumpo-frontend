@@ -1,4 +1,4 @@
-import { pgTable, bigserial, bigint, text, integer, timestamp, boolean, jsonb, index, unique } from 'drizzle-orm/pg-core';
+import { pgTable, bigserial, bigint, text, integer, timestamp, boolean, index, unique } from 'drizzle-orm/pg-core';
 
 // n8n workflow errors table (aggregated error "bucket")
 export const n8nWorkflowErrors = pgTable('n8n_workflow_errors', {
@@ -43,7 +43,7 @@ export const n8nWorkflowErrorOccurrences = pgTable('n8n_workflow_error_occurrenc
   executionUrl: text('execution_url'),
   mode: text('mode'),
   source: text('source'),
-  rawPayload: jsonb('raw_payload'), // store full error trigger payload for debugging
+  stack: text('stack'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   errorIdTimeIdx: index('idx_n8n_workflow_error_occurrences_error_time').on(table.errorId, table.occurredAt.desc()),

@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS "public"."n8n_workflow_error_occurrences" (
 	"execution_url" text,
 	"mode" text,
 	"source" text,
-	"raw_payload" jsonb,
+	"stack" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 

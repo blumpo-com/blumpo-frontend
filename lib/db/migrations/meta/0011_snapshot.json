@@ -1808,9 +1808,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "raw_payload": {
-          "name": "raw_payload",
-          "type": "jsonb",
+        "stack": {
+          "name": "stack",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
