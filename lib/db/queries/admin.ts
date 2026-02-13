@@ -1300,18 +1300,28 @@ export async function getWorkflowImageCounts() {
 
 // Actions per archetype
 export async function getArchetypeActionCounts() {
+  // Get archetypeCode from either direct event.archetypeCode OR from workflow.archetypeCode
+  // This handles cases where events only have workflowId set but not archetypeCode
   return await db
     .select({
-      archetypeCode: adEvent.archetypeCode,
+      archetypeCode: sql<string>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
       eventType: adEvent.eventType,
       count: count(),
       displayName: adArchetype.displayName,
     })
     .from(adEvent)
-    .leftJoin(adArchetype, eq(adEvent.archetypeCode, adArchetype.code))
-    .where(sql`${adEvent.archetypeCode} IS NOT NULL`)
-    .groupBy(adEvent.archetypeCode, adEvent.eventType, adArchetype.displayName)
-    .orderBy(adEvent.archetypeCode, adEvent.eventType);
+    .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`)
+    .where(sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`)
+    .groupBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType,
+      adArchetype.displayName
+    )
+    .orderBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType
+    );
 }
 
 // Actions per workflow
