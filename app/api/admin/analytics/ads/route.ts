@@ -6,6 +6,9 @@ import {
   getWorkflowImageCounts,
   getArchetypeActionCounts,
   getWorkflowActionCounts,
+  getTopUsersByActions,
+  getActionConversionRates,
+  getRecentAdActivity,
 } from '@/lib/db/queries/admin';
 
 export async function GET(request: NextRequest) {
@@ -20,12 +23,18 @@ export async function GET(request: NextRequest) {
     workflowImages,
     archetypeActions,
     workflowActions,
+    topUsers,
+    conversionRates,
+    recentActivity,
   ] = await Promise.all([
     getArchetypeJobCounts(),
     getArchetypeImageCounts(),
     getWorkflowImageCounts(),
     getArchetypeActionCounts(),
     getWorkflowActionCounts(),
+    getTopUsersByActions(10),
+    getActionConversionRates(),
+    getRecentAdActivity(50),
   ]);
 
   return NextResponse.json({
@@ -34,5 +43,8 @@ export async function GET(request: NextRequest) {
     workflowImages,
     archetypeActions,
     workflowActions,
+    topUsers,
+    conversionRates,
+    recentActivity,
   });
 }

@@ -1343,3 +1343,90 @@ export async function getWorkflowActionCounts() {
     .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(adEvent.workflowId, adEvent.eventType);
 }
+
+// Top users by action count (user engagement)
+export async function getTopUsersByActions(limit: number = 10) {
+  return await db
+    .select({
+      userId: adEvent.userId,
+      totalActions: count(),
+      email: user.email,
+      displayName: user.displayName,
+    })
+    .from(adEvent)
+    .innerJoin(user, eq(adEvent.userId, user.id))
+    .where(sql`${adEvent.userId} IS NOT NULL`)
+    .groupBy(adEvent.userId, user.email, user.displayName)
+    .orderBy(desc(count()))
+    .limit(limit);
+}
+
+// Action conversion/engagement rates
+export async function getActionConversionRates() {
+  // Get total counts for each event type
+  const eventTypeCounts = await db
+    .select({
+      eventType: adEvent.eventType,
+      count: count(),
+    })
+    .from(adEvent)
+    .groupBy(adEvent.eventType);
+
+  // Calculate total events
+  const totalEvents = eventTypeCounts.reduce((sum, item) => sum + Number(item.count), 0);
+
+  // Calculate engagement metrics
+  const savedCount = eventTypeCounts.find(e => e.eventType === 'saved')?.count || 0;
+  const downloadedCount = eventTypeCounts.find(e => e.eventType === 'downloaded')?.count || 0;
+  const deletedCount = eventTypeCounts.find(e => e.eventType === 'deleted')?.count || 0;
+  const restoredCount = eventTypeCounts.find(e => e.eventType === 'restored')?.count || 0;
+
+  const positiveActions = Number(savedCount) + Number(downloadedCount);
+  const engagementRate = totalEvents > 0 ? (positiveActions / totalEvents) * 100 : 0;
+  const saveDownloadRatio = deletedCount > 0 ? positiveActions / Number(deletedCount) : positiveActions;
+  const restoreRate = deletedCount > 0 ? (Number(restoredCount) / Number(deletedCount)) * 100 : 0;
+
+  return {
+    totalEvents,
+    eventTypeCounts: eventTypeCounts.map(e => ({
+      eventType: e.eventType,
+      count: Number(e.count),
+      percentage: totalEvents > 0 ? (Number(e.count) / totalEvents) * 100 : 0,
+    })),
+    engagementRate,
+    saveDownloadRatio,
+    restoreRate,
+    positiveActions,
+    deletedCount: Number(deletedCount),
+  };
+}
+
+// Recent ad activity timeline
+export async function getRecentAdActivity(limit: number = 50) {
+  return await db
+    .select({
+      id: adEvent.id,
+      createdAt: adEvent.createdAt,
+      eventType: adEvent.eventType,
+      eventSource: adEvent.eventSource,
+      userId: adEvent.userId,
+      userEmail: user.email,
+      userDisplayName: user.displayName,
+      brandId: adEvent.brandId,
+      brandName: brand.name,
+      jobId: adEvent.jobId,
+      adImageId: adEvent.adImageId,
+      archetypeCode: sql<string | null>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
+      archetypeDisplayName: adArchetype.displayName,
+      workflowId: adEvent.workflowId,
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+    })
+    .from(adEvent)
+    .leftJoin(user, eq(adEvent.userId, user.id))
+    .leftJoin(brand, eq(adEvent.brandId, brand.id))
+    .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`)
+    .orderBy(desc(adEvent.createdAt))
+    .limit(limit);
+}

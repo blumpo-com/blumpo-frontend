@@ -9,6 +9,9 @@ import { ArchetypeImageChart } from '@/components/admin/charts/ArchetypeImageCha
 import { WorkflowImageChart } from '@/components/admin/charts/WorkflowImageChart';
 import { ArchetypeActionChart } from '@/components/admin/charts/ArchetypeActionChart';
 import { WorkflowActionChart } from '@/components/admin/charts/WorkflowActionChart';
+import { UserEngagementChart } from '@/components/admin/charts/UserEngagementChart';
+import { ActionConversionChart } from '@/components/admin/charts/ActionConversionChart';
+import { RecentActivityTimeline } from '@/components/admin/charts/RecentActivityTimeline';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -86,6 +89,15 @@ export default function AdsAnalyticsPage() {
 
           {/* Section 4: Ad Actions by Workflow */}
           <WorkflowActionChart data={data?.workflowActions || []} isLoading={isLoading} />
+
+          {/* Section 5: User Engagement Metrics */}
+          <UserEngagementChart data={data?.topUsers || []} isLoading={isLoading} />
+
+          {/* Section 6: Action Conversion & Engagement Rates */}
+          <ActionConversionChart data={data?.conversionRates} isLoading={isLoading} />
+
+          {/* Section 7: Recent Activity Timeline */}
+          <RecentActivityTimeline data={data?.recentActivity || []} isLoading={isLoading} />
         </div>
       )}
     </div>
