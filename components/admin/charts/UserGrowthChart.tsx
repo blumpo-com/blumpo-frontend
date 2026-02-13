@@ -58,7 +58,7 @@ export function UserGrowthChart({ data, isLoading }: UserGrowthChartProps) {
                 return value;
               }
             }}
-            formatter={(value: number) => [value, 'Users']}
+            formatter={(value: number | undefined) => [value ?? 0, 'Users']}
           />
           <Line
             type="monotone"

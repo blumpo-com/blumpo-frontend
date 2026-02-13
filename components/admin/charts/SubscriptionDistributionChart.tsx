@@ -36,7 +36,7 @@ export function SubscriptionDistributionChart({ data, isLoading }: SubscriptionD
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="planCode" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} />
-          <Tooltip formatter={(value: number) => [value.toLocaleString(), 'Users']} />
+          <Tooltip formatter={(value: number | undefined) => [(value ?? 0).toLocaleString(), 'Users']} />
           <Bar dataKey="count" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

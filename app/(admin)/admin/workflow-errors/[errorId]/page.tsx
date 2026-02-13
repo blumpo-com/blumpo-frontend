@@ -105,10 +105,10 @@ export default async function WorkflowErrorDetailPage({
                 <dd className="mt-1 text-sm text-gray-900 font-mono">{error.nodeId}</dd>
               </div>
             )}
-            {error.executionId && (
+            {error.lastExecutionId && (
               <div>
-                <dt className="text-sm font-medium text-gray-500">Execution ID</dt>
-                <dd className="mt-1 text-sm text-gray-900 font-mono">{error.executionId}</dd>
+                <dt className="text-sm font-medium text-gray-500">Last Execution ID</dt>
+                <dd className="mt-1 text-sm text-gray-900 font-mono">{error.lastExecutionId}</dd>
               </div>
             )}
             {error.sampleStack && (

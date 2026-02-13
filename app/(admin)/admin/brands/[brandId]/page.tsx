@@ -162,10 +162,18 @@ export default async function BrandDetailPage({
           <AdminCard title="Brand Insights">
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">Extracted At</dt>
+                <dt className="text-sm font-medium text-gray-500">Created At</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {brand.insights.extractedAt
-                    ? new Date(brand.insights.extractedAt).toLocaleString()
+                  {brand.insights.createdAt
+                    ? new Date(brand.insights.createdAt).toLocaleString()
+                    : '-'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Updated At</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {brand.insights.updatedAt
+                    ? new Date(brand.insights.updatedAt).toLocaleString()
                     : '-'}
                 </dd>
               </div>
@@ -178,9 +186,58 @@ export default async function BrandDetailPage({
           <AdminCard title="Extraction Status">
             <dl className="space-y-4">
               <div>
-                <dt className="text-sm font-medium text-gray-500">Status</dt>
+                <dt className="text-sm font-medium text-gray-500">Colors Status</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {brand.extractionStatus.status || '-'}
+                  {brand.extractionStatus.colorsStatus || '-'}
+                  {brand.extractionStatus.colorsError && (
+                    <span className="ml-2 text-xs text-red-600">
+                      ({brand.extractionStatus.colorsError})
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Fonts Status</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {brand.extractionStatus.fontsStatus || '-'}
+                  {brand.extractionStatus.fontsError && (
+                    <span className="ml-2 text-xs text-red-600">
+                      ({brand.extractionStatus.fontsError})
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Logo Status</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {brand.extractionStatus.logoStatus || '-'}
+                  {brand.extractionStatus.logoError && (
+                    <span className="ml-2 text-xs text-red-600">
+                      ({brand.extractionStatus.logoError})
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Hero Status</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {brand.extractionStatus.heroStatus || '-'}
+                  {brand.extractionStatus.heroError && (
+                    <span className="ml-2 text-xs text-red-600">
+                      ({brand.extractionStatus.heroError})
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Insights Status</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {brand.extractionStatus.insightsStatus || '-'}
+                  {brand.extractionStatus.insightsError && (
+                    <span className="ml-2 text-xs text-red-600">
+                      ({brand.extractionStatus.insightsError})
+                    </span>
+                  )}
                 </dd>
               </div>
               <div>

@@ -131,7 +131,7 @@ export default async function JobDetailPage({
             {job.archetype && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Archetype Name</dt>
-                <dd className="mt-1 text-sm text-gray-900">{job.archetype.name || '-'}</dd>
+                <dd className="mt-1 text-sm text-gray-900">{job.archetype.displayName || '-'}</dd>
               </div>
             )}
             <div>
@@ -166,13 +166,18 @@ export default async function JobDetailPage({
           </AdminCard>
         )}
 
-        {job.params && Object.keys(job.params).length > 0 && (
-          <AdminCard title="Parameters">
-            <pre className="text-xs text-gray-900 overflow-auto max-h-64">
-              {JSON.stringify(job.params, null, 2)}
-            </pre>
-          </AdminCard>
-        )}
+        {(() => {
+          if (job.params && typeof job.params === 'object' && job.params !== null && Object.keys(job.params).length > 0) {
+            return (
+              <AdminCard title="Parameters">
+                <pre className="text-xs text-gray-900 overflow-auto max-h-64">
+                  {JSON.stringify(job.params, null, 2)}
+                </pre>
+              </AdminCard>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* Related Entities Section */}

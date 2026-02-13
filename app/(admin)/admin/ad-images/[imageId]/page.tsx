@@ -172,15 +172,17 @@ export default async function AdImageDetailPage({
         </AdminCard>
 
         {image.publicUrl && (
-          <AdminCard title="Image Preview" className="md:col-span-2">
-            <div className="flex justify-center">
-              <img
-                src={image.publicUrl}
-                alt={image.title || 'Ad Image'}
-                className="max-w-full max-h-96 rounded-lg shadow-lg"
-              />
-            </div>
-          </AdminCard>
+          <div className="md:col-span-2">
+            <AdminCard title="Image Preview">
+              <div className="flex justify-center">
+                <img
+                  src={image.publicUrl}
+                  alt={image.title || 'Ad Image'}
+                  className="max-w-full max-h-96 rounded-lg shadow-lg"
+                />
+              </div>
+            </AdminCard>
+          </div>
         )}
 
         {image.workflow && (
@@ -191,9 +193,23 @@ export default async function AdImageDetailPage({
                 <dd className="mt-1 text-sm text-gray-900 font-mono">{image.workflow.id}</dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">Workflow Name</dt>
-                <dd className="mt-1 text-sm text-gray-900">{image.workflow.name || '-'}</dd>
+                <dt className="text-sm font-medium text-gray-500">Workflow UID</dt>
+                <dd className="mt-1 text-sm text-gray-900">{image.workflow.workflowUid}</dd>
               </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Variant Key</dt>
+                <dd className="mt-1 text-sm text-gray-900">{image.workflow.variantKey}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Archetype Code</dt>
+                <dd className="mt-1 text-sm text-gray-900">{image.workflow.archetypeCode}</dd>
+              </div>
+              {image.workflow.format && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Format</dt>
+                  <dd className="mt-1 text-sm text-gray-900">{image.workflow.format}</dd>
+                </div>
+              )}
             </dl>
           </AdminCard>
         )}
@@ -210,31 +226,41 @@ export default async function AdImageDetailPage({
         {events.length > 0 && (
           <AdminCard title={`Ad Events (${image.eventsCount})`}>
             <div className="space-y-3">
-              {events.map((event) => (
-                <div
-                  key={event.id}
-                  className="p-3 border border-gray-200 rounded-lg"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium text-sm text-gray-900">
-                        {event.eventType}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Source: {event.eventSource || 'N/A'}
-                      </div>
-                      {event.metadata && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {JSON.stringify(event.metadata)}
+              {events.map((event) => {
+                let metadataStr: string | null = null;
+                if (event.metadata && typeof event.metadata === 'object' && event.metadata !== null) {
+                  try {
+                    metadataStr = JSON.stringify(event.metadata);
+                  } catch {
+                    metadataStr = null;
+                  }
+                }
+                return (
+                  <div
+                    key={event.id}
+                    className="p-3 border border-gray-200 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-sm text-gray-900">
+                          {event.eventType}
                         </div>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(event.createdAt).toLocaleString()}
+                        <div className="text-xs text-gray-500 mt-1">
+                          Source: {event.eventSource || 'N/A'}
+                        </div>
+                        {metadataStr && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {metadataStr}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(event.createdAt).toLocaleString()}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </AdminCard>
         )}

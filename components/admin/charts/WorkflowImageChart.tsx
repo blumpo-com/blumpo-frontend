@@ -69,7 +69,7 @@ export function WorkflowImageChart({ data, isLoading }: WorkflowImageChartProps)
             interval={0}
           />
           <YAxis />
-          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+          <Tooltip formatter={(value: number | undefined) => (value ?? 0).toLocaleString()} />
           <Legend />
           <Bar dataKey="count" fill="hsl(var(--chart-3))" name="Images" />
         </BarChart>

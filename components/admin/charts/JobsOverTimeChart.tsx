@@ -58,7 +58,7 @@ export function JobsOverTimeChart({ data, isLoading }: JobsOverTimeChartProps) {
                 return value;
               }
             }}
-            formatter={(value: number) => [value.toLocaleString(), 'Jobs']}
+            formatter={(value: number | undefined) => [(value ?? 0).toLocaleString(), 'Jobs']}
           />
           <Legend />
           <Line

@@ -61,7 +61,7 @@ export function ArchetypeJobChart({ data, isLoading }: ArchetypeJobChartProps) {
             interval={0}
           />
           <YAxis />
-          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+          <Tooltip formatter={(value: number | undefined) => (value ?? 0).toLocaleString()} />
           <Legend />
           <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Jobs" />
         </BarChart>

@@ -114,7 +114,7 @@ export function WorkflowActionChart({ data, isLoading }: WorkflowActionChartProp
             interval={0}
           />
           <YAxis />
-          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+          <Tooltip formatter={(value: number | undefined) => (value ?? 0).toLocaleString()} />
           <Legend />
           {Array.from(eventTypes).map((eventType) => (
             <Bar

@@ -58,9 +58,9 @@ export function TokenUsageChart({ data, isLoading }: TokenUsageChartProps) {
                 return value;
               }
             }}
-            formatter={(value: number, name: string) => [
-              value.toLocaleString(),
-              name === 'credits' ? 'Credits' : name === 'debits' ? 'Debits' : 'Net',
+            formatter={(value: number | undefined, name: string | undefined) => [
+              (value ?? 0).toLocaleString(),
+              (name === 'credits' ? 'Credits' : name === 'debits' ? 'Debits' : 'Net'),
             ]}
           />
           <Legend />

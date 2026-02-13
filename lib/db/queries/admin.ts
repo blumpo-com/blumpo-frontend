@@ -152,6 +152,7 @@ export async function getAllUsers(
 
     return {
       ...u,
+      role: u.role as UserRole,
       tokenAccount: tokenAcc ? {
         balance: Number(tokenAcc.balance),
         planCode: tokenAcc.planCode,
@@ -404,6 +405,8 @@ export async function getAllJobs(
     const imageCount = imageCounts.find(ic => ic.jobId === job.id);
     return {
       ...job,
+      status: job.status as JobStatus,
+      userEmail: job.userEmail || '',
       imagesCount: Number(imageCount?.count || 0),
     };
   });
