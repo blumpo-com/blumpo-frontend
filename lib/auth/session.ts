@@ -1,11 +1,12 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NewUser } from '@/lib/db/schema';
+import { UserRole } from '@/lib/db/schema/enums';
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 
 type SessionData = {
-  user: { id: string };
+  user: { id: string; role: UserRole };
   expires: string;
 };
 
@@ -33,7 +34,10 @@ export async function getSession() {
 export async function setSession(user: NewUser) {
   const expiresInFourteenDays = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
   const session: SessionData = {
-    user: { id: user.id! },
+    user: { 
+      id: user.id!,
+      role: (user.role as UserRole) || UserRole.USER,
+    },
     expires: expiresInFourteenDays.toISOString(),
   };
   const encryptedSession = await signToken(session);
