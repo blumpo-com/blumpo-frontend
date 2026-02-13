@@ -2,7 +2,8 @@ import { eq, and, desc, sql, count, gte, lte, like, or, inArray } from 'drizzle-
 import { db } from '../drizzle';
 import { 
   user, 
-  tokenAccount, 
+  tokenAccount,
+  tokenLedger,
   brand, 
   generationJob, 
   adImage,
@@ -10,6 +11,7 @@ import {
   subscriptionPlan,
   topupPlan,
   generationPricing,
+  adArchetype,
   UserRole,
   JobStatus
 } from '../schema/index';
@@ -421,6 +423,10 @@ export interface AdminStats {
   totalTokensUsed: number;
   totalErrors: number;
   unresolvedErrors: number;
+  activeSubscriptions: number;
+  avgTokensPerUser: number;
+  avgJobsPerUser: number;
+  mostPopularArchetype: string | null;
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
@@ -433,6 +439,10 @@ export async function getAdminStats(): Promise<AdminStats> {
     totalTokensUsed,
     totalErrors,
     unresolvedErrors,
+    activeSubscriptions,
+    avgTokensPerUser,
+    jobStats,
+    mostPopularArchetype,
   ] = await Promise.all([
     db.select({ count: count() }).from(user),
     db.select({ count: count() }).from(brand).where(eq(brand.isDeleted, false)),
@@ -447,6 +457,26 @@ export async function getAdminStats(): Promise<AdminStats> {
     db.select({ total: sql<number>`COALESCE(SUM(${generationJob.tokensCost}), 0)` }).from(generationJob),
     db.select({ count: count() }).from(n8nWorkflowErrors),
     db.select({ count: count() }).from(n8nWorkflowErrors).where(eq(n8nWorkflowErrors.isResolved, false)),
+    db.select({ count: count() }).from(tokenAccount).where(
+      or(
+        eq(tokenAccount.subscriptionStatus, 'active'),
+        eq(tokenAccount.subscriptionStatus, 'trialing')
+      )!
+    ),
+    db.select({ avg: sql<number>`COALESCE(AVG(${tokenAccount.balance}), 0)` }).from(tokenAccount),
+    db.select({ 
+      totalJobs: sql<number>`COUNT(${generationJob.id})`,
+      uniqueUsers: sql<number>`COUNT(DISTINCT ${generationJob.userId})`
+    }).from(generationJob),
+    db.select({
+      archetypeCode: generationJob.archetypeCode,
+      count: count(),
+    })
+      .from(generationJob)
+      .where(sql`${generationJob.archetypeCode} IS NOT NULL`)
+      .groupBy(generationJob.archetypeCode)
+      .orderBy(desc(count()))
+      .limit(1),
   ]);
 
   return {
@@ -458,6 +488,15 @@ export async function getAdminStats(): Promise<AdminStats> {
     totalTokensUsed: Number(totalTokensUsed[0]?.total || 0),
     totalErrors: Number(totalErrors[0]?.count || 0),
     unresolvedErrors: Number(unresolvedErrors[0]?.count || 0),
+    activeSubscriptions: Number(activeSubscriptions[0]?.count || 0),
+    avgTokensPerUser: Number(avgTokensPerUser[0]?.avg || 0),
+    avgJobsPerUser: (() => {
+      const stats = jobStats[0];
+      const uniqueUsers = Number(stats?.uniqueUsers || 0);
+      const totalJobs = Number(stats?.totalJobs || 0);
+      return uniqueUsers > 0 ? totalJobs / uniqueUsers : 0;
+    })(),
+    mostPopularArchetype: mostPopularArchetype[0]?.archetypeCode || null,
   };
 }
 
@@ -571,4 +610,202 @@ export async function getAllGenerationPricing() {
     .select()
     .from(generationPricing)
     .orderBy(generationPricing.createdAt);
+}
+
+// ==================== Chart Data Queries ====================
+
+export interface UserGrowthDataPoint {
+  date: string;
+  count: number;
+}
+
+export async function getUserGrowthData(days: number = 30): Promise<UserGrowthDataPoint[]> {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const results = await db
+    .select({
+      date: sql<string>`DATE(${user.createdAt})`,
+      count: count(),
+    })
+    .from(user)
+    .where(gte(user.createdAt, startDate))
+    .groupBy(sql`DATE(${user.createdAt})`)
+    .orderBy(sql`DATE(${user.createdAt})`);
+
+  return results.map(r => ({
+    date: r.date,
+    count: Number(r.count || 0),
+  }));
+}
+
+export interface TokenUsageDataPoint {
+  date: string;
+  credits: number;
+  debits: number;
+  net: number;
+}
+
+export async function getTokenUsageData(days: number = 30): Promise<TokenUsageDataPoint[]> {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const results = await db
+    .select({
+      date: sql<string>`DATE(${tokenLedger.occurredAt})`,
+      credits: sql<number>`COALESCE(SUM(CASE WHEN ${tokenLedger.delta} > 0 THEN ${tokenLedger.delta} ELSE 0 END), 0)`,
+      debits: sql<number>`COALESCE(SUM(CASE WHEN ${tokenLedger.delta} < 0 THEN ABS(${tokenLedger.delta}) ELSE 0 END), 0)`,
+      net: sql<number>`COALESCE(SUM(${tokenLedger.delta}), 0)`,
+    })
+    .from(tokenLedger)
+    .where(gte(tokenLedger.occurredAt, startDate))
+    .groupBy(sql`DATE(${tokenLedger.occurredAt})`)
+    .orderBy(sql`DATE(${tokenLedger.occurredAt})`);
+
+  return results.map(r => ({
+    date: r.date,
+    credits: Number(r.credits || 0),
+    debits: Number(r.debits || 0),
+    net: Number(r.net || 0),
+  }));
+}
+
+export interface JobStatusDataPoint {
+  status: string;
+  count: number;
+}
+
+export async function getJobStatusDistribution(): Promise<JobStatusDataPoint[]> {
+  const results = await db
+    .select({
+      status: generationJob.status,
+      count: count(),
+    })
+    .from(generationJob)
+    .groupBy(generationJob.status)
+    .orderBy(generationJob.status);
+
+  return results.map(r => ({
+    status: r.status,
+    count: Number(r.count || 0),
+  }));
+}
+
+export interface JobsOverTimeDataPoint {
+  date: string;
+  count: number;
+  succeeded: number;
+  failed: number;
+}
+
+export async function getJobsOverTime(days: number = 30): Promise<JobsOverTimeDataPoint[]> {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const results = await db
+    .select({
+      date: sql<string>`DATE(${generationJob.createdAt})`,
+      count: count(),
+      succeeded: sql<number>`COUNT(CASE WHEN ${generationJob.status} = 'SUCCEEDED' THEN 1 END)`,
+      failed: sql<number>`COUNT(CASE WHEN ${generationJob.status} = 'FAILED' THEN 1 END)`,
+    })
+    .from(generationJob)
+    .where(gte(generationJob.createdAt, startDate))
+    .groupBy(sql`DATE(${generationJob.createdAt})`)
+    .orderBy(sql`DATE(${generationJob.createdAt})`);
+
+  return results.map(r => ({
+    date: r.date,
+    count: Number(r.count || 0),
+    succeeded: Number(r.succeeded || 0),
+    failed: Number(r.failed || 0),
+  }));
+}
+
+export interface SubscriptionDistributionDataPoint {
+  planCode: string;
+  count: number;
+}
+
+export async function getSubscriptionDistribution(): Promise<SubscriptionDistributionDataPoint[]> {
+  const results = await db
+    .select({
+      planCode: tokenAccount.planCode,
+      count: count(),
+    })
+    .from(tokenAccount)
+    .groupBy(tokenAccount.planCode)
+    .orderBy(desc(count()));
+
+  return results.map(r => ({
+    planCode: r.planCode,
+    count: Number(r.count || 0),
+  }));
+}
+
+export interface RecentActivityItem {
+  type: 'user' | 'job' | 'error';
+  description: string;
+  timestamp: Date;
+  link?: string;
+}
+
+export async function getRecentActivity(limit: number = 15): Promise<RecentActivityItem[]> {
+  const [recentUsers, recentJobs, recentErrors] = await Promise.all([
+    db
+      .select({
+        id: user.id,
+        email: user.email,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .orderBy(desc(user.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: generationJob.id,
+        status: generationJob.status,
+        createdAt: generationJob.createdAt,
+      })
+      .from(generationJob)
+      .orderBy(desc(generationJob.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: n8nWorkflowErrors.id,
+        workflowName: n8nWorkflowErrors.workflowName,
+        errorMessage: n8nWorkflowErrors.errorMessage,
+        lastSeenAt: n8nWorkflowErrors.lastSeenAt,
+      })
+      .from(n8nWorkflowErrors)
+      .where(eq(n8nWorkflowErrors.isResolved, false))
+      .orderBy(desc(n8nWorkflowErrors.lastSeenAt))
+      .limit(5),
+  ]);
+
+  const activities: RecentActivityItem[] = [
+    ...recentUsers.map(u => ({
+      type: 'user' as const,
+      description: `New user registered: ${u.email}`,
+      timestamp: u.createdAt,
+      link: `/admin/users/${u.id}`,
+    })),
+    ...recentJobs.map(j => ({
+      type: 'job' as const,
+      description: `Job ${j.status.toLowerCase()}: ${j.id.slice(0, 8)}...`,
+      timestamp: j.createdAt,
+      link: `/admin/jobs`,
+    })),
+    ...recentErrors.map(e => ({
+      type: 'error' as const,
+      description: `Error in ${e.workflowName || 'workflow'}: ${e.errorMessage?.slice(0, 50)}...`,
+      timestamp: e.lastSeenAt,
+      link: `/admin/workflow-errors`,
+    })),
+  ];
+
+  // Sort by timestamp descending and limit
+  return activities
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, limit);
 }

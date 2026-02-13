@@ -2,6 +2,7 @@ import { getAdminUser } from '@/lib/auth/admin';
 import { redirect } from 'next/navigation';
 import { getAdminStats } from '@/lib/db/queries/admin';
 import { AdminCard } from '@/components/admin/AdminCard';
+import { ChartsSection } from '@/components/admin/charts/ChartsSection';
 import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
@@ -53,46 +54,38 @@ export default async function AdminDashboardPage() {
         </AdminCard>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <AdminCard>
-          <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-          <div className="space-y-2">
-            <Link href="/admin/users" className="block text-blue-600 hover:text-blue-800">
-              → Users Management
-            </Link>
-            <Link href="/admin/brands" className="block text-blue-600 hover:text-blue-800">
-              → Brands Management
-            </Link>
-            <Link href="/admin/jobs" className="block text-blue-600 hover:text-blue-800">
-              → Generation Jobs
-            </Link>
-            <Link href="/admin/analytics" className="block text-blue-600 hover:text-blue-800">
-              → Analytics Dashboard
-            </Link>
-            <Link href="/admin/workflow-errors" className="block text-blue-600 hover:text-blue-800">
-              → Workflow Errors
-            </Link>
-            <Link href="/admin/subscriptions" className="block text-blue-600 hover:text-blue-800">
-              → Subscription Plans
-            </Link>
-          </div>
-        </AdminCard>
+      <ChartsSection />
 
+      <div className="mt-6">
         <AdminCard>
           <h3 className="text-lg font-semibold mb-4">System Statistics</h3>
-          <dl className="space-y-2">
-            <div className="flex justify-between">
+          <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
               <dt className="text-sm text-gray-500">Total Tokens Used</dt>
-              <dd className="text-sm font-semibold">{stats.totalTokensUsed.toLocaleString()}</dd>
+              <dd className="text-sm font-semibold mt-1">{stats.totalTokensUsed.toLocaleString()}</dd>
             </div>
-            <div className="flex justify-between">
+            <div>
               <dt className="text-sm text-gray-500">Success Rate</dt>
-              <dd className="text-sm font-semibold">
+              <dd className="text-sm font-semibold mt-1">
                 {stats.totalJobs > 0
                   ? (((stats.totalJobs - stats.failedJobs) / stats.totalJobs) * 100).toFixed(1)
                   : 0}%
               </dd>
             </div>
+            <div>
+              <dt className="text-sm text-gray-500">Active Subscriptions</dt>
+              <dd className="text-sm font-semibold mt-1">{stats.activeSubscriptions?.toLocaleString() || 0}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-gray-500">Avg Jobs/User</dt>
+              <dd className="text-sm font-semibold mt-1">{stats.avgJobsPerUser?.toFixed(1) || 0}</dd>
+            </div>
+            {stats.mostPopularArchetype && (
+              <div>
+                <dt className="text-sm text-gray-500">Popular Archetype</dt>
+                <dd className="text-sm font-semibold mt-1">{stats.mostPopularArchetype}</dd>
+              </div>
+            )}
           </dl>
         </AdminCard>
       </div>
