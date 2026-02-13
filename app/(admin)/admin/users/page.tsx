@@ -107,10 +107,14 @@ export default function UsersPage() {
               emptyMessage={data?.users?.length === 0 ? 'No users found' : undefined}
             >
               {data?.users?.map((user: any) => (
-                <AdminTableRow key={user.id}>
+                <AdminTableRow
+                  key={user.id}
+                  onClick={() => router.push(`/admin/users/${user.id}`)}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
                   <AdminTableCell>{user.email}</AdminTableCell>
                   <AdminTableCell>{user.displayName || '-'}</AdminTableCell>
-                  <AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     <select
                       value={user.role}
                       onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
@@ -130,7 +134,7 @@ export default function UsersPage() {
                   <AdminTableCell>
                     {user.tokenAccount ? `${user.tokenAccount.balance.toLocaleString()} (${user.tokenAccount.planCode})` : '-'}
                   </AdminTableCell>
-                  <AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => handleToggleBan(user.id, user.banFlag)}
                       className={`px-3 py-1 rounded text-sm ${user.banFlag ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}

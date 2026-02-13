@@ -38,11 +38,15 @@ export function AdminTable({ headers, children, emptyMessage }: AdminTableProps)
 interface AdminTableRowProps {
   children: ReactNode;
   onClick?: () => void;
+  className?: string;
 }
 
-export function AdminTableRow({ children, onClick }: AdminTableRowProps) {
+export function AdminTableRow({ children, onClick, className }: AdminTableRowProps) {
   return (
-    <tr className={`${styles.row} ${onClick ? styles.rowClickable : ''}`} onClick={onClick}>
+    <tr
+      className={`${styles.row} ${onClick ? styles.rowClickable : ''} ${className || ''}`}
+      onClick={onClick}
+    >
       {children}
     </tr>
   );
@@ -51,11 +55,12 @@ export function AdminTableRow({ children, onClick }: AdminTableRowProps) {
 interface AdminTableCellProps {
   children: ReactNode;
   align?: 'left' | 'center' | 'right';
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export function AdminTableCell({ children, align = 'left' }: AdminTableCellProps) {
+export function AdminTableCell({ children, align = 'left', onClick }: AdminTableCellProps) {
   return (
-    <td className={styles.cell} style={{ textAlign: align }}>
+    <td className={styles.cell} style={{ textAlign: align }} onClick={onClick}>
       {children}
     </td>
   );

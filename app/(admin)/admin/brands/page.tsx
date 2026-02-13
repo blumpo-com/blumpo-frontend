@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { AdminTable, AdminTableRow, AdminTableCell } from '@/components/admin/AdminTable';
 import { Pagination } from '@/components/admin/Pagination';
@@ -9,6 +10,7 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function BrandsPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
@@ -46,9 +48,13 @@ export default function BrandsPage() {
               emptyMessage={data?.brands?.length === 0 ? 'No brands found' : undefined}
             >
               {data?.brands?.map((brand: any) => (
-                <AdminTableRow key={brand.id}>
+                <AdminTableRow
+                  key={brand.id}
+                  onClick={() => router.push(`/admin/brands/${brand.id}`)}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
                   <AdminTableCell>{brand.name}</AdminTableCell>
-                  <AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     <a
                       href={brand.websiteUrl}
                       target="_blank"
@@ -58,8 +64,17 @@ export default function BrandsPage() {
                       {brand.websiteUrl}
                     </a>
                   </AdminTableCell>
-                  <AdminTableCell>
-                    {brand.userDisplayName || brand.userEmail}
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
+                    <a
+                      href={`/admin/users/${brand.userId}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/admin/users/${brand.userId}`);
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      {brand.userDisplayName || brand.userEmail}
+                    </a>
                   </AdminTableCell>
                   <AdminTableCell>
                     {new Date(brand.createdAt).toLocaleDateString()}

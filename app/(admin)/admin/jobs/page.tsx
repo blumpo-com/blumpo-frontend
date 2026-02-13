@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { AdminTable, AdminTableRow, AdminTableCell } from '@/components/admin/AdminTable';
 import { Pagination } from '@/components/admin/Pagination';
@@ -10,6 +11,7 @@ import useSWR from 'swr';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function JobsPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -67,12 +69,42 @@ export default function JobsPage() {
               emptyMessage={data?.jobs?.length === 0 ? 'No jobs found' : undefined}
             >
               {data?.jobs?.map((job: any) => (
-                <AdminTableRow key={job.id}>
+                <AdminTableRow
+                  key={job.id}
+                  onClick={() => router.push(`/admin/jobs/${job.id}`)}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
                   <AdminTableCell>
                     <span className="font-mono text-xs">{job.id.slice(0, 8)}...</span>
                   </AdminTableCell>
-                  <AdminTableCell>{job.userEmail}</AdminTableCell>
-                  <AdminTableCell>{job.brandName || '-'}</AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
+                    <a
+                      href={`/admin/users/${job.userId}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/admin/users/${job.userId}`);
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      {job.userEmail}
+                    </a>
+                  </AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
+                    {job.brandId ? (
+                      <a
+                        href={`/admin/brands/${job.brandId}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/admin/brands/${job.brandId}`);
+                        }}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        {job.brandName || '-'}
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </AdminTableCell>
                   <AdminTableCell>
                     <span className={`px-2 py-1 rounded text-xs ${getStatusColor(job.status)}`}>
                       {job.status}

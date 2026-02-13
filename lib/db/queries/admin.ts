@@ -8,10 +8,15 @@ import {
   generationJob, 
   adImage,
   n8nWorkflowErrors,
+  n8nWorkflowErrorOccurrences,
   subscriptionPlan,
   topupPlan,
   generationPricing,
   adArchetype,
+  adWorkflow,
+  adEvent,
+  brandInsights,
+  brandExtractionStatus,
   UserRole,
   JobStatus
 } from '../schema/index';
@@ -808,4 +813,432 @@ export async function getRecentActivity(limit: number = 15): Promise<RecentActiv
   return activities
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     .slice(0, limit);
+}
+
+// ==================== Related Entity Queries ====================
+
+// User related entities
+export async function getUserBrands(userId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: brand.id,
+      name: brand.name,
+      websiteUrl: brand.websiteUrl,
+      createdAt: brand.createdAt,
+    })
+    .from(brand)
+    .where(and(eq(brand.userId, userId), eq(brand.isDeleted, false)))
+    .orderBy(desc(brand.createdAt))
+    .limit(limit);
+}
+
+export async function getUserJobs(userId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: generationJob.id,
+      status: generationJob.status,
+      createdAt: generationJob.createdAt,
+      tokensCost: generationJob.tokensCost,
+      brandId: generationJob.brandId,
+    })
+    .from(generationJob)
+    .where(eq(generationJob.userId, userId))
+    .orderBy(desc(generationJob.createdAt))
+    .limit(limit);
+}
+
+export async function getUserAdImages(userId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: adImage.id,
+      title: adImage.title,
+      createdAt: adImage.createdAt,
+      publicUrl: adImage.publicUrl,
+      brandId: adImage.brandId,
+      jobId: adImage.jobId,
+    })
+    .from(adImage)
+    .where(and(eq(adImage.userId, userId), eq(adImage.isDeleted, false)))
+    .orderBy(desc(adImage.createdAt))
+    .limit(limit);
+}
+
+export async function getUserTokenLedger(userId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: tokenLedger.id,
+      occurredAt: tokenLedger.occurredAt,
+      delta: tokenLedger.delta,
+      reason: tokenLedger.reason,
+      referenceId: tokenLedger.referenceId,
+      balanceAfter: tokenLedger.balanceAfter,
+    })
+    .from(tokenLedger)
+    .where(eq(tokenLedger.userId, userId))
+    .orderBy(desc(tokenLedger.occurredAt))
+    .limit(limit);
+}
+
+// Brand related entities
+export async function getBrandWithFullDetails(brandId: string) {
+  const brandData = await db
+    .select()
+    .from(brand)
+    .where(and(eq(brand.id, brandId), eq(brand.isDeleted, false)))
+    .limit(1);
+
+  if (brandData.length === 0) {
+    return null;
+  }
+
+  const [userData, insights, extractionStatus, jobsCount, imagesCount] = await Promise.all([
+    db
+      .select({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+      })
+      .from(user)
+      .where(eq(user.id, brandData[0].userId))
+      .limit(1),
+    db
+      .select()
+      .from(brandInsights)
+      .where(eq(brandInsights.brandId, brandId))
+      .limit(1),
+    db
+      .select()
+      .from(brandExtractionStatus)
+      .where(eq(brandExtractionStatus.brandId, brandId))
+      .limit(1),
+    db
+      .select({ count: count() })
+      .from(generationJob)
+      .where(eq(generationJob.brandId, brandId)),
+    db
+      .select({ count: count() })
+      .from(adImage)
+      .where(and(eq(adImage.brandId, brandId), eq(adImage.isDeleted, false))),
+  ]);
+
+  return {
+    ...brandData[0],
+    user: userData[0] || null,
+    insights: insights[0] || null,
+    extractionStatus: extractionStatus[0] || null,
+    jobsCount: Number(jobsCount[0]?.count || 0),
+    imagesCount: Number(imagesCount[0]?.count || 0),
+  };
+}
+
+export async function getBrandJobs(brandId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: generationJob.id,
+      status: generationJob.status,
+      createdAt: generationJob.createdAt,
+      tokensCost: generationJob.tokensCost,
+      userId: generationJob.userId,
+    })
+    .from(generationJob)
+    .where(eq(generationJob.brandId, brandId))
+    .orderBy(desc(generationJob.createdAt))
+    .limit(limit);
+}
+
+export async function getBrandAdImages(brandId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: adImage.id,
+      title: adImage.title,
+      createdAt: adImage.createdAt,
+      publicUrl: adImage.publicUrl,
+      jobId: adImage.jobId,
+      userId: adImage.userId,
+    })
+    .from(adImage)
+    .where(and(eq(adImage.brandId, brandId), eq(adImage.isDeleted, false)))
+    .orderBy(desc(adImage.createdAt))
+    .limit(limit);
+}
+
+// Job related entities
+export async function getJobWithFullDetails(jobId: string) {
+  const jobData = await db
+    .select()
+    .from(generationJob)
+    .where(eq(generationJob.id, jobId))
+    .limit(1);
+
+  if (jobData.length === 0) {
+    return null;
+  }
+
+  const job = jobData[0];
+  const [userData, brandData, archetypeData, ledgerData, imagesCount] = await Promise.all([
+    db
+      .select({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+      })
+      .from(user)
+      .where(eq(user.id, job.userId))
+      .limit(1),
+    job.brandId
+      ? db
+          .select({
+            id: brand.id,
+            name: brand.name,
+            websiteUrl: brand.websiteUrl,
+          })
+          .from(brand)
+          .where(eq(brand.id, job.brandId))
+          .limit(1)
+      : Promise.resolve([]),
+    job.archetypeCode
+      ? db
+          .select()
+          .from(adArchetype)
+          .where(eq(adArchetype.code, job.archetypeCode))
+          .limit(1)
+      : Promise.resolve([]),
+    job.ledgerId
+      ? db
+          .select()
+          .from(tokenLedger)
+          .where(eq(tokenLedger.id, job.ledgerId))
+          .limit(1)
+      : Promise.resolve([]),
+    db
+      .select({ count: count() })
+      .from(adImage)
+      .where(eq(adImage.jobId, jobId)),
+  ]);
+
+  return {
+    ...job,
+    user: userData[0] || null,
+    brand: brandData[0] || null,
+    archetype: archetypeData[0] || null,
+    ledgerEntry: ledgerData[0] || null,
+    imagesCount: Number(imagesCount[0]?.count || 0),
+  };
+}
+
+export async function getJobAdImages(jobId: string) {
+  return await db
+    .select({
+      id: adImage.id,
+      title: adImage.title,
+      createdAt: adImage.createdAt,
+      publicUrl: adImage.publicUrl,
+      brandId: adImage.brandId,
+      userId: adImage.userId,
+    })
+    .from(adImage)
+    .where(and(eq(adImage.jobId, jobId), eq(adImage.isDeleted, false)))
+    .orderBy(desc(adImage.createdAt));
+}
+
+// Ad Image related entities
+export async function getAdImageWithFullDetails(imageId: string) {
+  const imageData = await db
+    .select()
+    .from(adImage)
+    .where(and(eq(adImage.id, imageId), eq(adImage.isDeleted, false)))
+    .limit(1);
+
+  if (imageData.length === 0) {
+    return null;
+  }
+
+  const image = imageData[0];
+  const [userData, brandData, jobData, workflowData, eventsCount] = await Promise.all([
+    db
+      .select({
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+      })
+      .from(user)
+      .where(eq(user.id, image.userId))
+      .limit(1),
+    image.brandId
+      ? db
+          .select({
+            id: brand.id,
+            name: brand.name,
+            websiteUrl: brand.websiteUrl,
+          })
+          .from(brand)
+          .where(eq(brand.id, image.brandId))
+          .limit(1)
+      : Promise.resolve([]),
+    image.jobId
+      ? db
+          .select({
+            id: generationJob.id,
+            status: generationJob.status,
+            createdAt: generationJob.createdAt,
+          })
+          .from(generationJob)
+          .where(eq(generationJob.id, image.jobId))
+          .limit(1)
+      : Promise.resolve([]),
+    image.workflowId
+      ? db
+          .select()
+          .from(adWorkflow)
+          .where(eq(adWorkflow.id, image.workflowId))
+          .limit(1)
+      : Promise.resolve([]),
+    db
+      .select({ count: count() })
+      .from(adEvent)
+      .where(eq(adEvent.adImageId, imageId)),
+  ]);
+
+  return {
+    ...image,
+    user: userData[0] || null,
+    brand: brandData[0] || null,
+    job: jobData[0] || null,
+    workflow: workflowData[0] || null,
+    eventsCount: Number(eventsCount[0]?.count || 0),
+  };
+}
+
+export async function getAdImageEvents(imageId: string, limit: number = 10) {
+  return await db
+    .select({
+      id: adEvent.id,
+      eventType: adEvent.eventType,
+      eventSource: adEvent.eventSource,
+      createdAt: adEvent.createdAt,
+      metadata: adEvent.metadata,
+    })
+    .from(adEvent)
+    .where(eq(adEvent.adImageId, imageId))
+    .orderBy(desc(adEvent.createdAt))
+    .limit(limit);
+}
+
+// Workflow Error related entities
+export async function getWorkflowErrorWithOccurrences(errorId: number) {
+  const errorData = await db
+    .select()
+    .from(n8nWorkflowErrors)
+    .where(eq(n8nWorkflowErrors.id, errorId))
+    .limit(1);
+
+  if (errorData.length === 0) {
+    return null;
+  }
+
+  const occurrences = await db
+    .select()
+    .from(n8nWorkflowErrorOccurrences)
+    .where(eq(n8nWorkflowErrorOccurrences.errorId, errorId))
+    .orderBy(desc(n8nWorkflowErrorOccurrences.occurredAt))
+    .limit(50);
+
+  return {
+    ...errorData[0],
+    occurrences,
+  };
+}
+
+// ==================== Ad Images ====================
+
+export interface AdImagesResult {
+  adImages: Array<{
+    id: string;
+    title: string | null;
+    userId: string;
+    brandId: string | null;
+    jobId: string;
+    createdAt: Date;
+    publicUrl: string | null;
+    width: number;
+    height: number;
+    format: string;
+    banFlag: boolean;
+    errorFlag: boolean;
+    isDeleted: boolean;
+    userEmail: string;
+    userDisplayName: string | null;
+    brandName: string | null;
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function getAllAdImages(
+  params: PaginationParams & { userId?: string; brandId?: string; jobId?: string } = {}
+): Promise<AdImagesResult> {
+  const page = params.page || 1;
+  const limit = params.limit || 50;
+  const offset = (page - 1) * limit;
+
+  const conditions = [eq(adImage.isDeleted, false)];
+
+  if (params.userId) {
+    conditions.push(eq(adImage.userId, params.userId));
+  }
+
+  if (params.brandId) {
+    conditions.push(eq(adImage.brandId, params.brandId));
+  }
+
+  if (params.jobId) {
+    conditions.push(eq(adImage.jobId, params.jobId));
+  }
+
+  const whereClause = and(...conditions);
+
+  // Get total count
+  const totalResult = await db
+    .select({ count: count() })
+    .from(adImage)
+    .where(whereClause);
+  const total = Number(totalResult[0]?.count || 0);
+
+  // Get ad images with user and brand info
+  const adImages = await db
+    .select({
+      id: adImage.id,
+      title: adImage.title,
+      userId: adImage.userId,
+      brandId: adImage.brandId,
+      jobId: adImage.jobId,
+      createdAt: adImage.createdAt,
+      publicUrl: adImage.publicUrl,
+      width: adImage.width,
+      height: adImage.height,
+      format: adImage.format,
+      banFlag: adImage.banFlag,
+      errorFlag: adImage.errorFlag,
+      isDeleted: adImage.isDeleted,
+      userEmail: user.email,
+      userDisplayName: user.displayName,
+      brandName: brand.name,
+    })
+    .from(adImage)
+    .innerJoin(user, eq(adImage.userId, user.id))
+    .leftJoin(brand, eq(adImage.brandId, brand.id))
+    .where(whereClause)
+    .orderBy(desc(adImage.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    adImages,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 }

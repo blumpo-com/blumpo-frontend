@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { AdminTable, AdminTableRow, AdminTableCell } from '@/components/admin/AdminTable';
 import { Pagination } from '@/components/admin/Pagination';
@@ -10,6 +11,7 @@ import { useUser } from '@/lib/contexts/user-context';
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function WorkflowErrorsPage() {
+  const router = useRouter();
   const { user } = useUser();
   const [page, setPage] = useState(1);
   const [resolvedFilter, setResolvedFilter] = useState<string>('unresolved');
@@ -85,7 +87,11 @@ export default function WorkflowErrorsPage() {
               emptyMessage={data?.errors?.length === 0 ? 'No errors found' : undefined}
             >
               {data?.errors?.map((err: any) => (
-                <AdminTableRow key={err.id}>
+                <AdminTableRow
+                  key={err.id}
+                  onClick={() => router.push(`/admin/workflow-errors/${err.id}`)}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
                   <AdminTableCell>{err.workflowName || err.workflowId}</AdminTableCell>
                   <AdminTableCell>{err.nodeName || err.nodeId}</AdminTableCell>
                   <AdminTableCell>
@@ -107,7 +113,7 @@ export default function WorkflowErrorsPage() {
                   <AdminTableCell>
                     {new Date(err.lastSeenAt).toLocaleDateString()}
                   </AdminTableCell>
-                  <AdminTableCell>
+                  <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     {!err.isResolved && (
                       <button
                         onClick={() => handleMarkResolved(err.id)}

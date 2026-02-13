@@ -59,24 +59,6 @@ export default function SubscriptionsPage() {
               ))}
             </AdminTable>
           </AdminCard>
-
-          <AdminCard title="Generation Pricing">
-            <AdminTable headers={['Name', 'Strategy', 'Base Cost', 'Active', 'Version']}>
-              {data?.generationPricing?.map((pricing: any) => (
-                <AdminTableRow key={pricing.id}>
-                  <AdminTableCell>{pricing.name}</AdminTableCell>
-                  <AdminTableCell>{pricing.strategy}</AdminTableCell>
-                  <AdminTableCell>{pricing.baseCostTokens?.toLocaleString() || 0}</AdminTableCell>
-                  <AdminTableCell>
-                    <span className={`px-2 py-1 rounded text-xs ${pricing.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {pricing.isActive ? 'Yes' : 'No'}
-                    </span>
-                  </AdminTableCell>
-                  <AdminTableCell>{pricing.version}</AdminTableCell>
-                </AdminTableRow>
-              ))}
-            </AdminTable>
-          </AdminCard>
         </div>
       )}
     </div>

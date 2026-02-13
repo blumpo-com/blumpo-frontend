@@ -1,7 +1,14 @@
 import { getAdminUser } from '@/lib/auth/admin';
-import { getUserWithDetails } from '@/lib/db/queries/admin';
+import {
+  getUserWithDetails,
+  getUserBrands,
+  getUserJobs,
+  getUserAdImages,
+  getUserTokenLedger,
+} from '@/lib/db/queries/admin';
 import { redirect } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
+import { RelatedEntitiesSection, RelatedEntity } from '@/components/admin/RelatedEntitiesSection';
 import Link from 'next/link';
 
 export default async function UserDetailPage({
@@ -15,11 +22,39 @@ export default async function UserDetailPage({
   }
 
   const { userId } = await params;
-  const user = await getUserWithDetails(userId);
+  const [user, brands, jobs, adImages, tokenLedgerEntries] = await Promise.all([
+    getUserWithDetails(userId),
+    getUserBrands(userId, 10),
+    getUserJobs(userId, 10),
+    getUserAdImages(userId, 10),
+    getUserTokenLedger(userId, 10),
+  ]);
 
   if (!user) {
     return <div className="p-8">User not found</div>;
   }
+
+  // Prepare related entities
+  const brandEntities: RelatedEntity[] = brands.map((brand) => ({
+    type: 'brand',
+    id: brand.id,
+    label: brand.name,
+    metadata: `Website: ${brand.websiteUrl} • Created: ${new Date(brand.createdAt).toLocaleDateString()}`,
+  }));
+
+  const jobEntities: RelatedEntity[] = jobs.map((job) => ({
+    type: 'job',
+    id: job.id,
+    label: `Job ${job.id.slice(0, 8)}...`,
+    metadata: `Status: ${job.status} • Created: ${new Date(job.createdAt).toLocaleDateString()} • Cost: ${job.tokensCost?.toLocaleString() || 0} tokens`,
+  }));
+
+  const adImageEntities: RelatedEntity[] = adImages.map((image) => ({
+    type: 'ad-image',
+    id: image.id,
+    label: image.title || `Image ${image.id.slice(0, 8)}...`,
+    metadata: `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+  }));
 
   return (
     <div className="p-8">
@@ -106,6 +141,72 @@ export default async function UserDetailPage({
             </div>
           </dl>
         </AdminCard>
+      </div>
+
+      {/* Related Entities Section */}
+      <div className="space-y-6 mt-6">
+        <RelatedEntitiesSection
+          title="Brands"
+          entities={brandEntities}
+          viewAllHref={`/admin/brands?userId=${userId}`}
+          emptyMessage="No brands found for this user."
+        />
+
+        <RelatedEntitiesSection
+          title="Generation Jobs"
+          entities={jobEntities}
+          viewAllHref={`/admin/jobs?userId=${userId}`}
+          emptyMessage="No generation jobs found for this user."
+        />
+
+        <RelatedEntitiesSection
+          title="Ad Images"
+          entities={adImageEntities}
+          viewAllHref={`/admin/ad-images?userId=${userId}`}
+          emptyMessage="No ad images found for this user."
+        />
+
+        {tokenLedgerEntries.length > 0 && (
+          <AdminCard title={`Recent Token Ledger Entries (${tokenLedgerEntries.length})`}>
+            <div className="space-y-3">
+              {tokenLedgerEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="p-3 border border-gray-200 rounded-lg"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-sm text-gray-900">
+                        {entry.reason || 'Transaction'}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(entry.occurredAt).toLocaleString()}
+                      </div>
+                      {entry.referenceId && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Reference: <span className="font-mono">{entry.referenceId}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div
+                        className={`text-sm font-semibold ${
+                          entry.delta >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {entry.delta >= 0 ? '+' : ''}
+                        {entry.delta.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Balance: {entry.balanceAfter.toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AdminCard>
+        )}
       </div>
     </div>
   );
