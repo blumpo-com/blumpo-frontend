@@ -1242,3 +1242,91 @@ export async function getAllAdImages(
     totalPages: Math.ceil(total / limit),
   };
 }
+
+// ==================== Ads Analytics ====================
+
+// Jobs per archetype
+export async function getArchetypeJobCounts() {
+  return await db
+    .select({
+      archetypeCode: generationJob.archetypeCode,
+      count: count(),
+      displayName: adArchetype.displayName,
+    })
+    .from(generationJob)
+    .leftJoin(adArchetype, eq(generationJob.archetypeCode, adArchetype.code))
+    .where(sql`${generationJob.archetypeCode} IS NOT NULL`)
+    .groupBy(generationJob.archetypeCode, adArchetype.displayName)
+    .orderBy(desc(count()));
+}
+
+// Images per archetype (via workflow)
+export async function getArchetypeImageCounts() {
+  return await db
+    .select({
+      archetypeCode: adWorkflow.archetypeCode,
+      count: count(),
+      displayName: adArchetype.displayName,
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(eq(adImage.isDeleted, false))
+    .groupBy(adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(desc(count()));
+}
+
+// Images per workflow
+export async function getWorkflowImageCounts() {
+  return await db
+    .select({
+      workflowId: adImage.workflowId,
+      count: count(),
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(eq(adImage.isDeleted, false))
+    .groupBy(adImage.workflowId, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(desc(count()));
+}
+
+// Actions per archetype
+export async function getArchetypeActionCounts() {
+  return await db
+    .select({
+      archetypeCode: adEvent.archetypeCode,
+      eventType: adEvent.eventType,
+      count: count(),
+      displayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .leftJoin(adArchetype, eq(adEvent.archetypeCode, adArchetype.code))
+    .where(sql`${adEvent.archetypeCode} IS NOT NULL`)
+    .groupBy(adEvent.archetypeCode, adEvent.eventType, adArchetype.displayName)
+    .orderBy(adEvent.archetypeCode, adEvent.eventType);
+}
+
+// Actions per workflow
+export async function getWorkflowActionCounts() {
+  return await db
+    .select({
+      workflowId: adEvent.workflowId,
+      eventType: adEvent.eventType,
+      count: count(),
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .innerJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(sql`${adEvent.workflowId} IS NOT NULL`)
+    .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(adEvent.workflowId, adEvent.eventType);
+}
