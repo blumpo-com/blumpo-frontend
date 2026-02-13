@@ -12,6 +12,7 @@ This document describes the full PostgreSQL schema for the application, includin
 * Ad analytics & event tracking
 * File storage references (Vercel Blob)
 * Brand extraction workflow tracking
+* n8n workflow error tracking & aggregation
 
 ---
 
@@ -46,6 +47,7 @@ subscription_plan (static config)
 topup_plan (static config)
 generation_pricing (static config)
 auth_otp (one-time passwords)
+n8n_workflow_errors ─── 1:N ─── n8n_workflow_error_occurrences
 ```
 
 ---
@@ -674,6 +676,120 @@ One-time password (OTP) challenges for email-based authentication.
 
 ---
 
+# 📂 TABLE: `public.n8n_workflow_errors`
+
+**Purpose:**
+Stores aggregated error "buckets" from n8n workflow executions. Groups similar errors together using error fingerprints, tracks occurrence counts, and supports resolution tracking. Used for monitoring and debugging n8n workflow errors.
+
+| Column                | Type        | Description                                    |
+| --------------------- | ----------- | ---------------------------------------------- |
+| id                    | bigserial PK | Error bucket ID                                |
+| workflow_id           | text        | n8n workflow ID (required)                     |
+| workflow_name         | text        | Human-readable workflow name (nullable)        |
+| node_id               | text        | n8n node ID where error occurred (required)    |
+| node_name             | text        | Node name (nullable)                           |
+| node_type             | text        | Node type (nullable)                           |
+| node_type_version     | integer     | Node type version (nullable)                   |
+| error_name            | text        | Error class name (e.g., NodeOperationError) (nullable) |
+| error_level           | text        | Error severity: 'warning' / 'error' (nullable) |
+| error_message         | text        | Error message (required)                       |
+| error_fingerprint     | text UNIQUE | Unique fingerprint for error grouping (required) |
+| occurrences_count    | integer     | Number of times this error occurred (default: 1) |
+| first_seen_at         | timestamptz | First occurrence timestamp (required)         |
+| last_seen_at          | timestamptz | Most recent occurrence timestamp (required)    |
+| last_execution_id     | text        | Last execution ID where error occurred (nullable) |
+| last_execution_url    | text        | URL to last execution in n8n (nullable)        |
+| last_node_executed    | text        | Last node executed before error (nullable)     |
+| sample_stack          | text        | Sample stack trace (nullable)                  |
+| is_resolved           | boolean     | Whether error has been resolved (default: false) |
+| resolved_at           | timestamptz | Resolution timestamp (nullable)                |
+| resolved_by           | text        | Who resolved the error (nullable)              |
+| resolution_note       | text        | Resolution notes (nullable)                    |
+| created_at            | timestamptz | Creation timestamp (default: now())           |
+| updated_at            | timestamptz | Last update timestamp (default: now())         |
+
+**Indexes:**
+- Unique constraint on `error_fingerprint` for error deduplication
+- Index on `workflow_id` for workflow-specific error queries
+- Index on `node_id` for node-specific error queries
+- Composite index on `(is_resolved, last_seen_at DESC)` for unresolved error queries
+- Composite index on `(error_level, last_seen_at DESC)` for error level filtering
+
+**Example:**
+
+```json
+{
+  "id": 12345,
+  "workflow_id": "n8n_workflow_abc123",
+  "workflow_name": "Brand Extraction Workflow",
+  "node_id": "node_xyz789",
+  "node_name": "Extract Colors",
+  "node_type": "n8n-nodes-base.httpRequest",
+  "node_type_version": 1,
+  "error_name": "NodeOperationError",
+  "error_level": "error",
+  "error_message": "Request failed with status code 404",
+  "error_fingerprint": "workflow:n8n_workflow_abc123:node:node_xyz789:error:404",
+  "occurrences_count": 15,
+  "first_seen_at": "2025-01-10T10:20:00Z",
+  "last_seen_at": "2025-01-15T14:30:00Z",
+  "last_execution_id": "exec_12345",
+  "last_execution_url": "https://n8n.example.com/executions/12345",
+  "last_node_executed": "node_prev456",
+  "sample_stack": "Error: Request failed...\n  at HttpRequest.execute...",
+  "is_resolved": false,
+  "resolved_at": null,
+  "resolved_by": null,
+  "resolution_note": null,
+  "created_at": "2025-01-10T10:20:00Z",
+  "updated_at": "2025-01-15T14:30:00Z"
+}
+```
+
+---
+
+# 📂 TABLE: `public.n8n_workflow_error_occurrences`
+
+**Purpose:**
+Stores individual error occurrences linked to aggregated error buckets. Provides detailed history of when errors occurred, including execution context and stack traces. Used for debugging and error analysis.
+
+| Column        | Type                | Description                                    |
+| ------------- | ------------------- | ---------------------------------------------- |
+| id            | bigserial PK        | Occurrence ID                                  |
+| error_id      | bigint FK → n8n_workflow_errors(id) | Reference to aggregated error bucket (required) |
+| occurred_at   | timestamptz         | When error occurred (required)                 |
+| execution_id  | text                | n8n execution ID (nullable)                    |
+| execution_url | text                | URL to execution in n8n (nullable)             |
+| mode          | text                | Execution mode (nullable)                     |
+| source        | text                | Error source context (nullable)                |
+| stack         | text                | Full stack trace for this occurrence (nullable) |
+| created_at    | timestamptz         | Record creation timestamp (default: now())      |
+
+**Indexes:**
+- Composite index on `(error_id, occurred_at DESC)` for error occurrence history queries
+- Index on `occurred_at DESC` for time-based error queries
+
+**Foreign Keys:**
+- `error_id` references `n8n_workflow_errors(id)` with `ON DELETE CASCADE`
+
+**Example:**
+
+```json
+{
+  "id": 67890,
+  "error_id": 12345,
+  "occurred_at": "2025-01-15T14:30:00Z",
+  "execution_id": "exec_12345",
+  "execution_url": "https://n8n.example.com/executions/12345",
+  "mode": "production",
+  "source": "webhook",
+  "stack": "Error: Request failed with status code 404\n  at HttpRequest.execute (/app/nodes/HttpRequest.js:123:45)\n  at Workflow.runNode (/app/Workflow.js:456:78)",
+  "created_at": "2025-01-15T14:30:00Z"
+}
+```
+
+---
+
 # 📂 Enums
 
 ### `job_status`
@@ -715,6 +831,8 @@ This schema cleanly separates:
 
 ### ✔ Ad analytics & event tracking (ad_event)
 
+### ✔ n8n workflow error tracking (n8n_workflow_errors, n8n_workflow_error_occurrences)
+
 ### ✔ Image storage references
 
 It is optimized for:
@@ -728,3 +846,4 @@ It is optimized for:
 * Audit trails for all token transactions
 * Flexible ad generation with multiple archetypes and formats
 * Comprehensive analytics for ad performance tracking
+* n8n workflow error monitoring and aggregation with resolution tracking
