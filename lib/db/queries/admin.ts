@@ -1430,3 +1430,133 @@ export async function getRecentAdActivity(limit: number = 50) {
     .orderBy(desc(adEvent.createdAt))
     .limit(limit);
 }
+
+// ==================== Brand Extraction Status ====================
+
+export async function getBrandExtractionStatusList(options?: {
+  page?: number;
+  limit?: number;
+  problemsOnly?: boolean;
+}) {
+  const page = options?.page ?? 1;
+  const limit = options?.limit ?? 50;
+  const offset = (page - 1) * limit;
+
+  const hasProblem =
+    or(
+      sql`${brandExtractionStatus.colorsStatus} IS DISTINCT FROM 'success' AND ${brandExtractionStatus.colorsStatus} IS NOT NULL`,
+      sql`${brandExtractionStatus.colorsError} IS NOT NULL`,
+      sql`${brandExtractionStatus.fontsStatus} IS DISTINCT FROM 'success' AND ${brandExtractionStatus.fontsStatus} IS NOT NULL`,
+      sql`${brandExtractionStatus.fontsError} IS NOT NULL`,
+      sql`${brandExtractionStatus.logoStatus} IS DISTINCT FROM 'success' AND ${brandExtractionStatus.logoStatus} IS NOT NULL`,
+      sql`${brandExtractionStatus.logoError} IS NOT NULL`,
+      sql`${brandExtractionStatus.heroStatus} IS DISTINCT FROM 'success' AND ${brandExtractionStatus.heroStatus} IS NOT NULL`,
+      sql`${brandExtractionStatus.heroError} IS NOT NULL`,
+      sql`${brandExtractionStatus.insightsStatus} IS DISTINCT FROM 'success' AND ${brandExtractionStatus.insightsStatus} IS NOT NULL`,
+      sql`${brandExtractionStatus.insightsError} IS NOT NULL`
+    );
+
+  const whereClause = options?.problemsOnly ? hasProblem : undefined;
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        id: brandExtractionStatus.id,
+        brandId: brandExtractionStatus.brandId,
+        colorsStatus: brandExtractionStatus.colorsStatus,
+        colorsError: brandExtractionStatus.colorsError,
+        fontsStatus: brandExtractionStatus.fontsStatus,
+        fontsError: brandExtractionStatus.fontsError,
+        logoStatus: brandExtractionStatus.logoStatus,
+        logoError: brandExtractionStatus.logoError,
+        heroStatus: brandExtractionStatus.heroStatus,
+        heroError: brandExtractionStatus.heroError,
+        insightsStatus: brandExtractionStatus.insightsStatus,
+        insightsError: brandExtractionStatus.insightsError,
+        createdAt: brandExtractionStatus.createdAt,
+        updatedAt: brandExtractionStatus.updatedAt,
+        brandName: brand.name,
+        brandWebsiteUrl: brand.websiteUrl,
+        userEmail: user.email,
+        userDisplayName: user.displayName,
+        userId: brand.userId,
+      })
+      .from(brandExtractionStatus)
+      .innerJoin(brand, eq(brandExtractionStatus.brandId, brand.id))
+      .leftJoin(user, eq(brand.userId, user.id))
+      .where(whereClause)
+      .orderBy(desc(brandExtractionStatus.updatedAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(brandExtractionStatus)
+      .innerJoin(brand, eq(brandExtractionStatus.brandId, brand.id))
+      .where(whereClause),
+  ]);
+
+  const total = Number(countResult[0]?.count ?? 0);
+  const totalPages = Math.ceil(total / limit) || 1;
+
+  return {
+    items: rows,
+    page,
+    limit,
+    total,
+    totalPages,
+  };
+}
+
+// ==================== Ad Image Errors ====================
+
+export async function getAdImageErrorsList(options?: { page?: number; limit?: number }) {
+  const page = options?.page ?? 1;
+  const limit = options?.limit ?? 50;
+  const offset = (page - 1) * limit;
+
+  const [rows, countResult] = await Promise.all([
+    db
+      .select({
+        id: adImage.id,
+        jobId: adImage.jobId,
+        userId: adImage.userId,
+        brandId: adImage.brandId,
+        createdAt: adImage.createdAt,
+        title: adImage.title,
+        errorFlag: adImage.errorFlag,
+        errorMessage: adImage.errorMessage,
+        workflowId: adImage.workflowId,
+        workflowUid: adWorkflow.workflowUid,
+        variantKey: adWorkflow.variantKey,
+        archetypeCode: adWorkflow.archetypeCode,
+        archetypeDisplayName: adArchetype.displayName,
+        brandName: brand.name,
+        userEmail: user.email,
+        userDisplayName: user.displayName,
+      })
+      .from(adImage)
+      .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+      .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+      .leftJoin(brand, eq(adImage.brandId, brand.id))
+      .leftJoin(user, eq(adImage.userId, user.id))
+      .where(eq(adImage.errorFlag, true))
+      .orderBy(desc(adImage.createdAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(adImage)
+      .where(eq(adImage.errorFlag, true)),
+  ]);
+
+  const total = Number(countResult[0]?.count ?? 0);
+  const totalPages = Math.ceil(total / limit) || 1;
+
+  return {
+    items: rows,
+    page,
+    limit,
+    total,
+    totalPages,
+  };
+}

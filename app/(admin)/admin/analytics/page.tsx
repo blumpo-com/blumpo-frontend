@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
             </AdminCard>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <Link href="/admin/analytics/ads" className="block">
               <div className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
@@ -77,6 +77,36 @@ export default function AnalyticsPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Ads Analytics</h3>
                     <p className="text-sm text-gray-500">
                       View detailed analytics for archetypes, workflows, and ad actions
+                    </p>
+                  </div>
+                  <div className="text-blue-600 text-lg">→</div>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/brand-extraction-status" className="block">
+              <div className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">Brand Extraction Status</h3>
+                    <p className="text-lg font-semibold text-gray-900">Monitor extraction</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Colors, fonts, logo, hero, insights
+                    </p>
+                  </div>
+                  <div className="text-blue-600 text-lg">→</div>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/ad-image-errors" className="block">
+              <div className="p-6 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">Ad Image Errors</h3>
+                    <p className="text-lg font-semibold text-gray-900">Failed generations</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Workflow, time, error message
                     </p>
                   </div>
                   <div className="text-blue-600 text-lg">→</div>
