@@ -477,7 +477,7 @@ function CustomizedAdsPageContent() {
       },
       testimonial: {
         title: "Select testimonials",
-        subtitle: "Customer segments you want to target with your ad"
+        subtitle: "Customer testimonial to feature in the ad"
       },
       competitor_comparison: {
         title: "Competitor insight",
