@@ -1,14 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { AdminTable, AdminTableRow, AdminTableCell } from '@/components/admin/AdminTable';
 import { Pagination } from '@/components/admin/Pagination';
+import { Dialog } from '@/components/ui/dialog';
 import { UserRole } from '@/lib/db/schema/enums';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+type PendingRoleChange = {
+  userId: string;
+  userEmail: string;
+  displayName: string | null;
+  currentRole: UserRole;
+  newRole: UserRole;
+};
 
 export default function UsersPage() {
   const router = useRouter();
@@ -16,6 +25,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [bannedFilter, setBannedFilter] = useState<string>('all');
+  const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null);
 
   const { data, error, isLoading, mutate } = useSWR(
     `/api/admin/users?page=${page}&limit=50${search ? `&search=${encodeURIComponent(search)}` : ''}${roleFilter !== 'all' ? `&role=${roleFilter}` : ''}${bannedFilter !== 'all' ? `&banned=${bannedFilter === 'banned'}` : ''}`,
@@ -23,7 +33,21 @@ export default function UsersPage() {
     { revalidateOnFocus: false }
   );
 
-  const handleUpdateRole = async (userId: string, newRole: UserRole) => {
+  const handleRoleSelectChange = (user: { id: string; email: string; displayName?: string | null; role: UserRole }, newRole: UserRole) => {
+    if (newRole === user.role) return;
+    setPendingRoleChange({
+      userId: user.id,
+      userEmail: user.email,
+      displayName: user.displayName ?? null,
+      currentRole: user.role,
+      newRole: newRole as UserRole,
+    });
+  };
+
+  const handleConfirmRoleChange = async () => {
+    if (!pendingRoleChange) return;
+    const { userId, newRole } = pendingRoleChange;
+    setPendingRoleChange(null);
     try {
       const response = await fetch('/api/admin/users', {
         method: 'PATCH',
@@ -36,8 +60,8 @@ export default function UsersPage() {
       } else {
         alert('Failed to update user role');
       }
-    } catch (error) {
-      console.error('Error updating role:', error);
+    } catch (err) {
+      console.error('Error updating role:', err);
       alert('Error updating user role');
     }
   };
@@ -116,8 +140,8 @@ export default function UsersPage() {
                   <AdminTableCell>{user.displayName || '-'}</AdminTableCell>
                   <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     <select
-                      value={user.role}
-                      onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
+                      value={pendingRoleChange && pendingRoleChange.userId === user.id ? pendingRoleChange.newRole : user.role}
+                      onChange={(e) => handleRoleSelectChange(user, e.target.value as UserRole)}
                       className="px-2 py-1 border border-gray-300 rounded text-sm"
                     >
                       <option value={UserRole.USER}>User</option>
@@ -162,6 +186,44 @@ export default function UsersPage() {
           </>
         )}
       </AdminCard>
+
+      <Dialog
+        open={!!pendingRoleChange}
+        onClose={() => setPendingRoleChange(null)}
+        contentClassName="bg-white rounded-xl shadow-xl p-6 w-[90%] max-w-md text-left"
+      >
+        {pendingRoleChange && (
+          <>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Change user role</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Change role for <strong>{pendingRoleChange.displayName || pendingRoleChange.userEmail}</strong>
+              {pendingRoleChange.displayName && (
+                <span className="text-gray-500"> ({pendingRoleChange.userEmail})</span>
+              )}{' '}
+              from <strong>{pendingRoleChange.currentRole}</strong> to <strong>{pendingRoleChange.newRole}</strong>?
+            </p>
+            <p className="text-xs text-gray-500 mb-6">
+              Admin users can access the admin panel. Only change roles for users you trust.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingRoleChange(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRoleChange}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                Confirm
+              </button>
+            </div>
+          </>
+        )}
+      </Dialog>
     </div>
   );
 }
