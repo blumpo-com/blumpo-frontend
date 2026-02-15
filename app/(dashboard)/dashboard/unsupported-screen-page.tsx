@@ -23,7 +23,7 @@ export function UnsupportedScreenPage() {
         <Link href="/">Go home</Link>
       </Button>
       <Image
-        src="/images/blumpo/sad-sitting-blumpo.png"
+        src="/images/blumpo/sad-blumpo-sitting.png"
         alt="Blumpo"
         width={280}
         height={280}
