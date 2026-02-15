@@ -15,12 +15,12 @@ function AdGenerationPageContent() {
   const jobId = searchParams.get('job_id');
   const formatParam = searchParams.get('format');
   const isQuickAds = searchParams.get('quick_ads') === 'true';
-  
+
   const [isProcessComplete, setIsProcessComplete] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [jobFormats, setJobFormats] = useState<string[] | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
-  
+
   // Ref to prevent double execution (React Strict Mode)
   const hasInitiatedRef = useRef<string | null>(null);
   const [jobStatus, setJobStatus] = useState<string | null>(null);
@@ -29,10 +29,10 @@ function AdGenerationPageContent() {
   // If no job_id, show error or redirect
   if (!jobId) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh',
         flexDirection: 'column',
         gap: '20px'
@@ -48,7 +48,7 @@ function AdGenerationPageContent() {
   useEffect(() => {
     // Don't run if there's an error, already generating, or already complete
     if (!jobId || isGenerating || isProcessComplete || generationError) return;
-    
+
     // Don't run if we've already initiated for this jobId
     if (hasInitiatedRef.current === jobId) return;
 
@@ -99,14 +99,14 @@ function AdGenerationPageContent() {
               } catch {
                 // Error parsing failed, use default message
               }
-              
+
               setGenerationError(msg);
               setIsGenerating(false);
               return;
             }
 
             const result = await generateResponse.json();
-            
+
             // Check if generation succeeded
             if (result.status === 'SUCCEEDED') {
               setIsProcessComplete(true);
@@ -133,7 +133,7 @@ function AdGenerationPageContent() {
             // Job is currently running - trigger generation again
             setIsGenerating(true);
             setGenerationError(null);
-            
+
             const generateResponse = await fetch(generateEndpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -189,14 +189,14 @@ function AdGenerationPageContent() {
               } catch {
                 // Error parsing failed, use default message
               }
-              
+
               setGenerationError(msg);
               setIsGenerating(false);
               return;
             }
 
             const result = await generateResponse.json();
-            
+
             // Check if generation succeeded
             if (result.status === 'SUCCEEDED') {
               setIsProcessComplete(true);
@@ -222,7 +222,7 @@ function AdGenerationPageContent() {
             // Could be from a previous session, trigger generation again
             setIsGenerating(true);
             setGenerationError(null);
-            
+
             // Trigger generation again (API will handle it)
             const generateResponse = await fetch(generateEndpoint, {
               method: 'POST',
@@ -282,8 +282,8 @@ function AdGenerationPageContent() {
     // For quick ads, use the format from URL parameter
     if (isQuickAds && formatParam) {
       // Convert comma-separated formats to 'mixed' for the review view
-      const reviewFormat = formatParam.includes(',') || formatParam === '1:1-9:16' 
-        ? 'mixed' 
+      const reviewFormat = formatParam.includes(',') || formatParam === '1:1-9:16'
+        ? 'mixed'
         : formatParam;
       router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${reviewFormat}`);
       return;
@@ -297,13 +297,13 @@ function AdGenerationPageContent() {
         if (response.ok) {
           const job = await response.json();
           const formats = job.formats || [];
-          
+
           // Map database formats to our format type
           // Database uses: 'square' (1:1), 'story' (9:16)
           let format: '1:1' | '9:16' | 'mixed' = '1:1';
           const hasSquare = formats.includes('square') || formats.includes('1:1');
           const hasStory = formats.includes('story') || formats.includes('9:16');
-          
+
           if (hasSquare && hasStory) {
             format = 'mixed';
           } else if (hasStory) {
@@ -311,7 +311,7 @@ function AdGenerationPageContent() {
           } else if (hasSquare) {
             format = '1:1';
           }
-          
+
           router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${format}`);
         }
       } catch (error) {
@@ -322,7 +322,7 @@ function AdGenerationPageContent() {
       let format: '1:1' | '9:16' | 'mixed' = '1:1';
       const hasSquare = jobFormats.includes('square') || jobFormats.includes('1:1');
       const hasStory = jobFormats.includes('story') || jobFormats.includes('9:16');
-      
+
       if (hasSquare && hasStory) {
         format = 'mixed';
       } else if (hasStory) {
@@ -341,6 +341,7 @@ function AdGenerationPageContent() {
         description={generationError}
         primaryAction={{ label: 'Go to Dashboard', onClick: () => router.push('/dashboard') }}
         titleGradient={false}
+        success={false}
       />
     );
   }
@@ -353,7 +354,7 @@ function AdGenerationPageContent() {
 
   // Show creating process (while generating or waiting)
   return (
-    <CreatingProcess 
+    <CreatingProcess
     />
   );
 }
@@ -361,10 +362,10 @@ function AdGenerationPageContent() {
 export default function AdGenerationPage() {
   return (
     <Suspense fallback={
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100vh'
       }}>
         <p>Loading...</p>

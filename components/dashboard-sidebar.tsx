@@ -32,9 +32,8 @@ function SidebarItem({
   isActive = false,
   onClick,
 }: SidebarItemProps) {
-  const className = `${styles.sidebarItem} ${
-    isActive ? styles.sidebarItemActive : ""
-  }`;
+  const className = `${styles.sidebarItem} ${isActive ? styles.sidebarItemActive : ""
+    }`;
 
   const content = (
     <>
@@ -165,27 +164,11 @@ export function DashboardSidebar() {
 
       {/* Top Navigation */}
       <nav className={styles.navSection}>
-        <Link
-          href="/dashboard"
-          className={`${styles.createNewButton} ${
-            isCreateNewActive ? styles.createNewButtonActive : ""
-          }`}
-        >
-          <Wand
-            className={`${styles.createNewButtonIcon} ${
-              isCreateNewActive ? styles.createNewButtonIconActive : ""
-            }`}
-          />
-          <span
-            className={
-              isCreateNewActive
-                ? styles.createNewButtonTextActive
-                : styles.createNewButtonText
-            }
-          >
-            Create new
-          </span>
+        <Link href="/dashboard" className={styles.createNewButton} >
+          <Wand />
+          <span>Create new</span>
         </Link>
+
         <SidebarItem
           href="/dashboard/content-library"
           iconSrc="/assets/icons/Library.svg"
@@ -273,9 +256,9 @@ export function DashboardSidebar() {
             }
           }}
         >
-          <img 
-            src="/assets/icons/Money.svg" 
-            alt="Coins" 
+          <img
+            src="/assets/icons/Money.svg"
+            alt="Coins"
             className={styles.coinsButtonIcon}
           />
           <span className={styles.coinsText}>
@@ -341,10 +324,10 @@ export function DashboardSidebar() {
         }}
         secondaryButton={{
           label: 'Go Back',
-          onClick: () => {},
+          onClick: () => { },
           variant: 'outline',
         }}
       />
-    </aside>
+    </aside >
   );
 }

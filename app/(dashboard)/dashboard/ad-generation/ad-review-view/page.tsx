@@ -341,6 +341,7 @@ function TinderPageContent() {
         title="No more ads to review."
         description="All ads have been reviewed."
         primaryAction={{ label: 'Go to content library', href: '/dashboard/content-library' }}
+        success={true}
       />
     );
   }
