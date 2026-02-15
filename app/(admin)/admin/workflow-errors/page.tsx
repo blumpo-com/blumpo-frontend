@@ -85,6 +85,7 @@ export default function WorkflowErrorsPage() {
             <AdminTable
               headers={['Workflow', 'Node', 'Error', 'Level', 'Occurrences', 'First Seen', 'Last Seen', 'Actions']}
               emptyMessage={data?.errors?.length === 0 ? 'No errors found' : undefined}
+              scrollable
             >
               {data?.errors?.map((err: any) => (
                 <AdminTableRow
@@ -95,7 +96,7 @@ export default function WorkflowErrorsPage() {
                   <AdminTableCell>{err.workflowName || err.workflowId}</AdminTableCell>
                   <AdminTableCell>{err.nodeName || err.nodeId}</AdminTableCell>
                   <AdminTableCell>
-                    <div className="max-w-md truncate" title={err.errorMessage}>
+                    <div className="min-w-[200px] whitespace-nowrap" title={err.errorMessage}>
                       {err.errorMessage}
                     </div>
                   </AdminTableCell>

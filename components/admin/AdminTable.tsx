@@ -7,12 +7,14 @@ interface AdminTableProps {
   headers: string[];
   children: ReactNode;
   emptyMessage?: string;
+  /** Enable horizontal scroll when table content is wider than container */
+  scrollable?: boolean;
 }
 
-export function AdminTable({ headers, children, emptyMessage }: AdminTableProps) {
+export function AdminTable({ headers, children, emptyMessage, scrollable }: AdminTableProps) {
   return (
-    <div className={styles.tableWrapper}>
-      <table className={styles.table}>
+    <div className={`${styles.tableWrapper} ${scrollable ? styles.tableWrapperScrollable : ''}`}>
+      <table className={`${styles.table} ${scrollable ? styles.tableScrollable : ''}`}>
         <thead>
           <tr>
             {headers.map((header, index) => (

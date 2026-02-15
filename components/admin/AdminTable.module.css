@@ -5,9 +5,17 @@
   overflow: hidden;
 }
 
+.tableWrapperScrollable {
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.tableScrollable {
+  min-width: max-content;
 }
 
 .header {
