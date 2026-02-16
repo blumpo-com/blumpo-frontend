@@ -6,13 +6,29 @@ import {
   markAdImagesPermanentlyDeleted,
 } from "@/lib/db/queries/ads";
 
-export async function POST(request: NextRequest) {
+function isAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get("Authorization");
   const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
+  if (authHeader && authHeader === expectedAuth) return true;
+  if (request.headers.get("user-agent") === "vercel-cron/1.0") return true;
+  return false;
+}
 
-  if (!authHeader || authHeader !== expectedAuth) {
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  return runCleanupJob();
+}
+
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return runCleanupJob();
+}
+
+async function runCleanupJob() {
 
   let processedCount = 0;
   let blobErrorCount = 0;
