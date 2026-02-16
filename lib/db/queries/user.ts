@@ -37,6 +37,12 @@ export async function getUser() {
   return result[0];
 }
 
+export async function getUserWithRole() {
+  const user = await getUser();
+  if (!user) return null;
+  return user;
+}
+
 export async function getUserByEmail(email: string) {
   const result = await db
     .select()
