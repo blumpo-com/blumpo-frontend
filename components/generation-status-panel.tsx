@@ -159,14 +159,29 @@ export function GenerationStatusPanel() {
     switch (status) {
       case 'QUEUED':
       case 'RUNNING':
-        return 'bg-gray-100';
+        return 'bg-gray-50';
       case 'SUCCEEDED':
         return 'bg-green-50';
       case 'FAILED':
       case 'CANCELED':
         return 'bg-red-50';
       default:
-        return 'bg-gray-100';
+        return 'bg-gray-50';
+    }
+  };
+
+  const getStatusTextColor = (status: GenerationJob['status']) => {
+    switch (status) {
+      case 'QUEUED':
+      case 'RUNNING':
+        return 'text-gray-800';
+      case 'SUCCEEDED':
+        return 'text-green-800';
+      case 'FAILED':
+      case 'CANCELED':
+        return 'text-red-800';
+      default:
+        return 'text-gray-800';
     }
   };
 
@@ -210,29 +225,30 @@ export function GenerationStatusPanel() {
 
       {/* Panel */}
       <div
-        className={`fixed right-0 top-0 h-full w-80 bg-white shadow-2xl z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 w-80 bg-white rounded-lg shadow-2xl border border-gray-200 z-40 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ maxHeight: 'calc(100vh - 80px)' }}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <span className="text-sm font-medium text-gray-700">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <span className="text-sm font-semibold text-gray-900">
               {jobs.length}/10
             </span>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
               aria-label="Close panel"
             >
-              <X className="w-5 h-5 text-gray-600" />
+              <X className="w-5 h-5 text-gray-700 font-semibold" strokeWidth={2.5} />
             </button>
           </div>
 
           {/* Jobs list */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="overflow-y-auto px-4 py-3 space-y-3" style={{ maxHeight: 'calc(100vh - 140px)' }}>
             {jobs.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
+              <div className="text-center py-12 text-gray-500 text-sm font-medium">
                 No generation jobs yet
               </div>
             ) : (
@@ -240,46 +256,62 @@ export function GenerationStatusPanel() {
                 const isRunning = job.status === 'RUNNING';
                 const isQueued = job.status === 'QUEUED';
                 const isClickable = job.status === 'SUCCEEDED';
+                const isFailed = job.status === 'FAILED' || job.status === 'CANCELED';
+
+                // Format: "Job Name status" in one line
+                const statusText = getStatusText(job.status);
+                const displayText = `${job.displayName} ${statusText}`;
 
                 return (
-                  <button
+                  <div
                     key={job.id}
-                    onClick={() => isClickable && handleJobClick(job)}
-                    disabled={!isClickable}
-                    className={`w-full text-left p-3 rounded-lg transition-all ${
+                    className={`group relative w-full text-left px-4 py-3.5 rounded-xl transition-all ${
                       getStatusColor(job.status)
                     } ${
                       isClickable
-                        ? 'hover:shadow-md cursor-pointer'
+                        ? 'hover:shadow-sm cursor-pointer'
                         : 'cursor-default'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {job.isNew && (
-                            <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded">
-                              New!
-                            </span>
-                          )}
-                          <span className="text-sm font-medium text-gray-900 truncate">
-                            {job.displayName}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-600">
-                            {getStatusText(job.status)}
-                          </span>
-                          {isRunning && (
-                            <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
-                          )}
-                        </div>
+                    {/* "New!" badge - overlapping top-left for succeeded jobs */}
+                    {job.isNew && isClickable && (
+                      <span className="absolute -top-1.5 -left-1.5 text-xs font-semibold text-green-700 bg-white border border-green-200 px-2 py-0.5 rounded-full whitespace-nowrap z-20">
+                        New!
+                      </span>
+                    )}
+
+                    {/* Delete button - visible on hover for all items */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // TODO: Handle delete job
+                      }}
+                      className="absolute -left-2 -top-2 w-5 h-5 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100 z-10"
+                      aria-label="Remove job"
+                    >
+                      <X className="w-3 h-3 text-gray-600" strokeWidth={2.5} />
+                    </button>
+
+                    <button
+                      onClick={() => isClickable && handleJobClick(job)}
+                      disabled={!isClickable}
+                      className="w-full text-left flex items-center justify-between gap-2"
+                    >
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <span className={`text-sm font-medium truncate ${getStatusTextColor(job.status)}`}>
+                          {displayText}
+                        </span>
+                        {isRunning && (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-600 flex-shrink-0" strokeWidth={2} />
+                        )}
                       </div>
                       {isClickable && (
-                        <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+                        <div className="w-6 h-6 bg-white border border-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                          <ArrowRight className="w-3.5 h-3.5 text-green-800" strokeWidth={2.5} />
+                        </div>
                       )}
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 );
               })
             )}
