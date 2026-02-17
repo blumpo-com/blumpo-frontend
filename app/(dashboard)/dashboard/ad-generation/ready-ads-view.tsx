@@ -50,7 +50,7 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
           </button>
         </div>
       )}
-      
+
       <div className={styles.content}>
         {/* Header Section */}
         <div className={styles.header}>
@@ -64,19 +64,19 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
         <div className={styles.bottomSection}>
           <button className={styles.seeAdsButton} onClick={onSeeAds}>
             <span className={styles.buttonText}>See ads</span>
-            <svg 
-              width="40" 
-              height="40" 
-              viewBox="0 0 24 24" 
-              fill="none" 
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className={styles.arrowIcon}
             >
-              <path 
-                d="M9 18L15 12L9 6" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
+              <path
+                d="M9 18L15 12L9 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
@@ -85,7 +85,7 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
           {/* Blumpo Image */}
           <div className={styles.imageContainer}>
             <Image
-              src="/images/temp/laying_blumpo.png"
+              src="/assets/animations/lying-blumpo.webp"
               alt="Blumpo character"
               width={687}
               height={500}

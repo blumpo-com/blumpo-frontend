@@ -35,7 +35,7 @@ export function PhotoSelectionContent({
   const allBrandPhotos = [...heroPhotos, ...brandPhotos];
 
   const otherPhotos = allBrandPhotos.length > 4 ? allBrandPhotos.slice(allBrandPhotos.length - 4, allBrandPhotos.length).reverse() : allBrandPhotos.reverse();
-  const NO_IMAGE_SRC = '/images/dashboard/no-image.png';
+  const NO_IMAGE_SRC = '/images/general/no-image.png';
   const displayPhotos = Array.from({ length: 4 }, (_, i) => otherPhotos[i] ?? NO_IMAGE_SRC);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {

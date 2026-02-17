@@ -16,18 +16,18 @@ const buttons = [
 // 12 images total - 3 per section
 // Each image can be individually customized
 const allImages = [
-  { src: "/images/landing/content-proof/problem-solution/1.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/landing/content-proof/problem-solution/2.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/landing/content-proof/problem-solution/3.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/landing/content-proof/testimonial/1.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/landing/content-proof/testimonial/2.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/landing/content-proof/testimonial/3.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/landing/content-proof/meme/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/landing/content-proof/meme/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/landing/content-proof/meme/3.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
-  { src: "/images/landing/content-proof/value-proposition/1.png", alt: "Content proof image", rotation: 5, delay: "1s" },
-  { src: "/images/landing/content-proof/value-proposition/2.png", alt: "Content proof image", rotation: -5, delay: "0s" },
-  { src: "/images/landing/content-proof/value-proposition/3.png", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/problem-solution/1.avif", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/problem-solution/2.avif", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/problem-solution/3.avif", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/testimonial/1.avif", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/testimonial/2.avif", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/testimonial/3.avif", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/meme/1.avif", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/meme/2.avif", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/meme/3.avif", alt: "Content proof image", rotation: 0, delay: "0.5s" },
+  { src: "/images/landing/content-proof/value-proposition/1.avif", alt: "Content proof image", rotation: 5, delay: "1s" },
+  { src: "/images/landing/content-proof/value-proposition/2.avif", alt: "Content proof image", rotation: -5, delay: "0s" },
+  { src: "/images/landing/content-proof/value-proposition/3.avif", alt: "Content proof image", rotation: 0, delay: "0.5s" },
 
 ];
 
@@ -61,28 +61,31 @@ export function ContentProofSection() {
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(0);
-    setTouchStart(e.targetTouches[0].clientX);
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0]?.clientX ?? null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    touchEndX.current = e.targetTouches[0]?.clientX ?? null;
   };
 
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    const start = touchStartX.current;
+    const end = touchEndX.current;
+    if (start == null || end == null) return;
 
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const distance = start - end;
+    const minSwipeDistance = 50;
 
-    if (isLeftSwipe) {
-      goToNext();
-    }
-    if (isRightSwipe) {
-      goToPrevious();
-    }
+    if (distance > minSwipeDistance) goToNext();
+    else if (distance < -minSwipeDistance) goToPrevious();
+
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   const goToNext = () => {
@@ -185,8 +188,8 @@ export function ContentProofSection() {
                       <Image
                         src={image.src}
                         alt={image.alt}
-                        width={300}
-                        height={300}
+                        width={200}
+                        height={200}
                         className="rounded-lg object-cover shadow-lg w-80 h-auto max-h-[350px]"
                       />
                     </div>
