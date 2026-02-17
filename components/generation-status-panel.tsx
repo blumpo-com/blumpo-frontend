@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, RotateCcw, List, X, ArrowRight, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { X, ArrowRight, Loader2 } from 'lucide-react';
 
 interface GenerationJob {
   id: string;
@@ -111,7 +112,7 @@ export function GenerationStatusPanel() {
     if (!isOpen) return;
 
     const runningJobs = jobs.filter(
-      (job) => job.status === 'QUEUED' || job.status === 'RUNNING'
+      (job) => job.status === 'RUNNING'
     );
 
     if (runningJobs.length === 0) {
@@ -131,7 +132,7 @@ export function GenerationStatusPanel() {
     if (isOpen) return;
 
     const runningJobs = jobs.filter(
-      (job) => job.status === 'QUEUED' || job.status === 'RUNNING'
+      (job) => job.status === 'RUNNING'
     );
 
     if (runningJobs.length === 0) {
@@ -188,17 +189,23 @@ export function GenerationStatusPanel() {
 
   return (
     <>
-      {/* Icon trigger */}
+      {/* Icon trigger - only visible when panel is closed */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 bg-white rounded-l-lg shadow-lg hover:bg-gray-50 transition-colors border border-r-0 border-gray-200"
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 bg-white rounded-l-2xl shadow-lg hover:bg-gray-50 transition-all duration-300 ease-in-out border border-r-0 border-gray-200 ${
+          isOpen
+            ? 'opacity-0 pointer-events-none translate-x-4'
+            : 'opacity-100 pointer-events-auto translate-x-0'
+        }`}
         aria-label="Generation status"
       >
-        <div className="relative w-6 h-6">
-          <Clock className="w-6 h-6 text-blue-500" />
-          <RotateCcw className="w-3 h-3 text-teal-500 absolute -top-0.5 -left-0.5" />
-          <List className="w-2.5 h-2.5 text-blue-600 absolute bottom-0.5 right-0.5" />
-        </div>
+        <Image
+          src="/assets/icons/History.svg"
+          alt="Generation history"
+          width={29}
+          height={29}
+          className="w-[29px] h-[29px]"
+        />
       </button>
 
       {/* Panel */}
