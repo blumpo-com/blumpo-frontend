@@ -184,3 +184,12 @@ export async function hardDeleteGenerationJob(jobId: string) {
     .returning({ id: generationJob.id });
   return deleted;
 }
+
+export async function markGenerationJobAsViewed(jobId: string) {
+  const [updated] = await db
+    .update(generationJob)
+    .set({ viewedAt: new Date() })
+    .where(eq(generationJob.id, jobId))
+    .returning();
+  return updated;
+}

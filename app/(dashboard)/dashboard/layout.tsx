@@ -5,6 +5,7 @@ import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { BrandProvider } from '@/lib/contexts/brand-context';
 import { UserProvider } from '@/lib/contexts/user-context';
 import { GTMAuthTracker } from '@/components/gtm-auth-tracker';
+import { GenerationStatusPanel } from '@/components/generation-status-panel';
 
 export default function DashboardLayout({
   children
@@ -25,6 +26,9 @@ export default function DashboardLayout({
           <main className="flex-1 ml-[267px] min-h-0 overflow-y-auto overflow-x-hidden">
             {children}
           </main>
+
+          {/* Generation Status Panel */}
+          <GenerationStatusPanel />
         </div>
       </BrandProvider>
     </UserProvider>
