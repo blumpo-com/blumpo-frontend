@@ -27,13 +27,11 @@ interface JobStatusCheck {
 export function GenerationStatusPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Fetch initial jobs
+  // Fetch jobs in background (doesn't block UI)
   const fetchJobs = useCallback(async () => {
     try {
-      setIsLoading(true);
       const response = await fetch('/api/generation-jobs');
       if (response.ok) {
         const data = await response.json();
@@ -41,18 +39,17 @@ export function GenerationStatusPanel() {
       }
     } catch (error) {
       console.error('Error fetching generation jobs:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
   // Check Redis for status updates
   const checkJobStatuses = useCallback(async () => {
-    const runningJobIds = jobs
-      .filter((job) => job.status === 'QUEUED' || job.status === 'RUNNING')
+    // Check only running jobs
+    const activeJobIds = jobs
+      .filter((job) => job.status === 'RUNNING')
       .map((job) => job.id);
 
-    if (runningJobIds.length === 0) {
+    if (activeJobIds.length === 0) {
       return;
     }
 
@@ -60,7 +57,7 @@ export function GenerationStatusPanel() {
       const response = await fetch('/api/generation-jobs/status-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobIds: runningJobIds }),
+        body: JSON.stringify({ jobIds: activeJobIds }),
       });
 
       if (response.ok) {
@@ -97,7 +94,12 @@ export function GenerationStatusPanel() {
     }
   }, [jobs]);
 
-  // Initial fetch when panel opens
+  // Initial fetch when component mounts (background)
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  // Refresh when panel opens (background)
   useEffect(() => {
     if (isOpen) {
       fetchJobs();
@@ -170,7 +172,7 @@ export function GenerationStatusPanel() {
   const getStatusText = (status: GenerationJob['status']) => {
     switch (status) {
       case 'QUEUED':
-        return 'in progress';
+        return 'queued';
       case 'RUNNING':
         return 'in progress';
       case 'SUCCEEDED':
@@ -222,17 +224,14 @@ export function GenerationStatusPanel() {
 
           {/* Jobs list */}
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-              </div>
-            ) : jobs.length === 0 ? (
+            {jobs.length === 0 ? (
               <div className="text-center py-8 text-gray-500 text-sm">
                 No generation jobs yet
               </div>
             ) : (
               jobs.map((job) => {
-                const isInProgress = job.status === 'QUEUED' || job.status === 'RUNNING';
+                const isRunning = job.status === 'RUNNING';
+                const isQueued = job.status === 'QUEUED';
                 const isClickable = job.status === 'SUCCEEDED';
 
                 return (
@@ -264,7 +263,7 @@ export function GenerationStatusPanel() {
                           <span className="text-xs text-gray-600">
                             {getStatusText(job.status)}
                           </span>
-                          {isInProgress && (
+                          {isRunning && (
                             <Loader2 className="w-3 h-3 animate-spin text-gray-400" />
                           )}
                         </div>
