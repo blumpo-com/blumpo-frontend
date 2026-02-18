@@ -147,6 +147,20 @@ export function GenerationStatusPanel() {
     return () => clearInterval(interval);
   }, [isOpen, jobs, checkJobStatuses]);
 
+  // Listen for job viewed events and refresh jobs list
+  useEffect(() => {
+    const handleJobViewed = () => {
+      // Refetch jobs to update the badge counter
+      fetchJobs();
+    };
+
+    window.addEventListener('generation-job-viewed', handleJobViewed);
+
+    return () => {
+      window.removeEventListener('generation-job-viewed', handleJobViewed);
+    };
+  }, [fetchJobs]);
+
   const handleJobClick = async (job: GenerationJob) => {
     if (job.status === 'SUCCEEDED' && job.isNew) {
       // Close panel and navigate to ad generation page (not ad-review-view)

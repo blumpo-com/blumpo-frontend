@@ -22,6 +22,8 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
         await fetch(`/api/generation-jobs/${jobId}/viewed`, {
           method: 'POST',
         });
+        // Dispatch custom event to notify generation status panel
+        window.dispatchEvent(new CustomEvent('generation-job-viewed', { detail: { jobId } }));
       } catch (error) {
         console.error('Error marking job as viewed:', error);
         // Continue with navigation even if marking fails
