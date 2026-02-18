@@ -148,7 +148,17 @@ export function GenerationStatusPanel() {
   }, [isOpen, jobs, checkJobStatuses]);
 
   const handleJobClick = async (job: GenerationJob) => {
-    if (job.status === 'SUCCEEDED') {
+    if (job.status === 'SUCCEEDED' && job.isNew) {
+      // Close panel and navigate to ad generation page (not ad-review-view)
+      setIsOpen(false);
+      router.push(`/dashboard/ad-generation?job_id=${job.id}`);
+    }
+    else if (job.status === 'SUCCEEDED' && !job.isNew) {
+      // Close panel and navigate to content library
+      setIsOpen(false);
+      router.push(`/dashboard/content-library`);
+    }
+    else if (job.status === 'RUNNING') {
       // Close panel and navigate to ad generation page (not ad-review-view)
       setIsOpen(false);
       router.push(`/dashboard/ad-generation?job_id=${job.id}`);
@@ -214,13 +224,21 @@ export function GenerationStatusPanel() {
         }`}
         aria-label="Generation status"
       >
-        <Image
-          src="/assets/icons/History.svg"
-          alt="Generation history"
-          width={29}
-          height={29}
-          className="w-[29px] h-[29px]"
-        />
+        <div className="relative">
+          <Image
+            src="/assets/icons/History.svg"
+            alt="Generation history"
+            width={29}
+            height={29}
+            className="w-[29px] h-[29px]"
+          />
+          {/* Badge counter for new jobs */}
+          {jobs.filter(job => job.isNew).length > 0 && (
+            <span className="absolute -top-2.5 -right-2.5 min-w-[20px] h-[20px] px-1 bg-green-600 text-white text-xs font-semibold rounded-full flex items-center justify-center shadow z-10">
+              {jobs.filter(job => job.isNew).length}
+            </span>
+          )}
+        </div>
       </button>
 
       {/* Panel */}
@@ -255,7 +273,7 @@ export function GenerationStatusPanel() {
               jobs.map((job) => {
                 const isRunning = job.status === 'RUNNING';
                 const isQueued = job.status === 'QUEUED';
-                const isClickable = job.status === 'SUCCEEDED';
+                const isClickable = job.status === 'SUCCEEDED' || job.status === 'RUNNING';
                 const isFailed = job.status === 'FAILED' || job.status === 'CANCELED';
 
                 // Format: "Job Name status" in one line
@@ -280,7 +298,7 @@ export function GenerationStatusPanel() {
                       </span>
                     )}
 
-                    {/* Delete button - visible on hover for all items */}
+                    {/* Delete button - visible on hover for all items
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -290,7 +308,7 @@ export function GenerationStatusPanel() {
                       aria-label="Remove job"
                     >
                       <X className="w-3 h-3 text-gray-600" strokeWidth={2.5} />
-                    </button>
+                    </button> */}
 
                     <button
                       onClick={() => isClickable && handleJobClick(job)}
