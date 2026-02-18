@@ -649,9 +649,7 @@ function CustomizedAdsPageContent() {
       }
 
       // Convert archetype code format (problem-solution -> problem_solution)
-      const archetypeCode = selectedArchetype === 'random'
-        ? null
-        : selectedArchetype.replace(/-/g, '_');
+      const archetypeCode = selectedArchetype.replace(/-/g, '_');
 
       // Build archetype inputs based on archetype type
       const RANDOM_ARCHETYPE_POOL = ['problem_solution', 'testimonial', 'competitor_comparison', 'meme', 'value_proposition'];

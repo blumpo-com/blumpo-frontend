@@ -30,7 +30,6 @@ export async function GET(req: Request) {
         // Check if job is "new" (SUCCEEDED with completedAt but not viewed)
         const isNew = 
           job.status === 'SUCCEEDED' &&
-          job.completedAt !== null &&
           (job.viewedAt === null || (job.viewedAt && job.completedAt && new Date(job.viewedAt) < new Date(job.completedAt))) &&
           // Exclude jobs with website_url in params (new user generation jobs)
           !(job.params && typeof job.params === 'object' && 'website_url' in job.params);
