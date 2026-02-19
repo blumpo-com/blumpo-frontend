@@ -15,15 +15,17 @@ export async function GET(request: NextRequest) {
     let isNewUser = false;
     if (session?.user?.email) {
       // Get user from database and set our custom session
-      const existingUser = await getUserByEmail(session.user.email);
-      if (existingUser) {
-        await setSession(existingUser);
-      } else {
-        // User was just created in NextAuth callback, mark as new
-        isNewUser = true;
-        const user = await getUserByEmail(session.user.email);
-        if (user) {
-          await setSession(user);
+      const user = await getUserByEmail(session.user.email);
+      if (user) {
+        await setSession(user);
+        
+        // Check if user was created recently (within last 60 seconds) to determine if it's a new user
+        // This handles the case where user was just created in NextAuth signIn callback
+        if (user.createdAt) {
+          const createdAt = new Date(user.createdAt);
+          const now = new Date();
+          const secondsSinceCreation = (now.getTime() - createdAt.getTime()) / 1000;
+          isNewUser = secondsSinceCreation < 60; // User created within last minute
         }
       }
     }

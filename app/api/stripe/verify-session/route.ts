@@ -66,7 +66,6 @@ export async function GET(request: NextRequest) {
       items,
     });
   } catch (error) {
-    console.error('Error verifying session:', error);
     return NextResponse.json(
       { error: 'Failed to verify session' },
       { status: 500 }

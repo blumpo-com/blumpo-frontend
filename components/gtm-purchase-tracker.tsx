@@ -24,7 +24,6 @@ export function GTMPurchaseTracker() {
         try {
           const response = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
           if (!response.ok) {
-            console.error('Failed to verify session');
             return;
           }
 
@@ -42,7 +41,7 @@ export function GTMPurchaseTracker() {
 
           setHasFired(true);
         } catch (error) {
-          console.error('Error verifying purchase session:', error);
+          // Silently fail - purchase event tracking is non-critical
         }
       };
 
