@@ -8,6 +8,7 @@ import { Check } from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { gtmEvent } from '@/lib/gtm';
+import { getGaClientId, hashEmailSha256 } from '@/lib/utils';
 import { Save50Dialog } from '@/components/Save50Dialog';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
@@ -191,12 +192,16 @@ function YourCreditsPageContent() {
     const matchingPlan = subscriptionPlans.find(p => p.stripeProductId === price.productId);
 
     // Fire begin_checkout event
+    const emailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
     gtmEvent('begin_checkout', {
       plan: matchingPlan?.planCode || 'unknown',
       price_id: priceId,
       mode: 'subscription',
       currency: price.currency || 'usd',
       value: price.unitAmount ? price.unitAmount / 100 : undefined,
+      user_id: user?.id ?? undefined,
+      ga_client_id: getGaClientId() ?? undefined,
+      email_sha256: emailHash,
     });
 
     // Check if it's annual (interval === 'year' and intervalCount === 1)
@@ -254,6 +259,7 @@ function YourCreditsPageContent() {
       // Fire begin_checkout event for annual plan
       const annualPrice = stripePrices.find(p => p.id === save50DialogData.annualPriceId);
       const matchingPlan = annualPrice ? subscriptionPlans.find(p => p.stripeProductId === annualPrice.productId) : null;
+      const annualEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
       
       gtmEvent('begin_checkout', {
         plan: matchingPlan?.planCode || 'unknown',
@@ -261,6 +267,9 @@ function YourCreditsPageContent() {
         mode: 'subscription',
         currency: annualPrice?.currency || 'usd',
         value: annualPrice?.unitAmount ? annualPrice.unitAmount / 100 : undefined,
+        user_id: user?.id ?? undefined,
+        ga_client_id: getGaClientId() ?? undefined,
+        email_sha256: annualEmailHash,
       });
       
       setSave50DialogOpen(false);
@@ -283,6 +292,7 @@ function YourCreditsPageContent() {
       // Fire begin_checkout event for monthly plan
       const monthlyPrice = stripePrices.find(p => p.id === save50DialogData.monthlyPriceId);
       const matchingPlan = monthlyPrice ? subscriptionPlans.find(p => p.stripeProductId === monthlyPrice.productId) : null;
+      const monthlyEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
       
       gtmEvent('begin_checkout', {
         plan: matchingPlan?.planCode || 'unknown',
@@ -290,6 +300,9 @@ function YourCreditsPageContent() {
         mode: 'subscription',
         currency: monthlyPrice?.currency || 'usd',
         value: monthlyPrice?.unitAmount ? monthlyPrice.unitAmount / 100 : undefined,
+        user_id: user?.id ?? undefined,
+        ga_client_id: getGaClientId() ?? undefined,
+        email_sha256: monthlyEmailHash,
       });
       
       setSave50DialogOpen(false);
@@ -325,12 +338,16 @@ function YourCreditsPageContent() {
     const topupPrice = stripeTopupPrices.find(p => p.id === priceId);
     const matchingTopup = topupPrice ? topupPlans.find(t => t.stripeProductId === topupPrice.productId) : null;
     
+    const topupEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
     gtmEvent('begin_checkout', {
       plan: matchingTopup?.displayName || 'topup',
       price_id: priceId,
       mode: 'payment',
       currency: topupPrice?.currency || 'usd',
       value: topupPrice?.unitAmount ? topupPrice.unitAmount / 100 : undefined,
+      user_id: user?.id ?? undefined,
+      ga_client_id: getGaClientId() ?? undefined,
+      email_sha256: topupEmailHash,
     });
     
     setBuyCreditsDialogOpen(false);

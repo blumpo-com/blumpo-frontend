@@ -83,6 +83,9 @@ export interface GTMEventParams {
     mode: 'subscription' | 'payment';
     currency?: string;
     value?: number;
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   checkout_session_created?: {
     session_id: string;
@@ -102,5 +105,8 @@ export interface GTMEventParams {
       price?: number;
       quantity?: number;
     }>;
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
 }
