@@ -32,9 +32,8 @@ function SidebarItem({
   isActive = false,
   onClick,
 }: SidebarItemProps) {
-  const className = `${styles.sidebarItem} ${
-    isActive ? styles.sidebarItemActive : ""
-  }`;
+  const className = `${styles.sidebarItem} ${isActive ? styles.sidebarItemActive : ""
+    }`;
 
   const content = (
     <>
@@ -58,10 +57,36 @@ function SidebarItem({
   );
 }
 
+const BRAND_AVATAR_COLORS = [
+  "#0d9488", // teal
+  "#7c3aed", // violet
+  "#0891b2", // cyan
+  "#059669", // emerald
+  "#ea580c", // orange
+  "#db2777", // pink
+  "#4f46e5", // indigo
+  "#ca8a04", // amber
+] as const;
+
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+function getBrandAvatarColor(name: string): string {
+  return BRAND_AVATAR_COLORS[hashString(name) % BRAND_AVATAR_COLORS.length];
+}
+
 interface BrandDropdownItemProps {
-  iconSrc: string;
-  iconAlt: string;
+  iconSrc?: string;
+  iconAlt?: string;
   label: string;
+  brandName?: string;
   onClick?: () => void;
 }
 
@@ -69,11 +94,26 @@ function BrandDropdownItem({
   iconSrc,
   iconAlt,
   label,
+  brandName,
   onClick,
 }: BrandDropdownItemProps) {
+  const isBrandItem = brandName != null;
+
   return (
     <div className={styles.brandDropdownItem} onClick={onClick}>
-      <img src={iconSrc} alt={iconAlt} className={styles.brandDropdownIcon} />
+      {isBrandItem ? (
+        <div
+          className={styles.brandAvatar}
+          style={{ backgroundColor: getBrandAvatarColor(brandName) }}
+          aria-hidden
+        >
+          {brandName.charAt(0).toUpperCase()}
+        </div>
+      ) : (
+        iconSrc != null && (
+          <img src={iconSrc} alt={iconAlt ?? ""} className={styles.brandDropdownIcon} />
+        )
+      )}
       <span className={styles.brandDropdownLabel}>{label}</span>
     </div>
   );
@@ -165,27 +205,11 @@ export function DashboardSidebar() {
 
       {/* Top Navigation */}
       <nav className={styles.navSection}>
-        <Link
-          href="/dashboard"
-          className={`${styles.createNewButton} ${
-            isCreateNewActive ? styles.createNewButtonActive : ""
-          }`}
-        >
-          <Wand
-            className={`${styles.createNewButtonIcon} ${
-              isCreateNewActive ? styles.createNewButtonIconActive : ""
-            }`}
-          />
-          <span
-            className={
-              isCreateNewActive
-                ? styles.createNewButtonTextActive
-                : styles.createNewButtonText
-            }
-          >
-            Create new
-          </span>
+        <Link href="/dashboard" className={styles.createNewButton} >
+          <Wand />
+          <span>Create new</span>
         </Link>
+
         <SidebarItem
           href="/dashboard/content-library"
           iconSrc="/assets/icons/Library.svg"
@@ -242,9 +266,8 @@ export function DashboardSidebar() {
                 availableBrands.map((brand) => (
                   <BrandDropdownItem
                     key={brand.id}
-                    iconSrc="/assets/icons/Rocket_black.svg"
-                    iconAlt={brand.name}
                     label={brand.name}
+                    brandName={brand.name}
                     onClick={() => {
                       setCurrentBrand(brand);
                       setIsBrandOpen(false);
@@ -273,9 +296,9 @@ export function DashboardSidebar() {
             }
           }}
         >
-          <img 
-            src="/assets/icons/Money.svg" 
-            alt="Coins" 
+          <img
+            src="/assets/icons/Money.svg"
+            alt="Coins"
             className={styles.coinsButtonIcon}
           />
           <span className={styles.coinsText}>
@@ -302,14 +325,14 @@ export function DashboardSidebar() {
             />
           </span>
         </div>
-
-        <SidebarItem
+        {/* Hidden Refer Friends for now */}
+        {/* <SidebarItem
           href="/dashboard/refer"
           iconSrc="/assets/icons/Gift.svg"
           iconAlt="Refer friends"
           label="Refer friends"
           isActive={pathname === "/dashboard/refer"}
-        />
+        /> */}
         <SidebarItem
           href="/dashboard/settings"
           iconSrc="/assets/icons/Settings.svg"
@@ -341,10 +364,10 @@ export function DashboardSidebar() {
         }}
         secondaryButton={{
           label: 'Go Back',
-          onClick: () => {},
+          onClick: () => { },
           variant: 'outline',
         }}
       />
-    </aside>
+    </aside >
   );
 }

@@ -10,25 +10,17 @@ import { FitYourBrandSection } from "./_sections/fit-your-brand-section";
 import { ComparisonSection } from "./_sections/comparison-section";
 import { TestimonialSection } from "./_sections/testimonial-section";
 import { FaqSection } from "./_sections/faq-section";
-import { motion } from "framer-motion"
-import { checkoutAction as originalCheckoutAction } from "@/lib/payments/actions";
-
 
 function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="py-14  w-full scroll-mt-24 md:scroll-mt-32" id={id}>
+    <section id={id} className="py-14 w-full scroll-mt-24 md:scroll-mt-32">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="header-gradient">
           {title}
         </h1>
         {children}
       </div>
-    </motion.section>
+    </section>
   );
 }
 
@@ -74,9 +66,9 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <OAuthRedirectHandler />
       </Suspense>
-      <main className="relative">
-        {/* Colored circular shadows on the left - positioned relative to main to be visible under header */}
-        <div className="absolute left-[-310px] top-[400px] w-[687px] h-[654px] pointer-events-none z-0 ">
+      <main className="relative overflow-x-hidden">
+        {/* Colored circular shadows - hidden on mobile to avoid expensive blur repaints on Safari scroll */}
+        <div className="absolute left-[-310px] top-[400px] w-[687px] h-[654px] pointer-events-none z-0 hidden md:block">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/30 via-brand-tertiary/20 to-transparent rounded-full blur-[100px]" />
         </div>
         <div className="absolute left-[-329px] top-[-100px] w-[629px] h-[620px] pointer-events-none z-0 hidden lg:block">

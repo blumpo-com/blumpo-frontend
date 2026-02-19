@@ -5,6 +5,8 @@ import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { BrandProvider } from '@/lib/contexts/brand-context';
 import { UserProvider } from '@/lib/contexts/user-context';
 import { GTMAuthTracker } from '@/components/gtm-auth-tracker';
+import { UnsupportedScreenPage } from './unsupported-screen-page';
+import { useMediaQuery } from '@/lib/hooks/use-media-query';
 import { GenerationStatusPanel } from '@/components/generation-status-panel';
 
 export default function DashboardLayout({
@@ -12,6 +14,21 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isSmallScreen = useMediaQuery('(max-width: 1023px)');
+
+  if (isSmallScreen) {
+    return (
+      <UserProvider>
+        <BrandProvider>
+          <Suspense fallback={null}>
+            <GTMAuthTracker />
+          </Suspense>
+          <UnsupportedScreenPage />
+        </BrandProvider>
+      </UserProvider>
+    );
+  }
+
   return (
     <UserProvider>
       <BrandProvider>
