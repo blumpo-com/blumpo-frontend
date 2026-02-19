@@ -104,6 +104,7 @@ export async function getUserAds(
   userId: string,
   options?: {
     brandId?: string;
+    jobId?: string;
     limit?: number;
     offset?: number;
     includeDeleted?: boolean;
@@ -116,6 +117,10 @@ export async function getUserAds(
 
   if (options?.brandId) {
     conditions.push(eq(adImage.brandId, options.brandId));
+  }
+
+  if (options?.jobId) {
+    conditions.push(eq(adImage.jobId, options.jobId));
   }
 
   if (!options?.includeDeleted) {

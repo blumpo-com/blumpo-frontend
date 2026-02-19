@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { X, ArrowRight, Loader2 } from 'lucide-react';
+import { useBrand } from '@/lib/contexts/brand-context';
 
 interface GenerationJob {
   id: string;
@@ -29,6 +30,7 @@ export function GenerationStatusPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const router = useRouter();
+  const { currentBrand, setCurrentBrand } = useBrand();
 
   // Fetch jobs in background (doesn't block UI)
   const fetchJobs = useCallback(async () => {
@@ -168,9 +170,36 @@ export function GenerationStatusPanel() {
       router.push(`/dashboard/ad-generation?job_id=${job.id}`);
     }
     else if (job.status === 'SUCCEEDED' && !job.isNew) {
-      // Close panel and navigate to content library
+      // Fetch job details to get brandId
+      try {
+        const jobResponse = await fetch(`/api/generation-job?jobId=${job.id}`);
+        if (jobResponse.ok) {
+          const jobDetails = await jobResponse.json();
+          
+          // If job has brandId, check and update brand context if needed
+          if (jobDetails.brandId) {
+            // Check if current brand matches job's brand
+            if (currentBrand?.id !== jobDetails.brandId) {
+              // Fetch brands to find the matching brand
+              const brandsResponse = await fetch('/api/brands');
+              if (brandsResponse.ok) {
+                const brands = await brandsResponse.json();
+                const matchingBrand = brands.find((b: any) => b.id === jobDetails.brandId);
+                if (matchingBrand) {
+                  setCurrentBrand(matchingBrand);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching job details:', error);
+        // Continue with navigation even if brand check fails
+      }
+      
+      // Close panel and navigate to content library with job_id
       setIsOpen(false);
-      router.push(`/dashboard/content-library`);
+      router.push(`/dashboard/content-library?job_id=${job.id}`);
     }
     else if (job.status === 'RUNNING') {
       // Close panel and navigate to ad generation page (not ad-review-view)
