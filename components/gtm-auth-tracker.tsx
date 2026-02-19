@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { gtmEvent } from '@/lib/gtm';
 import { useUser } from '@/lib/contexts/user-context';
+import { getGaClientId, hashEmailSha256 } from '@/lib/utils';
 
 /**
  * Client component that detects auth success from URL params and fires GTM events
@@ -19,6 +20,7 @@ export function GTMAuthTracker() {
   const initialUserRef = useRef<string | null>(null);
 
   useEffect(() => {
+    async function track() {
     // Wait for user data to load
     if (isLoading) {
       return;
@@ -103,11 +105,23 @@ export function GTMAuthTracker() {
         sessionStorage.setItem(sessionKey, 'true');
       }
       
+      // Collect additional tracking data
+      const ga_client_id = getGaClientId() ?? undefined;
+      const emailHash = user?.email
+        ? await hashEmailSha256(user.email)
+        : undefined;
+
+      const extraParams = {
+        user_id: currentUserId ?? undefined,
+        ga_client_id,
+        email_sha256: emailHash,
+      };
+
       // Fire appropriate event based on whether it's a new user
       if (isNewUser) {
-        gtmEvent('sign_up', { method: detectedMethod });
+        gtmEvent('sign_up', { method: detectedMethod, ...extraParams });
       } else {
-        gtmEvent('login', { method: detectedMethod });
+        gtmEvent('login', { method: detectedMethod, ...extraParams });
       }
       
       // Clean up URL params if they exist (optional, prevents showing in address bar)
@@ -123,6 +137,8 @@ export function GTMAuthTracker() {
     
     // Update previous user ref
     previousUserRef.current = currentUserId;
+    }
+    track();
   }, [searchParams, pathname, user, isLoading, router]);
 
   return null; // This component doesn't render anything

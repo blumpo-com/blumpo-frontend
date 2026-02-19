@@ -66,9 +66,15 @@ export function gtmSetUser(userData: { user_id?: string; user_status?: string })
 export interface GTMEventParams {
   login?: {
     method: 'google' | 'email';
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   sign_up?: {
     method: 'google' | 'email';
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   logout?: Record<string, never>;
   begin_checkout?: {
