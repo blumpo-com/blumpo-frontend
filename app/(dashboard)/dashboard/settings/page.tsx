@@ -176,8 +176,19 @@ function SettingsPageContent() {
   async function handleSignOut() {
     // Fire logout event before signing out
     gtmEvent('logout', {});
+    
+    // Clear sessionStorage to allow fresh login detection after logout
+    if (typeof window !== 'undefined') {
+      // Clear all GTM auth tracking keys
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('gtm_auth_')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    }
+    
+    // signOut() is a server action that already handles redirect to /sign-in
     await signOut();
-    router.push('/');
   }
 
   async function handleManageBillings() {
