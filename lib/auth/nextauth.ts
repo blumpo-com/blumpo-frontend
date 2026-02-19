@@ -165,12 +165,17 @@ export const authOptions: NextAuthOptions = {
           return isGoogleOAuthCompletion ? `${finalUrl}?${authParams.toString()}` : finalUrl;
         }
         
-        // Handle generation redirect - redirect to root with params (oauth-redirect-handler will start generation)
+        // Handle generation redirect - redirect to generating page with params
+        // Always add auth params for Google OAuth; for email OTP, params are added in actions.ts
         if (redirectParam === 'generate' && websiteUrl) {
-          const params = `website_url=${encodeURIComponent(websiteUrl)}&login=true`;
-          return isGoogleOAuthCompletion 
-            ? `${baseUrl}/generating?${params}&${authParams.toString()}`
-            : `${baseUrl}/generating?${params}`;
+          const params = new URLSearchParams();
+          params.set('website_url', websiteUrl);
+          params.set('login', 'true');
+          // Add auth params if this is Google OAuth completion
+          if (isGoogleOAuthCompletion) {
+            authParams.forEach((value, key) => params.set(key, value));
+          }
+          return `${baseUrl}/generating?${params.toString()}`;
         }
         
         // For Google OAuth completion, always add auth params to redirect
