@@ -7,6 +7,7 @@ import useSWR, { mutate } from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { signOut, updateAccount } from '@/app/(login)/actions';
 import { InputRegular } from '@/components/ui/InputRegular';
+import { gtmEvent } from '@/lib/gtm';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 import { Save50Dialog } from '@/components/Save50Dialog';
 import { CurrentPlanCard } from './components/CurrentPlanCard';
@@ -173,6 +174,8 @@ function SettingsPageContent() {
   })();
 
   async function handleSignOut() {
+    // Fire logout event before signing out
+    gtmEvent('logout', {});
     await signOut();
     router.push('/');
   }

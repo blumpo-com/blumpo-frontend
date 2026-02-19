@@ -338,7 +338,7 @@ export function DashboardSidebar() {
           iconSrc="/assets/icons/Settings.svg"
           iconAlt="Settings"
           label="Settings"
-          isActive={pathname?.includes("/dashboard/security")}
+          isActive={pathname === "/dashboard/settings"}
         />
         <SidebarItem
           href="/dashboard/support"
