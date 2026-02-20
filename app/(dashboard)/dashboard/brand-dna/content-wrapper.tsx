@@ -223,13 +223,10 @@ export default function ContentWrapper({
         <div className={styles.logoInner}>
           {logoUrl ? (
             <div className={styles.logoDisplay}>
-              <Image
+              <img      
                 src={logoUrl}
                 alt="Brand logo"
                 className={styles.logoImage}
-                width={80}
-                height={80}
-                unoptimized
               />
             </div>
           ) : (
