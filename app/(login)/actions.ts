@@ -157,8 +157,19 @@ export const signUp = requestOtp;
 export const verifySignUp = verifyOtp;
 
 export async function signOut() {
-  (await cookies()).delete('session');
-  redirect('/sign-in?redirect=dashboard');
+  const cookieStore = await cookies();
+  
+  // Clear custom session cookie (for OTP auth)
+  cookieStore.delete('session');
+  
+  // Clear NextAuth session cookies (for Google OAuth)
+  // NextAuth uses different cookie names depending on environment
+  cookieStore.delete('next-auth.session-token');
+  cookieStore.delete('__Secure-next-auth.session-token');
+  cookieStore.delete('next-auth.csrf-token');
+  cookieStore.delete('__Host-next-auth.csrf-token');
+  
+  redirect('/');
 }
 
 // User account management actions

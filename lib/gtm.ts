@@ -66,9 +66,15 @@ export function gtmSetUser(userData: { user_id?: string; user_status?: string })
 export interface GTMEventParams {
   login?: {
     method: 'google' | 'email';
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   sign_up?: {
     method: 'google' | 'email';
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   logout?: Record<string, never>;
   begin_checkout?: {
@@ -77,6 +83,9 @@ export interface GTMEventParams {
     mode: 'subscription' | 'payment';
     currency?: string;
     value?: number;
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
   checkout_session_created?: {
     session_id: string;
@@ -96,5 +105,8 @@ export interface GTMEventParams {
       price?: number;
       quantity?: number;
     }>;
+    user_id?: string;
+    ga_client_id?: string;
+    email_sha256?: string;
   };
 }

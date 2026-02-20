@@ -22,6 +22,7 @@ export const authOptions: NextAuthOptions = {
 
       try {
         let dbUser;
+        let isNewUser = false;
         
         // Check if user exists
         const existingUser = await db
@@ -31,6 +32,7 @@ export const authOptions: NextAuthOptions = {
           .limit(1);
 
         if (existingUser.length === 0) {
+          isNewUser = true;
           // Create new user
           const newUser = await db
             .insert(userTable)
@@ -74,6 +76,11 @@ export const authOptions: NextAuthOptions = {
           await setSession(dbUser);
         }
 
+        // Store isNewUser in account object for use in redirect callback
+        if (account) {
+          (account as any).isNewUser = isNewUser;
+        }
+
         return true;
       } catch (error) {
         console.error('Error in signIn callback:', error);
@@ -110,15 +117,28 @@ export const authOptions: NextAuthOptions = {
           urlObj = new URL(url);
         }
 
+        // Check if this is coming from a Google OAuth callback
+        // NextAuth passes the callback URL or the intended redirect URL here
+        const isGoogleOAuthCompletion = urlObj.pathname.includes('/api/auth/callback/google') || 
+                                       urlObj.searchParams.has('code') && urlObj.searchParams.has('state');
+
         // Only parse as URL if it's absolute
         const redirectParam = urlObj.searchParams.get('redirect');
         const plan = urlObj.searchParams.get('plan');
         const interval = urlObj.searchParams.get('interval');
         const websiteUrl = urlObj.searchParams.get('website_url');
         
+        // Build GTM auth params for Google OAuth (isNewUser detected client-side)
+        const authParams = new URLSearchParams();
+        if (isGoogleOAuthCompletion) {
+          authParams.set('auth', 'success');
+          authParams.set('method', 'google');
+        }
+        
         // Handle input-url redirect (after CTA "Make your first free Ad")
         if (redirectParam === 'input-url') {
-          return `${baseUrl}/input-url`;
+          const finalUrl = `${baseUrl}/input-url`;
+          return isGoogleOAuthCompletion ? `${finalUrl}?${authParams.toString()}` : finalUrl;
         }
 
         // Handle checkout redirect
@@ -129,22 +149,43 @@ export const authOptions: NextAuthOptions = {
             if (interval) {
               params.set('interval', interval);
             }
+            // Add auth params if Google OAuth
+            if (isGoogleOAuthCompletion) {
+              authParams.forEach((value, key) => params.set(key, value));
+            }
             return `${baseUrl}/dashboard/your-credits?${params.toString()}`;
           } else {
-            return `${baseUrl}/dashboard/your-credits`;
+            const finalUrl = `${baseUrl}/dashboard/your-credits`;
+            return isGoogleOAuthCompletion ? `${finalUrl}?${authParams.toString()}` : finalUrl;
           }
         }
 
         if (redirectParam === 'dashboard') {
-          return `${baseUrl}/dashboard`;
+          const finalUrl = `${baseUrl}/dashboard`;
+          return isGoogleOAuthCompletion ? `${finalUrl}?${authParams.toString()}` : finalUrl;
         }
         
-        // Handle generation redirect - redirect to root with params (oauth-redirect-handler will start generation)
+        // Handle generation redirect - redirect to generating page with params
+        // Always add auth params for Google OAuth; for email OTP, params are added in actions.ts
         if (redirectParam === 'generate' && websiteUrl) {
-          return `${baseUrl}/generating?website_url=${encodeURIComponent(websiteUrl)}&login=true`; // oauth-redirect-handler will start generation with flag that is after login
+          const params = new URLSearchParams();
+          params.set('website_url', websiteUrl);
+          params.set('login', 'true');
+          // Add auth params if this is Google OAuth completion
+          if (isGoogleOAuthCompletion) {
+            authParams.forEach((value, key) => params.set(key, value));
+          }
+          return `${baseUrl}/generating?${params.toString()}`;
         }
-        // For auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
-        if (urlObj.pathname.startsWith('/api/auth/callback') || urlObj.pathname === '/api/auth/google-callback') {
+        
+        // For Google OAuth completion, always add auth params to redirect
+        if (isGoogleOAuthCompletion) {
+          // Default to dashboard with auth params
+          return `${baseUrl}/dashboard?${authParams.toString()}`;
+        }
+        
+        // For other auth callback URLs, redirect to root (/) - cookie handler will check for redirect params
+        if (urlObj.pathname.startsWith('/api/auth/callback')) {
           // Redirect to root - the OAuthRedirectHandler component will check the cookie
           // and redirect to the appropriate page with query params
           return `${baseUrl}/`;
