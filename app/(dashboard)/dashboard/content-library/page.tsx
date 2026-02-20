@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useBrand } from "@/lib/contexts/brand-context";
 import { useUser } from "@/lib/contexts/user-context";
 import { useRouter } from "next/navigation";
@@ -147,6 +147,7 @@ export default function ContentLibraryPage() {
     message: string;
   }>({ open: false, title: "", message: "" });
   const [columnsCount, setColumnsCount] = useState(4);
+  const hasAutoSetUnsaved = useRef(false);
 
   // Fetch all images once on mount (including deleted for unsaved filter)
   const fetchImages = async () => {
@@ -183,6 +184,17 @@ export default function ContentLibraryPage() {
   useEffect(() => {
     fetchImages();
   }, [currentBrand?.id, isInitialized]);
+
+  // Auto-enable unsaved filter on first load if there are no saved ads
+  useEffect(() => {
+    if (isLoading || hasAutoSetUnsaved.current) return;
+    hasAutoSetUnsaved.current = true;
+    const hasSaved = allImages.some((img) => !img.isDeleted);
+    const hasUnsaved = allImages.some((img) => img.isDeleted);
+    if (!hasSaved && hasUnsaved) {
+      setShowUnsaved(true);
+    }
+  }, [isLoading, allImages]);
 
   // Client-side filtering using useMemo
   const images = React.useMemo(() => {
