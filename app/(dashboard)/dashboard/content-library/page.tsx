@@ -473,12 +473,14 @@ export default function ContentLibraryPage() {
         />
       </div>
 
-      {/* Warning message for unsaved ads */}
-      {showUnsaved && <WarningBox />}
-
       {/* Content */}
       {isLoading ? (
         <div className={styles.gridWrapper}>
+          {showUnsaved && (
+            <div className={styles.warningWrapper}>
+              <WarningBox />
+            </div>
+          )}
           <div className={styles.grid}>
             <CreateNewCard onClick={handleCreateNew} />
             {[...Array(10)].map((_, index) => (
@@ -512,6 +514,11 @@ export default function ContentLibraryPage() {
           ) : (
             /* Grid */
             <div className={styles.gridWrapper}>
+              {showUnsaved && (
+                <div className={styles.warningWrapper}>
+                  <WarningBox />
+                </div>
+              )}
               <div className={styles.grid}>
                 {distributeCardsIntoColumns(
                   [
