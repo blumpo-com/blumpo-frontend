@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/user-context';
 import { getBrandLimit } from '@/lib/constants/brand-limits';
 import { ErrorDialog } from '@/components/error-dialog';
 import { UrlInput } from '@/components/url-input';
 import { JetpackAdIllustration } from '@/components/jetpack-ad-illustration';
+import { GTMAuthTracker } from '@/components/gtm-auth-tracker';
 import useSWR from 'swr';
 import styles from './page.module.css';
 
@@ -105,6 +106,10 @@ export default function InputUrlPage() {
 
   return (
     <div className={styles.page}>
+      {/* GTM Auth Tracker - detects auth success and fires events */}
+      <Suspense fallback={null}>
+        <GTMAuthTracker />
+      </Suspense>
       {/* Left: Jetpack ad illustration */}
       <div className={styles.leftPanel}>
         <JetpackAdIllustration className="w-full max-w-[597px] h-[486px] min-h-[300px]" />

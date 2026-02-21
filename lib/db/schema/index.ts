@@ -17,6 +17,7 @@ export { adWorkflow } from './adWorkflow';
 export { adImage } from './adImage';
 export { adEvent } from './adEvent';
 export { adClone } from './adClone';
+export { n8nWorkflowErrors, n8nWorkflowErrorOccurrences } from './n8nWorkflowErrors';
 
 // Export individual relations
 export { tokenAccountRelations, tokenLedgerRelations } from './tokens';
@@ -184,3 +185,4 @@ export type { AdWorkflow, NewAdWorkflow } from './adWorkflow';
 export type { AdImage, NewAdImage } from './adImage';
 export type { AdEvent, NewAdEvent } from './adEvent';
 export type { AdClone, NewAdClone } from './adClone';
+export type { N8nWorkflowError, NewN8nWorkflowError, N8nWorkflowErrorOccurrence, NewN8nWorkflowErrorOccurrence } from './n8nWorkflowErrors';

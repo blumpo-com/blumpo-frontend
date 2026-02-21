@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { signToken, verifyToken } from '@/lib/auth/session';
+import { signToken, verifyToken, getSession } from '@/lib/auth/session';
+import { getUser } from '@/lib/db/queries/user';
+import { UserRole } from '@/lib/db/schema/enums';
 
 const protectedRoutes = '/dashboard';
 const protectedRoutes2 = '/generating';
@@ -9,7 +11,31 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes) || pathname.startsWith(protectedRoutes2);
+  const isAdminRoute = pathname.startsWith('/admin');
 
+  // Protect admin routes - check authentication and admin role
+  if (isAdminRoute) {
+    const session = await getSession();
+    
+    if (!session) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/sign-in';
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    // Get user from database to verify role (don't trust JWT alone)
+    const user = await getUser();
+    
+    if (!user || user.role !== UserRole.ADMIN) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/dashboard';
+      url.searchParams.set('error', 'unauthorized');
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Protect regular routes
   if (isProtectedRoute && !sessionCookie) {
     console.log('User is not authenticated - redirecting to sign-in with dashboard');
     return NextResponse.redirect(new URL('/sign-in?redirect=dashboard', request.url));
@@ -36,7 +62,7 @@ export async function proxy(request: NextRequest) {
     } catch (error) {
       console.error('Error updating session:', error);
       res.cookies.delete('session');
-      if (isProtectedRoute) {
+      if (isProtectedRoute || isAdminRoute) {
         return NextResponse.redirect(new URL('/sign-in?redirect=dashboard', request.url));
       }
     }

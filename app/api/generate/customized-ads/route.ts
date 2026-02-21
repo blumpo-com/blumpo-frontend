@@ -22,6 +22,9 @@ function calculateTokenCost(formats: string[]): number {
   return 50;
 }
 
+// Vercel Function max duration - allows full wait for n8n callback (Pro/Enterprise: up to 800s; Hobby: capped at 300s)
+export const maxDuration = 420; // 7 minutes
+
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
     console.log("[GENERATE-CUSTOMIZED] Skipping generation (test mode)");
