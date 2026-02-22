@@ -14,10 +14,13 @@ import { FaqSection } from "./_sections/faq-section";
 function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
   return (
     <section id={id} className="py-14 w-full scroll-mt-24 md:scroll-mt-32">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="header-gradient">
-          {title}
-        </h1>
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 ">
+        <div className="flex justify-center">
+          <h1 className="header-gradient">
+            {title}
+          </h1>
+        </div>
+
         {children}
       </div>
     </section>
@@ -71,7 +74,7 @@ export default function HomePage() {
         <div className="absolute left-[-310px] top-[400px] w-[687px] h-[654px] pointer-events-none z-0 hidden md:block">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/30 via-brand-tertiary/20 to-transparent rounded-full blur-[100px]" />
         </div>
-        <div className="absolute left-[-329px] top-[-100px] w-[629px] h-[620px] pointer-events-none z-0 hidden lg:block">
+        <div className="absolute left-[-329px] top-[80px] w-[629px] h-[620px] pointer-events-none z-0 hidden lg:block">
           <div className="absolute inset-0 bg-gradient-to-br from-brand-secondary/25 via-brand-tertiary/15 to-transparent rounded-full blur-[100px]" />
         </div>
 
