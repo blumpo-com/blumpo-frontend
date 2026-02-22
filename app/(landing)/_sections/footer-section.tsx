@@ -74,38 +74,26 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Company */}
-            <div className="flex flex-col gap-6 w-[154px]">
-              <h3 className="font-medium text-[20px] text-black">Company</h3>
-              <div className="flex flex-col gap-[14px] font-normal text-[18px] text-black">
-                <Link href="#product" className="hover:text-gray-600 transition-colors">
-                  How it works
-                </Link>
-                <Link href="/privacy" className="hover:text-gray-600 transition-colors">
-                  Privacy policy
-                </Link>
-                <Link href="/refund" className="hover:text-gray-600 transition-colors">
-                  Refund policy
-                </Link>
-                <Link href="/contact" className="hover:text-gray-600 transition-colors">
-                  Contact us
-                </Link>
-              </div>
-            </div>
 
             {/* Resources */}
             <div className="flex flex-col gap-6 w-[154px]">
               <h3 className="font-medium text-[20px] text-black">Resources</h3>
               <div className="flex flex-col gap-[14px] font-normal text-[18px] text-black">
+                <Link href="/#product" className="hover:text-gray-600 transition-colors">
+                  How it works
+                </Link>
                 <Link href="/blog" className="hover:text-gray-600 transition-colors">
                   Blog
                 </Link>
-                <Link href="#pricing" className="hover:text-gray-600 transition-colors">
+                <Link href="/#pricing" className="hover:text-gray-600 transition-colors">
                   Pricing
                 </Link>
-                <Link href="/contact" className="hover:text-gray-600 transition-colors">
+                <a
+                  href="mailto:support@blumpo.com?subject=Contact%20Blumpo&body=Hello%20Blumpo%20team%2C%0A%0A"
+                  className="hover:text-gray-600 transition-colors"
+                >
                   Contact us
-                </Link>
+                </a>
               </div>
             </div>
 
