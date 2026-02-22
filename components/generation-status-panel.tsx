@@ -260,7 +260,7 @@ export function GenerationStatusPanel() {
       {/* Icon trigger - only visible when panel is closed */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 bg-white rounded-l-2xl shadow-lg hover:bg-gray-50 transition-all duration-300 ease-in-out border border-r-0 border-gray-200 ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 bg-white rounded-l-2xl shadow-lg hover:bg-gray-50 transition-all duration-300 ease-in-out border border-r-0 border-gray-200 cursor-pointer ${
           isOpen
             ? 'opacity-0 pointer-events-none translate-x-4'
             : 'opacity-100 pointer-events-auto translate-x-0'
@@ -294,7 +294,16 @@ export function GenerationStatusPanel() {
         <div className="flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <span className="text-sm font-semibold text-gray-900">
+            <span
+              style={{
+                fontWeight: 500,
+                fontStyle: 'normal',
+                fontSize: '16px',
+                lineHeight: '20px',
+                letterSpacing: '0px'
+              }}
+              className="text-gray-600"
+            >
               {jobs.length}/10
             </span>
             <button
@@ -356,7 +365,9 @@ export function GenerationStatusPanel() {
                     <button
                       onClick={() => isClickable && handleJobClick(job)}
                       disabled={!isClickable}
-                      className="w-full text-left flex items-center justify-between gap-2"
+                      className={`w-full text-left flex items-center justify-between gap-2 ${
+                        isClickable ? 'cursor-pointer' : 'cursor-default'
+                      }`}
                     >
                       <div className="flex-1 min-w-0 flex items-center gap-2">
                         <span className={`text-sm font-medium truncate ${getStatusTextColor(job.status)}`}>
