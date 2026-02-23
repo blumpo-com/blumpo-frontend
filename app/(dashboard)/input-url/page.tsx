@@ -112,7 +112,8 @@ export default function InputUrlPage() {
       </Suspense>
       {/* Left: Jetpack ad illustration */}
       <div className={styles.leftPanel}>
-        <JetpackAdIllustration />
+        <div className={styles.animationContainer}><JetpackAdIllustration /></div>
+
       </div>
 
       {/* Right: content */}

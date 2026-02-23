@@ -3,29 +3,27 @@
 .page {
   display: flex;
   flex-wrap: wrap;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   background: #fff;
+  justify-content: center;
+  padding: 0 60px;
 }
 
 /* Left panel - empty container for future animation */
 .leftPanel {
-  flex: 1;
-  min-width: 320px;
-  min-height: 0;
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
+  overflow: hidden;
 }
 
-.animationContainer {
-  width: 100%;
-  max-width: 597px;
-  height: 486px;
-  min-height: 300px;
-  border-radius: 20px;
-  background: #f3f4f6;
+@media (max-width: 1090px) {
+  .animationContainer {
+    scale: 0.6;
+    height: 340px;
+  }
 }
 
 /* Right panel - content */
@@ -34,7 +32,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px;
 }
 
 .contentBlock {

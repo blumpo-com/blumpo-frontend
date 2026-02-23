@@ -22,8 +22,8 @@ const googleLogo = "/assets/icons/google.svg";
 // Memoized Left Panel component - prevents re-renders when form state changes
 const LeftPanel = memo(function LeftPanel() {
   return (
-    <div className={`${styles.leftPanel}   h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
-      <JetpackAdIllustration className="w-full h-full" />
+    <div className={`${styles.leftPanel}   h-full left-0 top-0 w-full lg:w-[60%] hidden lg:flex flex-col items-center justify-center`}>
+      <JetpackAdIllustration />
     </div>
   );
 });
