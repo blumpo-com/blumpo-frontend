@@ -960,7 +960,7 @@ export async function getBrandAdImages(brandId: string, limit: number = 10) {
       userId: adImage.userId,
     })
     .from(adImage)
-    .where(and(eq(adImage.brandId, brandId), eq(adImage.isDeleted, false)))
+    .where(eq(adImage.brandId, brandId))
     .orderBy(desc(adImage.createdAt))
     .limit(limit);
 }
@@ -1040,7 +1040,7 @@ export async function getJobAdImages(jobId: string) {
       userId: adImage.userId,
     })
     .from(adImage)
-    .where(and(eq(adImage.jobId, jobId), eq(adImage.isDeleted, false)))
+    .where(and(eq(adImage.jobId, jobId)))
     .orderBy(desc(adImage.createdAt));
 }
 
@@ -1049,7 +1049,7 @@ export async function getAdImageWithFullDetails(imageId: string) {
   const imageData = await db
     .select()
     .from(adImage)
-    .where(and(eq(adImage.id, imageId), eq(adImage.isDeleted, false)))
+    .where(eq(adImage.id, imageId))
     .limit(1);
 
   if (imageData.length === 0) {
