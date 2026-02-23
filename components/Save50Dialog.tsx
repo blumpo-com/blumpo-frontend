@@ -68,7 +68,7 @@ export function Save50Dialog({
 
         <div className={styles.illustration}>
           <Image
-            src="/images/temp/laying_blumpo.png"
+            src="/assets/animations/lying-blumpo.webp"
             alt="Blumpo character"
             className={styles.illustrationImage}
             width={200}

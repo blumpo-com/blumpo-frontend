@@ -1,5 +1,5 @@
 {
-  "id": "19309ad5-5e19-48ac-a98a-6a13a52dfde4",
+  "id": "d8b181b0-2cc2-4620-8d6f-c8807bd2329e",
   "prevId": "f483c5eb-2bb2-4820-af24-16646b851642",
   "version": "7",
   "dialect": "postgresql",
@@ -482,13 +482,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "permanently_deleted": {
-          "name": "permanently_deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
         },
         "ready_to_display": {
           "name": "ready_to_display",
@@ -2130,73 +2123,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.newsletter_subscription": {
-      "name": "newsletter_subscription",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "subscribed_at": {
-          "name": "subscribed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "confirmed_at": {
-          "name": "confirmed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "newsletter_subscription_user_id_user_id_fk": {
-          "name": "newsletter_subscription_user_id_user_id_fk",
-          "tableFrom": "newsletter_subscription",
-          "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "newsletter_subscription_email_unique": {
-          "name": "newsletter_subscription_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.subscription_plan": {
       "name": "subscription_plan",
       "schema": "",
@@ -2756,9 +2682,33 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'USER'"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "user_role_idx": {
+          "name": "user_role_idx",
+          "columns": [
+            {
+              "expression": "role",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
@@ -2793,6 +2743,14 @@
       "values": [
         "MONTHLY",
         "YEARLY"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "USER",
+        "ADMIN"
       ]
     }
   },

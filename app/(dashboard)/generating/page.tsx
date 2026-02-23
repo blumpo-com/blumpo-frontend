@@ -7,6 +7,7 @@ import { GeneratedAdsDisplay } from './generated-ads-display';
 import { ReadyAdsView } from '../dashboard/ad-generation/ready-ads-view';
 import { LoggedInDialog } from '@/components/logged-in-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
+import { GTMAuthTracker } from '@/components/gtm-auth-tracker';
 import { shuffle } from '@/lib/utils';
 
 const STEP_TIMINGS = {
@@ -55,6 +56,9 @@ function GeneratingPageContent() {
   const websiteUrl = searchParams.get('website_url');
   const jobId = searchParams.get('job_id');
   const login = searchParams.get('login') === 'true'; // get login flag, when null false
+  
+  // GTM Auth Tracker - detects auth success and fires events
+  // This page is outside dashboard layout, so we need to include it here
   const [status, setStatus] = useState<JobStatus | null>(null);
   const [images, setImages] = useState<AdImage[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -430,6 +434,9 @@ function GeneratingPageContent() {
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
     return (
       <>
+        <Suspense fallback={null}>
+          <GTMAuthTracker />
+        </Suspense>
         <CreatingProcess stepTimings={STEP_TIMINGS} restartTrigger={animationRestartKey} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -469,6 +476,9 @@ function GeneratingPageContent() {
     const errorMessage = error || 'Generation failed. Please try again.';
     return (
       <>
+        <Suspense fallback={null}>
+          <GTMAuthTracker />
+        </Suspense>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-red-600 mb-4">
@@ -543,6 +553,9 @@ function GeneratingPageContent() {
   if (status === 'SUCCEEDED' && showReadyAds && !showGeneratedAds) {
     return (
       <>
+        <Suspense fallback={null}>
+          <GTMAuthTracker />
+        </Suspense>
         <ReadyAdsView onSeeAds={handleSeeAds} jobId={actualJobId || jobId || undefined} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -566,6 +579,9 @@ function GeneratingPageContent() {
   if (status === 'SUCCEEDED' && images.length > 0 && showGeneratedAds) {
     return (
       <>
+        <Suspense fallback={null}>
+          <GTMAuthTracker />
+        </Suspense>
         <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -588,6 +604,9 @@ function GeneratingPageContent() {
   // Default: still loading
   return (
     <>
+      <Suspense fallback={null}>
+        <GTMAuthTracker />
+      </Suspense>
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
         <div className="spinner"></div>
       </div>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { gtmEvent } from '@/lib/gtm';
+import { getGaClientId, hashEmailSha256 } from '@/lib/utils';
+import { useUser } from '@/lib/contexts/user-context';
 
 /**
  * Client component that detects purchase success from URL params,
@@ -11,6 +13,7 @@ import { gtmEvent } from '@/lib/gtm';
 export function GTMPurchaseTracker() {
   const searchParams = useSearchParams();
   const [hasFired, setHasFired] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     // Check for purchase success params
@@ -24,11 +27,11 @@ export function GTMPurchaseTracker() {
         try {
           const response = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`);
           if (!response.ok) {
-            console.error('Failed to verify session');
             return;
           }
 
           const data = await response.json();
+          const topupEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
           
           // Fire purchase event
           gtmEvent('purchase', {
@@ -38,11 +41,14 @@ export function GTMPurchaseTracker() {
             plan: data.plan || undefined,
             mode: mode || (data.mode || 'payment'),
             items: data.items || [],
+            user_id: user?.id ?? undefined,
+            ga_client_id: getGaClientId() ?? undefined,
+            email_sha256: topupEmailHash,
           });
 
           setHasFired(true);
         } catch (error) {
-          console.error('Error verifying purchase session:', error);
+          // Silently fail - purchase event tracking is non-critical
         }
       };
 
