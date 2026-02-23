@@ -375,7 +375,7 @@ export function FitYourBrandSection() {
         <div className="flex justify-center mt-[45px]">
           <div
             className={cn(
-              "bg-[#f9fafb] border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 regular-shadow",
+              "bg-white border-2 border-[#00bfa6] rounded-[20px] flex flex-col gap-[10px] px-[15px] py-5 regular-shadow",
               "w-[538px] h-[178px] items-center text-center justify-center"
             )}
           >
