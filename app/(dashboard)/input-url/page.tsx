@@ -112,7 +112,7 @@ export default function InputUrlPage() {
       </Suspense>
       {/* Left: Jetpack ad illustration */}
       <div className={styles.leftPanel}>
-        <JetpackAdIllustration className="w-full max-w-[597px] h-[486px] min-h-[300px]" />
+        <JetpackAdIllustration />
       </div>
 
       {/* Right: content */}
@@ -143,25 +143,25 @@ export default function InputUrlPage() {
         primaryButton={
           errorDialog.errorCode === 'EXISTING_BRAND'
             ? {
-                label: 'Go to Brand',
-                onClick: handleExistingBrandGoToBrand,
-                variant: 'cta',
-              }
+              label: 'Go to Brand',
+              onClick: handleExistingBrandGoToBrand,
+              variant: 'cta',
+            }
             : errorDialog.errorCode === 'BRAND_LIMIT_REACHED'
-            ? {
+              ? {
                 label: 'Upgrade Plan',
                 onClick: () => router.push('/dashboard/your-credits'),
                 variant: 'cta',
               }
-            : undefined
+              : undefined
         }
         secondaryButton={
           errorDialog.errorCode === 'BRAND_LIMIT_REACHED'
             ? {
-                label: 'Go Back',
-                onClick: () => {},
-                variant: 'outline',
-              }
+              label: 'Go Back',
+              onClick: () => { },
+              variant: 'outline',
+            }
             : undefined
         }
       />
