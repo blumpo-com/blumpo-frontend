@@ -107,39 +107,18 @@ function MultiSelectFilterTab({
 interface UnsavedButtonTabProps {
   isActive: boolean;
   onClick: () => void;
-  jobDisplayName?: string | null;
-  onRemoveJobFilter?: () => void;
 }
 
-function UnsavedButtonTab({ isActive, onClick, jobDisplayName, onRemoveJobFilter }: UnsavedButtonTabProps) {
+function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
   return (
-    <div className={styles.unsavedButtonContainer}>
-      <button
-        className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ""
-          }`}
-        onClick={onClick}
-      >
-        <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
-        Unsaved ads
-      </button>
-      {jobDisplayName && (
-        <div className={styles.jobFilterBadge}>
-          <span className={styles.jobFilterText}>{jobDisplayName}</span>
-          {onRemoveJobFilter && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemoveJobFilter();
-              }}
-              className={styles.jobFilterRemove}
-              aria-label="Remove job filter"
-            >
-              <X className={styles.jobFilterRemoveIcon} size={14} strokeWidth={2.5} />
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+    <button
+      className={`${styles.unsavedButton} ${isActive ? styles.unsavedButtonActive : ""
+        }`}
+      onClick={onClick}
+    >
+      <TrashRestore className={styles.tabIcon} alt="Trash Restore" />
+      Unsaved ads
+    </button>
   );
 }
 
@@ -511,36 +490,51 @@ export default function ContentLibraryPage() {
 
       {/* Filters */}
       <div className={styles.filtersBar}>
-        <MultiSelectFilterTab
-          label="Archetype"
-          iconSrc="/assets/icons/Megaphone.svg"
-          iconAlt="Archetype"
-          selectedValues={selectedArchetypes}
-          options={archetypes}
-          onToggle={handleArchetypeToggle}
-          isOpen={isArchetypeOpen}
-          onOpenChange={setIsArchetypeOpen}
-        />
+        <div className={styles.filtersRow}>
+          <MultiSelectFilterTab
+            label="Archetype"
+            iconSrc="/assets/icons/Megaphone.svg"
+            iconAlt="Archetype"
+            selectedValues={selectedArchetypes}
+            options={archetypes}
+            onToggle={handleArchetypeToggle}
+            isOpen={isArchetypeOpen}
+            onOpenChange={setIsArchetypeOpen}
+          />
 
-        <MultiSelectFilterTab
-          label="Format"
-          iconSrc="/assets/icons/Ruler.svg"
-          iconAlt="Format"
-          selectedValues={selectedFormats}
-          options={formats}
-          onToggle={handleFormatToggle}
-          isOpen={isFormatOpen}
-          onOpenChange={setIsFormatOpen}
-        />
+          <MultiSelectFilterTab
+            label="Format"
+            iconSrc="/assets/icons/Ruler.svg"
+            iconAlt="Format"
+            selectedValues={selectedFormats}
+            options={formats}
+            onToggle={handleFormatToggle}
+            isOpen={isFormatOpen}
+            onOpenChange={setIsFormatOpen}
+          />
 
-        <UnsavedButtonTab
-          isActive={showUnsaved}
-          onClick={() => setShowUnsaved(!showUnsaved)}
-          jobDisplayName={jobDisplayName}
-          onRemoveJobFilter={() => {
-            router.replace('/dashboard/content-library');
-          }}
-        />
+          <UnsavedButtonTab
+            isActive={showUnsaved}
+            onClick={() => setShowUnsaved(!showUnsaved)}
+          />
+        </div>
+
+        {/* Job filter badge */}
+        {jobDisplayName && (
+          <div className={styles.jobFilterBadge}>
+            <span className={styles.jobFilterText}>{jobDisplayName}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                router.replace('/dashboard/content-library');
+              }}
+              className={styles.jobFilterRemove}
+              aria-label="Remove job filter"
+            >
+              <X className={styles.jobFilterRemoveIcon} size={14} strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Warning message for unsaved ads */}
