@@ -1,6 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
+import { Lock } from 'lucide-react';
+import { useUser } from '@/lib/contexts/user-context';
+import { ErrorDialog } from '@/components/error-dialog';
+import { useRouter } from 'next/navigation';
 import styles from './format-selection.module.css';
 
 interface FormatCardProps {
@@ -11,6 +16,7 @@ interface FormatCardProps {
   socialIcons?: string[];
   formatBoxes?: { label: string; width: string; height: string }[];
   isSelected: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -22,20 +28,29 @@ function FormatCard({
   socialIcons,
   formatBoxes,
   isSelected,
+  disabled = false,
   onClick
 }: FormatCardProps) {
   return (
     <button
-      className={`${styles.formatCard} ${isSelected ? styles.formatCardSelected : styles.gradientBorder}`}
+      className={`${styles.formatCard} ${disabled ? styles.formatCardDisabled : isSelected ? styles.formatCardSelected : styles.gradientBorder}`}
       onClick={onClick}
       type="button"
     >
       {/* Credits Badge */}
       <div className={styles.creditsBadge}>
-        <span className={isSelected ? styles.creditsBadgeTextSelected : styles.creditsBadgeText}>
+        <span className={isSelected && !disabled ? styles.creditsBadgeTextSelected : styles.creditsBadgeText}>
           {credits} credits
         </span>
       </div>
+
+      {/* Locked Badge */}
+      {disabled && (
+        <div className={styles.lockedBadge}>
+          <Lock size={12} color="#6b7280" />
+          <span className={styles.lockedBadgeText}>Not enough coins</span>
+        </div>
+      )}
 
       {/* Format Content */}
       <div className={styles.formatContent}>
@@ -91,6 +106,13 @@ export function FormatSelectionContent({
   selectedFormat,
   onSelectedFormatChange,
 }: FormatSelectionContentProps) {
+  const router = useRouter();
+  const { user } = useUser();
+  const [isLowCreditsDialogOpen, setIsLowCreditsDialogOpen] = useState(false);
+  const [requiredCredits, setRequiredCredits] = useState(0);
+
+  const tokenBalance = user?.tokenAccount?.balance ?? 0;
+
   const formats = [
     {
       id: '1:1',
@@ -129,21 +151,51 @@ export function FormatSelectionContent({
   ];
 
   return (
-    <div className={styles.formatSelectionContent}>
-      {formats.map((format) => (
-        <FormatCard
-          key={format.id}
-          id={format.id}
-          format={format.format}
-          description={format.description}
-          credits={format.credits}
-          socialIcons={format.socialIcons}
-          formatBoxes={format.formatBoxes}
-          isSelected={selectedFormat === format.id}
-          onClick={() => onSelectedFormatChange(format.id)}
-        />
-      ))}
-    </div>
+    <>
+      <div className={styles.formatSelectionContent}>
+        {formats.map((format) => {
+          const isDisabled = tokenBalance < format.credits;
+          return (
+            <FormatCard
+              key={format.id}
+              id={format.id}
+              format={format.format}
+              description={format.description}
+              credits={format.credits}
+              socialIcons={format.socialIcons}
+              formatBoxes={format.formatBoxes}
+              isSelected={selectedFormat === format.id}
+              disabled={isDisabled}
+              onClick={() => {
+                if (isDisabled) {
+                  setRequiredCredits(format.credits);
+                  setIsLowCreditsDialogOpen(true);
+                } else {
+                  onSelectedFormatChange(format.id);
+                }
+              }}
+            />
+          );
+        })}
+      </div>
+
+      <ErrorDialog
+        open={isLowCreditsDialogOpen}
+        onClose={() => setIsLowCreditsDialogOpen(false)}
+        title="Not enough coins"
+        message={`You need at least ${requiredCredits} coins to use this format. Top up your balance to continue.`}
+        primaryButton={{
+          label: 'Get more coins',
+          onClick: () => router.push('/dashboard/your-credits'),
+          variant: 'cta',
+        }}
+        secondaryButton={{
+          label: 'Go Back',
+          onClick: () => {},
+          variant: 'outline',
+        }}
+      />
+    </>
   );
 }
 
