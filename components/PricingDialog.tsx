@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import useSWR from 'swr';
 import { Dialog } from '@/components/ui/dialog';
 import { PricingSection } from '@/app/(landing)/_sections/pricing-section';
@@ -211,13 +210,6 @@ export function PricingDialog({ open, onClose }: PricingDialogProps) {
         <div className={styles.scrollBody}>
           <div className={styles.contentScaled}>
             <div className={styles.pricingWrapper}>
-              <Image
-                src="/assets/animations/sitting-blumpo.webp"
-                alt=""
-                width={180}
-                height={180}
-                className={styles.sittingBlumpo}
-              />
               {isLoadingData ? (
                 <div className="flex justify-center py-12">
                   <div className="spinner" />
