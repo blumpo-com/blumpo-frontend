@@ -102,6 +102,23 @@ export async function waitForCallback(
   return waitForCallbackMemory(jobId, maxWaitTime);
 }
 
+// Function to wait for existing Redis callback (doesn't create new timer, uses existing Redis entry)
+// Returns null if no Redis entry exists for the job
+export async function waitForExistingCallback(
+  jobId: string,
+  maxWaitTime: number = 7 * 60 * 1000
+): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string } | null> {
+  console.log('[CALLBACK-WAITER] waitForExistingCallback called for job:', jobId, 'maxWaitTime:', maxWaitTime, 'ms');
+  
+  // Only works with Redis - if Redis not available, return null immediately
+  if (!isRedisAvailable()) {
+    console.log('[CALLBACK-WAITER] Redis not available, returning null for existing callback');
+    return null;
+  }
+  
+  return waitForExistingCallbackRedis(jobId, maxWaitTime);
+}
+
 // Redis-based implementation
 async function waitForCallbackRedis(
   jobId: string,
@@ -179,6 +196,85 @@ async function waitForCallbackRedis(
     // Start polling after initial delay (1 minute)
     console.log('[CALLBACK-WAITER] Starting to poll after', INITIAL_POLL_DELAY, 'ms (1 minute) for job:', jobId);
     setTimeout(poll, INITIAL_POLL_DELAY);
+  });
+}
+
+// Redis-based implementation for existing callback (polls immediately using same Redis key, no initial delay)
+async function waitForExistingCallbackRedis(
+  jobId: string,
+  maxWaitTime: number
+): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string } | null> {
+  const redis = getRedisClient();
+  if (!redis) {
+    console.log('[CALLBACK-WAITER] Redis not available for existing callback - returning null');
+    return null;
+  }
+  
+  const redisKey = `${REDIS_KEY_PREFIX}${jobId}`;
+  const startTime = Date.now();
+  
+  return new Promise((resolve, reject) => {
+    // Set timeout for maximum wait time
+    const timeout = setTimeout(() => {
+      console.error('[CALLBACK-WAITER] Timeout fired for existing job:', jobId, 'after', maxWaitTime, 'ms');
+      reject(new Error('Callback timeout - exceeded maximum wait time'));
+    }, maxWaitTime);
+
+    // Poll Redis for callback result immediately (no initial delay - uses same Redis key as waitForCallback)
+    const poll = async () => {
+      try {
+        const resultStr = await redis.get(redisKey) as string | null;
+        
+        if (resultStr) {
+          // Parse JSON string to CallbackResult
+          let result: CallbackResult;
+          try {
+            result = typeof resultStr === 'string' ? JSON.parse(resultStr) : resultStr;
+          } catch (parseError) {
+            console.error('[CALLBACK-WAITER] Error parsing Redis result for job:', jobId, parseError);
+            clearTimeout(timeout);
+            reject(new Error('Failed to parse callback result'));
+            return;
+          }
+          
+          // Callback result found!
+          clearTimeout(timeout);
+          const waitDuration = Date.now() - startTime;
+          console.log('[CALLBACK-WAITER] Existing callback result found in Redis after', waitDuration, 'ms for job:', jobId);
+          
+          // Do NOT delete the key here - multiple concurrent waiters may be polling for the same job
+          
+          if (result.error) {
+            reject(new Error(result.error));
+          } else {
+            resolve({
+              status: result.status,
+              images: result.images || [],
+              error_message: result.error_message,
+              error_code: result.error_code,
+            });
+          }
+          return;
+        }
+        
+        // No result yet, continue polling
+        const elapsed = Date.now() - startTime;
+        if (elapsed < maxWaitTime) {
+          setTimeout(poll, POLL_INTERVAL);
+        } else {
+          clearTimeout(timeout);
+          reject(new Error('Callback timeout - exceeded maximum wait time'));
+        }
+      } catch (error) {
+        console.error('[CALLBACK-WAITER] Error polling Redis for existing job:', jobId, error);
+        clearTimeout(timeout);
+        reject(new Error(`Failed to poll for callback: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
+    };
+
+    // Start polling immediately (no initial delay - uses same Redis key that will be created by callback route)
+    console.log('[CALLBACK-WAITER] Starting to poll immediately for existing callback (same Redis key as waitForCallback)');
+    poll();
   });
 }
 
