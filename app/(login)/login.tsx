@@ -223,9 +223,11 @@ export function Login() {
                 <h1 className="font-bold text-[#040404] text-[44px] text-center">
                   Welcome to Blumpo!
                 </h1>
-                <p className="text-[22px] font-medium text-[#888E98] text-center">
-                  Sign up to generate 5 test ads - no credit card required
-                </p>
+                {(redirect === 'input-url' || redirect === 'generate') && (
+                  <p className="text-[22px] font-medium text-[#888E98] text-center">
+                    Sign up to generate 5 test ads - no credit card required
+                  </p>
+                )}
               </div>
 
               {/* Form */}
