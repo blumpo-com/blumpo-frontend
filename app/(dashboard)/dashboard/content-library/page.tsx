@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useBrand } from "@/lib/contexts/brand-context";
 import { useUser } from "@/lib/contexts/user-context";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TrashRestore from "@/assets/icons/Trash-restore.svg";
 import {
   DropdownMenu,
@@ -124,6 +124,7 @@ function UnsavedButtonTab({ isActive, onClick }: UnsavedButtonTabProps) {
 
 export default function ContentLibraryPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { currentBrand, isInitialized } = useBrand();
   const { user } = useUser();
   const planCode = user?.tokenAccount?.planCode ?? "FREE";
@@ -132,7 +133,7 @@ export default function ContentLibraryPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedArchetypes, setSelectedArchetypes] = useState<string[]>([]);
   const [selectedFormats, setSelectedFormats] = useState<string[]>([]);
-  const [showUnsaved, setShowUnsaved] = useState(false);
+  const [showUnsaved, setShowUnsaved] = useState(() => searchParams.get("tab") === "unsaved");
   const [isArchetypeOpen, setIsArchetypeOpen] = useState(false);
   const [isFormatOpen, setIsFormatOpen] = useState(false);
   const [pendingImageIds, setPendingImageIds] = useState<string[]>([]);
