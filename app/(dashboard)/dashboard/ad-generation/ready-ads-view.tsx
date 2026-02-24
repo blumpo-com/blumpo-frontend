@@ -15,6 +15,27 @@ interface ReadyAdsViewProps {
 export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
   const router = useRouter();
 
+  const handleSeeAdsClick = async () => {
+    // Mark job as viewed when "See ads" is clicked
+    if (jobId) {
+      try {
+        await fetch(`/api/generation-jobs/${jobId}/viewed`, {
+          method: 'POST',
+        });
+        // Dispatch custom event to notify generation status panel
+        window.dispatchEvent(new CustomEvent('generation-job-viewed', { detail: { jobId } }));
+      } catch (error) {
+        console.error('Error marking job as viewed:', error);
+        // Continue with navigation even if marking fails
+      }
+    }
+
+    // Call the original onSeeAds callback if provided
+    if (onSeeAds) {
+      onSeeAds();
+    }
+  };
+
   // Test buttons for different formats - only show in test mode
   const handleTestFormat = (format: '1:1' | '9:16' | 'mixed') => {
     if (IS_TEST_MODE) {
@@ -62,7 +83,7 @@ export function ReadyAdsView({ onSeeAds, jobId }: ReadyAdsViewProps) {
 
         {/* Button and Image Section */}
         <div className={styles.bottomSection}>
-          <button className={styles.seeAdsButton} onClick={onSeeAds}>
+          <button className={styles.seeAdsButton} onClick={handleSeeAdsClick}>
             <span className={styles.buttonText}>See ads</span>
             <svg
               width="40"
