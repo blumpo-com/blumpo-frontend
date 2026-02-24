@@ -81,6 +81,17 @@ const archetypes = [
   },
 ];
 
+function PaidOnlyBadge() {
+  return (
+    <div className={styles.paidBadge}>
+      <svg width="16" height="16" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
+      </svg>
+      <span>Paid only</span>
+    </div>
+  );
+}
+
 export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: GeneratedAdsDisplayProps) {
   const router = useRouter();
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
@@ -602,14 +613,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           {/* Ad Types Section */}
           <div className={styles.section} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-types') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
             <div className={styles.sectionHeader}>
-              {!isPaidUser && (
-                <div className={styles.paidBadge}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                  </svg>
-                  <span>Paid only</span>
-                </div>
-              )}
+              {!isPaidUser && <PaidOnlyBadge />}
               <h2 className={styles.sectionTitle}>Ad types</h2>
             </div>
             <div className={styles.archetypesGrid}>
@@ -629,14 +633,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             <div className={styles.formatsRow}>
               <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-formats') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
                 <div className={styles.sectionHeader}>
-                  {!isPaidUser && (
-                    <div className={styles.paidBadge}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                      </svg>
-                      <span>Paid only</span>
-                    </div>
-                  )}
+                  {!isPaidUser && <PaidOnlyBadge />}
                   <h2 className={styles.sectionTitle}>Different ad formats</h2>
                 </div>
                 <div className={styles.formatBoxes}>
@@ -646,14 +643,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               </div>
               <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
                 <div className={styles.sectionHeader}>
-                  {!isPaidUser && (
-                    <div className={styles.paidBadge}>
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                      </svg>
-                      <span>Paid only</span>
-                    </div>
-                  )}
+                  {!isPaidUser && <PaidOnlyBadge />}
                   <h2 className={styles.sectionTitle}>Language</h2>
                 </div>
                 <div className={styles.languageBox}>
