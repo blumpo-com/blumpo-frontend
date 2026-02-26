@@ -1,6 +1,6 @@
 {
-  "id": "227b0a97-61af-4b30-b5cc-42287649eaf1",
-  "prevId": "d8b181b0-2cc2-4620-8d6f-c8807bd2329e",
+  "id": "8de4e8de-c9dd-4939-9e9b-2c75d1847732",
+  "prevId": "227b0a97-61af-4b30-b5cc-42287649eaf1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -482,6 +482,13 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "permanently_deleted": {
+          "name": "permanently_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "ready_to_display": {
           "name": "ready_to_display",
@@ -2122,6 +2129,73 @@
           "nullsNotDistinct": false,
           "columns": [
             "error_fingerprint"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.newsletter_subscription": {
+      "name": "newsletter_subscription",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subscribed_at": {
+          "name": "subscribed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "confirmed_at": {
+          "name": "confirmed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "newsletter_subscription_user_id_user_id_fk": {
+          "name": "newsletter_subscription_user_id_user_id_fk",
+          "tableFrom": "newsletter_subscription",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "newsletter_subscription_email_unique": {
+          "name": "newsletter_subscription_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
           ]
         }
       },

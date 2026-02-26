@@ -15,14 +15,16 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const brandId = searchParams.get("brandId");
+    const jobId = searchParams.get("jobId");
     const includeDeleted = searchParams.get("includeDeleted") === "true";
     const limit = parseInt(searchParams.get("limit") || "1000"); // Increased limit for client-side filtering
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // Fetch all images for the user, optionally filtered by brandId
+    // Fetch all images for the user, optionally filtered by brandId or jobId
     // includeDeleted allows fetching deleted images for client-side filtering
     const adImages = await getUserAds(user.id, {
       brandId: brandId || undefined,
+      jobId: jobId || undefined,
       limit,
       offset,
       includeDeleted: includeDeleted,
