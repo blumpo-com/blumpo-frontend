@@ -5,7 +5,6 @@ import {
   createContext,
   useRef,
   useState,
-  useEffect,
   useCallback,
   useContext,
 } from "react";
@@ -42,27 +41,6 @@ export function LegalPageLayout({
     sectionRefs.current[id] = el;
   }, []);
 
-  useEffect(() => {
-    const updateActiveId = () => {
-      const scrollY = window.scrollY;
-      let current = sections[0].id;
-      for (const { id } of sections) {
-        const el = sectionRefs.current[id];
-        if (!el) continue;
-        const top = el.getBoundingClientRect().top + scrollY;
-        if (scrollY >= top - 120) {
-          current = id;
-        }
-      }
-      setActiveId(current);
-    };
-
-    window.addEventListener("scroll", updateActiveId, { passive: true });
-    updateActiveId();
-
-    return () => window.removeEventListener("scroll", updateActiveId);
-  }, [sections]);
-
   return (
     <LegalPageContext.Provider value={{ registerSectionRef }}>
       <main className="relative overflow-x-hidden">
@@ -92,8 +70,8 @@ export function LegalPageLayout({
                           href={`#${section.id}`}
                           onClick={() => setActiveId(section.id)}
                           className={`block py-2.5 px-3 rounded-lg text-sm transition-colors ${isActive
-                              ? "bg-foreground text-white font-medium"
-                              : "text-[#374151] hover:bg-gray-100"
+                            ? "bg-foreground text-white font-medium"
+                            : "text-[#374151] hover:bg-gray-100"
                             }`}
                         >
                           {index + 1}. {section.label}
