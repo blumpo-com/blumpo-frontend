@@ -255,7 +255,11 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   };
 
   const handleGenerateMore = () => {
-    setPricingDialogOpen(true);
+    if (isPaidUser) {
+      router.push('/dashboard');
+    } else {
+      setPricingDialogOpen(true);
+    }
   };
 
   const handleRegenerate = () => {
