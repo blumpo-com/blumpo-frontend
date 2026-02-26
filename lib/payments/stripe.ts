@@ -38,6 +38,8 @@ export async function createCheckoutSession({
   const userWithAccount = await getUserWithTokenAccount(user.id);
   const tokenAccount = userWithAccount?.tokenAccount;
 
+  const hasExistingCustomer = !!tokenAccount?.stripeCustomerId;
+
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     payment_method_types: ['card'],
     line_items: [
@@ -52,11 +54,13 @@ export async function createCheckoutSession({
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
     allow_promotion_codes: true,
-    customer_update: {
-      name: 'auto',
-      address: 'auto',
-      shipping: 'auto',
-    },
+    ...(hasExistingCustomer && {
+      customer_update: {
+        name: 'auto',
+        address: 'auto',
+        shipping: 'auto',
+      },
+    }),
     billing_address_collection: 'auto',
     tax_id_collection: {
       enabled: true,

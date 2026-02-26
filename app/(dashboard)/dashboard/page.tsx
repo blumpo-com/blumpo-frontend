@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Rocket } from 'lucide-react';
 import { useBrand } from '@/lib/contexts/brand-context';
+import { useUser } from '@/lib/contexts/user-context';
 import useSWR from 'swr';
 import { GameDialog } from '@/components/GameDialog';
+import { ErrorDialog } from '@/components/error-dialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -177,11 +179,25 @@ function FeatureCard({
   );
 }
 
+const MIN_TOKENS_REQUIRED = 50;
+
 export default function DashboardHomePage() {
   const router = useRouter();
   const { currentBrand, isInitialized } = useBrand();
+  const { user } = useUser();
   const [isCheckingAds, setIsCheckingAds] = useState(false);
   const [isGameOpen, setIsGameOpen] = useState(false);
+  const [isLowCreditsDialogOpen, setIsLowCreditsDialogOpen] = useState(false);
+
+  const tokenBalance = user?.tokenAccount?.balance ?? 0;
+
+  const handleFeatureCardClick = (path: string) => {
+    if (tokenBalance < MIN_TOKENS_REQUIRED) {
+      setIsLowCreditsDialogOpen(true);
+    } else {
+      router.push(path);
+    }
+  };
   // Ref to prevent double execution (React Strict Mode)
   const hasCheckedBrandRef = useRef<string | null>(null);
   const { data: brands = [], isLoading: isLoadingBrands } = useSWR<{ id: string }[]>(
@@ -360,7 +376,7 @@ export default function DashboardHomePage() {
             gradientClass={styles.cardImageGradient1}
             frontImage={imgImage2}
             backImage={imgImage1}
-            onButtonClick={() => router.push('/dashboard/quick-ads-generation')}
+            onButtonClick={() => handleFeatureCardClick('/dashboard/quick-ads-generation')}
           />
           <FeatureCard
             title="Customized Ads Generation"
@@ -368,7 +384,7 @@ export default function DashboardHomePage() {
             gradientClass={styles.cardImageGradient2}
             frontImage={imgImage4}
             backImage={imgImage3}
-            onButtonClick={() => router.push('/dashboard/customized-ads')}
+            onButtonClick={() => handleFeatureCardClick('/dashboard/customized-ads')}
           />
           <FeatureCard
             title="Customer & Competitor Insights"
@@ -385,6 +401,23 @@ export default function DashboardHomePage() {
           />
         </div>
       </div>
+
+      <ErrorDialog
+        open={isLowCreditsDialogOpen}
+        onClose={() => setIsLowCreditsDialogOpen(false)}
+        title="Not enough coins"
+        message={`You need at least ${MIN_TOKENS_REQUIRED} coins to start generating ads. Top up your balance to continue.`}
+        primaryButton={{
+          label: 'Get more coins',
+          onClick: () => router.push('/dashboard/your-credits'),
+          variant: 'cta',
+        }}
+        secondaryButton={{
+          label: 'Go Back',
+          onClick: () => {},
+          variant: 'outline',
+        }}
+      />
     </div>
   );
 }
