@@ -6,4 +6,5 @@ export * from './generation';
 export * from './subscription';
 export * from './brand';
 export * from './ads';
+export * from './newsletter';
 export * from './admin';

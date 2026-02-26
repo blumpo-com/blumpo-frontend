@@ -6,15 +6,31 @@ import { refillSubscriptionTokens, updateUserSubscription } from '@/lib/db/queri
 import { eq, and, ne, isNotNull } from 'drizzle-orm';
 // Using native Date methods instead of date-fns
 
-export async function POST(request: NextRequest) {
-  // Security: Check CRON_SECRET authorization
+function isAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get('Authorization');
   const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;
-  
-  if (!authHeader || authHeader !== expectedAuth) {
-    console.error('Unauthorized refill attempt:', { authHeader });
+  if (authHeader && authHeader === expectedAuth) return true;
+  // Vercel cron sends GET with User-Agent "vercel-cron/1.0" (no Authorization header)
+  if (request.headers.get('user-agent') === 'vercel-cron/1.0') return true;
+  return false;
+}
+
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  return runRefillJob(request);
+}
+
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    console.error('Unauthorized refill attempt');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return runRefillJob(request);
+}
+
+async function runRefillJob(request: NextRequest) {
 
   const startTime = Date.now();
   let processedCount = 0;
@@ -103,12 +119,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('💥 Refill job failed:', error);
     return NextResponse.json(
-      { 
-        error: 'Refill job failed', 
+      {
+        error: 'Refill job failed',
         details: error instanceof Error ? error.message : 'Unknown error',
         processed: processedCount,
         errors: errorCount,
-      }, 
+      },
       { status: 500 }
     );
   }

@@ -14,6 +14,7 @@ export const generationJob = pgTable('generation_job', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   startedAt: timestamp('started_at', { withTimezone: true }),
   completedAt: timestamp('completed_at', { withTimezone: true }),
+  viewedAt: timestamp('viewed_at', { withTimezone: true }),
   status: jobStatusEnum('status').notNull().default('QUEUED'),
 
   prompt: text('prompt'), // Now nullable
