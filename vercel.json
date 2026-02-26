@@ -4,6 +4,10 @@
     {
       "path": "/api/subscriptions/refill",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-deleted-ads",
+      "schedule": "0 0 * * *"
     }
   ]
 }
