@@ -1,0 +1,1 @@
+ALTER TABLE "generation_job" ADD COLUMN "viewed_at" timestamp with time zone;

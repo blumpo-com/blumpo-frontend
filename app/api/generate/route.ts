@@ -3,11 +3,14 @@ import { getUser, hasEnoughTokens, createGenerationJob, updateGenerationJobStatu
 import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds } from "@/lib/db/queries/ads";
 import { normalizeWebsiteUrl } from "@/lib/utils";
 import { randomUUID } from "crypto";
-import { waitForCallback } from "@/lib/api/callback-waiter";
+import { waitForCallback, waitForExistingCallback } from "@/lib/api/callback-waiter";
 
 const TOKENS_COST_PER_GENERATION = 50;
 const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
 const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received the request
+
+// Vercel Function max duration - allows full wait for n8n callback (Pro/Enterprise: up to 800s; Hobby: capped at 300s)
+export const maxDuration = 420; // 7 minutes
 
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
@@ -122,10 +125,22 @@ export async function POST(req: Request) {
         }, { status: existingJob.status === 'FAILED' ? 500 : 200 });
       }
 
-      // QUEUED or RUNNING - wait for callback (uses same Redis key as original job)
-      console.log('[GENERATE] Existing job in progress, waiting for callback...');
+      // QUEUED or RUNNING - wait for existing callback (uses same Redis key as original job)
+      console.log('[GENERATE] Existing job in progress, waiting for existing callback...');
       try {
-        const callbackResult = await waitForCallback(existingJob.id, MAX_WAIT_TIME);
+        const callbackResult = await waitForExistingCallback(existingJob.id, MAX_WAIT_TIME);
+        
+        // If no Redis entry exists, the job might have been started but callback not set up yet
+        // In this case, return early with current status
+        if (!callbackResult) {
+          console.log('[GENERATE] No existing Redis callback found for job:', existingJob.id);
+          return NextResponse.json({
+            job_id: existingJob.id,
+            status: existingJob.status,
+            message: 'Generation in progress - no callback available yet',
+          });
+        }
+        
         if (callbackResult.status === 'SUCCEEDED') {
           return NextResponse.json({
             job_id: existingJob.id,

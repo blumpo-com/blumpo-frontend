@@ -7,6 +7,7 @@ import { UserProvider } from '@/lib/contexts/user-context';
 import { GTMAuthTracker } from '@/components/gtm-auth-tracker';
 import { UnsupportedScreenPage } from './unsupported-screen-page';
 import { useMediaQuery } from '@/lib/hooks/use-media-query';
+import { GenerationStatusPanel } from '@/components/generation-status-panel';
 
 export default function DashboardLayout({
   children
@@ -42,6 +43,9 @@ export default function DashboardLayout({
           <main className="flex-1 ml-[267px] min-h-0 overflow-y-auto overflow-x-hidden">
             {children}
           </main>
+
+          {/* Generation Status Panel */}
+          <GenerationStatusPanel />
         </div>
       </BrandProvider>
     </UserProvider>

@@ -6,6 +6,9 @@ import { waitForCallback } from "@/lib/api/callback-waiter";
 const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
 const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received the request
 
+// Vercel Function max duration - allows full wait for n8n callback (Pro/Enterprise: up to 800s; Hobby: capped at 300s)
+export const maxDuration = 420; // 7 minutes
+
 export async function POST(req: Request) {
   if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
     console.log("[GENERATE-QUICK-ADS] Skipping generation (test mode)");
