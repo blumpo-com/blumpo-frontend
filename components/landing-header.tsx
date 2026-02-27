@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { X, Menu, ArrowRight } from "lucide-react";
 
 const menuItems = [
-  { href: "#use-cases", label: "Use cases" },
-  { href: "#product", label: "Product" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#use-cases", label: "Use cases" },
+  { href: "/#product", label: "Product" },
+  { href: "/#pricing", label: "Pricing" },
   { href: "/blog", label: "Blog" },
   { href: "/dashboard", label: "Login" },
 ];

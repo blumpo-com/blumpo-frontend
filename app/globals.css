@@ -204,7 +204,7 @@
     @apply bg-gradient-to-r from-brand-secondary to-brand-primary;
   }
   .header-gradient {
-    @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-5xl;
+    @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-5xl w-fit;
     line-height: 1.3;
   }
 

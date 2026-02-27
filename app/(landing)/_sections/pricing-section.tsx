@@ -336,8 +336,8 @@ export function PricingSection({
             className={cn(
               "flex-1 h-[50px] flex items-center justify-center rounded-[10px] py-[10px] transition-all w-[25%] cursor-pointer",
               selectedPlan === plan.id
-                ? "bg-[#00bfa6] border border-[#00bfa6] text-[#f9fafb]"
-                : "bg-white border border-[#0a0a0a] text-[#0a0a0a]"
+                ? "bg-[#00bfa6] border-2 border-[#00bfa6] text-[#f9fafb]"
+                : "bg-white border-2 border-[#0a0a0a] text-[#0a0a0a]"
             )}
           >
             <span className="text-sm font-semibold">{plan.name}</span>

@@ -441,6 +441,10 @@
   background: #f3f4f6;
 }
 
+.imageWrapperClickable {
+  cursor: pointer;
+}
+
 .imageCard.format9x16 .imageWrapper {
   aspect-ratio: 9/16;
   flex-shrink: 0;
@@ -681,4 +685,109 @@
   .gridColumn {
     gap: 16px;
   }
+}
+
+/* Image preview overlay - fixed height, open/close transition */
+.imagePreviewOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+
+.imagePreviewOverlayOpen {
+  opacity: 1;
+}
+
+.imagePreviewContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 38px;
+  width: 90%;
+  max-width: 56rem;
+  max-height: 90vh;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.closeButton {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0a0a0a;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.imagePreviewOverlayOpen .imagePreviewContent {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Fixed height so dialog doesn't jump when image loads */
+.imagePreviewImageWrap {
+  width: 100%;
+  height: 70vh;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f3f4f6;
+  border-radius: 12px;
+}
+
+.imagePreviewImage {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.imagePreviewSaveButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.imagePreviewSaveButton:hover {
+  background: #f3f4f6;
+}
+
+.imagePreviewSaveButton .tabIcon {
+  width: 26px;
+  height: 26px;
 }
