@@ -13,17 +13,10 @@ const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received 
 export const maxDuration = 420; // 7 minutes
 
 export async function POST(req: Request) {
-  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
-    console.log("[GENERATE] Skipping generation (test mode)");
-    return NextResponse.json(
-      { error: "Generation disabled in test mode", error_code: "TEST_MODE" },
-      { status: 503 }
-    );
-  }
-
   const requestStartTime = Date.now();
   console.log('[GENERATE] Request started at', new Date().toISOString());
 
+  const isTestMode = process.env.NEXT_PUBLIC_IS_TEST_MODE === "true";
   const webhookUrl = process.env.N8N_WEBHOOK_URL + 'main-free-workflow';
   const webhookKey = process.env.N8N_WEBHOOK_KEY;
 
@@ -246,6 +239,7 @@ export async function POST(req: Request) {
           job_id: jobId,
           website_url: url, // Pass website URL
           callback_url: callbackUrl, // Tell n8n where to send the callback
+          is_test_mode: isTestMode,
         }),
         signal: controller.signal,
       });
