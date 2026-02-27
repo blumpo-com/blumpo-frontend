@@ -52,15 +52,16 @@ const LeftPanel = memo(function LeftPanel({ onPlay }: LeftPanelProps) {
           </p>
         </div>
 
-        {/* Illustration */}
-        <div className={styles.illustrationWrapper}>
-          <JetpackAdIllustration className="w-full h-full min-h-0" />
+        {/* Illustration + przycisk w jednym bloku wyśrodkowanym pionowo */}
+        <div className={styles.leftPanelCenter}>
+          <div className={styles.illustrationWrapper}>
+            <JetpackAdIllustration />
+          </div>
+          <button className={styles.playButton} onClick={onPlay} type="button">
+            Play the game
+          </button>
         </div>
 
-        {/* CTA Button */}
-        <button className={styles.playButton} onClick={onPlay} type="button">
-          Play the game
-        </button>
       </div>
     </div>
   );

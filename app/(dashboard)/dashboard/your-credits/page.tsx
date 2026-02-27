@@ -4,15 +4,14 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
-import { Check } from 'lucide-react';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { gtmEvent } from '@/lib/gtm';
 import { getGaClientId, hashEmailSha256 } from '@/lib/utils';
 import { Save50Dialog } from '@/components/Save50Dialog';
+import { EnterprisePlanCard } from '@/components/enterprise-plan-card';
 import { BuyCreditsDialog } from './buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
-import { SupportCategory } from '@/lib/constants/support-categories';
 import { GTMPurchaseTracker } from '@/components/gtm-purchase-tracker';
 import styles from './page.module.css';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
@@ -255,12 +254,12 @@ function YourCreditsPageContent() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.annualPriceId);
-      
+
       // Fire begin_checkout event for annual plan
       const annualPrice = stripePrices.find(p => p.id === save50DialogData.annualPriceId);
       const matchingPlan = annualPrice ? subscriptionPlans.find(p => p.stripeProductId === annualPrice.productId) : null;
       const annualEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
-      
+
       gtmEvent('begin_checkout', {
         plan: matchingPlan?.planCode || 'unknown',
         price_id: save50DialogData.annualPriceId,
@@ -271,7 +270,7 @@ function YourCreditsPageContent() {
         ga_client_id: getGaClientId() ?? undefined,
         email_sha256: annualEmailHash,
       });
-      
+
       setSave50DialogOpen(false);
       setSave50DialogData(null);
       setIsLoading(true);
@@ -288,12 +287,12 @@ function YourCreditsPageContent() {
     if (save50DialogData) {
       const formData = new FormData();
       formData.append('priceId', save50DialogData.monthlyPriceId);
-      
+
       // Fire begin_checkout event for monthly plan
       const monthlyPrice = stripePrices.find(p => p.id === save50DialogData.monthlyPriceId);
       const matchingPlan = monthlyPrice ? subscriptionPlans.find(p => p.stripeProductId === monthlyPrice.productId) : null;
       const monthlyEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
-      
+
       gtmEvent('begin_checkout', {
         plan: matchingPlan?.planCode || 'unknown',
         price_id: save50DialogData.monthlyPriceId,
@@ -304,7 +303,7 @@ function YourCreditsPageContent() {
         ga_client_id: getGaClientId() ?? undefined,
         email_sha256: monthlyEmailHash,
       });
-      
+
       setSave50DialogOpen(false);
       setSave50DialogData(null);
       setIsLoading(true);
@@ -333,11 +332,11 @@ function YourCreditsPageContent() {
   const handleBuyCredits = async (priceId: string) => {
     const formData = new FormData();
     formData.append('priceId', priceId);
-    
+
     // Fire begin_checkout event for topup
     const topupPrice = stripeTopupPrices.find(p => p.id === priceId);
     const matchingTopup = topupPrice ? topupPlans.find(t => t.stripeProductId === topupPrice.productId) : null;
-    
+
     const topupEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
     gtmEvent('begin_checkout', {
       plan: matchingTopup?.displayName || 'topup',
@@ -349,7 +348,7 @@ function YourCreditsPageContent() {
       ga_client_id: getGaClientId() ?? undefined,
       email_sha256: topupEmailHash,
     });
-    
+
     setBuyCreditsDialogOpen(false);
     setIsLoading(true);
     try {
@@ -464,7 +463,7 @@ function YourCreditsPageContent() {
       <Suspense fallback={null}>
         <GTMPurchaseTracker />
       </Suspense>
-      
+
       {/* Loading Overlay */}
       {isLoading && (
         <div className={styles.loadingOverlay}>
@@ -712,66 +711,7 @@ function YourCreditsPageContent() {
           </div>
         </div>
       ) : (
-        <div className={styles.enterpriseSection}>
-          <div className={styles.enterpriseCardContainer}>
-            <div className={styles.enterpriseCard}>
-              <div className={styles.enterpriseCardContent}>
-                {/* Left Section - Icon, Info, and Button */}
-                <div className={styles.enterpriseLeftSection}>
-                  <div className={styles.enterpriseHeader}>
-                    <div className={styles.enterpriseIcon}>
-                      <Image src="/assets/icons/briefcase.svg" alt="Enterprise" className={styles.enterpriseIconImage} width={24} height={24} />
-                    </div>
-                    <div className={styles.enterpriseInfo}>
-                      <h2 className={styles.enterpriseTitle}>
-                        Enterprise
-                      </h2>
-                      <p className={styles.enterpriseDescription}>
-                        For big agencies and internal marketing teams - custom integrations
-                      </p>
-                    </div>
-
-                  </div>
-
-                  {/* Let's talk button in left section */}
-                  <button
-                    className={styles.enterpriseButton}
-                    onClick={() => {
-                      router.push(`/dashboard/support?category=${encodeURIComponent(SupportCategory.ENTERPRISE_PLAN)}`);
-                    }}
-                  >
-                    <span className={styles.enterpriseButtonText}>
-                      Let's talk
-                    </span>
-                  </button>
-                </div>
-
-                {/* Divider */}
-                <div className={styles.enterpriseDivider} />
-
-                {/* Right Section - Features in Column */}
-                <div className={styles.enterpriseRightSection}>
-                  {[
-                    "Everything from Team plan",
-                    "10+ users",
-                    "Custom integrations",
-                  ].map((feature, index) => (
-                    <div key={index} className={styles.enterpriseFeature}>
-                      <div className={styles.enterpriseFeatureCheck}>
-                        <div className={styles.enterpriseFeatureCheckCircle}>
-                          <Check className={styles.enterpriseFeatureCheckIcon} strokeWidth={3} />
-                        </div>
-                      </div>
-                      <span className={styles.enterpriseFeatureText}>
-                        {feature}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <EnterprisePlanCard />
       )}
 
       {/* Save 50% Dialog */}
