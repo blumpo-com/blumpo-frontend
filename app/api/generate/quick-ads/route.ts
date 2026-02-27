@@ -191,20 +191,24 @@ export async function POST(req: Request) {
       } catch (callbackError) {
         const callbackWaitDuration = Date.now() - callbackWaitStart;
         console.error('[GENERATE-QUICK-ADS] Callback timeout/error after', callbackWaitDuration, 'ms:', callbackError);
-        
-        // Timeout waiting for callback
-        await updateGenerationJobStatus(
-          jobId,
-          'FAILED',
-          'TIMEOUT',
-          'Generation exceeded maximum wait time of 7 minutes'
-        );
-        
+
+        const currentJob = await getGenerationJobById(jobId);
+        if (currentJob?.status !== 'SUCCEEDED') {
+          await updateGenerationJobStatus(
+            jobId,
+            'FAILED',
+            'TIMEOUT',
+            'Generation exceeded maximum wait time of 7 minutes'
+          );
+        } else {
+          console.log('[GENERATE-QUICK-ADS] Job already SUCCEEDED after timeout, not updating to FAILED');
+        }
+
         return NextResponse.json({
           error: "Generation timeout",
           job_id: jobId,
-          status: 'FAILED',
-          error_code: 'TIMEOUT'
+          status: currentJob?.status ?? 'FAILED',
+          error_code: 'TIMEOUT',
         }, { status: 504 }); // Gateway Timeout
       }
 
