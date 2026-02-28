@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search') || undefined;
   const role = searchParams.get('role') as UserRole | null;
   const banned = searchParams.get('banned');
+  const paid = searchParams.get('paid');
 
   const result = await getAllUsers({
     page,
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
       search,
       role: role || undefined,
       banned: banned === 'true' ? true : banned === 'false' ? false : undefined,
+      paid: paid === 'true' ? true : undefined,
     },
   });
 

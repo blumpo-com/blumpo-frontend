@@ -32,6 +32,8 @@ export interface UserFilters {
   search?: string;
   role?: UserRole;
   banned?: boolean;
+  /** When true, only users with a paid plan (STARTER, GROWTH, TEAM) are returned. */
+  paid?: boolean;
 }
 
 export interface UsersResult {
@@ -84,6 +86,10 @@ export async function getAllUsers(
   
   if (filters.banned !== undefined) {
     conditions.push(eq(user.banFlag, filters.banned));
+  }
+
+  if (filters.paid === true) {
+    conditions.push(sql`${user.id} IN (SELECT user_id FROM token_account WHERE plan_code IN ('STARTER', 'GROWTH', 'TEAM'))`);
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

@@ -25,10 +25,11 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [bannedFilter, setBannedFilter] = useState<string>('all');
+  const [paidFilter, setPaidFilter] = useState<string>('all');
   const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange | null>(null);
 
   const { data, error, isLoading, mutate } = useSWR(
-    `/api/admin/users?page=${page}&limit=50${search ? `&search=${encodeURIComponent(search)}` : ''}${roleFilter !== 'all' ? `&role=${roleFilter}` : ''}${bannedFilter !== 'all' ? `&banned=${bannedFilter === 'banned'}` : ''}`,
+    `/api/admin/users?page=${page}&limit=50${search ? `&search=${encodeURIComponent(search)}` : ''}${roleFilter !== 'all' ? `&role=${roleFilter}` : ''}${bannedFilter !== 'all' ? `&banned=${bannedFilter === 'banned'}` : ''}${paidFilter === 'paid' ? '&paid=true' : ''}`,
     fetcher,
     { revalidateOnFocus: false }
   );
@@ -119,6 +120,14 @@ export default function UsersPage() {
             <option value="all">All Status</option>
             <option value="banned">Banned</option>
             <option value="active">Active</option>
+          </select>
+          <select
+            value={paidFilter}
+            onChange={(e) => setPaidFilter(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg"
+          >
+            <option value="all">All users</option>
+            <option value="paid">Paid only</option>
           </select>
         </div>
 
