@@ -14,7 +14,7 @@ const steps: Step[] = [
     number: "01",
     title: "Input your URL",
     description: "Paste your website link, and Blumpo will automatically scan your site to gather your brand assets including logo, typography, and colors.",
-    asset: "animated-input.mp4",
+    asset: "url-animation.mp4",
   },
   {
     number: "02",
