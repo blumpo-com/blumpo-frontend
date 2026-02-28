@@ -4,14 +4,13 @@ import { WallImage } from "./wall-image";
 
 export function HeroPhotoWall() {
   const images = [
-    { filename: "1.png", alt: "Hero Photo Wall" },
-    { filename: "2.png", alt: "Hero Photo Wall" },
-    { filename: "3.png", alt: "Hero Photo Wall" },
-    { filename: "4.png", alt: "Hero Photo Wall" },
-    { filename: "5.png", alt: "Hero Photo Wall" },
-    { filename: "6.png", alt: "Hero Photo Wall" },
-    { filename: "7.png", alt: "Hero Photo Wall" },
-
+    { filename: "1.avif", alt: "Hero Photo Wall" },
+    { filename: "2.avif", alt: "Hero Photo Wall" },
+    { filename: "3.avif", alt: "Hero Photo Wall" },
+    { filename: "4.avif", alt: "Hero Photo Wall" },
+    { filename: "5.avif", alt: "Hero Photo Wall" },
+    { filename: "6.avif", alt: "Hero Photo Wall" },
+    { filename: "7.avif", alt: "Hero Photo Wall" },
   ];
 
   // Duplicate images twice for seamless loop

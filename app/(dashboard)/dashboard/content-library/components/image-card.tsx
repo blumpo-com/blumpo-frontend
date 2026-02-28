@@ -20,6 +20,7 @@ interface ImageCardProps {
     e: React.MouseEvent
   ) => void | Promise<void>;
   onDownload: (image: AdImage) => void | Promise<void>;
+  onImageClick?: (image: AdImage) => void;
 }
 
 export function ImageCard({
@@ -29,6 +30,7 @@ export function ImageCard({
   onDelete,
   onRestore,
   onDownload,
+  onImageClick,
 }: ImageCardProps) {
   const remainingDeleteDays = (() => {
     if (!showUnsaved || !image.deleteAt) return null;
@@ -44,7 +46,18 @@ export function ImageCard({
       className={`${styles.imageCard} ${image.format === "9:16" ? styles.format9x16 : ""
         }`}
     >
-      <div className={styles.imageWrapper}>
+      <div
+        className={`${styles.imageWrapper} ${onImageClick ? styles.imageWrapperClickable : ""}`}
+        role={onImageClick ? "button" : undefined}
+        tabIndex={onImageClick ? 0 : undefined}
+        onClick={() => onImageClick?.(image)}
+        onKeyDown={(e) => {
+          if (onImageClick && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            onImageClick(image);
+          }
+        }}
+      >
         <Image
           src={image.publicUrl}
           alt={image.title || "Ad image"}
@@ -77,11 +90,12 @@ export function ImageCard({
         <button
           className={styles.actionButton}
           disabled={isActionLoading}
-          onClick={(e) =>
+          onClick={(e) => {
+            e.stopPropagation();
             showUnsaved
               ? onRestore(image.id, image.job?.id || null, e)
-              : onDelete(image.id, image.job?.id || null, e)
-          }
+              : onDelete(image.id, image.job?.id || null, e);
+          }}
           title={showUnsaved ? "Restore ad" : "Delete ad"}
         >
           {showUnsaved ? (

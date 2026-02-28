@@ -22,8 +22,8 @@ const googleLogo = "/assets/icons/google.svg";
 // Memoized Left Panel component - prevents re-renders when form state changes
 const LeftPanel = memo(function LeftPanel() {
   return (
-    <div className={`${styles.leftPanel}   h-full left-0 top-0 w-full lg:w-[60%] hidden lg:block`}>
-      <JetpackAdIllustration className="w-full h-full" />
+    <div className={`${styles.leftPanel}   h-full left-0 top-0 w-full lg:w-[60%] hidden lg:flex flex-col items-center justify-center`}>
+      <JetpackAdIllustration />
     </div>
   );
 });
@@ -140,7 +140,7 @@ export function Login() {
               {/* OTP Verification Content */}
               <div className="w-full flex flex-col gap-[41px] items-center">
                 <h1 className="font-bold text-[#040404] text-[44px] text-center">
-                  Ready to use Blumpo?
+                  Welcome to Blumpo!
                 </h1>
 
                 <h2 className="font-bold text-[#00bfa6] text-[27.873px] text-center">
@@ -219,9 +219,16 @@ export function Login() {
           ) : (
             <>
               {/* Login Content */}
-              <h1 className="font-bold text-[#040404] text-[44px] text-center">
-                Welcome to Blumpo!
-              </h1>
+              <div className="flex flex-col gap-3">
+                <h1 className="font-bold text-[#040404] text-[44px] text-center">
+                  Welcome to Blumpo!
+                </h1>
+                {(redirect === 'input-url' || redirect === 'generate') && (
+                  <p className="text-[22px] font-medium text-[#888E98] text-center">
+                    Sign up to generate 5 test ads - no credit card required
+                  </p>
+                )}
+              </div>
 
               {/* Form */}
               <div className="w-full">

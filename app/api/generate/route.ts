@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getUser, hasEnoughTokens, createGenerationJob, updateGenerationJobStatus, refundTokens, getBrandsByUserId, getExistingGenerationJobByWebsiteUrl } from "@/lib/db/queries";
+import { getGenerationJobById } from "@/lib/db/queries/generation";
 import { getAdImagesByJobId, getWorkflowsAndArchetypesByWorkflowIds } from "@/lib/db/queries/ads";
 import { normalizeWebsiteUrl } from "@/lib/utils";
 import { randomUUID } from "crypto";
-import { waitForCallback } from "@/lib/api/callback-waiter";
+import { waitForCallback, waitForExistingCallback } from "@/lib/api/callback-waiter";
 
 const TOKENS_COST_PER_GENERATION = 50;
 const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
@@ -13,17 +14,10 @@ const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received 
 export const maxDuration = 420; // 7 minutes
 
 export async function POST(req: Request) {
-  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
-    console.log("[GENERATE] Skipping generation (test mode)");
-    return NextResponse.json(
-      { error: "Generation disabled in test mode", error_code: "TEST_MODE" },
-      { status: 503 }
-    );
-  }
-
   const requestStartTime = Date.now();
   console.log('[GENERATE] Request started at', new Date().toISOString());
 
+  const isTestMode = process.env.NEXT_PUBLIC_IS_TEST_MODE === "true";
   const webhookUrl = process.env.N8N_WEBHOOK_URL + 'main-free-workflow';
   const webhookKey = process.env.N8N_WEBHOOK_KEY;
 
@@ -125,10 +119,22 @@ export async function POST(req: Request) {
         }, { status: existingJob.status === 'FAILED' ? 500 : 200 });
       }
 
-      // QUEUED or RUNNING - wait for callback (uses same Redis key as original job)
-      console.log('[GENERATE] Existing job in progress, waiting for callback...');
+      // QUEUED or RUNNING - wait for existing callback (uses same Redis key as original job)
+      console.log('[GENERATE] Existing job in progress, waiting for existing callback...');
       try {
-        const callbackResult = await waitForCallback(existingJob.id, MAX_WAIT_TIME);
+        const callbackResult = await waitForExistingCallback(existingJob.id, MAX_WAIT_TIME);
+        
+        // If no Redis entry exists, the job might have been started but callback not set up yet
+        // In this case, return early with current status
+        if (!callbackResult) {
+          console.log('[GENERATE] No existing Redis callback found for job:', existingJob.id);
+          return NextResponse.json({
+            job_id: existingJob.id,
+            status: existingJob.status,
+            message: 'Generation in progress - no callback available yet',
+          });
+        }
+        
         if (callbackResult.status === 'SUCCEEDED') {
           return NextResponse.json({
             job_id: existingJob.id,
@@ -234,6 +240,7 @@ export async function POST(req: Request) {
           job_id: jobId,
           website_url: url, // Pass website URL
           callback_url: callbackUrl, // Tell n8n where to send the callback
+          is_test_mode: isTestMode,
         }),
         signal: controller.signal,
       });
@@ -335,21 +342,26 @@ export async function POST(req: Request) {
         const callbackWaitDuration = Date.now() - callbackWaitStart;
         console.error('[GENERATE] Callback timeout/error after', callbackWaitDuration, 'ms:', callbackError);
 
-        // Timeout waiting for callback
-        await updateGenerationJobStatus(
-          jobId,
-          'FAILED',
-          'TIMEOUT',
-          'Generation exceeded maximum wait time of 7 minutes'
-        );
-        await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
+        // Only mark FAILED if job is not already SUCCEEDED (callback may have completed after our timeout)
+        const currentJob = await getGenerationJobById(jobId);
+        if (currentJob?.status !== 'SUCCEEDED') {
+          await updateGenerationJobStatus(
+            jobId,
+            'FAILED',
+            'TIMEOUT',
+            'Generation exceeded maximum wait time of 7 minutes'
+          );
+          await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
+        } else {
+          console.log('[GENERATE] Job already SUCCEEDED after timeout, not updating to FAILED');
+        }
 
         return NextResponse.json({
           error: "Generation timeout",
           job_id: jobId,
-          status: 'FAILED',
+          status: currentJob?.status ?? 'FAILED',
           error_code: 'TIMEOUT',
-          tokens_refunded: TOKENS_COST_PER_GENERATION
+          ...(currentJob?.status !== 'SUCCEEDED' ? { tokens_refunded: TOKENS_COST_PER_GENERATION } : {}),
         }, { status: 504 }); // Gateway Timeout
       }
 

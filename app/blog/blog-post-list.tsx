@@ -28,8 +28,8 @@ export function BlogPostList({ posts }: { posts: PostMeta[] }) {
 
   return (
     <div className="grid grid-cols-1 gap-x-50 gap-y-10 md:grid-cols-2">
-      {posts.map((post) => (
-        <article key={post.slug} className="group">
+      {posts.map((post, index) => (
+        <article key={post.slug || `post-${index}`} className="group">
           <Link href={`/blog/${post.slug}`} className="block">
             {post.cover && (
               <div className="mb-4 overflow-hidden rounded-lg aspect-video relative bg-gray-100 dark:bg-gray-800">

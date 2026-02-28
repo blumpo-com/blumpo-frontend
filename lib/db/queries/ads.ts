@@ -1,4 +1,4 @@
-import { desc, eq, and, sql, inArray, ne } from "drizzle-orm";
+import { desc, eq, and, sql, inArray, ne, lte, isNotNull } from "drizzle-orm";
 import { db } from "../drizzle";
 import {
   adArchetype,
@@ -104,6 +104,7 @@ export async function getUserAds(
   userId: string,
   options?: {
     brandId?: string;
+    jobId?: string;
     limit?: number;
     offset?: number;
     includeDeleted?: boolean;
@@ -116,6 +117,10 @@ export async function getUserAds(
 
   if (options?.brandId) {
     conditions.push(eq(adImage.brandId, options.brandId));
+  }
+
+  if (options?.jobId) {
+    conditions.push(eq(adImage.jobId, options.jobId));
   }
 
   if (!options?.includeDeleted) {
@@ -206,6 +211,29 @@ export async function restoreAdImage(adImageId: string) {
       deleteAt: null,
     })
     .where(eq(adImage.id, adImageId));
+}
+
+export async function getAdImagesEligibleForPermanentCleanup() {
+  const now = new Date();
+  return await db
+    .select()
+    .from(adImage)
+    .where(
+      and(
+        eq(adImage.isDeleted, true),
+        isNotNull(adImage.deleteAt),
+        lte(adImage.deleteAt, now),
+        eq(adImage.permanentlyDeleted, false)
+      )
+    );
+}
+
+export async function markAdImagesPermanentlyDeleted(adImageIds: string[]) {
+  if (adImageIds.length === 0) return;
+  await db
+    .update(adImage)
+    .set({ permanentlyDeleted: true, publicUrl: null })
+    .where(inArray(adImage.id, adImageIds));
 }
 
 export async function banAdImage(adImageId: string) {

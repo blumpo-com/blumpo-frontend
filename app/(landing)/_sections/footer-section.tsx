@@ -7,19 +7,44 @@ import Image from "next/image";
 import { UrlInput } from "@/components/url-input";
 import { UrlInputSection } from "./url-input-section";
 import { Button } from "@/components/ui/button";
+import { NewsletterDialog, type NewsletterDialogStatus } from "@/components/newsletter-dialog";
 
 export function Footer() {
   const [email, setEmail] = useState("");
   const [currentYear] = useState(new Date().getFullYear());
+  const [dialogStatus, setDialogStatus] = useState<NewsletterDialogStatus | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement newsletter subscription
-    console.log("Newsletter subscription:", email);
-    setEmail("");
+    if (!email || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDialogStatus("error");
+      } else {
+        setDialogStatus(data.status as NewsletterDialogStatus);
+      }
+    } catch {
+      setDialogStatus("error");
+    } finally {
+      setIsSubmitting(false);
+      setEmail("");
+    }
   };
 
   return (
+    <>
+    <NewsletterDialog status={dialogStatus} onClose={() => setDialogStatus(null)} />
     <footer className="w-full bg-gradient-to-b from-[rgba(249,250,251,0.5)] to-[rgba(198,240,234,0.5)] mt-20">
       {/* CTA Section */}
       <div className="flex flex-col gap-5 lg:gap-30 items-center justify-center px-4 py-[25px]">
@@ -74,38 +99,26 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Company */}
-            <div className="flex flex-col gap-6 w-[154px]">
-              <h3 className="font-medium text-[20px] text-black">Company</h3>
-              <div className="flex flex-col gap-[14px] font-normal text-[18px] text-black">
-                <Link href="#product" className="hover:text-gray-600 transition-colors">
-                  How it works
-                </Link>
-                <Link href="/privacy" className="hover:text-gray-600 transition-colors">
-                  Privacy policy
-                </Link>
-                <Link href="/refund" className="hover:text-gray-600 transition-colors">
-                  Refund policy
-                </Link>
-                <Link href="/contact" className="hover:text-gray-600 transition-colors">
-                  Contact us
-                </Link>
-              </div>
-            </div>
 
             {/* Resources */}
             <div className="flex flex-col gap-6 w-[154px]">
               <h3 className="font-medium text-[20px] text-black">Resources</h3>
               <div className="flex flex-col gap-[14px] font-normal text-[18px] text-black">
+                <Link href="/#product" className="hover:text-gray-600 transition-colors">
+                  How it works
+                </Link>
                 <Link href="/blog" className="hover:text-gray-600 transition-colors">
                   Blog
                 </Link>
-                <Link href="#pricing" className="hover:text-gray-600 transition-colors">
+                <Link href="/#pricing" className="hover:text-gray-600 transition-colors">
                   Pricing
                 </Link>
-                <Link href="/contact" className="hover:text-gray-600 transition-colors">
+                <a
+                  href="mailto:support@blumpo.com?subject=Contact%20Blumpo&body=Hello%20Blumpo%20team%2C%0A%0A"
+                  className="hover:text-gray-600 transition-colors"
+                >
                   Contact us
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -123,7 +136,8 @@ export function Footer() {
                   />
                   <button
                     type="submit"
-                    className="flex-shrink-0 w-7 h-7 rounded-full bg-white flex items-center justify-center hover:bg-gray-50 transition-colors"
+                    disabled={isSubmitting}
+                    className="flex-shrink-0 w-7 h-7 rounded-full bg-white flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
                     <ArrowRight className="h-4 w-4 text-[#0a0a0a]" />
                   </button>
@@ -192,5 +206,6 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

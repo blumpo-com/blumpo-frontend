@@ -126,6 +126,8 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* CTA button glow – from Figma (node 4251-8312) */
+    --shadow-cta-glow: 0 0 10px 0 rgba(0, 191, 255, 0.6);
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -204,7 +206,7 @@
     @apply bg-gradient-to-r from-brand-secondary to-brand-primary;
   }
   .header-gradient {
-    @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-5xl;
+    @apply text-4xl text-center font-bold bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent tracking-tight md:text-5xl w-fit;
     line-height: 1.3;
   }
 
@@ -223,6 +225,11 @@
 
   .sexy-shadow {
     @apply shadow-[0_0_24px_rgba(0,191,166,0.35),0_0_48px_rgba(88,199,255,0.2)];
+  }
+
+  /* CTA button glow – from Figma (node 4251-8312) */
+  .shadow-cta-glow {
+    box-shadow: var(--shadow-cta-glow);
   }
  
 }

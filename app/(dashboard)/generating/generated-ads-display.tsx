@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { PricingDialog } from '@/components/PricingDialog';
 import styles from './generated-ads-display.module.css';
 
 interface AdImage {
@@ -77,6 +81,17 @@ const archetypes = [
   },
 ];
 
+function PaidOnlyBadge() {
+  return (
+    <div className={styles.paidBadge}>
+      <svg width="16" height="16" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
+      </svg>
+      <span>Paid only</span>
+    </div>
+  );
+}
+
 export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: GeneratedAdsDisplayProps) {
   const router = useRouter();
   const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
@@ -87,7 +102,8 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [fontBoxHeight, setFontBoxHeight] = useState<number | null>(null);
   const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
-  
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+
   // Refs for logo, font, and colors boxes
   const logoBoxRef = useRef<HTMLDivElement>(null);
   const fontBoxRef = useRef<HTMLDivElement>(null);
@@ -158,7 +174,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
       const timeoutId = setTimeout(() => {
         updateBoxHeights();
       }, 100);
-      
+
       return () => {
         resizeObserver.disconnect();
         clearTimeout(timeoutId);
@@ -175,35 +191,35 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
     if (downloadingIds.has(imageId)) {
       return;
     }
-    
+
     // Set downloading state
     setDownloadingIds(prev => new Set(prev).add(imageId));
-    
+
     try {
       // Fetch the image
       const response = await fetch(imageUrl);
       const blob = await response.blob();
-      
+
       // Create a download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
+
       // Extract filename from URL or use adId
       const filename = imageUrl.split('/').pop() || `ad-${imageId}.png`;
       link.download = filename;
-      
+
       // Trigger download
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       // Track download in state
       setDownloadedIds(prev => new Set(prev).add(imageId));
-      
+
       // Log download event to analytics
       try {
         const analyticsResponse = await fetch('/api/ad-actions', {
@@ -216,7 +232,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             downloadedIds: [imageId],
           }),
         });
-        
+
         if (!analyticsResponse.ok) {
           console.error('Failed to log download event');
         }
@@ -224,7 +240,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
         console.error('Error logging download event:', analyticsError);
         // Don't fail the download if analytics fails
       }
-      
+
       console.log('Downloaded ad:', imageId);
     } catch (error) {
       console.error('Error downloading image:', error);
@@ -239,20 +255,23 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   };
 
   const handleGenerateMore = () => {
-    router.push('/dashboard/your-credits');
+    if (isPaidUser) {
+      router.push('/dashboard');
+    } else {
+      setPricingDialogOpen(true);
+    }
   };
 
   const handleRegenerate = () => {
     if (isPaidUser) {
-      // Navigate to dashboard for paid users
       router.push('/dashboard');
     } else {
-      router.push('/dashboard/your-credits');
+      setPricingDialogOpen(true);
     }
   };
 
-  const handlePaidSectionClick = (sectionName: string) => {
-    router.push('/dashboard/your-credits');
+  const handlePaidSectionClick = (_sectionName: string) => {
+    setPricingDialogOpen(true);
   };
 
   // Display logic:
@@ -261,10 +280,10 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   // - Paid users see all images without blur
   const hasFiveOrLess = images.length <= 5 && !isPaidUser;
   const hasSixOrMore = images.length >= 6 && !isPaidUser;
-  
+
   let displayImages: AdImage[] = [];
   let blurredImage: AdImage | null = null;
-  
+
   if (hasFiveOrLess && images.length > 0) {
     // Show images (1-5), then add blurred first image at the end
     displayImages = images.slice(0, 5);
@@ -279,395 +298,386 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   }
 
   return (
-    <div className={styles.container}>
-      {/* Left Panel - Generated Ads */}
-      <div className={styles.leftPanel}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>
-            <span className={styles.titleText}>
-              Ads crafted for your brand are here <span className={styles.titleEmoji}>👋</span>
-            </span>
-          </h1>
-          <p className={styles.subtitle}>
-            Hover over and download them for free!
-          </p>
-        </div>
-        
-        <div className={styles.imagesGrid}>
-          {/* Display non-blurred images first */}
-          {displayImages.map((image) => {
-            return (
+    <>
+      <div className={styles.container}>
+        {/* Left Panel - Generated Ads */}
+        <div className={styles.leftPanel}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>
+              <span className={styles.titleText}>
+                Ads crafted for your brand are here <span className={styles.titleEmoji}>👋</span>
+              </span>
+            </h1>
+            <p className={styles.subtitle}>
+              Hover over and download them for free!
+            </p>
+          </div>
+
+          <div className={styles.imagesGrid}>
+            {/* Display non-blurred images first */}
+            {displayImages.map((image) => {
+              return (
+                <div
+                  key={image.id}
+                  className={styles.imageCard}
+                  onMouseEnter={() => setHoveredImageId(image.id)} // Image id with flag if it is blurred
+                  onMouseLeave={() => setHoveredImageId(null)}
+                >
+                  <div className={styles.imageWrapper}>
+                    <img
+                      src={image.publicUrl}
+                      alt={image.title || 'Generated ad'}
+                      className={styles.image}
+                    />
+                    {hoveredImageId === image.id && (
+                      <>
+                        <div className={styles.hoverOverlay} />
+                        <button
+                          className={`${styles.downloadButton} ${downloadingIds.has(image.id) ? styles.downloadButtonLoading : ''}`}
+                          onClick={() => handleDownload(image.publicUrl, image.id)}
+                          disabled={downloadingIds.has(image.id)}
+                          aria-label={downloadingIds.has(image.id) ? 'Downloading...' : 'Download image'}
+                        >
+                          {downloadingIds.has(image.id) ? (
+                            <>
+                              <p className={styles.downloadText}>Downloading...</p>
+                              <div className={styles.downloadSpinner}></div>
+                            </>
+                          ) : (
+                            <>
+                              <p className={styles.downloadText}>Download image</p>
+                              <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
+                                <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </>
+                          )}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Display blurred image at the end if applicable */}
+            {blurredImage && (
               <div
-                key={image.id}
-                className={styles.imageCard}
-                onMouseEnter={() => setHoveredImageId(image.id)} // Image id with flag if it is blurred
+                key={blurredImage.id + '-blurred'}
+                className={`${styles.imageCard} ${styles.blurredCard}`}
+                onMouseEnter={() => setHoveredImageId(blurredImage!.id + '-blurred')}
                 onMouseLeave={() => setHoveredImageId(null)}
               >
                 <div className={styles.imageWrapper}>
                   <img
-                    src={image.publicUrl}
-                    alt={image.title || 'Generated ad'}
+                    src={blurredImage.publicUrl}
+                    alt={blurredImage.title || 'Generated ad'}
                     className={styles.image}
                   />
-                  {hoveredImageId === image.id && (
+                  <div className={`${styles.blurredOverlay} ${hoveredImageId === (blurredImage.id + '-blurred') ? styles.blurredOverlayHidden : ''}`}>
+                    <span className={styles.questionMark}>?</span>
+                  </div>
+                  {hoveredImageId === (blurredImage.id + '-blurred') && (
                     <>
                       <div className={styles.hoverOverlay} />
                       <button
-                        className={`${styles.downloadButton} ${downloadingIds.has(image.id) ? styles.downloadButtonLoading : ''}`}
-                        onClick={() => handleDownload(image.publicUrl, image.id)}
-                        disabled={downloadingIds.has(image.id)}
-                        aria-label={downloadingIds.has(image.id) ? 'Downloading...' : 'Download image'}
+                        className={`${styles.downloadButton} ${downloadingIds.has(blurredImage.id) ? styles.downloadButtonLoading : ''}`}
+                        onClick={() => handlePaidSectionClick('blurred-ad-download')}
+                        disabled={downloadingIds.has(blurredImage.id)}
+                        aria-label="Upgrade to download"
                       >
-                        {downloadingIds.has(image.id) ? (
-                          <>
-                            <p className={styles.downloadText}>Downloading...</p>
-                            <div className={styles.downloadSpinner}></div>
-                          </>
-                        ) : (
-                          <>
-                            <p className={styles.downloadText}>Download image</p>
-                            <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
-                              <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </>
-                        )}
+                        <p className={styles.downloadText}>Download image</p>
+                        <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
+                          <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                       </button>
                     </>
                   )}
                 </div>
               </div>
-            );
-          })}
-          
-          {/* Display blurred image at the end if applicable */}
-          {blurredImage && (
-            <div
-              key={blurredImage.id + '-blurred'}
-              className={`${styles.imageCard} ${styles.blurredCard}`}
-              onMouseEnter={() => setHoveredImageId(blurredImage!.id + '-blurred')}
-              onMouseLeave={() => setHoveredImageId(null)}
-            >
-              <div className={styles.imageWrapper}>
-                <img
-                  src={blurredImage.publicUrl}
-                  alt={blurredImage.title || 'Generated ad'}
-                  className={styles.image}
-                />
-                <div className={`${styles.blurredOverlay} ${hoveredImageId === (blurredImage.id + '-blurred') ? styles.blurredOverlayHidden : ''}`}>
-                  <span className={styles.questionMark}>?</span>
-                </div>
-                {hoveredImageId === (blurredImage.id + '-blurred') && (
-                  <>
-                    <div className={styles.hoverOverlay} />
-                    <button
-                      className={`${styles.downloadButton} ${downloadingIds.has(blurredImage.id) ? styles.downloadButtonLoading : ''}`}
-                      onClick={() => handlePaidSectionClick('blurred-ad-download')}
-                      disabled={downloadingIds.has(blurredImage.id)}
-                      aria-label="Upgrade to download"
-                    >
-                      <p className={styles.downloadText}>Download image</p>
-                      <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
-                        <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Right Panel - Insights & Details */}
-      <div className={styles.rightPanel}>
-        {/* Decorative Circles Background */}
-        <div className={styles.decorativeCircles}>
-          <div className={styles.circleLeft} />
-          <div className={styles.circleTopRight} />
-          <div className={styles.circleBottomRight} />
-        </div>
-        
-        <div className={styles.insightsSection}>
-          <p className={styles.insightsTitle}>
-            Insights & components based on your website, Reddit and social media research
-          </p>
-        </div>
-
-        {/* Brand Components Section */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Input tag name</h2>
-          <div className={styles.brandComponents}>
-            <div className={styles.brandComponent}>
-              <p className={styles.componentLabel}>Logo</p>
-              <div ref={logoBoxRef} className={styles.componentBox}>
-                {isLoadingBrandData ? (
-                  <div className={styles.skeletonLogo} />
-                ) : brandData?.logoUrl ? (
-                  <img 
-                    src={brandData.logoUrl} 
-                    alt={`${brandData.name} logo`}
-                    className={styles.logoImage}
-                    onLoad={() => {
-                      // Update font and colors box heights when logo image loads
-                      if (logoBoxRef.current) {
-                        const logoHeight = logoBoxRef.current.offsetHeight;
-                        if (fontBoxRef.current) {
-                          setFontBoxHeight(logoHeight);
-                        }
-                        if (colorsBoxRef.current) {
-                          setColorsBoxHeight(logoHeight);
-                        }
-                      }
-                    }}
-                  />
-                ) : null}
-              </div>
-            </div>
-            <div className={styles.brandComponent}>
-              <p className={styles.componentLabel}>Colors</p>
-              <div 
-                ref={colorsBoxRef}
-                className={styles.colorsBox}
-                style={colorsBoxHeight !== null ? { height: `${colorsBoxHeight}px`, width: `${colorsBoxHeight}px` } : undefined}
-              >
-                {isLoadingBrandData ? (
-                  <div className={styles.colorSwatches}>
-                    <div 
-                      className={styles.skeletonColorSwatch}
-                      style={colorsBoxHeight !== null ? {
-                        width: `${(colorsBoxHeight - 4) / 2}px`,
-                        height: `${(colorsBoxHeight - 4) / 2}px`,
-                      } : undefined}
-                    />
-                    <div 
-                      className={styles.skeletonColorSwatch}
-                      style={colorsBoxHeight !== null ? {
-                        width: `${(colorsBoxHeight - 4) / 2}px`,
-                        height: `${(colorsBoxHeight - 4) / 2}px`,
-                      } : undefined}
-                    />
-                    <div 
-                      className={styles.skeletonColorSwatch}
-                      style={colorsBoxHeight !== null ? {
-                        width: `${(colorsBoxHeight - 4) / 2}px`,
-                        height: `${(colorsBoxHeight - 4) / 2}px`,
-                      } : undefined}
-                    />
-                    <div 
-                      className={styles.skeletonColorSwatch}
-                      style={colorsBoxHeight !== null ? {
-                        width: `${(colorsBoxHeight - 4) / 2}px`,
-                        height: `${(colorsBoxHeight - 4) / 2}px`,
-                      } : undefined}
-                    />
-                  </div>
-                ) : brandData?.colors && brandData.colors.length > 0 ? (
-                  <div className={styles.colorSwatches}>
-                    {brandData.colors.slice(0, 4).map((color, index) => (
-                      <div 
-                        key={index} 
-                        className={styles.colorSwatch} 
-                        style={{
-                          backgroundColor: color,
-                          ...(colorsBoxHeight !== null ? {
-                            width: `${(colorsBoxHeight - 4) / 2}px`,
-                            height: `${(colorsBoxHeight - 4) / 2}px`,
-                          } : {}),
-                        }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-            <div className={styles.brandComponent}>
-              <p className={styles.componentLabel}>Font</p>
-              <div 
-                ref={fontBoxRef}
-                className={`${styles.componentBox} ${styles.font}`}
-                style={fontBoxHeight !== null ? { height: `${fontBoxHeight}px` } : undefined}
-              >
-                {isLoadingBrandData ? (
-                  <div className={styles.skeletonFont} />
-                ) : (
-                  <p className={styles.fontName}>
-                    {(() => {
-                      if (!brandData?.fonts) return null;
-                      if (typeof brandData.fonts === 'string') return brandData.fonts;
-                      if (Array.isArray(brandData.fonts) && brandData.fonts.length > 0) {
-                        // Sort by count (descending) to get most popular font
-                        const sortedFonts = [...brandData.fonts].sort((a, b) => {
-                          const countA = typeof a === 'object' && a !== null ? (a.count || 0) : 0;
-                          const countB = typeof b === 'object' && b !== null ? (b.count || 0) : 0;
-                          return countB - countA;
-                        });
-                        const mostPopularFont = sortedFonts[0];
-                        if (typeof mostPopularFont === 'string') return mostPopularFont;
-                        if (typeof mostPopularFont === 'object' && mostPopularFont !== null) {
-                          return mostPopularFont.fontFamily || mostPopularFont.family || null;
-                        }
-                      }
-                      return null;
-                    })()}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.divider} />
-
-        {/* Customer Insights Section */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Customer insights</h2>
-          <div className={styles.insightsGrid}>
-            <div className={styles.insightBox}>
-              <p className={styles.insightLabel}>Customer pain points</p>
-              <div className={styles.insightContent}>
-                {isLoadingBrandData ? (
-                  <div className={styles.skeletonInsightList}>
-                    <div className={styles.skeletonInsightItem} />
-                    <div className={styles.skeletonInsightItem} />
-                    <div className={styles.skeletonInsightItem} />
-                  </div>
-                ) : insights?.customerPainPoints && insights.customerPainPoints.length > 0 ? (
-                  <ul className={styles.insightList}>
-                    {insights.customerPainPoints.slice(0, 5).map((point, index) => (
-                      <li key={index}>{point}</li>
-                    ))}
-                  </ul>
-                ) : insights?.redditCustomerPainPoints && Array.isArray(insights.redditCustomerPainPoints) && insights.redditCustomerPainPoints.length > 0 ? (
-                  <ul className={styles.insightList}>
-                    {insights.redditCustomerPainPoints.slice(0, 5).map((point: any, index: number) => (
-                      <li key={index}>{typeof point === 'string' ? point : point?.text || point?.point || JSON.stringify(point)}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </div>
-            <div className={styles.insightBox}>
-              <p className={styles.insightLabel}>Customer groups</p>
-              <div className={styles.insightContent}>
-                {isLoadingBrandData ? (
-                  <div className={styles.skeletonInsightList}>
-                    <div className={styles.skeletonInsightItem} />
-                    <div className={styles.skeletonInsightItem} />
-                    <div className={styles.skeletonInsightItem} />
-                  </div>
-                ) : insights?.targetCustomers && insights.targetCustomers.length > 0 ? (
-                  <ul className={styles.insightList}>
-                    {insights.targetCustomers.slice(0, 5).map((group, index) => (
-                      <li key={index}>{group}</li>
-                    ))}
-                  </ul>
-                ) : insights?.customerGroups && insights.customerGroups.length > 0 ? (
-                  <ul className={styles.insightList}>
-                    {insights.customerGroups.slice(0, 5).map((group, index) => (
-                      <li key={index}>{group}</li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button className={styles.actionButton} onClick={handleGenerateMore}>
-          <span>Generate more ads with Blumpo</span>
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-            <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-
-        <div className={styles.divider} />
-
-        {/* Ad Types Section */}
-        <div className={styles.section} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-types') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
-          <div className={styles.sectionHeader}>
-            {!isPaidUser && (
-              <div className={styles.paidBadge}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                </svg>
-                <span>Paid only</span>
-              </div>
             )}
-            <h2 className={styles.sectionTitle}>Ad types</h2>
           </div>
-          <div className={styles.archetypesGrid}>
-            {archetypes
-              .map((archetype) => (
-                <div key={archetype.code} className={styles.archetypeCard}>
-                  {archetype.displayName}
+
+          <div className="flex justify-center w-full mt-6">
+            <Button
+              asChild
+              variant="black"
+              className="max-w-[376px] w-full flex items-center justify-between gap-2 px-6"
+            >
+              <Link href="/dashboard/content-library?tab=unsaved" className="flex items-center justify-between gap-2 w-full">
+                <span>Go to Blumpo platform</span>
+                <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Right Panel - Insights & Details */}
+        <div className={styles.rightPanel}>
+          {/* Decorative Circles Background */}
+          <div className={styles.decorativeCircles}>
+            <div className={styles.circleLeft} />
+            <div className={styles.circleTopRight} />
+            <div className={styles.circleBottomRight} />
+          </div>
+
+          <div className={styles.insightsSection}>
+            <p className={styles.insightsTitle}>
+              Insights & components based on your website, Reddit and social media research
+            </p>
+          </div>
+
+          {/* Brand Components Section */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Input tag name</h2>
+            <div className={styles.brandComponents}>
+              <div className={styles.brandComponent}>
+                <p className={styles.componentLabel}>Logo</p>
+                <div ref={logoBoxRef} className={styles.componentBox}>
+                  {isLoadingBrandData ? (
+                    <div className={styles.skeletonLogo} />
+                  ) : brandData?.logoUrl ? (
+                    <img
+                      src={brandData.logoUrl}
+                      alt={`${brandData.name} logo`}
+                      className={styles.logoImage}
+                      onLoad={() => {
+                        // Update font and colors box heights when logo image loads
+                        if (logoBoxRef.current) {
+                          const logoHeight = logoBoxRef.current.offsetHeight;
+                          if (fontBoxRef.current) {
+                            setFontBoxHeight(logoHeight);
+                          }
+                          if (colorsBoxRef.current) {
+                            setColorsBoxHeight(logoHeight);
+                          }
+                        }
+                      }}
+                    />
+                  ) : null}
                 </div>
-              ))}
-          </div>
-        </div>
-
-        <div className={styles.divider} />
-
-        {/* Ad Formats Section */}
-        <div className={styles.section}>
-          <div className={styles.formatsRow}>
-            <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-formats') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
-              <div className={styles.sectionHeader}>
-                {!isPaidUser && (
-                  <div className={styles.paidBadge}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                    </svg>
-                    <span>Paid only</span>
-                  </div>
-                )}
-                <h2 className={styles.sectionTitle}>Different ad formats</h2>
               </div>
-              <div className={styles.formatBoxes}>
-                <div className={styles.formatBox}>1:1</div>
-                <div className={styles.formatBox}>9:16</div>
+              <div className={styles.brandComponent}>
+                <p className={styles.componentLabel}>Colors</p>
+                <div
+                  ref={colorsBoxRef}
+                  className={styles.colorsBox}
+                  style={colorsBoxHeight !== null ? { height: `${colorsBoxHeight}px`, width: `${colorsBoxHeight}px` } : undefined}
+                >
+                  {isLoadingBrandData ? (
+                    <div className={styles.colorSwatches}>
+                      <div
+                        className={styles.skeletonColorSwatch}
+                        style={colorsBoxHeight !== null ? {
+                          width: `${(colorsBoxHeight - 4) / 2}px`,
+                          height: `${(colorsBoxHeight - 4) / 2}px`,
+                        } : undefined}
+                      />
+                      <div
+                        className={styles.skeletonColorSwatch}
+                        style={colorsBoxHeight !== null ? {
+                          width: `${(colorsBoxHeight - 4) / 2}px`,
+                          height: `${(colorsBoxHeight - 4) / 2}px`,
+                        } : undefined}
+                      />
+                      <div
+                        className={styles.skeletonColorSwatch}
+                        style={colorsBoxHeight !== null ? {
+                          width: `${(colorsBoxHeight - 4) / 2}px`,
+                          height: `${(colorsBoxHeight - 4) / 2}px`,
+                        } : undefined}
+                      />
+                      <div
+                        className={styles.skeletonColorSwatch}
+                        style={colorsBoxHeight !== null ? {
+                          width: `${(colorsBoxHeight - 4) / 2}px`,
+                          height: `${(colorsBoxHeight - 4) / 2}px`,
+                        } : undefined}
+                      />
+                    </div>
+                  ) : brandData?.colors && brandData.colors.length > 0 ? (
+                    <div className={styles.colorSwatches}>
+                      {brandData.colors.slice(0, 4).map((color, index) => (
+                        <div
+                          key={index}
+                          className={styles.colorSwatch}
+                          style={{
+                            backgroundColor: color,
+                            ...(colorsBoxHeight !== null ? {
+                              width: `${(colorsBoxHeight - 4) / 2}px`,
+                              height: `${(colorsBoxHeight - 4) / 2}px`,
+                            } : {}),
+                          }}
+                          title={color}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+              <div className={styles.brandComponent}>
+                <p className={styles.componentLabel}>Font</p>
+                <div
+                  ref={fontBoxRef}
+                  className={`${styles.componentBox} ${styles.font}`}
+                  style={fontBoxHeight !== null ? { height: `${fontBoxHeight}px` } : undefined}
+                >
+                  {isLoadingBrandData ? (
+                    <div className={styles.skeletonFont} />
+                  ) : (
+                    <p className={styles.fontName}>
+                      {(() => {
+                        if (!brandData?.fonts) return null;
+                        if (typeof brandData.fonts === 'string') return brandData.fonts;
+                        if (Array.isArray(brandData.fonts) && brandData.fonts.length > 0) {
+                          // Sort by count (descending) to get most popular font
+                          const sortedFonts = [...brandData.fonts].sort((a, b) => {
+                            const countA = typeof a === 'object' && a !== null ? (a.count || 0) : 0;
+                            const countB = typeof b === 'object' && b !== null ? (b.count || 0) : 0;
+                            return countB - countA;
+                          });
+                          const mostPopularFont = sortedFonts[0];
+                          if (typeof mostPopularFont === 'string') return mostPopularFont;
+                          if (typeof mostPopularFont === 'object' && mostPopularFont !== null) {
+                            return mostPopularFont.fontFamily || mostPopularFont.family || null;
+                          }
+                        }
+                        return null;
+                      })()}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-            <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
-              <div className={styles.sectionHeader}>
-                {!isPaidUser && (
-                  <div className={styles.paidBadge}>
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M6 1L7.5 4.5L11 6L7.5 7.5L6 11L4.5 7.5L1 6L4.5 4.5L6 1Z" fill="currentColor" />
-                    </svg>
-                    <span>Paid only</span>
-                  </div>
-                )}
-                <h2 className={styles.sectionTitle}>Language</h2>
+          </div>
+
+          <div className={styles.divider} />
+
+          {/* Customer Insights Section */}
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>Customer insights</h2>
+            <div className={styles.insightsGrid}>
+              <div className={styles.insightBox}>
+                <p className={styles.insightLabel}>Customer pain points</p>
+                <div className={styles.insightContent}>
+                  {isLoadingBrandData ? (
+                    <div className={styles.skeletonInsightList}>
+                      <div className={styles.skeletonInsightItem} />
+                      <div className={styles.skeletonInsightItem} />
+                      <div className={styles.skeletonInsightItem} />
+                    </div>
+                  ) : insights?.customerPainPoints && insights.customerPainPoints.length > 0 ? (
+                    <ul className={styles.insightList}>
+                      {insights.customerPainPoints.slice(0, 5).map((point, index) => (
+                        <li key={index}>{point}</li>
+                      ))}
+                    </ul>
+                  ) : insights?.redditCustomerPainPoints && Array.isArray(insights.redditCustomerPainPoints) && insights.redditCustomerPainPoints.length > 0 ? (
+                    <ul className={styles.insightList}>
+                      {insights.redditCustomerPainPoints.slice(0, 5).map((point: any, index: number) => (
+                        <li key={index}>{typeof point === 'string' ? point : point?.text || point?.point || JSON.stringify(point)}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               </div>
-              <div className={styles.languageBox}>
-                {isLoadingBrandData ? (
-                  <div className={styles.skeletonLanguage} />
-                ) : brandData?.language ? (
-                  <span>
-                    {brandData.language === 'en' || brandData.language === 'English' ? '🇬🇧 English' 
-                      : brandData.language === 'pl' || brandData.language === 'Polish' ? '🇵🇱 Polish'
-                      : brandData.language === 'de' || brandData.language === 'German' ? '🇩🇪 German'
-                      : brandData.language === 'fr' || brandData.language === 'French' ? '🇫🇷 French'
-                      : brandData.language === 'es' || brandData.language === 'Spanish' ? '🇪🇸 Spanish'
-                      : `🌐 ${brandData.language.toUpperCase()}`}
-                  </span>
-                ) : null}
+              <div className={styles.insightBox}>
+                <p className={styles.insightLabel}>Customer groups</p>
+                <div className={styles.insightContent}>
+                  {isLoadingBrandData ? (
+                    <div className={styles.skeletonInsightList}>
+                      <div className={styles.skeletonInsightItem} />
+                      <div className={styles.skeletonInsightItem} />
+                      <div className={styles.skeletonInsightItem} />
+                    </div>
+                  ) : insights?.targetCustomers && insights.targetCustomers.length > 0 ? (
+                    <ul className={styles.insightList}>
+                      {insights.targetCustomers.slice(0, 5).map((group, index) => (
+                        <li key={index}>{group}</li>
+                      ))}
+                    </ul>
+                  ) : insights?.customerGroups && insights.customerGroups.length > 0 ? (
+                    <ul className={styles.insightList}>
+                      {insights.customerGroups.slice(0, 5).map((group, index) => (
+                        <li key={index}>{group}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>
+
+          <Button variant="cta" onClick={handleGenerateMore} className="w-full max-w-[376px] flex items-center justify-between gap-2 px-4">
+            <span>Generate more ads with Blumpo</span>
+            <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
+          </Button>
+
+          <div className={styles.divider} />
+
+          {/* Ad Types Section */}
+          <div className={styles.section} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-types') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
+            <div className={styles.sectionHeader}>
+              {!isPaidUser && <PaidOnlyBadge />}
+              <h2 className={styles.sectionTitle}>Ad types</h2>
+            </div>
+            <div className={styles.archetypesGrid}>
+              {archetypes
+                .map((archetype) => (
+                  <div key={archetype.code} className={styles.archetypeCard}>
+                    {archetype.displayName}
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          <div className={styles.divider} />
+
+          {/* Ad Formats Section */}
+          <div className={styles.section}>
+            <div className={styles.formatsRow}>
+              <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-formats') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
+                <div className={styles.sectionHeader}>
+                  {!isPaidUser && <PaidOnlyBadge />}
+                  <h2 className={styles.sectionTitle}>Different ad formats</h2>
+                </div>
+                <div className={styles.formatBoxes}>
+                  <div className={styles.formatBox}>1:1</div>
+                  <div className={styles.formatBox}>9:16</div>
+                </div>
+              </div>
+              <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
+                <div className={styles.sectionHeader}>
+                  {!isPaidUser && <PaidOnlyBadge />}
+                  <h2 className={styles.sectionTitle}>Language</h2>
+                </div>
+                <div className={styles.languageBox}>
+                  {isLoadingBrandData ? (
+                    <div className={styles.skeletonLanguage} />
+                  ) : brandData?.language ? (
+                    <span>
+                      {brandData.language === 'en' || brandData.language === 'English' ? '🇬🇧 English'
+                        : brandData.language === 'pl' || brandData.language === 'Polish' ? '🇵🇱 Polish'
+                          : brandData.language === 'de' || brandData.language === 'German' ? '🇩🇪 German'
+                            : brandData.language === 'fr' || brandData.language === 'French' ? '🇫🇷 French'
+                              : brandData.language === 'es' || brandData.language === 'Spanish' ? '🇪🇸 Spanish'
+                                : `🌐 ${brandData.language.toUpperCase()}`}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.divider} />
+
+          <Button variant="cta" onClick={handleRegenerate} className="w-full max-w-[376px] flex items-center justify-between gap-2 px-4">
+            <span>{isPaidUser ? 'Login to main platform' : 'Regenerate ads'}</span>
+            <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
+          </Button>
         </div>
-
-        <div className={styles.divider} />
-
-        <button className={styles.actionButton} onClick={handleRegenerate}>
-          <span>{isPaidUser ? 'Login to main platform' : 'Regenerate ads'}</span>
-          <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-            <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
       </div>
-    </div>
+      <PricingDialog open={pricingDialogOpen} onClose={() => setPricingDialogOpen(false)} />
+    </>
   );
 }
 

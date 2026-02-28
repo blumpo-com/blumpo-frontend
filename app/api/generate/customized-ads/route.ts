@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser, hasEnoughTokens, updateGenerationJobStatus, refundTokens, reserveTokens, getLedgerEntryByReference } from "@/lib/db/queries";
 import { getGenerationJobById } from "@/lib/db/queries/generation";
 import { updateGenerationJob } from "@/lib/db/queries/generation";
-import { waitForCallback } from "@/lib/api/callback-waiter";
+import { waitForCallback, waitForExistingCallback } from "@/lib/api/callback-waiter";
 
 const MAX_WAIT_TIME = 7 * 60 * 1000; // 7 minutes in milliseconds
 const WEBHOOK_TIMEOUT = 30000; // 30 seconds - just to confirm webhook received the request
@@ -26,17 +26,10 @@ function calculateTokenCost(formats: string[]): number {
 export const maxDuration = 420; // 7 minutes
 
 export async function POST(req: Request) {
-  if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true") {
-    console.log("[GENERATE-CUSTOMIZED] Skipping generation (test mode)");
-    return NextResponse.json(
-      { error: "Generation disabled in test mode", error_code: "TEST_MODE" },
-      { status: 503 }
-    );
-  }
-
   const requestStartTime = Date.now();
   console.log('[GENERATE-CUSTOMIZED] Request started at', new Date().toISOString());
-  
+
+  const isTestMode = process.env.NEXT_PUBLIC_IS_TEST_MODE === "true";
   const webhookKey = process.env.N8N_WEBHOOK_KEY;
 
   try {
@@ -72,24 +65,87 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // If job is already RUNNING, return success (idempotency)
-    if (job.status === 'RUNNING') {
-      console.log('[GENERATE-CUSTOMIZED] Job is already RUNNING, returning early');
+    // If job is already completed, return the result
+    if (job.status === 'SUCCEEDED') {
+      console.log('[GENERATE-CUSTOMIZED] Job is already SUCCEEDED');
+      // Note: Images should be fetched separately if needed, but for now return success
       return NextResponse.json({
         job_id: jobId,
-        status: 'RUNNING',
-        message: 'Generation already in progress',
+        status: 'SUCCEEDED',
+        message: 'Job already completed',
       });
     }
 
-    // If job is already completed or failed, don't proceed
-    if (job.status === 'SUCCEEDED' || job.status === 'FAILED' || job.status === 'CANCELED') {
+    // If job is already failed or canceled, return error
+    if (job.status === 'FAILED' || job.status === 'CANCELED') {
       console.log('[GENERATE-CUSTOMIZED] Job is already', job.status);
       return NextResponse.json({
         job_id: jobId,
         status: job.status,
-        message: `Job is already ${job.status}`,
-      }, { status: 400 });
+        images: [],
+        error_message: job.errorMessage || `Generation ${job.status.toLowerCase()}`,
+        error_code: job.errorCode || null,
+      }, { status: job.status === 'FAILED' ? 500 : 200 });
+    }
+
+    // RUNNING - wait for existing callback (uses same Redis key as original job)
+    if (job.status === 'RUNNING') {
+      console.log('[GENERATE-CUSTOMIZED] Existing job in progress, waiting for existing callback...');
+      try {
+        const callbackResult = await waitForExistingCallback(jobId, MAX_WAIT_TIME);
+        
+        // If no Redis entry exists, the job might have been started but callback not set up yet
+        // In this case, return early with RUNNING status
+        if (!callbackResult) {
+          console.log('[GENERATE-CUSTOMIZED] No existing Redis callback found for job:', jobId);
+          return NextResponse.json({
+            job_id: jobId,
+            status: 'RUNNING',
+            message: 'Generation in progress - no callback available yet',
+          });
+        }
+        
+        if (callbackResult.status === 'SUCCEEDED') {
+          return NextResponse.json({
+            job_id: jobId,
+            status: 'SUCCEEDED',
+            images: callbackResult.images,
+            tokens_used: job.tokensCost || 0,
+          });
+        } else {
+          // Refund tokens for failed/canceled jobs
+          try {
+            await refundTokens(user.id, job.tokensCost || 0, jobId);
+            console.log('[GENERATE-CUSTOMIZED] Tokens refunded for', callbackResult.status, 'job:', jobId);
+          } catch (refundError) {
+            console.error('[GENERATE-CUSTOMIZED] Error refunding tokens:', refundError);
+            // Continue even if refund fails - we still want to return the error to the user
+          }
+          await updateGenerationJobStatus(jobId, callbackResult.status as 'FAILED' | 'CANCELED', callbackResult.error_code, callbackResult.error_message);
+          return NextResponse.json({
+            job_id: jobId,
+            status: callbackResult.status,
+            images: callbackResult.images, // May be empty
+            error_message: callbackResult.error_message,
+            error_code: callbackResult.error_code,
+            tokens_refunded: job.tokensCost || 0
+          }, { status: callbackResult.status === 'FAILED' ? 500 : 200 });
+        }
+      } catch (callbackError) {
+        console.error('[GENERATE-CUSTOMIZED] Callback wait error for existing job:', callbackError);
+        const currentJob = await getGenerationJobById(jobId);
+        if (currentJob?.status !== 'SUCCEEDED') {
+          await updateGenerationJobStatus(jobId, 'FAILED', 'TIMEOUT', 'Generation timeout');
+        } else {
+          console.log('[GENERATE-CUSTOMIZED] Job already SUCCEEDED after timeout, not updating to FAILED');
+        }
+        return NextResponse.json({
+          error: "Generation timeout",
+          job_id: jobId,
+          status: currentJob?.status ?? 'FAILED',
+          error_code: 'TIMEOUT',
+        }, { status: 504 });
+      }
     }
 
     const archetypeCode = job.archetypeCode;
@@ -184,6 +240,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           job_id: jobId,
           callback_url: callbackUrl, // Tell n8n where to send the callback
+          is_test_mode: isTestMode,
         }),
         signal: controller.signal,
       });
@@ -302,31 +359,33 @@ export async function POST(req: Request) {
       } catch (callbackError) {
         const callbackWaitDuration = Date.now() - callbackWaitStart;
         console.error('[GENERATE-CUSTOMIZED] Callback timeout/error after', callbackWaitDuration, 'ms:', callbackError);
-        
-        // Timeout waiting for callback
-        await updateGenerationJobStatus(
-          jobId,
-          'FAILED',
-          'TIMEOUT',
-          'Generation exceeded maximum wait time of 7 minutes'
-        );
-        
-        // Refund tokens if they were reserved
-        if (tokensReserved) {
-          try {
-            await refundTokens(user.id, tokensCost, jobId);
-            console.log('[GENERATE-CUSTOMIZED] Tokens refunded for timeout');
-          } catch (refundError) {
-            console.error('[GENERATE-CUSTOMIZED] Error refunding tokens:', refundError);
+
+        const currentJob = await getGenerationJobById(jobId);
+        if (currentJob?.status !== 'SUCCEEDED') {
+          await updateGenerationJobStatus(
+            jobId,
+            'FAILED',
+            'TIMEOUT',
+            'Generation exceeded maximum wait time of 7 minutes'
+          );
+          if (tokensReserved) {
+            try {
+              await refundTokens(user.id, tokensCost, jobId);
+              console.log('[GENERATE-CUSTOMIZED] Tokens refunded for timeout');
+            } catch (refundError) {
+              console.error('[GENERATE-CUSTOMIZED] Error refunding tokens:', refundError);
+            }
           }
+        } else {
+          console.log('[GENERATE-CUSTOMIZED] Job already SUCCEEDED after timeout, not updating to FAILED');
         }
-        
+
         return NextResponse.json({
           error: "Generation timeout",
           job_id: jobId,
-          status: 'FAILED',
+          status: currentJob?.status ?? 'FAILED',
           error_code: 'TIMEOUT',
-          tokens_refunded: tokensReserved ? tokensCost : 0
+          tokens_refunded: currentJob?.status !== 'SUCCEEDED' && tokensReserved ? tokensCost : 0,
         }, { status: 504 }); // Gateway Timeout
       }
 

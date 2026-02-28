@@ -14,24 +14,18 @@ const DEFAULT_AD_IMAGES = [
   "/images/dashboard/animation-ads/4.png",
 ] as const;
 
-const videoBaseClass =
-  "absolute inset-0 w-full h-full object-contain z-10 scale-[1.3] origin-center translate-y-19";
+const ILLUSTRATION_WIDTH = 440;
+const ILLUSTRATION_HEIGHT = 300;
 
-const VIDEO_OVERLAY_MAX = "max-w-[460px]";
+const videoClass = "absolute inset-0 w-full h-full object-contain z-10 scale-[1.85] translate-y-17";
 
 export interface JetpackAdIllustrationProps {
   className?: string;
   animationSrc?: string;
-  /** Second animation played after the first one ends */
   animationSecondSrc?: string;
-  /** List of ad images; after each loop of the second animation the next image is shown. Defaults to 1–4.png from animation-ads folder. */
   adImageSources?: readonly string[];
   animationAlt?: string;
   adImageAlt?: string;
-  /** Optional: Tailwind classes to size the whole image container (image only; video overlay stays fixed). E.g. "max-w-[600px] max-h-[400px]" */
-  illustrationClassName?: string;
-  /** Optional: Tailwind classes for the ad image wrapper, e.g. "aspect-[16/10]" */
-  adImageClassName?: string;
 }
 
 export function JetpackAdIllustration({
@@ -41,14 +35,12 @@ export function JetpackAdIllustration({
   adImageSources = DEFAULT_AD_IMAGES,
   animationAlt = "Jetpack illustration",
   adImageAlt = "Ad template preview",
-  illustrationClassName,
-  adImageClassName,
 }: JetpackAdIllustrationProps) {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
   const [showSecond, setShowSecond] = useState(false);
   const [adIndex, setAdIndex] = useState(0);
-  const prevTimeRef = useRef<number>(0);
+  const prevTimeRef = useRef(0);
   const sources = adImageSources.length > 0 ? adImageSources : DEFAULT_AD_IMAGES;
 
   const handleFirstEnded = useCallback(() => {
@@ -59,78 +51,56 @@ export function JetpackAdIllustration({
 
   const handleSecondTimeUpdate = useCallback(() => {
     const video = video2Ref.current;
-    if (!video || !video.duration || !isFinite(video.duration)) return;
-
-    const currentTime = video.currentTime;
-    const duration = video.duration;
-
-    // Detect when video loops: if we were near the end (>90%) and now we're at the start (<10%)
-    if (prevTimeRef.current > duration * 0.9 && currentTime < duration * 0.1) {
+    if (!video?.duration || !isFinite(video.duration)) return;
+    const t = video.currentTime;
+    const d = video.duration;
+    if (prevTimeRef.current > d * 0.9 && t < d * 0.1) {
       setAdIndex((prev) => (prev + 1) % sources.length);
     }
-
-    prevTimeRef.current = currentTime;
+    prevTimeRef.current = t;
   }, [sources.length]);
 
   return (
-    <div
-      className={cn(
-        "w-full h-full p-4 flex items-center justify-center",
-        className
-      )}
-    >
+    <div className={cn("flex items-start justify-center p-4 h-[420px]", className)}>
       <div
-        className={cn(
-          "relative w-full h-full flex-shrink-0 rounded-xl overflow-visible scale-[1] 2xl:scale-[1.4]",
-          illustrationClassName ?? "max-w-[520px]"
-        )}
+        className="relative rounded-xl overflow-visible"
+        style={{
+          width: ILLUSTRATION_WIDTH,
+          height: ILLUSTRATION_HEIGHT,
+        }}
       >
-        {/* Layer 1: ad template (back) – container can grow via illustrationClassName */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className={cn(
-              "relative",
-              adImageClassName ?? "w-full max-h-full aspect-[16/10]"
-            )}
-          >
-            <Image
-              key={adIndex}
-              src={sources[adIndex]}
-              alt={adImageAlt}
-              fill
-              className="object-contain"
-              priority={adIndex === 0}
-            />
-          </div>
-        </div>
-        {/* Layer 2: video overlay – fixed size (460px), centered; does not grow with image */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={cn("relative w-full h-full", VIDEO_OVERLAY_MAX)}>
-            <video
-              ref={video1Ref}
-              src={animationSrc}
-              className={cn(videoBaseClass, showSecond && "opacity-0 pointer-events-none")}
-              autoPlay
-              loop={false}
-              muted
-              playsInline
-              aria-hidden={showSecond}
-              onEnded={handleFirstEnded}
-            />
-            <video
-              ref={video2Ref}
-              src={animationSecondSrc}
-              preload="auto"
-              className={cn(videoBaseClass, !showSecond && "opacity-0 pointer-events-none")}
-              loop
-              muted
-              playsInline
-              aria-label={animationAlt}
-              aria-hidden={!showSecond}
-              onTimeUpdate={handleSecondTimeUpdate}
-            />
-          </div>
-        </div>
+        <Image
+          key={adIndex}
+          src={sources[adIndex]}
+          alt={adImageAlt}
+          fill
+          className="object-contain"
+          priority={adIndex === 0}
+          sizes={`${ILLUSTRATION_WIDTH}px`}
+        />
+        <video
+          ref={video1Ref}
+          src={animationSrc}
+          className={cn(videoClass, showSecond && "opacity-0 pointer-events-none")}
+          autoPlay
+          loop={false}
+          muted
+          playsInline
+          aria-hidden={showSecond}
+          onEnded={handleFirstEnded}
+        />
+        <video
+          ref={video2Ref}
+          src={animationSecondSrc}
+          preload="auto"
+          className={cn(videoClass, !showSecond && "opacity-0 pointer-events-none")}
+          loop
+          muted
+          playsInline
+          aria-label={animationAlt}
+          aria-hidden={!showSecond}
+          onTimeUpdate={handleSecondTimeUpdate}
+        />
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
   const images = await getAdImagesByJobId(jobId);
   const validImages = images.filter(
-    (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
+    (img) => !img.errorFlag && img.publicUrl
   );
 
   // Get archetypes for each image from workflow_id
