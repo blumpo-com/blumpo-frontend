@@ -5,6 +5,8 @@ import {
   getUserJobs,
   getUserAdImages,
   getUserTokenLedger,
+  getArchetypeGenerationStatsByUser,
+  getWorkflowGenerationCountsByUser,
 } from '@/lib/db/queries/admin';
 import { redirect } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
@@ -22,12 +24,14 @@ export default async function UserDetailPage({
   }
 
   const { userId } = await params;
-  const [user, brands, jobs, adImages, tokenLedgerEntries] = await Promise.all([
+  const [user, brands, jobs, adImages, tokenLedgerEntries, archetypeStats, workflowCounts] = await Promise.all([
     getUserWithDetails(userId),
     getUserBrands(userId, 10),
     getUserJobs(userId, 10),
     getUserAdImages(userId, 10),
     getUserTokenLedger(userId, 10),
+    getArchetypeGenerationStatsByUser(userId),
+    getWorkflowGenerationCountsByUser(userId),
   ]);
 
   if (!user) {
@@ -146,6 +150,70 @@ export default async function UserDetailPage({
             </div>
           </dl>
         </AdminCard>
+      </div>
+
+      <div className="mt-6 space-y-6">
+        {archetypeStats.length > 0 && (
+          <AdminCard title="Workflow generation by archetype">
+            <p className="text-sm text-gray-500 mb-4">
+              For each archetype: workflows used by this user out of total workflow variants available (e.g. 4/23 = 4 workflows generated from 23 in archetype).
+            </p>
+            <ul className="space-y-2">
+              {archetypeStats.map((row) => (
+                <li key={row.archetypeCode} className="flex justify-between items-baseline text-sm">
+                  <span className="font-medium text-gray-900">
+                    {row.archetypeDisplayName} ({row.archetypeCode})
+                  </span>
+                  <span className="text-gray-600 font-mono">
+                    {Number(row.distinctWorkflowsUsed)}/{Number(row.totalWorkflowsInArchetype)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </AdminCard>
+        )}
+
+        {workflowCounts.filter((w) => Number(w.count) > 1).length > 0 && (
+          <AdminCard title="Workflows used more than once">
+            <p className="text-sm text-gray-500 mb-4">
+              Workflows used in more than one generation (job) for this user.
+            </p>
+            <ul className="space-y-4">
+              {workflowCounts
+                .filter((w) => Number(w.count) > 1)
+                .map((w) => {
+                  const ids: string[] =
+                    typeof w.jobIds === 'string'
+                      ? w.jobIds.split(',').map((s) => s.trim()).filter(Boolean)
+                      : [];
+                  return (
+                    <li key={w.workflowId} className="text-sm">
+                      <div className="flex justify-between items-baseline">
+                        <span className="font-mono text-gray-900">
+                          {w.workflowUid}
+                          {w.variantKey ? ` (${w.variantKey})` : ''}
+                        </span>
+                        <span className="text-gray-600">{Number(w.count)} generation{Number(w.count) !== 1 ? 's' : ''}</span>
+                      </div>
+                      {ids.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                          {ids.map((jobId) => (
+                            <Link
+                              key={jobId}
+                              href={`/admin/jobs/${jobId.trim()}`}
+                              className="text-blue-600 hover:text-blue-800 font-mono text-xs"
+                            >
+                              Job {jobId.trim().slice(0, 8)}…
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
+          </AdminCard>
+        )}
       </div>
 
       {/* Related Entities Section */}

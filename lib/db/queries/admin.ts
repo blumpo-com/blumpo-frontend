@@ -903,6 +903,42 @@ export async function getUserTokenLedger(userId: string, limit: number = 10) {
     .limit(limit);
 }
 
+/** Per-archetype generation stats for a user: distinct workflows used, total workflows in archetype, and distinct job count */
+export async function getArchetypeGenerationStatsByUser(userId: string) {
+  return await db
+    .select({
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+      distinctWorkflowsUsed: sql<number>`COUNT(DISTINCT ${adWorkflow.id})`.as('distinct_workflows_used'),
+      totalWorkflowsInArchetype: sql<number>`(SELECT COUNT(*)::int FROM ad_workflow w2 WHERE w2.archetype_code = ${adWorkflow.archetypeCode})`.as('total_workflows_in_archetype'),
+      generatedCount: sql<number>`COUNT(DISTINCT ${adImage.jobId})`.as('generated_count'),
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(eq(adImage.userId, userId))
+    .groupBy(adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(adWorkflow.archetypeCode);
+}
+
+/** Workflows used by this user with distinct job count and job IDs (use in UI to show workflows used more than once) */
+export async function getWorkflowGenerationCountsByUser(userId: string) {
+  return await db
+    .select({
+      workflowId: adWorkflow.id,
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      count: sql<number>`COUNT(DISTINCT ${adImage.jobId})`.as('count'),
+      jobIds: sql<string>`string_agg(DISTINCT ${adImage.jobId}::text, ',' ORDER BY ${adImage.jobId}::text)`.as('job_ids'),
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .where(eq(adImage.userId, userId))
+    .groupBy(adWorkflow.id, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode)
+    .orderBy(desc(sql`COUNT(DISTINCT ${adImage.jobId})`));
+}
+
 // Brand related entities
 export async function getBrandWithFullDetails(brandId: string) {
   const brandData = await db
@@ -989,6 +1025,42 @@ export async function getBrandAdImages(brandId: string, limit: number = 10) {
     .where(eq(adImage.brandId, brandId))
     .orderBy(desc(adImage.createdAt))
     .limit(limit);
+}
+
+/** Per-archetype generation stats for a brand: distinct workflows used, total workflows in archetype, and distinct job count */
+export async function getArchetypeGenerationStatsByBrand(brandId: string) {
+  return await db
+    .select({
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+      distinctWorkflowsUsed: sql<number>`COUNT(DISTINCT ${adWorkflow.id})`.as('distinct_workflows_used'),
+      totalWorkflowsInArchetype: sql<number>`(SELECT COUNT(*)::int FROM ad_workflow w2 WHERE w2.archetype_code = ${adWorkflow.archetypeCode})`.as('total_workflows_in_archetype'),
+      generatedCount: sql<number>`COUNT(DISTINCT ${adImage.jobId})`.as('generated_count'),
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(eq(adImage.brandId, brandId))
+    .groupBy(adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(adWorkflow.archetypeCode);
+}
+
+/** Workflows used by this brand with distinct job count and job IDs (use in UI to show workflows used more than once) */
+export async function getWorkflowGenerationCountsByBrand(brandId: string) {
+  return await db
+    .select({
+      workflowId: adWorkflow.id,
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      count: sql<number>`COUNT(DISTINCT ${adImage.jobId})`.as('count'),
+      jobIds: sql<string>`string_agg(DISTINCT ${adImage.jobId}::text, ',' ORDER BY ${adImage.jobId}::text)`.as('job_ids'),
+    })
+    .from(adImage)
+    .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
+    .where(eq(adImage.brandId, brandId))
+    .groupBy(adWorkflow.id, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode)
+    .orderBy(desc(sql`COUNT(DISTINCT ${adImage.jobId})`));
 }
 
 // Job related entities

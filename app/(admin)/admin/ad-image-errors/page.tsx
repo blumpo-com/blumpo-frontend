@@ -71,6 +71,7 @@ export default function AdImageErrorsPage() {
                 '',
               ]}
               emptyMessage={items.length === 0 ? 'No ad image errors found' : undefined}
+              scrollable
             >
               {items.map((row: Record<string, unknown>) => (
                 <AdminTableRow
