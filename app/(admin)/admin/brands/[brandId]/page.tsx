@@ -6,6 +6,8 @@ import {
   getArchetypeGenerationStatsByBrand,
   getWorkflowGenerationCountsByBrand,
 } from '@/lib/db/queries/admin';
+import { getQuickAdsCountByFormat } from '@/lib/db/queries/ads';
+import { getUserWithTokenBalance } from '@/lib/db/queries/tokens';
 import { redirect } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { RelatedEntitiesSection, RelatedEntity } from '@/components/admin/RelatedEntitiesSection';
@@ -29,12 +31,28 @@ export default async function BrandDetailPage({
   }
 
   // Fetch related entities
-  const [jobs, adImages, archetypeStats, workflowCounts] = await Promise.all([
+  const [jobs, adImages, archetypeStats, workflowCounts, quickAdsData] = await Promise.all([
     getBrandJobs(brandId, 10),
     getBrandAdImages(brandId, 10),
     getArchetypeGenerationStatsByBrand(brandId),
     getWorkflowGenerationCountsByBrand(brandId),
+    brand.user
+      ? Promise.all([
+          getUserWithTokenBalance(brand.user.id),
+          getQuickAdsCountByFormat(brand.user.id, brandId, '1:1'),
+          getQuickAdsCountByFormat(brand.user.id, brandId, '9:16'),
+        ]).then(([userWithToken, count1x1, count9x16]) => ({
+          planCode: userWithToken?.tokenAccount?.planCode ?? null,
+          format1x1Count: count1x1,
+          format9x16Count: count9x16,
+        }))
+      : Promise.resolve(null),
   ]);
+
+  const ownerHasPaidPlan =
+    quickAdsData &&
+    quickAdsData.planCode &&
+    quickAdsData.planCode !== 'FREE';
 
   // Prepare related entities for display
   const relatedEntities: RelatedEntity[] = [];
@@ -126,6 +144,30 @@ export default async function BrandDetailPage({
             </div>
           </dl>
         </AdminCard>
+
+        {ownerHasPaidPlan && quickAdsData && (
+          <AdminCard title="Quick ads (not viewed)">
+            <p className="text-sm text-gray-500 mb-4">
+              Owner has a paid plan ({quickAdsData.planCode}). Count of quick-ads ready but not yet displayed for this brand.
+            </p>
+            <dl className="space-y-2">
+              <div className="flex justify-between">
+                <dt className="text-sm font-medium text-gray-500">1:1 format</dt>
+                <dd className="text-sm text-gray-900 font-mono">{quickAdsData.format1x1Count}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-sm font-medium text-gray-500">9:16 format</dt>
+                <dd className="text-sm text-gray-900 font-mono">{quickAdsData.format9x16Count}</dd>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                <dt className="text-sm font-medium text-gray-500">Total</dt>
+                <dd className="text-sm text-gray-900 font-mono">
+                  {quickAdsData.format1x1Count + quickAdsData.format9x16Count}
+                </dd>
+              </div>
+            </dl>
+          </AdminCard>
+        )}
 
         <AdminCard title="Brand Assets">
           <dl className="space-y-4">
