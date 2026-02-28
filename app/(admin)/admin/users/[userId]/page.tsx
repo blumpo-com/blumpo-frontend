@@ -127,11 +127,79 @@ export default async function UserDetailPage({
                 <dd className="mt-1 text-sm text-gray-900">{user.tokenAccount.planCode}</dd>
               </div>
               <div>
+                <dt className="text-sm font-medium text-gray-500">Period</dt>
+                <dd className="mt-1 text-sm text-gray-900">{user.tokenAccount.period}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Last refill</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {user.tokenAccount.lastRefillAt
+                    ? new Date(user.tokenAccount.lastRefillAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Next refill</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {user.tokenAccount.nextRefillAt
+                    ? new Date(user.tokenAccount.nextRefillAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-sm font-medium text-gray-500">Subscription Status</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   {user.tokenAccount.subscriptionStatus || 'N/A'}
                 </dd>
               </div>
+              {/* Stripe data – for paid plans show missing fields in red */}
+              {user.tokenAccount.planCode !== 'FREE' && (
+                <>
+                  <div className="border-t border-gray-200 pt-3 mt-1">
+                    <dt className="text-sm font-medium text-gray-500 mb-2">Stripe data</dt>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Customer ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeCustomerId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeCustomerId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Subscription ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeSubscriptionId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeSubscriptionId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Product ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeProductId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeProductId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Price ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripePriceId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripePriceId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                </>
+              )}
             </dl>
           ) : (
             <p className="text-sm text-gray-500">No token account found</p>
