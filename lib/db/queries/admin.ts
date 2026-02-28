@@ -875,9 +875,10 @@ export async function getUserAdImages(userId: string, limit: number = 10) {
       publicUrl: adImage.publicUrl,
       brandId: adImage.brandId,
       jobId: adImage.jobId,
+      permanentlyDeleted: adImage.permanentlyDeleted,
     })
     .from(adImage)
-    .where(and(eq(adImage.userId, userId), eq(adImage.isDeleted, false)))
+    .where(and(eq(adImage.userId, userId)))
     .orderBy(desc(adImage.createdAt))
     .limit(limit);
 }
@@ -937,7 +938,7 @@ export async function getBrandWithFullDetails(brandId: string) {
     db
       .select({ count: count() })
       .from(adImage)
-      .where(and(eq(adImage.brandId, brandId), eq(adImage.isDeleted, false))),
+      .where(and(eq(adImage.brandId, brandId))),
   ]);
 
   return {
@@ -974,6 +975,7 @@ export async function getBrandAdImages(brandId: string, limit: number = 10) {
       publicUrl: adImage.publicUrl,
       jobId: adImage.jobId,
       userId: adImage.userId,
+      permanentlyDeleted: adImage.permanentlyDeleted,
     })
     .from(adImage)
     .where(eq(adImage.brandId, brandId))
@@ -1054,6 +1056,7 @@ export async function getJobAdImages(jobId: string) {
       publicUrl: adImage.publicUrl,
       brandId: adImage.brandId,
       userId: adImage.userId,
+      permanentlyDeleted: adImage.permanentlyDeleted,
     })
     .from(adImage)
     .where(and(eq(adImage.jobId, jobId)))
@@ -1185,6 +1188,7 @@ export interface AdImagesResult {
     banFlag: boolean;
     errorFlag: boolean;
     isDeleted: boolean;
+    permanentlyDeleted: boolean;
     userEmail: string;
     userDisplayName: string | null;
     brandName: string | null;
@@ -1202,7 +1206,7 @@ export async function getAllAdImages(
   const limit = params.limit || 50;
   const offset = (page - 1) * limit;
 
-  const conditions = [eq(adImage.isDeleted, false)];
+  const conditions = [];
 
   if (params.userId) {
     conditions.push(eq(adImage.userId, params.userId));
@@ -1241,6 +1245,7 @@ export async function getAllAdImages(
       banFlag: adImage.banFlag,
       errorFlag: adImage.errorFlag,
       isDeleted: adImage.isDeleted,
+      permanentlyDeleted: adImage.permanentlyDeleted,
       userEmail: user.email,
       userDisplayName: user.displayName,
       brandName: brand.name,
@@ -1290,7 +1295,6 @@ export async function getArchetypeImageCounts() {
     .from(adImage)
     .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
-    .where(eq(adImage.isDeleted, false))
     .groupBy(adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(desc(count()));
 }
@@ -1549,6 +1553,7 @@ export async function getAdImageErrorsList(options?: { page?: number; limit?: nu
         errorFlag: adImage.errorFlag,
         errorMessage: adImage.errorMessage,
         workflowId: adImage.workflowId,
+        permanentlyDeleted: adImage.permanentlyDeleted,
         workflowUid: adWorkflow.workflowUid,
         variantKey: adWorkflow.variantKey,
         archetypeCode: adWorkflow.archetypeCode,
