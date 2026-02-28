@@ -18,9 +18,10 @@ function getArchetypeWebhookEndpoint(archetypeId: string): string {
 }
 
 export async function POST(req: Request) {
+  const isTestMode = process.env.NEXT_PUBLIC_IS_TEST_MODE === "true";
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
   const webhookKey = process.env.N8N_WEBHOOK_KEY;
-  
+
   try {
     // Check if user is authenticated
     const user = await getUser();
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           brandId: brandId,
+          is_test_mode: isTestMode,
         }),
       });
 

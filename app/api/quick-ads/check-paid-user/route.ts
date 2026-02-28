@@ -6,12 +6,27 @@ import { getUserWithTokenBalance } from "@/lib/db/queries/tokens";
 
 const REQUIRED_ADS_PER_FORMAT = 10; // Paid users need 10 ads per format (20 total)
 
+/** Set to true to allow triggering quick ads generation from dashboard when NEXT_PUBLIC_IS_TEST_MODE is true. */
+const ALLOW_QUICK_ADS_IN_TEST_MODE = false;
+
 // Check if paid user has enough quick ads (20 total: 10 1:1 + 10 9:16)
 export async function GET(req: Request) {
   try {
     const user = await getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // In test mode, return needsGeneration: false so dashboard does not trigger auto-generation (unless ALLOW_QUICK_ADS_IN_TEST_MODE is true for manual testing)
+    if (process.env.NEXT_PUBLIC_IS_TEST_MODE === "true" && !ALLOW_QUICK_ADS_IN_TEST_MODE) {
+      return NextResponse.json({
+        isPaid: true,
+        needsGeneration: false,
+        format1x1Count: REQUIRED_ADS_PER_FORMAT,
+        format9x16Count: REQUIRED_ADS_PER_FORMAT,
+        needs1x1: false,
+        needs9x16: false,
+      });
     }
 
     // Check if user is paid
