@@ -12,7 +12,7 @@ export default async function AdminDashboardPage() {
     redirect('/dashboard?error=unauthorized');
   }
 
-  const stats = await getAdminStats();
+  const stats = await getAdminStats({ excludeAdminUsers: true });
 
   return (
     <div className="p-8">

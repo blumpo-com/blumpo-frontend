@@ -32,9 +32,9 @@ export async function GET(request: NextRequest) {
     getWorkflowImageCounts(),
     getArchetypeActionCounts(),
     getWorkflowActionCounts(),
-    getTopUsersByActions(10),
-    getActionConversionRates(),
-    getRecentAdActivity(50),
+    getTopUsersByActions(10, { excludeAdminUsers: true }),
+    getActionConversionRates({ excludeAdminUsers: true }),
+    getRecentAdActivity(50, { excludeAdminUsers: true }),
   ]);
 
   return NextResponse.json({

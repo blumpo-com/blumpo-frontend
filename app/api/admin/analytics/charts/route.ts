@@ -27,12 +27,12 @@ export async function GET(request: NextRequest) {
       subscriptionDistribution,
       recentActivity,
     ] = await Promise.all([
-      getUserGrowthData(days),
-      getTokenUsageData(days),
-      getJobStatusDistribution(),
-      getJobsOverTime(days),
-      getSubscriptionDistribution(),
-      getRecentActivity(15),
+      getUserGrowthData(days, { excludeAdminUsers: true }),
+      getTokenUsageData(days, { excludeAdminUsers: true }),
+      getJobStatusDistribution({ excludeAdminUsers: true }),
+      getJobsOverTime(days, { excludeAdminUsers: true }),
+      getSubscriptionDistribution({ excludeAdminUsers: true }),
+      getRecentActivity(15, { excludeAdminUsers: true }),
     ]);
 
     // Convert Date objects to ISO strings for JSON serialization
