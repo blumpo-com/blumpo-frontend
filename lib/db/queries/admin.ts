@@ -876,8 +876,12 @@ export async function getUserAdImages(userId: string, limit: number = 10) {
       brandId: adImage.brandId,
       jobId: adImage.jobId,
       permanentlyDeleted: adImage.permanentlyDeleted,
+      workflowUid: adWorkflow.workflowUid,
+      eventsCount: sql<number>`(SELECT COUNT(*)::int FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('events_count'),
+      eventTypes: sql<string | null>`(SELECT string_agg(DISTINCT event_type, ', ' ORDER BY event_type) FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('event_types'),
     })
     .from(adImage)
+    .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .where(and(eq(adImage.userId, userId)))
     .orderBy(desc(adImage.createdAt))
     .limit(limit);
@@ -976,8 +980,12 @@ export async function getBrandAdImages(brandId: string, limit: number = 10) {
       jobId: adImage.jobId,
       userId: adImage.userId,
       permanentlyDeleted: adImage.permanentlyDeleted,
+      workflowUid: adWorkflow.workflowUid,
+      eventsCount: sql<number>`(SELECT COUNT(*)::int FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('events_count'),
+      eventTypes: sql<string | null>`(SELECT string_agg(DISTINCT event_type, ', ' ORDER BY event_type) FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('event_types'),
     })
     .from(adImage)
+    .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .where(eq(adImage.brandId, brandId))
     .orderBy(desc(adImage.createdAt))
     .limit(limit);
@@ -1057,8 +1065,12 @@ export async function getJobAdImages(jobId: string) {
       brandId: adImage.brandId,
       userId: adImage.userId,
       permanentlyDeleted: adImage.permanentlyDeleted,
+      workflowUid: adWorkflow.workflowUid,
+      eventsCount: sql<number>`(SELECT COUNT(*)::int FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('events_count'),
+      eventTypes: sql<string | null>`(SELECT string_agg(DISTINCT event_type, ', ' ORDER BY event_type) FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('event_types'),
     })
     .from(adImage)
+    .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .where(and(eq(adImage.jobId, jobId)))
     .orderBy(desc(adImage.createdAt));
 }
@@ -1189,6 +1201,9 @@ export interface AdImagesResult {
     errorFlag: boolean;
     isDeleted: boolean;
     permanentlyDeleted: boolean;
+    workflowUid: string | null;
+    eventsCount: number;
+    eventTypes: string | null;
     userEmail: string;
     userDisplayName: string | null;
     brandName: string | null;
@@ -1246,6 +1261,9 @@ export async function getAllAdImages(
       errorFlag: adImage.errorFlag,
       isDeleted: adImage.isDeleted,
       permanentlyDeleted: adImage.permanentlyDeleted,
+      workflowUid: adWorkflow.workflowUid,
+      eventsCount: sql<number>`(SELECT COUNT(*)::int FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('events_count'),
+      eventTypes: sql<string | null>`(SELECT string_agg(DISTINCT event_type, ', ' ORDER BY event_type) FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('event_types'),
       userEmail: user.email,
       userDisplayName: user.displayName,
       brandName: brand.name,
@@ -1253,6 +1271,7 @@ export async function getAllAdImages(
     .from(adImage)
     .innerJoin(user, eq(adImage.userId, user.id))
     .leftJoin(brand, eq(adImage.brandId, brand.id))
+    .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .where(whereClause)
     .orderBy(desc(adImage.createdAt))
     .limit(limit)
@@ -1561,6 +1580,8 @@ export async function getAdImageErrorsList(options?: { page?: number; limit?: nu
         brandName: brand.name,
         userEmail: user.email,
         userDisplayName: user.displayName,
+        eventsCount: sql<number>`(SELECT COUNT(*)::int FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('events_count'),
+        eventTypes: sql<string | null>`(SELECT string_agg(DISTINCT event_type, ', ' ORDER BY event_type) FROM ad_event WHERE ad_event.ad_image_id = ${adImage.id})`.as('event_types'),
       })
       .from(adImage)
       .leftJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))

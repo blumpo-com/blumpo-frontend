@@ -53,7 +53,12 @@ export default async function JobDetailPage({
     type: 'ad-image',
     id: image.id,
     label: image.title || `Image ${image.id.slice(0, 8)}...`,
-    metadata: `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+    metadata: [
+      `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+      image.workflowUid ? `Workflow: ${image.workflowUid}` : null,
+      image.eventTypes ? `Events: ${image.eventTypes}` : (image.eventsCount ? `Events: ${image.eventsCount} total` : null),
+      image.permanentlyDeleted ? 'Permanently deleted' : null,
+    ].filter(Boolean).join(' • '),
   }));
 
   return (

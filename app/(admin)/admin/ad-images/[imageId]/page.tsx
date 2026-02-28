@@ -89,6 +89,11 @@ export default async function AdImageDetailPage({
               <dt className="text-sm font-medium text-gray-500">Status</dt>
               <dd className="mt-1">
                 <div className="flex gap-2 flex-wrap">
+                  {image.permanentlyDeleted && (
+                    <span className="px-2 py-1 rounded text-xs bg-amber-100 text-amber-800">
+                      Permanently deleted
+                    </span>
+                  )}
                   {image.banFlag && (
                     <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-800">
                       Banned

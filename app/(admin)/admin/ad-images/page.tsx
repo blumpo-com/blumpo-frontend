@@ -67,7 +67,7 @@ export default function AdImagesPage() {
         ) : (
           <>
             <AdminTable
-              headers={['Title', 'User', 'Brand', 'Job', 'Dimensions', 'Format', 'Status', 'Created']}
+              headers={['Title', 'User', 'Brand', 'Job', 'Workflow UID', 'Ad events', 'Dimensions', 'Format', 'Status', 'Created']}
               emptyMessage={data?.adImages?.length === 0 ? 'No ad images found' : undefined}
             >
               {data?.adImages?.map((image: any) => (
@@ -120,11 +120,28 @@ export default function AdImagesPage() {
                     </a>
                   </AdminTableCell>
                   <AdminTableCell>
+                    <span className="font-mono text-sm">{image.workflowUid ?? '—'}</span>
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <span className="text-sm" title={image.eventTypes ?? undefined}>
+                      {image.eventTypes ? (
+                        <>{image.eventTypes}{image.eventsCount > 0 ? ` (${image.eventsCount})` : ''}</>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </AdminTableCell>
+                  <AdminTableCell>
                     {image.width} × {image.height}px
                   </AdminTableCell>
                   <AdminTableCell>{image.format}</AdminTableCell>
                   <AdminTableCell>
                     <div className="flex gap-1 flex-wrap">
+                      {image.permanentlyDeleted && (
+                        <span className="px-2 py-1 rounded text-xs bg-amber-100 text-amber-800">
+                          Permanently deleted
+                        </span>
+                      )}
                       {image.banFlag && (
                         <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-800">
                           Banned
@@ -140,7 +157,7 @@ export default function AdImagesPage() {
                           Deleted
                         </span>
                       )}
-                      {!image.banFlag && !image.errorFlag && !image.isDeleted && (
+                      {!image.permanentlyDeleted && !image.banFlag && !image.errorFlag && !image.isDeleted && (
                         <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
                           Active
                         </span>

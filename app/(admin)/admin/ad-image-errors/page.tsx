@@ -63,6 +63,8 @@ export default function AdImageErrorsPage() {
                 'Workflow',
                 'Archetype',
                 'Error',
+                'Ad events',
+                'Permanently deleted',
                 'User',
                 'Brand',
                 'Job',
@@ -96,6 +98,22 @@ export default function AdImageErrorsPage() {
                     >
                       {String(row.errorMessage || '—')}
                     </span>
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <span className="text-sm" title={row.eventTypes as string | undefined}>
+                      {row.eventTypes ? (
+                        <>{String(row.eventTypes)}{Number(row.eventsCount ?? 0) > 0 ? ` (${row.eventsCount})` : ''}</>
+                      ) : (
+                        '—'
+                      )}
+                    </span>
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    {row.permanentlyDeleted ? (
+                      <span className="px-2 py-1 rounded text-xs bg-amber-100 text-amber-800">Yes</span>
+                    ) : (
+                      '—'
+                    )}
                   </AdminTableCell>
                   <AdminTableCell onClick={(e) => e.stopPropagation()}>
                     {row.userId ? (
