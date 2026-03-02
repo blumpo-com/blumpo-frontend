@@ -100,6 +100,37 @@
   background: #f3f4f6;
 }
 
+.imageWrapperClickable {
+  cursor: pointer;
+}
+
+/* Lying Blumpo animation + text bubble (above Go to Blumpo button) */
+.lyingBlumpoWrap {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  flex-shrink: 0;
+}
+
+.lyingBlumpoVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.generationTextBubble {
+  position: absolute;
+  top: -50px;
+  right: -20px;
+  bottom: 20px;
+  width: 200px;
+  height: auto;
+  pointer-events: none;
+}
+
 .image {
   width: 100%;
   height: 100%;

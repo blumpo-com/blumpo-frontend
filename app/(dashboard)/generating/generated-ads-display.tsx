@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { PricingDialog } from '@/components/PricingDialog';
+import { PreviewImageDialog } from '@/components/PreviewImageDialog';
 import { Download, Loader2 } from 'lucide-react';
 import styles from './generated-ads-display.module.css';
 
@@ -104,6 +105,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [fontBoxHeight, setFontBoxHeight] = useState<number | null>(null);
   const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<AdImage | null>(null);
 
   // Refs for logo, font, and colors boxes
   const logoBoxRef = useRef<HTMLDivElement>(null);
@@ -319,7 +321,18 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             {displayImages.map((image) => {
               return (
                 <div key={image.id} className={styles.imageCard}>
-                  <div className={styles.imageWrapper}>
+                  <div
+                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setPreviewImage(image)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setPreviewImage(image);
+                      }
+                    }}
+                  >
                     <img
                       src={image.publicUrl}
                       alt={image.title || 'Generated ad'}
@@ -385,18 +398,43 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             )}
           </div>
 
-          <div className="flex justify-center w-full mt-6">
+          <div className={styles.lyingBlumpoWrap}>
+            <video
+              className={styles.lyingBlumpoVideo}
+              autoPlay
+              loop
+              playsInline
+              muted
+              aria-hidden
+            >
+              <source src="/assets/animations/lying-blumpo.webm" type="video/webm" />
+            </video>
+            <img
+              src="/images/general/generation-text-bubble.svg"
+              alt=""
+              className={styles.generationTextBubble}
+              aria-hidden
+            />
+          </div>
+
+          <div className="flex justify-center w-full mt-[-20px]">
             <Button
               asChild
               variant="black"
               className="max-w-[376px] w-full flex items-center justify-between gap-2 px-6"
             >
               <Link href="/dashboard/content-library?tab=unsaved" className="flex items-center justify-between gap-2 w-full">
-                <span>Go to Blumpo platform</span>
+                <span>Go to the Blumpo platform</span>
                 <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
               </Link>
             </Button>
           </div>
+
+          <PreviewImageDialog<AdImage>
+            image={previewImage}
+            onClose={() => setPreviewImage(null)}
+            onDownload={(img) => handleDownload(img.publicUrl, img.id)}
+          />
         </div>
 
         {/* Right Panel - Insights & Details */}
@@ -659,7 +697,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           <div className={styles.divider} />
 
           <Button variant="cta" onClick={handleRegenerate} className="w-full max-w-[376px] flex items-center justify-between gap-2 px-4">
-            <span>{isPaidUser ? 'Login to main platform' : 'Regenerate ads'}</span>
+            <span>{isPaidUser ? 'Log in to the Blumpo platform' : 'Regenerate ads'}</span>
             <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
           </Button>
         </div>
