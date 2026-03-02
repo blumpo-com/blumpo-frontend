@@ -96,7 +96,6 @@ function PaidOnlyBadge() {
 
 export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: GeneratedAdsDisplayProps) {
   const router = useRouter();
-  const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
   const [brandData, setBrandData] = useState<BrandData | null>(null);
   const [insights, setInsights] = useState<BrandInsights | null>(null);
   const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
@@ -367,8 +366,15 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               <div
                 key={blurredImage.id + '-blurred'}
                 className={`${styles.imageCard} ${styles.blurredCard}`}
-                onMouseEnter={() => setHoveredImageId(blurredImage!.id + '-blurred')}
-                onMouseLeave={() => setHoveredImageId(null)}
+                onClick={() => handlePaidSectionClick('blurred-ad-download')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePaidSectionClick('blurred-ad-download');
+                  }
+                }}
               >
                 <div className={styles.imageWrapper}>
                   <img
@@ -376,7 +382,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     alt={blurredImage.title || 'Generated ad'}
                     className={styles.image}
                   />
-                  <div className={`${styles.blurredOverlay} ${hoveredImageId === (blurredImage.id + '-blurred') ? styles.blurredOverlayHidden : ''}`}>
+                  <div className={styles.blurredOverlay}>
                     <span className={styles.questionMark}>?</span>
                   </div>
                 </div>
