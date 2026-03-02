@@ -111,6 +111,12 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const fontBoxRef = useRef<HTMLDivElement>(null);
   const colorsBoxRef = useRef<HTMLDivElement>(null);
 
+  // Start welcome promotion (10m timer) when user first opens pricing dialog from this screen
+  useEffect(() => {
+    if (!pricingDialogOpen) return;
+    fetch('/api/promotions/welcome-50').catch(() => { });
+  }, [pricingDialogOpen]);
+
   // Fetch brand data and insights
   useEffect(() => {
     if (!jobId) {

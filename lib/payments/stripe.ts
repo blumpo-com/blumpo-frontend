@@ -15,6 +15,8 @@ import {
   refillSubscriptionTokens,
   activateSubscription,
   setRetentionOfferApplied,
+  getActiveWelcomePromotionForCheckout,
+  markPromotionUsed,
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -40,6 +42,17 @@ export async function createCheckoutSession({
 
   const hasExistingCustomer = !!tokenAccount?.stripeCustomerId;
 
+  let discounts: Stripe.Checkout.SessionCreateParams['discounts'];
+  let metadata: Record<string, string> | undefined;
+
+  if (isTopup && tokenAccount) {
+    const welcomePromotion = await getActiveWelcomePromotionForCheckout(tokenAccount.userId);
+    if (welcomePromotion?.stripePromotionCodeId) {
+      discounts = [{ promotion_code: welcomePromotion.stripePromotionCodeId }];
+      metadata = { welcome_promotion_id: String(welcomePromotion.id) };
+    }
+  }
+
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     payment_method_types: ['card'],
     line_items: [
@@ -54,6 +67,8 @@ export async function createCheckoutSession({
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
     allow_promotion_codes: true,
+    ...(discounts && { discounts }),
+    ...(metadata && { metadata }),
     ...(hasExistingCustomer && {
       customer_update: {
         name: 'auto',

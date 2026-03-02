@@ -24,6 +24,10 @@ interface PricingCardProps {
   annualPriceId?: string | null;
   isAnnual?: boolean;
   allowCheckoutWithoutPriceId?: boolean;
+  /** Original price to show crossed out (e.g. monthly before discount) */
+  originalPrice?: number | null;
+  /** Suffix after price: "/month" or "/ for the first month" */
+  priceSuffix?: string;
 }
 
 function EnterpriseTalkButton() {
@@ -60,6 +64,8 @@ function PricingCard({
   annualPriceId,
   isAnnual = true,
   allowCheckoutWithoutPriceId = false,
+  originalPrice = null,
+  priceSuffix = "/month",
 }: PricingCardProps) {
   const iconMap = {
     bolt: '/assets/icons/bolt.svg',
@@ -115,9 +121,27 @@ function PricingCard({
       </p>
       <div className="h-17">
         {animatedPrice !== null ? (
-          <div className="flex gap-[10px] items-center w-full">
-            <span className="text-[38px] font-bold text-[#00bfa6]">${animatedPrice}</span>
-            <span className="text-[24px] font-semibold text-[#0a0a0a]">/month</span>
+          <div className={cn(
+            "flex gap-[10px] items-center w-full flex-wrap",
+            originalPrice != null && "text-[18px]"
+          )}>
+            {originalPrice != null && (
+              <span className="text-[24px] font-bold text-[#898989] line-through">
+                ${originalPrice}
+              </span>
+            )}
+            <span className={cn(
+              "font-bold text-[#00bfa6]",
+              originalPrice != null ? "text-[32px]" : "text-[38px]"
+            )}>
+              ${animatedPrice}
+            </span>
+            <span className={cn(
+              "font-semibold text-[#0a0a0a]",
+              originalPrice != null ? "text-[18px]" : "text-[24px]"
+            )}>
+              {priceSuffix}
+            </span>
           </div>
         ) : (
           <div className="h-17" />
@@ -216,7 +240,7 @@ const subscriptionPlans: Array<{
       name: "Starter",
       icon: "bolt",
       price: { monthly: 34, annual: 17 },
-      credits: "1000 credits (100 ads) / month",
+      credits: "1000 credits (100 ads) per month",
       description: "For individual creators",
       features: [
         "Ads creation in 10+ archetypes",
@@ -230,7 +254,7 @@ const subscriptionPlans: Array<{
       name: "Growth",
       icon: "star",
       price: { monthly: 79, annual: 39 },
-      credits: "3000 credits (300 ads) / month",
+      credits: "3000 credits (300 ads) per month",
       description: "For small businesses and marketers",
       features: [
         "Ads creation in 10+ archetypes",
@@ -245,7 +269,7 @@ const subscriptionPlans: Array<{
       name: "Team Plan",
       icon: "team",
       price: { monthly: 399, annual: 199 },
-      credits: "30,000 credits (3000 ads) / month",
+      credits: "30,000 credits (3000 ads) per month",
       description: "Ideal for medium size agencies and marketing teams",
       features: [
         "Ads creation in 10+ archetypes",
@@ -277,6 +301,10 @@ interface PricingSectionProps {
   showEnterprise?: boolean;
   planPrices?: Record<string, { monthly: string | null; annual: string | null }>;
   allowCheckoutWithoutPriceId?: boolean;
+  /** Default toggle to monthly (unchecked). If false, default is annual. */
+  initialIsAnnual?: boolean;
+  /** Show crossed-out original price and "/ for the first month" for monthly. */
+  showPromoPriceDisplay?: boolean;
 }
 
 export function PricingSection({
@@ -285,8 +313,10 @@ export function PricingSection({
   showEnterprise = false,
   planPrices = {},
   allowCheckoutWithoutPriceId = false,
+  initialIsAnnual = true,
+  showPromoPriceDisplay = false,
 }: PricingSectionProps = {}) {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(initialIsAnnual);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
   const displayPlans = showEnterprise
@@ -294,11 +324,6 @@ export function PricingSection({
     : subscriptionPlans.filter(p => p.id !== "enterprise");
 
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
-  const currentPrice = currentPlan.price
-    ? isAnnual
-      ? currentPlan.price.annual
-      : currentPlan.price.monthly
-    : null;
 
   return (
     <div className="mt-12 w-full max-w-[1200px] mx-auto">
@@ -349,7 +374,9 @@ export function PricingSection({
         <PricingCard
           name={currentPlan.name}
           icon={currentPlan.icon}
-          price={currentPrice}
+          price={showPromoPriceDisplay && currentPlan.price
+            ? currentPlan.price.annual
+            : (currentPlan.price ? (isAnnual ? currentPlan.price.annual : currentPlan.price.monthly) : null)}
           credits={currentPlan.credits}
           description={currentPlan.description}
           features={currentPlan.features}
@@ -363,6 +390,8 @@ export function PricingSection({
           annualPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.annual || null : null}
           isAnnual={isAnnual}
           allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
+          originalPrice={showPromoPriceDisplay ? (currentPlan.price?.monthly ?? null) : null}
+          priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
         />
       </div>
 
@@ -376,7 +405,9 @@ export function PricingSection({
               key={plan.id}
               name={plan.name}
               icon={plan.icon}
-              price={isAnnual ? plan?.price?.annual || null : plan?.price?.monthly || null}
+              price={showPromoPriceDisplay && plan.price
+                ? plan.price.annual
+                : (plan.price ? (isAnnual ? plan.price.annual : plan.price.monthly) : null)}
               credits={plan.credits}
               description={plan.description}
               features={plan.features}
@@ -390,6 +421,8 @@ export function PricingSection({
               annualPriceId={planPriceMap?.annual || null}
               isAnnual={isAnnual}
               allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
+              originalPrice={showPromoPriceDisplay ? (plan?.price?.monthly ?? null) : null}
+              priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
             />
           );
         })}
