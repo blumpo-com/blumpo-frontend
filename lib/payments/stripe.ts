@@ -45,7 +45,8 @@ export async function createCheckoutSession({
   let discounts: Stripe.Checkout.SessionCreateParams['discounts'];
   let metadata: Record<string, string> | undefined;
 
-  if (isTopup && tokenAccount) {
+  // Apply welcome 50% promotion for subscription checkout when active
+  if (tokenAccount) {
     const welcomePromotion = await getActiveWelcomePromotionForCheckout(tokenAccount.userId);
     if (welcomePromotion?.stripePromotionCodeId) {
       discounts = [{ promotion_code: welcomePromotion.stripePromotionCodeId }];
@@ -66,8 +67,8 @@ export async function createCheckoutSession({
     cancel_url: `${process.env.BASE_URL}/dashboard/your-credits`,
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
-    allow_promotion_codes: true,
-    ...(discounts && { discounts }),
+    // Stripe does not allow both allow_promotion_codes and discounts at once
+    ...(discounts ? { discounts } : { allow_promotion_codes: true }),
     ...(metadata && { metadata }),
     ...(hasExistingCustomer && {
       customer_update: {
