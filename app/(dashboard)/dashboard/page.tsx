@@ -8,18 +8,13 @@ import { useBrand } from '@/lib/contexts/brand-context';
 import { useUser } from '@/lib/contexts/user-context';
 import useSWR from 'swr';
 import { GameDialog } from '@/components/GameDialog';
-import { ErrorDialog } from '@/components/error-dialog';
+import { PricingDialog } from '@/components/PricingDialog';
+import { BuyCreditsDialog } from './your-credits/buy-credits-dialog';
+import { useBuyCreditsDialog } from './your-credits/use-buy-credits-dialog';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Image URLs from Figma - these will expire in 7 days
-// const imgImage6 = "https://www.figma.com/api/mcp/asset/25d92da9-a74a-406d-88f7-cd5bcad8e018";
-// const imgImage5 = "https://www.figma.com/api/mcp/asset/41a1e504-a3d1-4e92-9d5f-bf72e45ef0de";
-// const imgImage7 = "https://www.figma.com/api/mcp/asset/12be56dc-aa2b-497c-a5d7-866daeb52928";
-// const imgImage20 = "https://www.figma.com/api/mcp/asset/1684968d-406d-4dbc-838c-722ac4e63ce3";
-// const imgImage22 = "https://www.figma.com/api/mcp/asset/1831df1f-4459-4a4e-a85b-72cfb267706c";
-// const imgImage21 = "https://www.figma.com/api/mcp/asset/c1cf2b50-3e72-4dc0-a428-011aaafdbe82";
 const imgCharacter = "/assets/animations/sitting-blumpo.webp";
 
 const imgImage1 = "/images/dashboard/quick-ad1.png";
@@ -190,6 +185,12 @@ export default function DashboardHomePage() {
   const [isLowCreditsDialogOpen, setIsLowCreditsDialogOpen] = useState(false);
 
   const tokenBalance = user?.tokenAccount?.balance ?? 0;
+  const planCode = user?.tokenAccount?.planCode ?? 'FREE';
+
+  const buyCreditsDialog = useBuyCreditsDialog({
+    onClose: () => setIsLowCreditsDialogOpen(false),
+    onUpgradePlan: () => router.push('/dashboard/your-credits'),
+  });
 
   const handleFeatureCardClick = (path: string) => {
     if (tokenBalance < MIN_TOKENS_REQUIRED) {
@@ -402,22 +403,20 @@ export default function DashboardHomePage() {
         </div>
       </div>
 
-      <ErrorDialog
-        open={isLowCreditsDialogOpen}
-        onClose={() => setIsLowCreditsDialogOpen(false)}
-        title="Not enough coins"
-        message={`You need at least ${MIN_TOKENS_REQUIRED} coins to start generating ads. Top up your balance to continue.`}
-        primaryButton={{
-          label: 'Get more coins',
-          onClick: () => router.push('/dashboard/your-credits'),
-          variant: 'cta',
-        }}
-        secondaryButton={{
-          label: 'Go Back',
-          onClick: () => {},
-          variant: 'outline',
-        }}
-      />
+      {planCode === 'FREE' ? (
+        <PricingDialog
+          open={isLowCreditsDialogOpen}
+          onClose={() => setIsLowCreditsDialogOpen(false)}
+        />
+      ) : (
+        <BuyCreditsDialog
+          open={isLowCreditsDialogOpen}
+          onClose={() => setIsLowCreditsDialogOpen(false)}
+          onBuyCredits={buyCreditsDialog.onBuyCredits}
+          onUpgradePlan={buyCreditsDialog.onUpgradePlan}
+          topupPlans={buyCreditsDialog.topupPlans}
+        />
+      )}
     </div>
   );
 }
