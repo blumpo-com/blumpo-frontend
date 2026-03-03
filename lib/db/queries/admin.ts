@@ -1069,6 +1069,50 @@ export async function getWorkflowGenerationCountsByBrand(brandId: string) {
     .orderBy(desc(sql`COUNT(DISTINCT ${adImage.jobId})`));
 }
 
+/** Workflows in ad_workflow that this user has never used (no ad_image with this userId and that workflow_id). Optional archetype filter. */
+export async function getWorkflowsNotUsedByUser(userId: string, archetypeCode?: string) {
+  const conditions = [
+    sql`${adWorkflow.id} NOT IN (SELECT workflow_id FROM ad_image WHERE user_id = ${userId} AND workflow_id IS NOT NULL)`,
+  ];
+  if (archetypeCode) {
+    conditions.push(eq(adWorkflow.archetypeCode, archetypeCode));
+  }
+  return await db
+    .select({
+      id: adWorkflow.id,
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adWorkflow)
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(and(...conditions))
+    .orderBy(adWorkflow.archetypeCode, adWorkflow.workflowUid);
+}
+
+/** Workflows in ad_workflow that this brand has never used (no ad_image with this brandId and that workflow_id). Optional archetype filter. */
+export async function getWorkflowsNotUsedByBrand(brandId: string, archetypeCode?: string) {
+  const conditions = [
+    sql`${adWorkflow.id} NOT IN (SELECT workflow_id FROM ad_image WHERE brand_id = ${brandId} AND workflow_id IS NOT NULL)`,
+  ];
+  if (archetypeCode) {
+    conditions.push(eq(adWorkflow.archetypeCode, archetypeCode));
+  }
+  return await db
+    .select({
+      id: adWorkflow.id,
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adWorkflow)
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(and(...conditions))
+    .orderBy(adWorkflow.archetypeCode, adWorkflow.workflowUid);
+}
+
 // Job related entities
 export async function getJobWithFullDetails(jobId: string) {
   const jobData = await db
@@ -1457,6 +1501,100 @@ export async function getWorkflowActionCounts() {
     .innerJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
     .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
     .where(sql`${adEvent.workflowId} IS NOT NULL`)
+    .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(adEvent.workflowId, adEvent.eventType);
+}
+
+/** Same shape as getArchetypeActionCounts but scoped to events for this user. */
+export async function getArchetypeActionCountsByUser(userId: string) {
+  return await db
+    .select({
+      archetypeCode: sql<string>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
+      eventType: adEvent.eventType,
+      count: count(),
+      displayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`)
+    .where(and(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`,
+      eq(adEvent.userId, userId)
+    ))
+    .groupBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType,
+      adArchetype.displayName
+    )
+    .orderBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType
+    );
+}
+
+/** Same shape as getArchetypeActionCounts but scoped to events for this brand. */
+export async function getArchetypeActionCountsByBrand(brandId: string) {
+  return await db
+    .select({
+      archetypeCode: sql<string>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
+      eventType: adEvent.eventType,
+      count: count(),
+      displayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`)
+    .where(and(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`,
+      eq(adEvent.brandId, brandId)
+    ))
+    .groupBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType,
+      adArchetype.displayName
+    )
+    .orderBy(
+      sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
+      adEvent.eventType
+    );
+}
+
+/** Same shape as getWorkflowActionCounts but scoped to events for this user. */
+export async function getWorkflowActionCountsByUser(userId: string) {
+  return await db
+    .select({
+      workflowId: adEvent.workflowId,
+      eventType: adEvent.eventType,
+      count: count(),
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .innerJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(and(sql`${adEvent.workflowId} IS NOT NULL`, eq(adEvent.userId, userId)))
+    .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
+    .orderBy(adEvent.workflowId, adEvent.eventType);
+}
+
+/** Same shape as getWorkflowActionCounts but scoped to events for this brand. */
+export async function getWorkflowActionCountsByBrand(brandId: string) {
+  return await db
+    .select({
+      workflowId: adEvent.workflowId,
+      eventType: adEvent.eventType,
+      count: count(),
+      workflowUid: adWorkflow.workflowUid,
+      variantKey: adWorkflow.variantKey,
+      archetypeCode: adWorkflow.archetypeCode,
+      archetypeDisplayName: adArchetype.displayName,
+    })
+    .from(adEvent)
+    .innerJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
+    .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .where(and(sql`${adEvent.workflowId} IS NOT NULL`, eq(adEvent.brandId, brandId)))
     .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(adEvent.workflowId, adEvent.eventType);
 }

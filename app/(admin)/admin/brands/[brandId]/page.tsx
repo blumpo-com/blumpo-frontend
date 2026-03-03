@@ -4,7 +4,6 @@ import {
   getBrandJobs,
   getBrandAdImages,
   getArchetypeGenerationStatsByBrand,
-  getWorkflowGenerationCountsByBrand,
 } from '@/lib/db/queries/admin';
 import { getQuickAdsCountByFormat } from '@/lib/db/queries/ads';
 import { getUserWithTokenBalance } from '@/lib/db/queries/tokens';
@@ -31,11 +30,10 @@ export default async function BrandDetailPage({
   }
 
   // Fetch related entities
-  const [jobs, adImages, archetypeStats, workflowCounts, quickAdsData] = await Promise.all([
+  const [jobs, adImages, archetypeStats, quickAdsData] = await Promise.all([
     getBrandJobs(brandId, 10),
     getBrandAdImages(brandId, 10),
     getArchetypeGenerationStatsByBrand(brandId),
-    getWorkflowGenerationCountsByBrand(brandId),
     brand.user
       ? Promise.all([
         getUserWithTokenBalance(brand.user.id),
@@ -390,48 +388,14 @@ export default async function BrandDetailPage({
                 </li>
               ))}
             </ul>
-          </AdminCard>
-        )}
-
-        {workflowCounts.filter((w) => Number(w.count) > 1).length > 0 && (
-          <AdminCard title="Workflows used more than once">
-            <p className="text-sm text-gray-500 mb-4">
-              Workflows used in more than one generation (job) for this brand.
-            </p>
-            <ul className="space-y-4">
-              {workflowCounts
-                .filter((w) => Number(w.count) > 1)
-                .map((w) => {
-                  const ids: string[] =
-                    typeof w.jobIds === 'string'
-                      ? w.jobIds.split(',').map((s) => s.trim()).filter(Boolean)
-                      : [];
-                  return (
-                    <li key={w.workflowId} className="text-sm">
-                      <div className="flex justify-between items-baseline">
-                        <span className="font-mono text-gray-900">
-                          {w.workflowUid}
-                          {w.variantKey ? ` (${w.variantKey})` : ''}
-                        </span>
-                        <span className="text-gray-600">{Number(w.count)} generation{Number(w.count) !== 1 ? 's' : ''}</span>
-                      </div>
-                      {ids.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                          {ids.map((jobId) => (
-                            <Link
-                              key={jobId}
-                              href={`/admin/jobs/${jobId.trim()}`}
-                              className="text-blue-600 hover:text-blue-800 font-mono text-xs"
-                            >
-                              Job {jobId.trim().slice(0, 8)}…
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-            </ul>
+            <div className="mt-4">
+              <Link
+                href={`/admin/brands/${brandId}/workflows`}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                View workflow details
+              </Link>
+            </div>
           </AdminCard>
         )}
       </div>
