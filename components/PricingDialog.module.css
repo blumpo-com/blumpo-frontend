@@ -47,7 +47,7 @@
   }
 }
 
-/* Top row: promotion banner (or empty) + close button on the right */
+/* Top row: [spacer] [title or promo – centered] [spacer + X] so title is truly centered */
 .headerRow {
   display: flex;
   flex-direction: row;
@@ -60,12 +60,34 @@
   gap: 16px;
 }
 
+.headerRowSpacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRowRight {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.headerTitle {
+  font-family: 'Roboto', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0a0a0a;
+  margin: 0;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .promotionBannerContent {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  flex: 1;
+  flex-shrink: 0;
   min-width: 0;
 }
 

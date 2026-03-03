@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/hooks/use-animated-number";
@@ -28,6 +28,8 @@ interface PricingCardProps {
   originalPrice?: number | null;
   /** Suffix after price: "/month" or "/ for the first month" */
   priceSuffix?: string;
+  /** Path to use as Stripe cancel_url (e.g. /generating?job_id=xxx) so back button returns here */
+  cancelUrlPath?: string | null;
 }
 
 function EnterpriseTalkButton() {
@@ -66,6 +68,7 @@ function PricingCard({
   allowCheckoutWithoutPriceId = false,
   originalPrice = null,
   priceSuffix = "/month",
+  cancelUrlPath = null,
 }: PricingCardProps) {
   const iconMap = {
     bolt: '/assets/icons/bolt.svg',
@@ -119,20 +122,23 @@ function PricingCard({
       <p className="text-base font-normal text-[#888e98] leading-normal w-full h-16 mb-4">
         {description}
       </p>
-      <div className="h-17">
+      <div className="h-17 min-h-[2.5rem]">
         {animatedPrice !== null ? (
-          <div className={cn(
-            "flex gap-[10px] items-center w-full flex-wrap",
-            originalPrice != null && "text-[18px]"
-          )}>
+          <div
+            key={`price-${originalPrice ?? 'n'}-${priceSuffix}`}
+            className={cn(
+              "flex gap-[10px] items-center w-full flex-wrap animate-price-block-in",
+              originalPrice != null && "text-[18px]"
+            )}
+          >
             {originalPrice != null && (
-              <span className="text-[24px] font-bold text-[#898989] line-through">
+              <span className="text-[22px] font-bold text-[#0a0a0a] line-through">
                 ${originalPrice}
               </span>
             )}
             <span className={cn(
               "font-bold text-[#00bfa6]",
-              originalPrice != null ? "text-[32px]" : "text-[38px]"
+              originalPrice != null ? "text-[28px]" : "text-[38px]"
             )}>
               ${animatedPrice}
             </span>
@@ -169,6 +175,7 @@ function PricingCard({
           <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
           {planCode && <input type="hidden" name="planCode" value={planCode} className="hidden" />}
           <input type="hidden" name="interval" value={isAnnual ? "annual" : "monthly"} className="hidden" />
+          {cancelUrlPath && <input type="hidden" name="cancelUrl" value={cancelUrlPath} className="hidden" />}
           <button
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
@@ -305,6 +312,8 @@ interface PricingSectionProps {
   initialIsAnnual?: boolean;
   /** Show crossed-out original price and "/ for the first month" for monthly. */
   showPromoPriceDisplay?: boolean;
+  /** Override for Stripe cancel_url path (e.g. from dialog opener). When set, used instead of pathname+search. */
+  cancelUrlPath?: string | null;
 }
 
 export function PricingSection({
@@ -315,7 +324,14 @@ export function PricingSection({
   allowCheckoutWithoutPriceId = false,
   initialIsAnnual = true,
   showPromoPriceDisplay = false,
+  cancelUrlPath: cancelUrlPathProp,
 }: PricingSectionProps = {}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const computedCancelUrlPath =
+    pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+  const cancelUrlPath = cancelUrlPathProp ?? computedCancelUrlPath;
+
   const [isAnnual, setIsAnnual] = useState(initialIsAnnual);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
@@ -392,6 +408,7 @@ export function PricingSection({
           allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
           originalPrice={showPromoPriceDisplay ? (currentPlan.price?.monthly ?? null) : null}
           priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+          cancelUrlPath={cancelUrlPath}
         />
       </div>
 
@@ -423,6 +440,7 @@ export function PricingSection({
               allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
               originalPrice={showPromoPriceDisplay ? (plan?.price?.monthly ?? null) : null}
               priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+              cancelUrlPath={cancelUrlPath}
             />
           );
         })}

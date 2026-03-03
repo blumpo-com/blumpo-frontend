@@ -25,10 +25,13 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function createCheckoutSession({
   priceId,
-  isTopup = false
+  isTopup = false,
+  cancelUrlPath,
 }: {
   priceId: string;
   isTopup?: boolean;
+  /** Path (e.g. /generating?job_id=xxx) to return to when user clicks back in Stripe. If not set, uses /dashboard/your-credits. */
+  cancelUrlPath?: string | null;
 }) {
   const user = await getUser();
 
@@ -64,7 +67,10 @@ export async function createCheckoutSession({
     ],
     mode: isTopup ? 'payment' : 'subscription',
     success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/dashboard/your-credits`,
+    cancel_url:
+      cancelUrlPath && cancelUrlPath.startsWith('/')
+        ? `${process.env.BASE_URL}${cancelUrlPath}`
+        : `${process.env.BASE_URL}/dashboard/your-credits`,
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
     // Stripe does not allow both allow_promotion_codes and discounts at once

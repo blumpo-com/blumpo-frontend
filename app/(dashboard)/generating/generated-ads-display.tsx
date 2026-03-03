@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -105,6 +105,11 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<AdImage | null>(null);
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const generatingCancelUrlPath =
+    pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
 
   // Refs for logo, font, and colors boxes
   const logoBoxRef = useRef<HTMLDivElement>(null);
@@ -714,7 +719,11 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           </Button>
         </div>
       </div>
-      <PricingDialog open={pricingDialogOpen} onClose={() => setPricingDialogOpen(false)} />
+      <PricingDialog
+        open={pricingDialogOpen}
+        onClose={() => setPricingDialogOpen(false)}
+        cancelUrlPath={generatingCancelUrlPath}
+      />
     </>
   );
 }

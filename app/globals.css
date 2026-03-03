@@ -412,3 +412,19 @@
   cursor: not-allowed !important;
   
 }
+
+/* Price block transition when price/suffix/promo display changes */
+@keyframes priceBlockIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-price-block-in {
+  animation: priceBlockIn 0.3s ease-out forwards;
+}
