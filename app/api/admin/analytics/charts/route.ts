@@ -8,6 +8,7 @@ import {
   getSubscriptionDistribution,
   getRecentActivity,
 } from '@/lib/db/queries/admin';
+import { toEndOfDay } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const admin = await getAdminUser();
@@ -17,6 +18,14 @@ export async function GET(request: NextRequest) {
 
   const searchParams = request.nextUrl.searchParams;
   const days = parseInt(searchParams.get('days') || '30');
+  const dateFromParam = searchParams.get('dateFrom');
+  const dateToParam = searchParams.get('dateTo');
+  const dateFrom = dateFromParam ? new Date(dateFromParam) : undefined;
+  const dateTo = dateToParam ? toEndOfDay(new Date(dateToParam)) : undefined;
+  const chartOptions = {
+    excludeAdminUsers: true as const,
+    ...(dateFrom && dateTo ? { dateFrom, dateTo } : {}),
+  };
 
   try {
     const [
@@ -27,10 +36,10 @@ export async function GET(request: NextRequest) {
       subscriptionDistribution,
       recentActivity,
     ] = await Promise.all([
-      getUserGrowthData(days, { excludeAdminUsers: true }),
-      getTokenUsageData(days, { excludeAdminUsers: true }),
-      getJobStatusDistribution({ excludeAdminUsers: true }),
-      getJobsOverTime(days, { excludeAdminUsers: true }),
+      getUserGrowthData(days, chartOptions),
+      getTokenUsageData(days, chartOptions),
+      getJobStatusDistribution(chartOptions),
+      getJobsOverTime(days, chartOptions),
       getSubscriptionDistribution({ excludeAdminUsers: true }),
       getRecentActivity(15, { excludeAdminUsers: true }),
     ]);

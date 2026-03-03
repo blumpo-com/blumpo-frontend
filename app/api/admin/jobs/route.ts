@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getAllJobs } from '@/lib/db/queries/admin';
 import { JobStatus } from '@/lib/db/schema/enums';
+import { toEndOfDay } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const admin = await getAdminUser();
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get('userId') || undefined;
   const brandId = searchParams.get('brandId') || undefined;
   const dateFrom = searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined;
-  const dateTo = searchParams.get('dateTo') ? new Date(searchParams.get('dateTo')!) : undefined;
+  const dateTo = searchParams.get('dateTo') ? toEndOfDay(new Date(searchParams.get('dateTo')!)) : undefined;
 
   const result = await getAllJobs({
     page,

@@ -443,8 +443,25 @@ export interface AdminStats {
   mostPopularArchetype: string | null;
 }
 
-export async function getAdminStats(options?: { excludeAdminUsers?: boolean }): Promise<AdminStats> {
+export async function getAdminStats(options?: {
+  excludeAdminUsers?: boolean;
+  dateFrom?: Date;
+  dateTo?: Date;
+}): Promise<AdminStats> {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const dateFrom = options?.dateFrom;
+  const dateTo = options?.dateTo;
+  const hasDateRange = dateFrom != null || dateTo != null;
+
+  const userDateConditions = hasDateRange
+    ? [dateFrom ? gte(user.createdAt, dateFrom) : null, dateTo ? lte(user.createdAt, dateTo) : null].filter(Boolean) as ReturnType<typeof gte>[]
+    : [];
+  const brandDateConditions = hasDateRange
+    ? [dateFrom ? gte(brand.createdAt, dateFrom) : null, dateTo ? lte(brand.createdAt, dateTo) : null].filter(Boolean) as ReturnType<typeof gte>[]
+    : [];
+  const jobDateConditions = hasDateRange
+    ? [dateFrom ? gte(generationJob.createdAt, dateFrom) : null, dateTo ? lte(generationJob.createdAt, dateTo) : null].filter(Boolean) as ReturnType<typeof gte>[]
+    : [];
 
   const [
     totalUsers,
@@ -461,23 +478,23 @@ export async function getAdminStats(options?: { excludeAdminUsers?: boolean }): 
     mostPopularArchetype,
   ] = await Promise.all([
     excludeAdmin
-      ? db.select({ count: count() }).from(user).where(eq(user.role, UserRole.USER))
-      : db.select({ count: count() }).from(user),
+      ? db.select({ count: count() }).from(user).where(and(eq(user.role, UserRole.USER), ...userDateConditions))
+      : db.select({ count: count() }).from(user).where(userDateConditions.length ? and(...userDateConditions) : undefined),
     excludeAdmin
-      ? db.select({ count: count() }).from(brand).innerJoin(user, eq(brand.userId, user.id)).where(and(eq(brand.isDeleted, false), eq(user.role, UserRole.USER)))
-      : db.select({ count: count() }).from(brand).where(eq(brand.isDeleted, false)),
+      ? db.select({ count: count() }).from(brand).innerJoin(user, eq(brand.userId, user.id)).where(and(eq(brand.isDeleted, false), eq(user.role, UserRole.USER), ...brandDateConditions))
+      : db.select({ count: count() }).from(brand).where(and(eq(brand.isDeleted, false), ...(brandDateConditions.length ? brandDateConditions : [sql`1=1`]))),
     excludeAdmin
-      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(eq(user.role, UserRole.USER))
-      : db.select({ count: count() }).from(generationJob),
+      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), ...jobDateConditions))
+      : db.select({ count: count() }).from(generationJob).where(jobDateConditions.length ? and(...jobDateConditions) : undefined),
     excludeAdmin
-      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), or(eq(generationJob.status, JobStatus.QUEUED), eq(generationJob.status, JobStatus.RUNNING))!))
-      : db.select({ count: count() }).from(generationJob).where(or(eq(generationJob.status, JobStatus.QUEUED), eq(generationJob.status, JobStatus.RUNNING))!),
+      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), or(eq(generationJob.status, JobStatus.QUEUED), eq(generationJob.status, JobStatus.RUNNING))!, ...jobDateConditions))
+      : db.select({ count: count() }).from(generationJob).where(and(or(eq(generationJob.status, JobStatus.QUEUED), eq(generationJob.status, JobStatus.RUNNING))!, ...(jobDateConditions.length ? jobDateConditions : [sql`1=1`]))),
     excludeAdmin
-      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), eq(generationJob.status, JobStatus.FAILED)))
-      : db.select({ count: count() }).from(generationJob).where(eq(generationJob.status, JobStatus.FAILED)),
+      ? db.select({ count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), eq(generationJob.status, JobStatus.FAILED), ...jobDateConditions))
+      : db.select({ count: count() }).from(generationJob).where(and(eq(generationJob.status, JobStatus.FAILED), ...(jobDateConditions.length ? jobDateConditions : [sql`1=1`]))),
     excludeAdmin
-      ? db.select({ total: sql<number>`COALESCE(SUM(${generationJob.tokensCost}), 0)` }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(eq(user.role, UserRole.USER))
-      : db.select({ total: sql<number>`COALESCE(SUM(${generationJob.tokensCost}), 0)` }).from(generationJob),
+      ? db.select({ total: sql<number>`COALESCE(SUM(${generationJob.tokensCost}), 0)` }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), ...jobDateConditions))
+      : db.select({ total: sql<number>`COALESCE(SUM(${generationJob.tokensCost}), 0)` }).from(generationJob).where(jobDateConditions.length ? and(...jobDateConditions) : undefined),
     db.select({ count: count() }).from(n8nWorkflowErrors),
     db.select({ count: count() }).from(n8nWorkflowErrors).where(eq(n8nWorkflowErrors.isResolved, false)),
     excludeAdmin
@@ -487,11 +504,11 @@ export async function getAdminStats(options?: { excludeAdminUsers?: boolean }): 
       ? db.select({ avg: sql<number>`COALESCE(AVG(${tokenAccount.balance}), 0)` }).from(tokenAccount).innerJoin(user, eq(tokenAccount.userId, user.id)).where(eq(user.role, UserRole.USER))
       : db.select({ avg: sql<number>`COALESCE(AVG(${tokenAccount.balance}), 0)` }).from(tokenAccount),
     excludeAdmin
-      ? db.select({ totalJobs: sql<number>`COUNT(${generationJob.id})`, uniqueUsers: sql<number>`COUNT(DISTINCT ${generationJob.userId})` }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(eq(user.role, UserRole.USER))
-      : db.select({ totalJobs: sql<number>`COUNT(${generationJob.id})`, uniqueUsers: sql<number>`COUNT(DISTINCT ${generationJob.userId})` }).from(generationJob),
+      ? db.select({ totalJobs: sql<number>`COUNT(${generationJob.id})`, uniqueUsers: sql<number>`COUNT(DISTINCT ${generationJob.userId})` }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), ...jobDateConditions))
+      : db.select({ totalJobs: sql<number>`COUNT(${generationJob.id})`, uniqueUsers: sql<number>`COUNT(DISTINCT ${generationJob.userId})` }).from(generationJob).where(jobDateConditions.length ? and(...jobDateConditions) : undefined),
     excludeAdmin
-      ? db.select({ archetypeCode: generationJob.archetypeCode, count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), sql`${generationJob.archetypeCode} IS NOT NULL`)).groupBy(generationJob.archetypeCode).orderBy(desc(count())).limit(1)
-      : db.select({ archetypeCode: generationJob.archetypeCode, count: count() }).from(generationJob).where(sql`${generationJob.archetypeCode} IS NOT NULL`).groupBy(generationJob.archetypeCode).orderBy(desc(count())).limit(1),
+      ? db.select({ archetypeCode: generationJob.archetypeCode, count: count() }).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(eq(user.role, UserRole.USER), sql`${generationJob.archetypeCode} IS NOT NULL`, ...jobDateConditions)).groupBy(generationJob.archetypeCode).orderBy(desc(count())).limit(1)
+      : db.select({ archetypeCode: generationJob.archetypeCode, count: count() }).from(generationJob).where(and(sql`${generationJob.archetypeCode} IS NOT NULL`, ...(jobDateConditions.length ? jobDateConditions : [sql`1=1`]))).groupBy(generationJob.archetypeCode).orderBy(desc(count())).limit(1),
   ]);
 
   return {
@@ -634,10 +651,21 @@ export interface UserGrowthDataPoint {
   count: number;
 }
 
-export async function getUserGrowthData(days: number = 30, options?: { excludeAdminUsers?: boolean }): Promise<UserGrowthDataPoint[]> {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+export async function getUserGrowthData(
+  days: number = 30,
+  options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }
+): Promise<UserGrowthDataPoint[]> {
+  const startDate =
+    options?.dateFrom && options?.dateTo
+      ? options.dateFrom
+      : (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - days);
+          return d;
+        })();
+  const endDate = options?.dateTo ?? new Date();
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const conditions = [gte(user.createdAt, startDate), lte(user.createdAt, endDate)];
 
   const results = await db
     .select({
@@ -645,7 +673,7 @@ export async function getUserGrowthData(days: number = 30, options?: { excludeAd
       count: count(),
     })
     .from(user)
-    .where(excludeAdmin ? and(gte(user.createdAt, startDate), eq(user.role, UserRole.USER)) : gte(user.createdAt, startDate))
+    .where(excludeAdmin ? and(...conditions, eq(user.role, UserRole.USER)) : and(...conditions))
     .groupBy(sql`DATE(${user.createdAt})`)
     .orderBy(sql`DATE(${user.createdAt})`);
 
@@ -662,11 +690,20 @@ export interface TokenUsageDataPoint {
   net: number;
 }
 
-export async function getTokenUsageData(days: number = 30, options?: { excludeAdminUsers?: boolean }): Promise<TokenUsageDataPoint[]> {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+export async function getTokenUsageData(
+  days: number = 30,
+  options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }
+): Promise<TokenUsageDataPoint[]> {
+  const startDate =
+    options?.dateFrom && options?.dateTo
+      ? options.dateFrom
+      : (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - days);
+          return d;
+        })();
+  const endDate = options?.dateTo ?? new Date();
   const excludeAdmin = options?.excludeAdminUsers ?? false;
-
   const baseSelect = {
     date: sql<string>`DATE(${tokenLedger.occurredAt})`,
     credits: sql<number>`COALESCE(SUM(CASE WHEN ${tokenLedger.delta} > 0 THEN ${tokenLedger.delta} ELSE 0 END), 0)`,
@@ -674,8 +711,8 @@ export async function getTokenUsageData(days: number = 30, options?: { excludeAd
     net: sql<number>`COALESCE(SUM(${tokenLedger.delta}), 0)`,
   };
   const results = excludeAdmin
-    ? await db.select(baseSelect).from(tokenLedger).innerJoin(user, eq(tokenLedger.userId, user.id)).where(and(gte(tokenLedger.occurredAt, startDate), eq(user.role, UserRole.USER))).groupBy(sql`DATE(${tokenLedger.occurredAt})`).orderBy(sql`DATE(${tokenLedger.occurredAt})`)
-    : await db.select(baseSelect).from(tokenLedger).where(gte(tokenLedger.occurredAt, startDate)).groupBy(sql`DATE(${tokenLedger.occurredAt})`).orderBy(sql`DATE(${tokenLedger.occurredAt})`);
+    ? await db.select(baseSelect).from(tokenLedger).innerJoin(user, eq(tokenLedger.userId, user.id)).where(and(gte(tokenLedger.occurredAt, startDate), lte(tokenLedger.occurredAt, endDate), eq(user.role, UserRole.USER))).groupBy(sql`DATE(${tokenLedger.occurredAt})`).orderBy(sql`DATE(${tokenLedger.occurredAt})`)
+    : await db.select(baseSelect).from(tokenLedger).where(and(gte(tokenLedger.occurredAt, startDate), lte(tokenLedger.occurredAt, endDate))).groupBy(sql`DATE(${tokenLedger.occurredAt})`).orderBy(sql`DATE(${tokenLedger.occurredAt})`);
 
   return results.map(r => ({
     date: r.date,
@@ -690,8 +727,15 @@ export interface JobStatusDataPoint {
   count: number;
 }
 
-export async function getJobStatusDistribution(options?: { excludeAdminUsers?: boolean }): Promise<JobStatusDataPoint[]> {
+export async function getJobStatusDistribution(options?: {
+  excludeAdminUsers?: boolean;
+  dateFrom?: Date;
+  dateTo?: Date;
+}): Promise<JobStatusDataPoint[]> {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const jobConditions = [];
+  if (options?.dateFrom) jobConditions.push(gte(generationJob.createdAt, options.dateFrom));
+  if (options?.dateTo) jobConditions.push(lte(generationJob.createdAt, options.dateTo));
 
   const results = excludeAdmin
     ? await db
@@ -701,7 +745,7 @@ export async function getJobStatusDistribution(options?: { excludeAdminUsers?: b
         })
         .from(generationJob)
         .innerJoin(user, eq(generationJob.userId, user.id))
-        .where(eq(user.role, UserRole.USER))
+        .where(jobConditions.length ? and(eq(user.role, UserRole.USER), ...jobConditions) : eq(user.role, UserRole.USER))
         .groupBy(generationJob.status)
         .orderBy(generationJob.status)
     : await db
@@ -710,6 +754,7 @@ export async function getJobStatusDistribution(options?: { excludeAdminUsers?: b
           count: count(),
         })
         .from(generationJob)
+        .where(jobConditions.length ? and(...jobConditions) : undefined)
         .groupBy(generationJob.status)
         .orderBy(generationJob.status);
 
@@ -726,11 +771,20 @@ export interface JobsOverTimeDataPoint {
   failed: number;
 }
 
-export async function getJobsOverTime(days: number = 30, options?: { excludeAdminUsers?: boolean }): Promise<JobsOverTimeDataPoint[]> {
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
+export async function getJobsOverTime(
+  days: number = 30,
+  options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }
+): Promise<JobsOverTimeDataPoint[]> {
+  const startDate =
+    options?.dateFrom && options?.dateTo
+      ? options.dateFrom
+      : (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - days);
+          return d;
+        })();
+  const endDate = options?.dateTo ?? new Date();
   const excludeAdmin = options?.excludeAdminUsers ?? false;
-
   const baseSelect = {
     date: sql<string>`DATE(${generationJob.createdAt})`,
     count: count(),
@@ -738,8 +792,8 @@ export async function getJobsOverTime(days: number = 30, options?: { excludeAdmi
     failed: sql<number>`COUNT(CASE WHEN ${generationJob.status} = 'FAILED' THEN 1 END)`,
   };
   const results = excludeAdmin
-    ? await db.select(baseSelect).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(gte(generationJob.createdAt, startDate), eq(user.role, UserRole.USER))).groupBy(sql`DATE(${generationJob.createdAt})`).orderBy(sql`DATE(${generationJob.createdAt})`)
-    : await db.select(baseSelect).from(generationJob).where(gte(generationJob.createdAt, startDate)).groupBy(sql`DATE(${generationJob.createdAt})`).orderBy(sql`DATE(${generationJob.createdAt})`);
+    ? await db.select(baseSelect).from(generationJob).innerJoin(user, eq(generationJob.userId, user.id)).where(and(gte(generationJob.createdAt, startDate), lte(generationJob.createdAt, endDate), eq(user.role, UserRole.USER))).groupBy(sql`DATE(${generationJob.createdAt})`).orderBy(sql`DATE(${generationJob.createdAt})`)
+    : await db.select(baseSelect).from(generationJob).where(and(gte(generationJob.createdAt, startDate), lte(generationJob.createdAt, endDate))).groupBy(sql`DATE(${generationJob.createdAt})`).orderBy(sql`DATE(${generationJob.createdAt})`);
 
   return results.map(r => ({
     date: r.date,
@@ -1411,7 +1465,10 @@ export async function getAllAdImages(
 // ==================== Ads Analytics ====================
 
 // Jobs per archetype
-export async function getArchetypeJobCounts() {
+export async function getArchetypeJobCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+  const conditions = [sql`${generationJob.archetypeCode} IS NOT NULL`];
+  if (options?.dateFrom) conditions.push(gte(generationJob.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(generationJob.createdAt, options.dateTo));
   return await db
     .select({
       archetypeCode: generationJob.archetypeCode,
@@ -1420,14 +1477,17 @@ export async function getArchetypeJobCounts() {
     })
     .from(generationJob)
     .leftJoin(adArchetype, eq(generationJob.archetypeCode, adArchetype.code))
-    .where(sql`${generationJob.archetypeCode} IS NOT NULL`)
+    .where(and(...conditions))
     .groupBy(generationJob.archetypeCode, adArchetype.displayName)
     .orderBy(desc(count()));
 }
 
 // Images per archetype (via workflow)
-export async function getArchetypeImageCounts() {
-  return await db
+export async function getArchetypeImageCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+  const conditions = [];
+  if (options?.dateFrom) conditions.push(gte(adImage.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adImage.createdAt, options.dateTo));
+  const q = db
     .select({
       archetypeCode: adWorkflow.archetypeCode,
       count: count(),
@@ -1435,13 +1495,17 @@ export async function getArchetypeImageCounts() {
     })
     .from(adImage)
     .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
-    .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
+    .innerJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code));
+  return await (conditions.length ? q.where(and(...conditions)) : q)
     .groupBy(adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(desc(count()));
 }
 
 // Images per workflow
-export async function getWorkflowImageCounts() {
+export async function getWorkflowImageCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+  const conditions = [eq(adImage.isDeleted, false)];
+  if (options?.dateFrom) conditions.push(gte(adImage.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adImage.createdAt, options.dateTo));
   return await db
     .select({
       workflowId: adImage.workflowId,
@@ -1454,15 +1518,16 @@ export async function getWorkflowImageCounts() {
     .from(adImage)
     .innerJoin(adWorkflow, eq(adImage.workflowId, adWorkflow.id))
     .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
-    .where(eq(adImage.isDeleted, false))
+    .where(and(...conditions))
     .groupBy(adImage.workflowId, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(desc(count()));
 }
 
 // Actions per archetype
-export async function getArchetypeActionCounts() {
-  // Get archetypeCode from either direct event.archetypeCode OR from workflow.archetypeCode
-  // This handles cases where events only have workflowId set but not archetypeCode
+export async function getArchetypeActionCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+  const conditions = [sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`];
+  if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
   return await db
     .select({
       archetypeCode: sql<string>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
@@ -1473,7 +1538,7 @@ export async function getArchetypeActionCounts() {
     .from(adEvent)
     .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
     .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`)
-    .where(sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`)
+    .where(and(...conditions))
     .groupBy(
       sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`,
       adEvent.eventType,
@@ -1486,7 +1551,10 @@ export async function getArchetypeActionCounts() {
 }
 
 // Actions per workflow
-export async function getWorkflowActionCounts() {
+export async function getWorkflowActionCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+  const conditions = [sql`${adEvent.workflowId} IS NOT NULL`];
+  if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
   return await db
     .select({
       workflowId: adEvent.workflowId,
@@ -1500,7 +1568,7 @@ export async function getWorkflowActionCounts() {
     .from(adEvent)
     .innerJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
     .leftJoin(adArchetype, eq(adWorkflow.archetypeCode, adArchetype.code))
-    .where(sql`${adEvent.workflowId} IS NOT NULL`)
+    .where(and(...conditions))
     .groupBy(adEvent.workflowId, adEvent.eventType, adWorkflow.workflowUid, adWorkflow.variantKey, adWorkflow.archetypeCode, adArchetype.displayName)
     .orderBy(adEvent.workflowId, adEvent.eventType);
 }
@@ -1600,8 +1668,12 @@ export async function getWorkflowActionCountsByBrand(brandId: string) {
 }
 
 // Top users by action count (user engagement)
-export async function getTopUsersByActions(limit: number = 10, options?: { excludeAdminUsers?: boolean }) {
+export async function getTopUsersByActions(limit: number = 10, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const conditions = [sql`${adEvent.userId} IS NOT NULL`];
+  if (excludeAdmin) conditions.push(eq(user.role, UserRole.USER));
+  if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
   return await db
     .select({
       userId: adEvent.userId,
@@ -1611,26 +1683,30 @@ export async function getTopUsersByActions(limit: number = 10, options?: { exclu
     })
     .from(adEvent)
     .innerJoin(user, eq(adEvent.userId, user.id))
-    .where(excludeAdmin ? and(sql`${adEvent.userId} IS NOT NULL`, eq(user.role, UserRole.USER)) : sql`${adEvent.userId} IS NOT NULL`)
+    .where(and(...conditions))
     .groupBy(adEvent.userId, user.email, user.displayName)
     .orderBy(desc(count()))
     .limit(limit);
 }
 
 // Action conversion/engagement rates
-export async function getActionConversionRates(options?: { excludeAdminUsers?: boolean }) {
+export async function getActionConversionRates(options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const conditions = [];
+  if (excludeAdmin) conditions.push(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`);
+  if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  const whereClause = conditions.length ? and(...conditions) : undefined;
   const eventTypeCounts = excludeAdmin
     ? await db
         .select({ eventType: adEvent.eventType, count: count() })
         .from(adEvent)
         .leftJoin(user, eq(adEvent.userId, user.id))
-        .where(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`)
+        .where(whereClause!)
         .groupBy(adEvent.eventType)
-    : await db
-        .select({ eventType: adEvent.eventType, count: count() })
-        .from(adEvent)
-        .groupBy(adEvent.eventType);
+    : await (whereClause
+        ? db.select({ eventType: adEvent.eventType, count: count() }).from(adEvent).where(whereClause).groupBy(adEvent.eventType)
+        : db.select({ eventType: adEvent.eventType, count: count() }).from(adEvent).groupBy(adEvent.eventType));
 
   // Calculate total events
   const totalEvents = eventTypeCounts.reduce((sum, item) => sum + Number(item.count), 0);
@@ -1662,8 +1738,13 @@ export async function getActionConversionRates(options?: { excludeAdminUsers?: b
 }
 
 // Recent ad activity timeline
-export async function getRecentAdActivity(limit: number = 50, options?: { excludeAdminUsers?: boolean }) {
+export async function getRecentAdActivity(limit: number = 50, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
+  const conditions = [];
+  if (excludeAdmin) conditions.push(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`);
+  if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
+  if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  const whereClause = conditions.length ? and(...conditions) : undefined;
   const baseQuery = db
     .select({
       id: adEvent.id,
@@ -1688,9 +1769,7 @@ export async function getRecentAdActivity(limit: number = 50, options?: { exclud
     .leftJoin(brand, eq(adEvent.brandId, brand.id))
     .leftJoin(adWorkflow, eq(adEvent.workflowId, adWorkflow.id))
     .leftJoin(adArchetype, sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) = ${adArchetype.code}`);
-  return excludeAdmin
-    ? baseQuery.where(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`).orderBy(desc(adEvent.createdAt)).limit(limit)
-    : baseQuery.orderBy(desc(adEvent.createdAt)).limit(limit);
+  return (whereClause ? baseQuery.where(whereClause) : baseQuery).orderBy(desc(adEvent.createdAt)).limit(limit);
 }
 
 // ==================== Brand Extraction Status ====================

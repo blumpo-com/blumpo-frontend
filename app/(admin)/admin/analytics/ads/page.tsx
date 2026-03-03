@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { AdminCard } from '@/components/admin/AdminCard';
+import { AdminDateFilter } from '@/components/admin/AdminDateFilter';
 import { ArchetypeJobChart } from '@/components/admin/charts/ArchetypeJobChart';
 import { ArchetypeImageChart } from '@/components/admin/charts/ArchetypeImageChart';
 import { WorkflowImageChart } from '@/components/admin/charts/WorkflowImageChart';
@@ -17,8 +19,13 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AdsAnalyticsPage() {
   const [imageView, setImageView] = useState<'archetype' | 'workflow'>('archetype');
+  const searchParams = useSearchParams();
+  const dateFrom = searchParams.get('dateFrom') ?? '';
+  const dateTo = searchParams.get('dateTo') ?? '';
+  const query = [dateFrom && `dateFrom=${encodeURIComponent(dateFrom)}`, dateTo && `dateTo=${encodeURIComponent(dateTo)}`].filter(Boolean).join('&');
+  const url = query ? `/api/admin/analytics/ads?${query}` : '/api/admin/analytics/ads';
 
-  const { data, error, isLoading } = useSWR('/api/admin/analytics/ads', fetcher, {
+  const { data, error, isLoading } = useSWR(url, fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60000, // Refresh every minute
   });
@@ -41,7 +48,10 @@ export default function AdsAnalyticsPage() {
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Ads Analytics</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Ads Analytics</h1>
+        <AdminDateFilter />
+      </div>
 
       {isLoading ? (
         <div className="text-center py-8">Loading analytics data...</div>
