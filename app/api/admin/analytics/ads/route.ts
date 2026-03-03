@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const dateFrom = searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined;
   const dateTo = searchParams.get('dateTo') ? toEndOfDay(new Date(searchParams.get('dateTo')!)) : undefined;
+  const userId = searchParams.get('userId') ?? undefined;
+  const brandId = searchParams.get('brandId') ?? undefined;
   const dateFilter = dateFrom && dateTo ? { dateFrom, dateTo } : {};
+  const filter = { ...dateFilter, userId, brandId };
 
   const [
     archetypeJobs,
@@ -33,14 +36,14 @@ export async function GET(request: NextRequest) {
     conversionRates,
     recentActivity,
   ] = await Promise.all([
-    getArchetypeJobCounts(dateFilter),
-    getArchetypeImageCounts(dateFilter),
-    getWorkflowImageCounts(dateFilter),
-    getArchetypeActionCounts(dateFilter),
-    getWorkflowActionCounts(dateFilter),
-    getTopUsersByActions(10, { excludeAdminUsers: true, ...dateFilter }),
-    getActionConversionRates({ excludeAdminUsers: true, ...dateFilter }),
-    getRecentAdActivity(50, { excludeAdminUsers: true, ...dateFilter }),
+    getArchetypeJobCounts(filter),
+    getArchetypeImageCounts(filter),
+    getWorkflowImageCounts(filter),
+    getArchetypeActionCounts(filter),
+    getWorkflowActionCounts(filter),
+    getTopUsersByActions(10, { excludeAdminUsers: true, ...filter }),
+    getActionConversionRates({ excludeAdminUsers: true, ...filter }),
+    getRecentAdActivity(50, { excludeAdminUsers: true, ...filter }),
   ]);
 
   return NextResponse.json({

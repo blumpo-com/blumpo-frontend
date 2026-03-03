@@ -260,27 +260,31 @@ export async function getAllBrands(
   const offset = (page - 1) * limit;
 
   const conditions = [eq(brand.isDeleted, false)];
-  
-  if (params.search) {
+  const searchTerm = params.search?.trim();
+  if (searchTerm) {
+    const term = `%${searchTerm}%`;
     conditions.push(
       or(
-        like(brand.name, `%${params.search}%`),
-        like(brand.websiteUrl, `%${params.search}%`)
+        like(brand.name, term),
+        like(brand.websiteUrl, term),
+        like(sql`${brand.id}::text`, term),
+        like(user.email, term),
+        like(sql`${user.id}::text`, term)
       )!
     );
   }
 
   const whereClause = and(...conditions);
 
-  // Get total count
-  const totalResult = await db
-    .select({ count: count() })
-    .from(brand)
-    .where(whereClause);
+  // Get total count (join user when search is used so conditions can reference user)
+  const countQuery = searchTerm
+    ? db.select({ count: count() }).from(brand).innerJoin(user, eq(brand.userId, user.id)).where(whereClause)
+    : db.select({ count: count() }).from(brand).where(whereClause);
+  const totalResult = await countQuery;
   const total = Number(totalResult[0]?.count || 0);
 
   // Get brands with user info
-  const brands = await db
+  const brandsQuery = db
     .select({
       id: brand.id,
       name: brand.name,
@@ -293,7 +297,8 @@ export async function getAllBrands(
     })
     .from(brand)
     .innerJoin(user, eq(brand.userId, user.id))
-    .where(whereClause)
+    .where(whereClause);
+  const brands = await brandsQuery
     .orderBy(desc(brand.createdAt))
     .limit(limit)
     .offset(offset);
@@ -1465,10 +1470,12 @@ export async function getAllAdImages(
 // ==================== Ads Analytics ====================
 
 // Jobs per archetype
-export async function getArchetypeJobCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+export async function getArchetypeJobCounts(options?: { dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const conditions = [sql`${generationJob.archetypeCode} IS NOT NULL`];
   if (options?.dateFrom) conditions.push(gte(generationJob.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(generationJob.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(generationJob.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(generationJob.brandId, options.brandId));
   return await db
     .select({
       archetypeCode: generationJob.archetypeCode,
@@ -1483,10 +1490,12 @@ export async function getArchetypeJobCounts(options?: { dateFrom?: Date; dateTo?
 }
 
 // Images per archetype (via workflow)
-export async function getArchetypeImageCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+export async function getArchetypeImageCounts(options?: { dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const conditions = [];
   if (options?.dateFrom) conditions.push(gte(adImage.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adImage.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adImage.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adImage.brandId, options.brandId));
   const q = db
     .select({
       archetypeCode: adWorkflow.archetypeCode,
@@ -1502,10 +1511,12 @@ export async function getArchetypeImageCounts(options?: { dateFrom?: Date; dateT
 }
 
 // Images per workflow
-export async function getWorkflowImageCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+export async function getWorkflowImageCounts(options?: { dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const conditions = [eq(adImage.isDeleted, false)];
   if (options?.dateFrom) conditions.push(gte(adImage.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adImage.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adImage.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adImage.brandId, options.brandId));
   return await db
     .select({
       workflowId: adImage.workflowId,
@@ -1524,10 +1535,12 @@ export async function getWorkflowImageCounts(options?: { dateFrom?: Date; dateTo
 }
 
 // Actions per archetype
-export async function getArchetypeActionCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+export async function getArchetypeActionCounts(options?: { dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const conditions = [sql`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode}) IS NOT NULL`];
   if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adEvent.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adEvent.brandId, options.brandId));
   return await db
     .select({
       archetypeCode: sql<string>`COALESCE(${adEvent.archetypeCode}, ${adWorkflow.archetypeCode})`.as('archetype_code'),
@@ -1551,10 +1564,12 @@ export async function getArchetypeActionCounts(options?: { dateFrom?: Date; date
 }
 
 // Actions per workflow
-export async function getWorkflowActionCounts(options?: { dateFrom?: Date; dateTo?: Date }) {
+export async function getWorkflowActionCounts(options?: { dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const conditions = [sql`${adEvent.workflowId} IS NOT NULL`];
   if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adEvent.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adEvent.brandId, options.brandId));
   return await db
     .select({
       workflowId: adEvent.workflowId,
@@ -1668,12 +1683,14 @@ export async function getWorkflowActionCountsByBrand(brandId: string) {
 }
 
 // Top users by action count (user engagement)
-export async function getTopUsersByActions(limit: number = 10, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
+export async function getTopUsersByActions(limit: number = 10, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
   const conditions = [sql`${adEvent.userId} IS NOT NULL`];
   if (excludeAdmin) conditions.push(eq(user.role, UserRole.USER));
   if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adEvent.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adEvent.brandId, options.brandId));
   return await db
     .select({
       userId: adEvent.userId,
@@ -1690,12 +1707,14 @@ export async function getTopUsersByActions(limit: number = 10, options?: { exclu
 }
 
 // Action conversion/engagement rates
-export async function getActionConversionRates(options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
+export async function getActionConversionRates(options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
   const conditions = [];
   if (excludeAdmin) conditions.push(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`);
   if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adEvent.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adEvent.brandId, options.brandId));
   const whereClause = conditions.length ? and(...conditions) : undefined;
   const eventTypeCounts = excludeAdmin
     ? await db
@@ -1738,12 +1757,14 @@ export async function getActionConversionRates(options?: { excludeAdminUsers?: b
 }
 
 // Recent ad activity timeline
-export async function getRecentAdActivity(limit: number = 50, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date }) {
+export async function getRecentAdActivity(limit: number = 50, options?: { excludeAdminUsers?: boolean; dateFrom?: Date; dateTo?: Date; userId?: string; brandId?: string }) {
   const excludeAdmin = options?.excludeAdminUsers ?? false;
   const conditions = [];
   if (excludeAdmin) conditions.push(sql`(${adEvent.userId} IS NULL OR ${user.role} = 'USER')`);
   if (options?.dateFrom) conditions.push(gte(adEvent.createdAt, options.dateFrom));
   if (options?.dateTo) conditions.push(lte(adEvent.createdAt, options.dateTo));
+  if (options?.userId) conditions.push(eq(adEvent.userId, options.userId));
+  if (options?.brandId) conditions.push(eq(adEvent.brandId, options.brandId));
   const whereClause = conditions.length ? and(...conditions) : undefined;
   const baseQuery = db
     .select({
