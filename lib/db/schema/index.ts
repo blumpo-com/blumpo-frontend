@@ -19,9 +19,11 @@ export { adEvent } from './adEvent';
 export { adClone } from './adClone';
 export { n8nWorkflowErrors, n8nWorkflowErrorOccurrences } from './n8nWorkflowErrors';
 export { newsletterSubscription } from './newsletter';
+export { tokenAccountPromotion } from './promotions';
 
 // Export individual relations
 export { tokenAccountRelations, tokenLedgerRelations } from './tokens';
+export { tokenAccountPromotionRelations } from './promotions';
 export { generationJobRelations } from './generation';
 export { authOtpRelations } from './auth';
 export { brandRelations } from './brand';
@@ -188,3 +190,4 @@ export type { AdEvent, NewAdEvent } from './adEvent';
 export type { AdClone, NewAdClone } from './adClone';
 export type { N8nWorkflowError, NewN8nWorkflowError, N8nWorkflowErrorOccurrence, NewN8nWorkflowErrorOccurrence } from './n8nWorkflowErrors';
 export type { NewsletterSubscription, NewNewsletterSubscription } from './newsletter';
+export type { TokenAccountPromotion, NewTokenAccountPromotion } from './promotions';

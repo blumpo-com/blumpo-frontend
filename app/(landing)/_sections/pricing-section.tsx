@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { useAnimatedNumber } from "@/lib/hooks/use-animated-number";
@@ -24,6 +24,12 @@ interface PricingCardProps {
   annualPriceId?: string | null;
   isAnnual?: boolean;
   allowCheckoutWithoutPriceId?: boolean;
+  /** Original price to show crossed out (e.g. monthly before discount) */
+  originalPrice?: number | null;
+  /** Suffix after price: "/month" or "/ for the first month" */
+  priceSuffix?: string;
+  /** Path to use as Stripe cancel_url (e.g. /generating?job_id=xxx) so back button returns here */
+  cancelUrlPath?: string | null;
 }
 
 function EnterpriseTalkButton() {
@@ -60,6 +66,9 @@ function PricingCard({
   annualPriceId,
   isAnnual = true,
   allowCheckoutWithoutPriceId = false,
+  originalPrice = null,
+  priceSuffix = "/month",
+  cancelUrlPath = null,
 }: PricingCardProps) {
   const iconMap = {
     bolt: '/assets/icons/bolt.svg',
@@ -113,11 +122,32 @@ function PricingCard({
       <p className="text-base font-normal text-[#888e98] leading-normal w-full h-16 mb-4">
         {description}
       </p>
-      <div className="h-17">
+      <div className="h-17 min-h-[2.5rem]">
         {animatedPrice !== null ? (
-          <div className="flex gap-[10px] items-center w-full">
-            <span className="text-[38px] font-bold text-[#00bfa6]">${animatedPrice}</span>
-            <span className="text-[24px] font-semibold text-[#0a0a0a]">/month</span>
+          <div
+            key={`price-${originalPrice ?? 'n'}-${priceSuffix}`}
+            className={cn(
+              "flex gap-[10px] items-center w-full flex-wrap animate-price-block-in",
+              originalPrice != null && "text-[18px]"
+            )}
+          >
+            {originalPrice != null && (
+              <span className="text-[22px] font-bold text-[#0a0a0a] line-through">
+                ${originalPrice}
+              </span>
+            )}
+            <span className={cn(
+              "font-bold text-[#00bfa6]",
+              originalPrice != null ? "text-[28px]" : "text-[38px]"
+            )}>
+              ${animatedPrice}
+            </span>
+            <span className={cn(
+              "font-semibold text-[#0a0a0a]",
+              originalPrice != null ? "text-[18px]" : "text-[24px]"
+            )}>
+              {priceSuffix}
+            </span>
           </div>
         ) : (
           <div className="h-17" />
@@ -145,6 +175,7 @@ function PricingCard({
           <input type="hidden" name="priceId" value={priceId || ""} className="hidden" />
           {planCode && <input type="hidden" name="planCode" value={planCode} className="hidden" />}
           <input type="hidden" name="interval" value={isAnnual ? "annual" : "monthly"} className="hidden" />
+          {cancelUrlPath && <input type="hidden" name="cancelUrl" value={cancelUrlPath} className="hidden" />}
           <button
             type="submit"
             className="bg-[#0a0a0a] h-[45px] flex items-center justify-center rounded-[8px] w-full my-4 cursor-pointer hover:bg-[#0a0a0a]/90"
@@ -216,7 +247,7 @@ const subscriptionPlans: Array<{
       name: "Starter",
       icon: "bolt",
       price: { monthly: 34, annual: 17 },
-      credits: "1000 credits (100 ads) / month",
+      credits: "1000 credits (100 ads) per month",
       description: "For individual creators",
       features: [
         "Ads creation in 10+ archetypes",
@@ -230,7 +261,7 @@ const subscriptionPlans: Array<{
       name: "Growth",
       icon: "star",
       price: { monthly: 79, annual: 39 },
-      credits: "3000 credits (300 ads) / month",
+      credits: "3000 credits (300 ads) per month",
       description: "For small businesses and marketers",
       features: [
         "Ads creation in 10+ archetypes",
@@ -245,7 +276,7 @@ const subscriptionPlans: Array<{
       name: "Team Plan",
       icon: "team",
       price: { monthly: 399, annual: 199 },
-      credits: "30,000 credits (3000 ads) / month",
+      credits: "30,000 credits (3000 ads) per month",
       description: "Ideal for medium size agencies and marketing teams",
       features: [
         "Ads creation in 10+ archetypes",
@@ -277,6 +308,12 @@ interface PricingSectionProps {
   showEnterprise?: boolean;
   planPrices?: Record<string, { monthly: string | null; annual: string | null }>;
   allowCheckoutWithoutPriceId?: boolean;
+  /** Default toggle to monthly (unchecked). If false, default is annual. */
+  initialIsAnnual?: boolean;
+  /** Show crossed-out original price and "/ for the first month" for monthly. */
+  showPromoPriceDisplay?: boolean;
+  /** Override for Stripe cancel_url path (e.g. from dialog opener). When set, used instead of pathname+search. */
+  cancelUrlPath?: string | null;
 }
 
 export function PricingSection({
@@ -285,8 +322,17 @@ export function PricingSection({
   showEnterprise = false,
   planPrices = {},
   allowCheckoutWithoutPriceId = false,
+  initialIsAnnual = true,
+  showPromoPriceDisplay = false,
+  cancelUrlPath: cancelUrlPathProp,
 }: PricingSectionProps = {}) {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const computedCancelUrlPath =
+    pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+  const cancelUrlPath = cancelUrlPathProp ?? computedCancelUrlPath;
+
+  const [isAnnual, setIsAnnual] = useState(initialIsAnnual);
   const [selectedPlan, setSelectedPlan] = useState("starter");
 
   const displayPlans = showEnterprise
@@ -294,11 +340,6 @@ export function PricingSection({
     : subscriptionPlans.filter(p => p.id !== "enterprise");
 
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
-  const currentPrice = currentPlan.price
-    ? isAnnual
-      ? currentPlan.price.annual
-      : currentPlan.price.monthly
-    : null;
 
   return (
     <div className="mt-12 w-full max-w-[1200px] mx-auto">
@@ -349,7 +390,9 @@ export function PricingSection({
         <PricingCard
           name={currentPlan.name}
           icon={currentPlan.icon}
-          price={currentPrice}
+          price={showPromoPriceDisplay && currentPlan.price
+            ? currentPlan.price.annual
+            : (currentPlan.price ? (isAnnual ? currentPlan.price.annual : currentPlan.price.monthly) : null)}
           credits={currentPlan.credits}
           description={currentPlan.description}
           features={currentPlan.features}
@@ -363,6 +406,9 @@ export function PricingSection({
           annualPriceId={currentPlan.planCode ? planPrices[currentPlan.planCode]?.annual || null : null}
           isAnnual={isAnnual}
           allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
+          originalPrice={showPromoPriceDisplay ? (currentPlan.price?.monthly ?? null) : null}
+          priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+          cancelUrlPath={cancelUrlPath}
         />
       </div>
 
@@ -376,7 +422,9 @@ export function PricingSection({
               key={plan.id}
               name={plan.name}
               icon={plan.icon}
-              price={isAnnual ? plan?.price?.annual || null : plan?.price?.monthly || null}
+              price={showPromoPriceDisplay && plan.price
+                ? plan.price.annual
+                : (plan.price ? (isAnnual ? plan.price.annual : plan.price.monthly) : null)}
               credits={plan.credits}
               description={plan.description}
               features={plan.features}
@@ -390,6 +438,9 @@ export function PricingSection({
               annualPriceId={planPriceMap?.annual || null}
               isAnnual={isAnnual}
               allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
+              originalPrice={showPromoPriceDisplay ? (plan?.price?.monthly ?? null) : null}
+              priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+              cancelUrlPath={cancelUrlPath}
             />
           );
         })}

@@ -56,13 +56,13 @@ export function Save50Dialog({
             className={styles.confirmButton}
             onClick={onConfirm}
           >
-            <span className={styles.confirmButtonText}>Yes, upgrade</span>
+            <span className={styles.confirmButtonText}>Yes, upgrade yearly</span>
           </button>
           <button
             className={styles.cancelButton}
             onClick={onContinue}
           >
-            <span className={styles.cancelButtonText}>Continue</span>
+            <span className={styles.cancelButtonText}>Continue monthly</span>
           </button>
         </div>
 

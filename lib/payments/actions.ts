@@ -6,7 +6,8 @@ import { withUser } from '@/lib/auth/middleware';
 
 export const checkoutAction = withUser(async (formData, user) => {
   const priceId = formData.get('priceId') as string;
-  await createCheckoutSession({ priceId });
+  const cancelUrlPath = (formData.get('cancelUrl') as string) || null;
+  await createCheckoutSession({ priceId, cancelUrlPath });
 });
 
 export const topupCheckoutAction = withUser(async (formData, user) => {

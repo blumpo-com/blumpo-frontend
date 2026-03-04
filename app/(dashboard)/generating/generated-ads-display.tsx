@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { PricingDialog } from '@/components/PricingDialog';
+import { PreviewImageDialog } from '@/components/PreviewImageDialog';
+import { Download, Loader2 } from 'lucide-react';
 import styles from './generated-ads-display.module.css';
 
 interface AdImage {
@@ -94,7 +96,6 @@ function PaidOnlyBadge() {
 
 export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: GeneratedAdsDisplayProps) {
   const router = useRouter();
-  const [hoveredImageId, setHoveredImageId] = useState<string | null>(null);
   const [brandData, setBrandData] = useState<BrandData | null>(null);
   const [insights, setInsights] = useState<BrandInsights | null>(null);
   const [isLoadingBrandData, setIsLoadingBrandData] = useState(true);
@@ -103,11 +104,23 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
   const [fontBoxHeight, setFontBoxHeight] = useState<number | null>(null);
   const [colorsBoxHeight, setColorsBoxHeight] = useState<number | null>(null);
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<AdImage | null>(null);
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const generatingCancelUrlPath =
+    pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
 
   // Refs for logo, font, and colors boxes
   const logoBoxRef = useRef<HTMLDivElement>(null);
   const fontBoxRef = useRef<HTMLDivElement>(null);
   const colorsBoxRef = useRef<HTMLDivElement>(null);
+
+  // Start welcome promotion (10m timer) when user first opens pricing dialog from this screen
+  useEffect(() => {
+    if (!pricingDialogOpen) return;
+    fetch('/api/promotions/welcome-50').catch(() => { });
+  }, [pricingDialogOpen]);
 
   // Fetch brand data and insights
   useEffect(() => {
@@ -309,7 +322,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               </span>
             </h1>
             <p className={styles.subtitle}>
-              Hover over and download them for free!
+              Download them for free!
             </p>
           </div>
 
@@ -317,43 +330,43 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             {/* Display non-blurred images first */}
             {displayImages.map((image) => {
               return (
-                <div
-                  key={image.id}
-                  className={styles.imageCard}
-                  onMouseEnter={() => setHoveredImageId(image.id)} // Image id with flag if it is blurred
-                  onMouseLeave={() => setHoveredImageId(null)}
-                >
-                  <div className={styles.imageWrapper}>
+                <div key={image.id} className={styles.imageCard}>
+                  <div
+                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable}`}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setPreviewImage(image)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setPreviewImage(image);
+                      }
+                    }}
+                  >
                     <img
                       src={image.publicUrl}
                       alt={image.title || 'Generated ad'}
                       className={styles.image}
                     />
-                    {hoveredImageId === image.id && (
-                      <>
-                        <div className={styles.hoverOverlay} />
-                        <button
-                          className={`${styles.downloadButton} ${downloadingIds.has(image.id) ? styles.downloadButtonLoading : ''}`}
-                          onClick={() => handleDownload(image.publicUrl, image.id)}
-                          disabled={downloadingIds.has(image.id)}
-                          aria-label={downloadingIds.has(image.id) ? 'Downloading...' : 'Download image'}
-                        >
-                          {downloadingIds.has(image.id) ? (
-                            <>
-                              <p className={styles.downloadText}>Downloading...</p>
-                              <div className={styles.downloadSpinner}></div>
-                            </>
-                          ) : (
-                            <>
-                              <p className={styles.downloadText}>Download image</p>
-                              <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
-                                <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </>
-                          )}
-                        </button>
-                      </>
-                    )}
+                  </div>
+                  <div className={styles.actionBar}>
+                    <button
+                      type="button"
+                      className={styles.actionButton}
+                      disabled={downloadingIds.has(image.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(image.publicUrl, image.id);
+                      }}
+                      title="Download"
+                      aria-label={downloadingIds.has(image.id) ? 'Downloading...' : 'Download'}
+                    >
+                      {downloadingIds.has(image.id) ? (
+                        <Loader2 className={styles.actionButtonIconSpin} size={18} />
+                      ) : (
+                        <Download size={16} />
+                      )}
+                    </button>
                   </div>
                 </div>
               );
@@ -364,8 +377,15 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
               <div
                 key={blurredImage.id + '-blurred'}
                 className={`${styles.imageCard} ${styles.blurredCard}`}
-                onMouseEnter={() => setHoveredImageId(blurredImage!.id + '-blurred')}
-                onMouseLeave={() => setHoveredImageId(null)}
+                onClick={() => handlePaidSectionClick('blurred-ad-download')}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePaidSectionClick('blurred-ad-download');
+                  }
+                }}
               >
                 <div className={styles.imageWrapper}>
                   <img
@@ -373,42 +393,65 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                     alt={blurredImage.title || 'Generated ad'}
                     className={styles.image}
                   />
-                  <div className={`${styles.blurredOverlay} ${hoveredImageId === (blurredImage.id + '-blurred') ? styles.blurredOverlayHidden : ''}`}>
+                  <div className={styles.blurredOverlay}>
                     <span className={styles.questionMark}>?</span>
                   </div>
-                  {hoveredImageId === (blurredImage.id + '-blurred') && (
-                    <>
-                      <div className={styles.hoverOverlay} />
-                      <button
-                        className={`${styles.downloadButton} ${downloadingIds.has(blurredImage.id) ? styles.downloadButtonLoading : ''}`}
-                        onClick={() => handlePaidSectionClick('blurred-ad-download')}
-                        disabled={downloadingIds.has(blurredImage.id)}
-                        aria-label="Upgrade to download"
-                      >
-                        <p className={styles.downloadText}>Download image</p>
-                        <svg className={styles.downloadIcon} width="17" height="20" viewBox="0 0 17 20" fill="none">
-                          <path d="M8.5 0L8.5 14M8.5 14L1 6.5M8.5 14L16 6.5M1 19L16 19" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
+                </div>
+                <div className={styles.actionBar}>
+                  <button
+                    type="button"
+                    className={styles.actionButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePaidSectionClick('blurred-ad-download');
+                    }}
+                    title="Download"
+                    aria-label="Upgrade to download"
+                  >
+                    <Download size={16} />
+                  </button>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex justify-center w-full mt-6">
+          <div className={styles.lyingBlumpoWrap}>
+            <video
+              className={styles.lyingBlumpoVideo}
+              autoPlay
+              loop
+              playsInline
+              muted
+              aria-hidden
+            >
+              <source src="/assets/animations/lying-blumpo.webm" type="video/webm" />
+            </video>
+            <img
+              src="/images/general/generation-text-bubble.svg"
+              alt=""
+              className={styles.generationTextBubble}
+              aria-hidden
+            />
+          </div>
+
+          <div className="flex justify-center w-full mt-[-20px]">
             <Button
               asChild
               variant="black"
               className="max-w-[376px] w-full flex items-center justify-between gap-2 px-6"
             >
               <Link href="/dashboard/content-library?tab=unsaved" className="flex items-center justify-between gap-2 w-full">
-                <span>Go to Blumpo platform</span>
+                <span>Go to the Blumpo platform</span>
                 <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
               </Link>
             </Button>
           </div>
+
+          <PreviewImageDialog<AdImage>
+            image={previewImage}
+            onClose={() => setPreviewImage(null)}
+            onDownload={(img) => handleDownload(img.publicUrl, img.id)}
+          />
         </div>
 
         {/* Right Panel - Insights & Details */}
@@ -671,12 +714,16 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           <div className={styles.divider} />
 
           <Button variant="cta" onClick={handleRegenerate} className="w-full max-w-[376px] flex items-center justify-between gap-2 px-4">
-            <span>{isPaidUser ? 'Login to main platform' : 'Regenerate ads'}</span>
+            <span>{isPaidUser ? 'Log in to the Blumpo platform' : 'Regenerate ads'}</span>
             <Image src="/assets/icons/chevron-up.svg" alt="" width={15} height={9} className="rotate-90 shrink-0" />
           </Button>
         </div>
       </div>
-      <PricingDialog open={pricingDialogOpen} onClose={() => setPricingDialogOpen(false)} />
+      <PricingDialog
+        open={pricingDialogOpen}
+        onClose={() => setPricingDialogOpen(false)}
+        cancelUrlPath={generatingCancelUrlPath}
+      />
     </>
   );
 }

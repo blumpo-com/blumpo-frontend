@@ -4,7 +4,7 @@ import { user, tokenAccount } from '@/lib/db/schema';
 import { setSession } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
-import { updateUserSubscription, activateSubscription, addTopupTokens, getTopupPlans, getSubscriptionPlanByStripeProductId, getUserWithTokenAccount } from '@/lib/db/queries';
+import { updateUserSubscription, activateSubscription, addTopupTokens, getTopupPlans, getSubscriptionPlanByStripeProductId, getUserWithTokenAccount, markPromotionUsed } from '@/lib/db/queries';
 import Stripe from 'stripe';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
@@ -125,6 +125,15 @@ export async function GET(request: NextRequest) {
         
         if (matchingTopup) {
           await addTopupTokens(userId, matchingTopup.tokensAmount, sessionId, matchingTopup.topupSku);
+        }
+      }
+
+      const welcomePromotionId = session.metadata?.welcome_promotion_id;
+      if (welcomePromotionId) {
+        try {
+          await markPromotionUsed(Number(welcomePromotionId));
+        } catch (e) {
+          console.error('Failed to mark welcome promotion as used:', e);
         }
       }
 

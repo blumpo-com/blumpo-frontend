@@ -15,6 +15,8 @@ import {
   refillSubscriptionTokens,
   activateSubscription,
   setRetentionOfferApplied,
+  getActiveWelcomePromotionForCheckout,
+  markPromotionUsed,
 } from '@/lib/db/queries';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -23,10 +25,13 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function createCheckoutSession({
   priceId,
-  isTopup = false
+  isTopup = false,
+  cancelUrlPath,
 }: {
   priceId: string;
   isTopup?: boolean;
+  /** Path (e.g. /generating?job_id=xxx) to return to when user clicks back in Stripe. If not set, uses /dashboard/your-credits. */
+  cancelUrlPath?: string | null;
 }) {
   const user = await getUser();
 
@@ -40,6 +45,18 @@ export async function createCheckoutSession({
 
   const hasExistingCustomer = !!tokenAccount?.stripeCustomerId;
 
+  let discounts: Stripe.Checkout.SessionCreateParams['discounts'];
+  let metadata: Record<string, string> | undefined;
+
+  // Apply welcome 50% promotion for subscription checkout when active
+  if (tokenAccount) {
+    const welcomePromotion = await getActiveWelcomePromotionForCheckout(tokenAccount.userId);
+    if (welcomePromotion?.stripePromotionCodeId) {
+      discounts = [{ promotion_code: welcomePromotion.stripePromotionCodeId }];
+      metadata = { welcome_promotion_id: String(welcomePromotion.id) };
+    }
+  }
+
   const sessionData: Stripe.Checkout.SessionCreateParams = {
     payment_method_types: ['card'],
     line_items: [
@@ -50,10 +67,15 @@ export async function createCheckoutSession({
     ],
     mode: isTopup ? 'payment' : 'subscription',
     success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/dashboard/your-credits`,
+    cancel_url:
+      cancelUrlPath && cancelUrlPath.startsWith('/')
+        ? `${process.env.BASE_URL}${cancelUrlPath}`
+        : `${process.env.BASE_URL}/dashboard/your-credits`,
     customer: tokenAccount?.stripeCustomerId || undefined,
     client_reference_id: user.id,
-    allow_promotion_codes: true,
+    // Stripe does not allow both allow_promotion_codes and discounts at once
+    ...(discounts ? { discounts } : { allow_promotion_codes: true }),
+    ...(metadata && { metadata }),
     ...(hasExistingCustomer && {
       customer_update: {
         name: 'auto',
