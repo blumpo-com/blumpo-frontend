@@ -6,6 +6,9 @@ import {
   markAdImagesPermanentlyDeleted,
 } from "@/lib/db/queries/ads";
 
+// Allow up to 60s so DB connection has time to establish on serverless cold start
+export const maxDuration = 60;
+
 function isAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get("Authorization");
   const expectedAuth = `Bearer ${process.env.CRON_SECRET}`;

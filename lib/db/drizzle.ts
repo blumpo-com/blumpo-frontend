@@ -12,5 +12,9 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL or POSTGRES_URL environment variable is not set');
 }
 
-export const client = postgres(databaseUrl);
+// Longer connect_timeout for serverless (e.g. Vercel cron) where first connection
+// can be slow due to cold start or DB in another region/sleeping (e.g. Neon).
+export const client = postgres(databaseUrl, {
+  connect_timeout: 60,
+});
 export const db = drizzle(client, { schema });
