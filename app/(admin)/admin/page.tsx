@@ -1,22 +1,35 @@
 import { getAdminUser } from '@/lib/auth/admin';
 import { redirect } from 'next/navigation';
 import { getAdminStats } from '@/lib/db/queries/admin';
+import { toEndOfDay } from '@/lib/utils';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { ChartsSection } from '@/components/admin/charts/ChartsSection';
+import { AdminDateFilter } from '@/components/admin/AdminDateFilter';
 import Link from 'next/link';
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ dateFrom?: string; dateTo?: string }>;
+}) {
   const admin = await getAdminUser();
-  
+
   if (!admin) {
     redirect('/dashboard?error=unauthorized');
   }
 
-  const stats = await getAdminStats();
+  const resolved = (await searchParams) ?? {};
+  const dateFrom = resolved.dateFrom ? new Date(resolved.dateFrom) : undefined;
+  const dateTo = resolved.dateTo ? toEndOfDay(new Date(resolved.dateTo)) : undefined;
+
+  const stats = await getAdminStats({ excludeAdminUsers: true, dateFrom, dateTo });
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+        <AdminDateFilter />
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <AdminCard>
@@ -54,7 +67,7 @@ export default async function AdminDashboardPage() {
         </AdminCard>
       </div>
 
-      <ChartsSection />
+      <ChartsSection dateFrom={resolved.dateFrom} dateTo={resolved.dateTo} />
 
       <div className="mt-6">
         <AdminCard>

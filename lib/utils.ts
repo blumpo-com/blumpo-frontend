@@ -1,6 +1,15 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
+/**
+ * Returns the same calendar day at 23:59:59.999 so that "To" date filters include the full day.
+ */
+export function toEndOfDay(d: Date): Date {
+  const out = new Date(d);
+  out.setHours(23, 59, 59, 999);
+  return out;
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

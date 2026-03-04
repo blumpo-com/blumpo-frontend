@@ -5,6 +5,7 @@ import {
   getUserJobs,
   getUserAdImages,
   getUserTokenLedger,
+  getArchetypeGenerationStatsByUser,
 } from '@/lib/db/queries/admin';
 import { redirect } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
@@ -22,12 +23,13 @@ export default async function UserDetailPage({
   }
 
   const { userId } = await params;
-  const [user, brands, jobs, adImages, tokenLedgerEntries] = await Promise.all([
+  const [user, brands, jobs, adImages, tokenLedgerEntries, archetypeStats] = await Promise.all([
     getUserWithDetails(userId),
     getUserBrands(userId, 10),
     getUserJobs(userId, 10),
     getUserAdImages(userId, 10),
     getUserTokenLedger(userId, 10),
+    getArchetypeGenerationStatsByUser(userId),
   ]);
 
   if (!user) {
@@ -53,7 +55,12 @@ export default async function UserDetailPage({
     type: 'ad-image',
     id: image.id,
     label: image.title || `Image ${image.id.slice(0, 8)}...`,
-    metadata: `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+    metadata: [
+      `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+      image.workflowUid ? `Workflow: ${image.workflowUid}` : null,
+      image.eventTypes ? `Events: ${image.eventTypes}` : (image.eventsCount ? `Events: ${image.eventsCount} total` : null),
+      image.permanentlyDeleted ? 'Permanently deleted' : null,
+    ].filter(Boolean).join(' • '),
   }));
 
   return (
@@ -118,11 +125,79 @@ export default async function UserDetailPage({
                 <dd className="mt-1 text-sm text-gray-900">{user.tokenAccount.planCode}</dd>
               </div>
               <div>
+                <dt className="text-sm font-medium text-gray-500">Period</dt>
+                <dd className="mt-1 text-sm text-gray-900">{user.tokenAccount.period}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Last refill</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {user.tokenAccount.lastRefillAt
+                    ? new Date(user.tokenAccount.lastRefillAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Next refill</dt>
+                <dd className="mt-1 text-sm text-gray-900">
+                  {user.tokenAccount.nextRefillAt
+                    ? new Date(user.tokenAccount.nextRefillAt).toLocaleString()
+                    : '—'}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-sm font-medium text-gray-500">Subscription Status</dt>
                 <dd className="mt-1 text-sm text-gray-900">
                   {user.tokenAccount.subscriptionStatus || 'N/A'}
                 </dd>
               </div>
+              {/* Stripe data – for paid plans show missing fields in red */}
+              {user.tokenAccount.planCode !== 'FREE' && (
+                <>
+                  <div className="border-t border-gray-200 pt-3 mt-1">
+                    <dt className="text-sm font-medium text-gray-500 mb-2">Stripe data</dt>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Customer ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeCustomerId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeCustomerId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Subscription ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeSubscriptionId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeSubscriptionId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Product ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripeProductId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripeProductId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Stripe Price ID</dt>
+                    <dd className="mt-1 text-sm">
+                      {user.tokenAccount.stripePriceId ? (
+                        <span className="text-gray-900 font-mono break-all">{user.tokenAccount.stripePriceId}</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">Not set</span>
+                      )}
+                    </dd>
+                  </div>
+                </>
+              )}
             </dl>
           ) : (
             <p className="text-sm text-gray-500">No token account found</p>
@@ -204,6 +279,36 @@ export default async function UserDetailPage({
                   </div>
                 </div>
               ))}
+            </div>
+          </AdminCard>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-6">
+        {archetypeStats.length > 0 && (
+          <AdminCard title="Workflow generation by archetype">
+            <p className="text-sm text-gray-500 mb-4">
+              For each archetype: workflows used by this user out of total workflow variants available (e.g. 4/23 = 4 workflows generated from 23 in archetype).
+            </p>
+            <ul className="space-y-2">
+              {archetypeStats.map((row) => (
+                <li key={row.archetypeCode} className="flex justify-between items-baseline text-sm">
+                  <span className="font-medium text-gray-900">
+                    {row.archetypeDisplayName} ({row.archetypeCode})
+                  </span>
+                  <span className="text-gray-600 font-mono">
+                    {Number(row.distinctWorkflowsUsed)}/{Number(row.totalWorkflowsInArchetype)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              <Link
+                href={`/admin/users/${userId}/workflows`}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                View workflow details
+              </Link>
             </div>
           </AdminCard>
         )}

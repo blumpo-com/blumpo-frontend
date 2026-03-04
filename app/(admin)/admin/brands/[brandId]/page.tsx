@@ -1,5 +1,12 @@
 import { getAdminUser } from '@/lib/auth/admin';
-import { getBrandWithFullDetails, getBrandJobs, getBrandAdImages } from '@/lib/db/queries/admin';
+import {
+  getBrandWithFullDetails,
+  getBrandJobs,
+  getBrandAdImages,
+  getArchetypeGenerationStatsByBrand,
+} from '@/lib/db/queries/admin';
+import { getQuickAdsCountByFormat } from '@/lib/db/queries/ads';
+import { getUserWithTokenBalance } from '@/lib/db/queries/tokens';
 import { redirect } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { RelatedEntitiesSection, RelatedEntity } from '@/components/admin/RelatedEntitiesSection';
@@ -23,10 +30,27 @@ export default async function BrandDetailPage({
   }
 
   // Fetch related entities
-  const [jobs, adImages] = await Promise.all([
+  const [jobs, adImages, archetypeStats, quickAdsData] = await Promise.all([
     getBrandJobs(brandId, 10),
     getBrandAdImages(brandId, 10),
+    getArchetypeGenerationStatsByBrand(brandId),
+    brand.user
+      ? Promise.all([
+        getUserWithTokenBalance(brand.user.id),
+        getQuickAdsCountByFormat(brand.user.id, brandId, '1:1'),
+        getQuickAdsCountByFormat(brand.user.id, brandId, '9:16'),
+      ]).then(([userWithToken, count1x1, count9x16]) => ({
+        planCode: userWithToken?.tokenAccount?.planCode ?? null,
+        format1x1Count: count1x1,
+        format9x16Count: count9x16,
+      }))
+      : Promise.resolve(null),
   ]);
+
+  const ownerHasPaidPlan =
+    quickAdsData &&
+    quickAdsData.planCode &&
+    quickAdsData.planCode !== 'FREE';
 
   // Prepare related entities for display
   const relatedEntities: RelatedEntity[] = [];
@@ -54,7 +78,12 @@ export default async function BrandDetailPage({
     type: 'ad-image',
     id: image.id,
     label: image.title || `Image ${image.id.slice(0, 8)}...`,
-    metadata: `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+    metadata: [
+      `Created: ${new Date(image.createdAt).toLocaleDateString()}`,
+      image.workflowUid ? `Workflow: ${image.workflowUid}` : null,
+      image.eventTypes ? `Events: ${image.eventTypes}` : (image.eventsCount ? `Events: ${image.eventsCount} total` : null),
+      image.permanentlyDeleted ? 'Permanently deleted' : null,
+    ].filter(Boolean).join(' • '),
   }));
 
   return (
@@ -114,6 +143,7 @@ export default async function BrandDetailPage({
           </dl>
         </AdminCard>
 
+
         <AdminCard title="Brand Assets">
           <dl className="space-y-4">
             <div>
@@ -135,14 +165,36 @@ export default async function BrandDetailPage({
                 )}
               </dd>
             </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Photos</dt>
-              <dd className="mt-1 text-sm text-gray-900">{brand.photos?.length || 0}</dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Hero Photos</dt>
-              <dd className="mt-1 text-sm text-gray-900">{brand.heroPhotos?.length || 0}</dd>
-            </div>
+            {brand.photos && brand.photos.length > 0 && (
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Photos</dt>
+                <dd className="mt-1 flex flex-wrap gap-2">
+                  {brand.photos.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`${brand.name} photo ${idx + 1}`}
+                      className="h-24 w-auto object-cover rounded border border-gray-200"
+                    />
+                  ))}
+                </dd>
+              </div>
+            )}
+            {brand.heroPhotos && brand.heroPhotos.length > 0 && (
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Hero Photos</dt>
+                <dd className="mt-1 flex flex-wrap gap-2">
+                  {brand.heroPhotos.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`${brand.name} hero ${idx + 1}`}
+                      className="h-24 w-auto object-cover rounded border border-gray-200"
+                    />
+                  ))}
+                </dd>
+              </div>
+            )}
             {brand.logoUrl && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Logo</dt>
@@ -159,7 +211,17 @@ export default async function BrandDetailPage({
         </AdminCard>
 
         {brand.insights && (
-          <AdminCard title="Brand Insights">
+          <AdminCard
+            title="Brand Insights"
+            actions={
+              <Link
+                href={`/admin/brands/${brandId}/insights`}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                View all insights
+              </Link>
+            }
+          >
             <dl className="space-y-4">
               <div>
                 <dt className="text-sm font-medium text-gray-500">Created At</dt>
@@ -177,7 +239,6 @@ export default async function BrandDetailPage({
                     : '-'}
                 </dd>
               </div>
-              {/* Add more insight fields as needed */}
             </dl>
           </AdminCard>
         )}
@@ -251,7 +312,33 @@ export default async function BrandDetailPage({
             </dl>
           </AdminCard>
         )}
+
+        {ownerHasPaidPlan && quickAdsData && (
+          <AdminCard title="Quick ads (not viewed)">
+            <p className="text-sm text-gray-500 mb-4">
+              Owner has a paid plan ({quickAdsData.planCode}). Count of quick-ads ready but not yet displayed for this brand.
+            </p>
+            <dl className="space-y-2">
+              <div className="flex justify-between">
+                <dt className="text-sm font-medium text-gray-500">1:1 format</dt>
+                <dd className="text-sm text-gray-900 font-mono">{quickAdsData.format1x1Count}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-sm font-medium text-gray-500">9:16 format</dt>
+                <dd className="text-sm text-gray-900 font-mono">{quickAdsData.format9x16Count}</dd>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-2 mt-2">
+                <dt className="text-sm font-medium text-gray-500">Total</dt>
+                <dd className="text-sm text-gray-900 font-mono">
+                  {quickAdsData.format1x1Count + quickAdsData.format9x16Count}
+                </dd>
+              </div>
+            </dl>
+          </AdminCard>
+        )}
       </div>
+
+
 
       {/* Related Entities Section */}
       <div className="space-y-6 mt-6">
@@ -282,6 +369,35 @@ export default async function BrandDetailPage({
           viewAllHref={`/admin/ad-images?brandId=${brandId}`}
           emptyMessage="No ad images found for this brand."
         />
+      </div>
+      <div className="mt-6 space-y-6">
+        {archetypeStats.length > 0 && (
+          <AdminCard title="Workflow generation by archetype">
+            <p className="text-sm text-gray-500 mb-4">
+              For each archetype: workflows used by this brand out of total workflow variants available (e.g. 4/23 = 4 workflows generated from 23 in archetype).
+            </p>
+            <ul className="space-y-2">
+              {archetypeStats.map((row) => (
+                <li key={row.archetypeCode} className="flex justify-between items-baseline text-sm">
+                  <span className="font-medium text-gray-900">
+                    {row.archetypeDisplayName} ({row.archetypeCode})
+                  </span>
+                  <span className="text-gray-600 font-mono">
+                    {Number(row.distinctWorkflowsUsed)}/{Number(row.totalWorkflowsInArchetype)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              <Link
+                href={`/admin/brands/${brandId}/workflows`}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                View workflow details
+              </Link>
+            </div>
+          </AdminCard>
+        )}
       </div>
     </div>
   );
