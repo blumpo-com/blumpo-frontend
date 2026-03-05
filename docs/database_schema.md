@@ -38,10 +38,13 @@ user ────┐
          └── N:1 ─── ad_workflow (via ad_image.workflow_id)
 
 ad_archetype ─── 1:N ─── ad_workflow
+ad_workflow ─── 1:1 ─── ad_clone
 ad_image ─── N:1 ─── ad_workflow
 ad_image ─── 1:N ─── ad_event
 generation_job ─── 1:N ─── ad_event
 
+token_account ─── 1:N ─── token_account_promotion
+user ─── 0:1 ─── newsletter_subscription (optional, by email)
 token_ledger (audit trail for token_account)
 subscription_plan (static config)
 topup_plan (static config)
@@ -67,6 +70,7 @@ Stores application users. Each user can own multiple brands and has a token acco
 | created_at    | timestamptz | Account creation date          |
 | last_login_at | timestamptz | Last login timestamp           |
 | ban_flag      | boolean     | Account ban status (default: false) |
+| role          | user_role enum | USER / ADMIN (default: USER) |
 
 **Example:**
 
@@ -79,7 +83,8 @@ Stores application users. Each user can own multiple brands and has a token acco
   "phone_number": null,
   "created_at": "2025-01-10T10:20:00Z",
   "last_login_at": "2025-01-15T14:30:00Z",
-  "ban_flag": false
+  "ban_flag": false,
+  "role": "USER"
 }
 ```
 
@@ -104,6 +109,9 @@ Stores application users. Each user can own multiple brands and has a token acco
 | stripe_price_id         | text                | Stripe price ID                                |
 | subscription_status     | text                | Subscription status from Stripe               |
 | cancellation_time       | timestamptz         | When subscription was cancelled                |
+| cancellation_reasons    | jsonb               | Reasons from cancel feedback form (nullable)   |
+| retention_offer_applied_at | timestamptz       | When user accepted retention offer (nullable)  |
+| retention_discount_renewal_at | timestamptz    | Next refill with 70% discount (nullable)       |
 
 **Indexes:**
 - Unique index on `stripe_customer_id` (where not null)
@@ -293,6 +301,7 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
 | created_at                  | timestamptz            | Created                                   |
 | updated_at                  | timestamptz            | Updated                                   |
 | client_ad_preferences      | jsonb                  | User preferences (future feature)         |
+| business_type               | business_type enum     | B2B SaaS / B2C/B2B Services / D2C/Ecommerce / Retail/Distribution (default B2B SaaS) |
 | industry                    | text                   | Industry classification                   |
 | customer_pain_points       | text[]                 | Verified pain points                      |
 | product_description         | text                   | Most accurate product description         |
@@ -321,6 +330,7 @@ This table is updated by LLM pipelines, crawlers, and Reddit AI analysis.
 ```json
 {
   "brand_id": "9ef8a4c2-9dd4-4eaa-8ae1-52e25fd0dd55",
+  "business_type": "B2B SaaS",
   "industry": "Productivity SaaS",
   "customer_pain_points": [
     "Clunky corporate tools",
@@ -370,6 +380,63 @@ Maintained by N8N workflows.
 
 ---
 
+# 📂 TABLE: `public.token_account_promotion`
+
+**Purpose:**
+Stores promotion/coupon associations per token account (e.g., Stripe promotion codes, retention offers). Tracks status and consumption.
+
+| Column                   | Type                | Description                                    |
+| ------------------------ | ------------------- | ---------------------------------------------- |
+| id                       | bigserial PK        | Promotion record ID                            |
+| token_account_id         | uuid FK → token_account(user_id) | Token account (cascade on delete) |
+| promotion_key             | text                | Promotion identifier (e.g., retention offer key) |
+| stripe_promotion_code_id | text                | Stripe promotion code ID (nullable)            |
+| stripe_coupon_id         | text                | Stripe coupon ID (nullable)                     |
+| status                   | text                | inactive / available / active / used / expired / revoked |
+| consumed_at              | timestamptz         | When promotion was consumed (nullable)         |
+| started_at               | timestamptz         | When promotion became active (nullable)         |
+| expires_at                | timestamptz         | When promotion expires (nullable)              |
+| created_at               | timestamptz         | Creation timestamp                             |
+| updated_at               | timestamptz         | Last update timestamp                           |
+
+**Indexes:**
+- Unique index on `(token_account_id, promotion_key)` per account
+
+---
+
+# 📂 TABLE: `public.newsletter_subscription`
+
+**Purpose:**
+Stores newsletter sign-ups. Optional link to user when email matches.
+
+| Column        | Type                | Description                          |
+| ------------- | ------------------- | ------------------------------------ |
+| id            | uuid PK             | Subscription ID (default: gen_random_uuid()) |
+| email         | text UNIQUE         | Subscriber email                     |
+| user_id       | uuid FK → user(id)  | User reference if matched (nullable, set null on delete) |
+| subscribed_at | timestamptz         | Sign-up timestamp                    |
+| confirmed_at  | timestamptz         | Confirmation timestamp (nullable)    |
+
+---
+
+# 📂 TABLE: `public.ad_clone`
+
+**Purpose:**
+Stores one clone asset per workflow (e.g., reference image for n8n). 1:1 with ad_workflow.
+
+| Column       | Type                | Description                          |
+| ------------ | ------------------- | ------------------------------------ |
+| id           | uuid PK             | Clone ID (default: gen_random_uuid()) |
+| workflow_id  | uuid FK → ad_workflow(id) UNIQUE | Workflow (cascade on delete) |
+| storage_key  | text                | Storage key for clone asset          |
+| storage_url  | text                | Public URL (nullable)                |
+| created_at   | timestamptz         | Creation timestamp                   |
+
+**Indexes:**
+- Unique index on `workflow_id` (one clone per workflow)
+
+---
+
 # 📂 TABLE: `public.generation_job`
 
 **Purpose:**
@@ -383,6 +450,7 @@ Main container for a whole generation request (campaign, batch of images, multi-
 | created_at            | timestamptz         | Job creation timestamp                |
 | started_at            | timestamptz         | When job started processing           |
 | completed_at          | timestamptz         | When job finished                     |
+| viewed_at             | timestamptz         | When user first viewed results (nullable) |
 | status                | job_status enum     | QUEUED / RUNNING / SUCCEEDED / FAILED / CANCELED |
 | prompt                | text                | Generation prompt (nullable)          |
 | params                | jsonb               | Runtime params (width, height, steps, cfg, seed, etc.) |
@@ -549,9 +617,10 @@ Stores generated ad images + metadata. Replaces the old `asset_image` table. Eac
 | ban_flag      | boolean             | Whether image is banned (default: false) |
 | error_flag    | boolean             | Whether image generation had an error (default: false) |
 | error_message | text                | Error message if generation failed (nullable) |
-| is_deleted    | boolean             | Soft delete flag (default: false)      |
+| is_deleted    | boolean             | Soft delete flag (default: false) for content library      |
 | delete_at     | timestamptz         | Scheduled deletion timestamp (nullable) |
 | ready_to_display | boolean         | Flag for quick ads - determines if ad is ready to display (default: true) |
+| permanently_deleted | boolean       | Hard delete flag (default false) |
 
 **Indexes:**
 - Index on `(user_id, created_at DESC)` for user's image history
@@ -809,6 +878,22 @@ MONTHLY
 YEARLY
 ```
 
+### `user_role`
+
+```
+USER
+ADMIN
+```
+
+### `business_type`
+
+```
+B2B SaaS
+B2C/B2B Services
+D2C/Ecommerce
+Retail/Distribution
+```
+
 ---
 
 # ✅ Summary
@@ -832,6 +917,10 @@ This schema cleanly separates:
 ### ✔ Ad analytics & event tracking (ad_event)
 
 ### ✔ n8n workflow error tracking (n8n_workflow_errors, n8n_workflow_error_occurrences)
+
+### ✔ Promotions & newsletter (token_account_promotion, newsletter_subscription)
+
+### ✔ Ad workflow clones (ad_clone)
 
 ### ✔ Image storage references
 
