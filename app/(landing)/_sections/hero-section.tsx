@@ -27,7 +27,7 @@ export function HeroSection() {
             {/* Mobile: Images above headline */}
             <div className="lg:hidden relative w-full flex justify-center items-center mb-6">
               <video
-                src="/assets/animations/painting-blumpo.mp4"
+                src="/assets/animations/ad-hero-blumpo.mp4"
                 autoPlay
                 loop
                 muted

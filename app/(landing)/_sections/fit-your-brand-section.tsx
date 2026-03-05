@@ -72,7 +72,7 @@ function BlumpoAnimation({ className }: { className?: string }) {
         aria-label="Blumpo"
       >
         <video
-          src="/assets/animations/disco-blumpo.mp4"
+          src="/assets/animations/disco-blumpo2.mp4"
           autoPlay
           loop
           muted
