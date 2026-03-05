@@ -114,7 +114,17 @@ export function ComparisonSection() {
 
           <div className="flex items-center justify-end w-full md:w-auto flex-1 gap-6 sm:gap-20 xl:gap-30">
             {/* Blumpo */}
-            <ComparisonImage src="/assets/animations/sitting-blumpo-narrow.webp" alt="Blumpo" width={48} height={48} blumpoLogo={true} />
+            <div className="flex items-center justify-center w-8 h-8 md:w-12 md:h-12 xl:w-20 overflow-visible shrink-0">
+              <video
+                src="/assets/animations/sitting-blumpo-white-bg.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="object-cover shrink-0 w-[60px] h-[60px] md:w-[106px] md:h-[80px]"
+                aria-label="Blumpo"
+              />
+            </div>
 
             {/* ChatGPT */}
             <ComparisonImage src="/assets/social/chatgpt-logo.png" alt="ChatGPT" width={36} height={36} />
