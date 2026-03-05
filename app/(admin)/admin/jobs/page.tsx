@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
 import { AdminTable, AdminTableRow, AdminTableCell } from '@/components/admin/AdminTable';
 import { Pagination } from '@/components/admin/Pagination';
+import { AdminDateFilter } from '@/components/admin/AdminDateFilter';
 import { JobStatus } from '@/lib/db/schema/enums';
 import useSWR from 'swr';
 
@@ -12,14 +12,23 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function JobsPage() {
   const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const searchParams = useSearchParams();
+  const page = parseInt(searchParams.get('page') || '1');
+  const statusFilter = searchParams.get('status') || 'all';
+  const dateFrom = searchParams.get('dateFrom') ?? '';
+  const dateTo = searchParams.get('dateTo') ?? '';
 
-  const { data, error, isLoading } = useSWR(
-    `/api/admin/jobs?page=${page}&limit=50${statusFilter !== 'all' ? `&status=${statusFilter}` : ''}`,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
+  const queryParams = new URLSearchParams();
+  queryParams.set('page', String(page));
+  queryParams.set('limit', '50');
+  if (statusFilter !== 'all') queryParams.set('status', statusFilter);
+  if (dateFrom) queryParams.set('dateFrom', dateFrom);
+  if (dateTo) queryParams.set('dateTo', dateTo);
+  const jobsUrl = `/api/admin/jobs?${queryParams.toString()}`;
+
+  const { data, error, isLoading } = useSWR(jobsUrl, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   if (error) {
     return <div className="p-8">Error loading jobs</div>;
@@ -40,12 +49,28 @@ export default function JobsPage() {
     }
   };
 
+  const setPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(newPage));
+    router.push(`/admin/jobs?${params.toString()}`);
+  };
+
+  const setStatusFilter = (status: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('status', status);
+    params.set('page', '1');
+    router.push(`/admin/jobs?${params.toString()}`);
+  };
+
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Generation Jobs</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Generation Jobs</h1>
+        <AdminDateFilter />
+      </div>
 
       <AdminCard>
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap items-center gap-4">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -126,7 +151,7 @@ export default function JobsPage() {
               <Pagination
                 page={data.page}
                 totalPages={data.totalPages}
-                onPageChange={setPage}
+                onPageChange={(p) => setPage(p)}
               />
             )}
           </>

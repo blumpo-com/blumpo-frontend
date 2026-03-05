@@ -10,8 +10,18 @@ import { RecentActivityFeed } from './RecentActivityFeed';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function ChartsSection() {
-  const { data, error, isLoading } = useSWR('/api/admin/analytics/charts?days=30', fetcher, {
+export function ChartsSection({
+  dateFrom,
+  dateTo,
+}: {
+  dateFrom?: string;
+  dateTo?: string;
+} = {}) {
+  const query =
+    dateFrom && dateTo
+      ? `dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`
+      : 'days=30';
+  const { data, error, isLoading } = useSWR(`/api/admin/analytics/charts?${query}`, fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 60000, // Refresh every minute
   });

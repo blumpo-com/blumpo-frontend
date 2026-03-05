@@ -1,13 +1,21 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { AdminCard } from '@/components/admin/AdminCard';
+import { AdminDateFilter } from '@/components/admin/AdminDateFilter';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function AnalyticsPage() {
-  const { data, error, isLoading } = useSWR('/api/admin/analytics', fetcher, {
+  const searchParams = useSearchParams();
+  const dateFrom = searchParams.get('dateFrom') ?? '';
+  const dateTo = searchParams.get('dateTo') ?? '';
+  const query = [dateFrom && `dateFrom=${encodeURIComponent(dateFrom)}`, dateTo && `dateTo=${encodeURIComponent(dateTo)}`].filter(Boolean).join('&');
+  const url = query ? `/api/admin/analytics?${query}` : '/api/admin/analytics';
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
     revalidateOnFocus: false,
     refreshInterval: 30000, // Refresh every 30 seconds
   });
@@ -20,7 +28,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics Dashboard</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+        <AdminDateFilter />
+      </div>
 
       {isLoading ? (
         <div className="text-center py-8">Loading...</div>

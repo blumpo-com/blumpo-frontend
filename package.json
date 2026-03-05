@@ -45,6 +45,7 @@
     "marked": "^15.0.4",
     "next": "16.1.6",
     "next-auth": "^4.24.11",
+    "playwright": "^1.49.0",
     "next-sanity": "^11.6.12",
     "postcss": "^8.5.3",
     "postgres": "^3.4.5",

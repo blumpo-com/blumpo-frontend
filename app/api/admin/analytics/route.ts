@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getAdminStats } from '@/lib/db/queries/admin';
+import { toEndOfDay } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const admin = await getAdminUser();
@@ -8,6 +9,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const stats = await getAdminStats();
+  const searchParams = request.nextUrl.searchParams;
+  const dateFrom = searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined;
+  const dateTo = searchParams.get('dateTo') ? toEndOfDay(new Date(searchParams.get('dateTo')!)) : undefined;
+
+  const stats = await getAdminStats({
+    excludeAdminUsers: true,
+    dateFrom,
+    dateTo,
+  });
   return NextResponse.json({ stats });
 }
