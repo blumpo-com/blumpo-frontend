@@ -51,6 +51,21 @@ export async function hashEmailSha256(email: string): Promise<string> {
 }
 
 /**
+ * Derives the storage key from a Vercel Blob (or similar) public URL.
+ * Uses the pathname without leading slash, e.g. "clone/ps9.webp".
+ * Returns null if the URL cannot be parsed.
+ */
+export function getStorageKeyFromBlobUrl(url: string): string | null {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.replace(/^\/+/, '');
+    return path || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Shuffles an array using Fisher-Yates algorithm
  */
 export function shuffle<T>(array: T[]): T[] {
