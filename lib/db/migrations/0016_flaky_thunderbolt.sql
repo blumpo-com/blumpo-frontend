@@ -1,0 +1,2 @@
+CREATE TYPE "public"."business_type" AS ENUM('B2B SaaS', 'B2C/B2B Services', 'D2C/Ecommerce', 'Retail/Distribution');--> statement-breakpoint
+ALTER TABLE "brand_insights" ADD COLUMN "business_type" "business_type" DEFAULT 'B2B SaaS' NOT NULL;
