@@ -11,6 +11,7 @@ import { GameDialog } from '@/components/GameDialog';
 import { PricingDialog } from '@/components/PricingDialog';
 import { BuyCreditsDialog } from './your-credits/buy-credits-dialog';
 import { useBuyCreditsDialog } from './your-credits/use-buy-credits-dialog';
+import { CloneAdsGrid } from './components/clone-ads-grid';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -401,6 +402,12 @@ export default function DashboardHomePage() {
             inactive
           />
         </div>
+      </div>
+
+      <div className={styles.cloneAdsSection}>
+        <div className={styles.cloneAdsDivider} />
+        <h2 className={styles.cloneAdsHeading}>Template ads to clone 🏙️</h2>
+        <CloneAdsGrid />
       </div>
 
       {planCode === 'FREE' ? (
