@@ -109,6 +109,7 @@ export default function HomePage() {
             checkoutAction={checkoutAction}
             showEnterprise={true}
             allowCheckoutWithoutPriceId={true}
+            className="mt-12"
           />
         </HeaderSection>
 

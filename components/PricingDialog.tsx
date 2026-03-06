@@ -273,9 +273,7 @@ export function PricingDialog({ open, onClose, cancelUrlPath: cancelUrlPathProp 
               <p className={styles.promotionMessage}>
                 Use limited time 50% discount for new accounts 🎉
               </p>
-              <div className={styles.promotionBadge}>
-                <span className={styles.promotionBadgeText}>Save 50% on annual plan</span>
-              </div>
+
             </div>
           ) : (
             <h2 className={styles.headerTitle}>Choose the best plan for you</h2>
@@ -304,6 +302,7 @@ export function PricingDialog({ open, onClose, cancelUrlPath: cancelUrlPathProp 
               ) : (
                 <>
                   <PricingSection
+                    className="mt-4"
                     checkoutAction={checkoutAction}
                     currentPlanCode={currentPlanCode}
                     showEnterprise={false}
