@@ -100,6 +100,52 @@
   background: #f3f4f6;
 }
 
+.animationWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+/* Overlay on top of image - animation video + optional bubble / ? */
+.animationOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.animationOverlay .animationVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.animationVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.animationVideoBlurred {
+  filter: blur(5px);
+}
+
+.cardTextBubble {
+  position: absolute;
+  top: -30px;
+  right: -15px;
+  width: 160px;
+  height: auto;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .imageWrapperClickable {
   cursor: pointer;
 }
@@ -366,12 +412,16 @@
   text-align: center;
 }
 
-.componentBox {
+/* Shared card style: same shadow, white background, no border, 6px radius */
+.cardBox {
   background: white;
-  border: 1.79px solid #888e98;
-  border-radius: 5.45px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: none;
+  border-radius: 6px;
+}
+
+.componentBox {
   padding: 14px 10px;
-  box-shadow: 0px 0px 3.59px 0px rgba(0, 0, 0, 0.4);
   min-height: 57px;
   display: flex;
   align-items: center;
@@ -476,6 +526,13 @@
   gap: 21px;
 }
 
+.insightEmoji {
+  font-size: 30px;
+  margin: 0;
+  text-align: center;
+  line-height: 1;
+}
+
 .insightLabel {
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
@@ -486,11 +543,7 @@
 }
 
 .insightContent {
-  background: white;
-  border: 1.79px solid #888e98;
-  border-radius: 4.88px;
   padding: 14px 10px;
-  box-shadow: 0px 0px 3.59px 0px rgba(0, 0, 0, 0.4);
   height: 180px;
   overflow-y: auto;
 }
@@ -533,10 +586,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0px 0px 3.11px rgba(0, 0, 0, 0.4);
-  border-radius: 4.23px;
-  background-color: #fff;
-  border: 1.6px solid #888e98;
   box-sizing: border-box;
   overflow: hidden;
   padding: 11.8px 8.8px;
@@ -560,6 +609,14 @@
   width: 100%;
 }
 
+.formatsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  align-items: center;
+  width: 100%;
+}
+
 .formatGroup {
   display: flex;
   flex-direction: column;
@@ -569,44 +626,119 @@
 
 .formatBoxes {
   display: flex;
-  align-items: end;
+  align-items: flex-end;
+  justify-content: center;
   gap: 16px;
+  width: 100%;
+}
+
+.formatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.formatItem:first-child {
+  width: 121px;
+}
+
+.formatItem:last-child {
+  width: 192px;
 }
 
 .formatBox {
-  background: white;
-  border: 1.97px solid #888e98;
-  border-radius: 5.37px;
-  padding: 15px 29px;
-  box-shadow: 0px 0px 10.09px 0px rgba(0, 0, 0, 0.4);
-  background: linear-gradient(93.54deg, rgba(0, 191, 166, 0.2) 5.13%, rgba(88, 199, 255, 0.2) 51.38%, rgba(13, 59, 102, 0.2) 97.62%);
+  padding: 0;
   font-family: 'Roboto', sans-serif;
-  font-size: 11px;
+  font-size: 19px;
   color: black;
   text-align: center;
-  width: 48px;
-  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.formatBox:first-child {
-  height: 48px;
+.formatBox1x1 {
+  width: 88px;
+  height: 88px;
+}
+
+.formatBox9x16 {
+  width: 88px;
+  height: 146px;
+}
+
+.formatCaption {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #888e98;
+  margin: 0;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.formatSocialIcons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.formatSocialIcon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.formatSocialIconImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.languageBlocks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
 }
 
 .languageBox {
-  background: white;
-  border: 1.64px solid #888e98;
-  border-radius: 4.47px;
   padding: 12px 9px;
-  box-shadow: 0px 0px 3.29px 0px rgba(0, 0, 0, 0.4);
   font-family: 'Roboto', sans-serif;
   font-size: 12px;
   color: black;
   text-align: center;
   width: 147px;
   height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.languageBox span {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.languagesAvailableBox {
+  padding: 12px 9px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  color: black;
+  text-align: center;
+  width: 100%;
+  max-width: 288px;
+  min-height: 31px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -711,6 +843,10 @@
 
   .formatsRow {
     flex-direction: column;
+    gap: 40px;
+  }
+
+  .formatsColumn {
     gap: 40px;
   }
 }

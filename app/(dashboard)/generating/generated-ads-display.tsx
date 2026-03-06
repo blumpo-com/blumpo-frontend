@@ -415,24 +415,6 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             )}
           </div>
 
-          <div className={styles.lyingBlumpoWrap}>
-            <video
-              className={styles.lyingBlumpoVideo}
-              autoPlay
-              loop
-              playsInline
-              muted
-              aria-hidden
-            >
-              <source src="/assets/animations/lying-blumpo.webm" type="video/webm" />
-            </video>
-            <img
-              src="/images/general/generation-text-bubble.svg"
-              alt=""
-              className={styles.generationTextBubble}
-              aria-hidden
-            />
-          </div>
 
           <div className="flex justify-center w-full mt-[-20px]">
             <Button
@@ -475,7 +457,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             <div className={styles.brandComponents}>
               <div className={styles.brandComponent}>
                 <p className={styles.componentLabel}>Logo</p>
-                <div ref={logoBoxRef} className={styles.componentBox}>
+                <div ref={logoBoxRef} className={`${styles.componentBox} ${styles.cardBox}`}>
                   {isLoadingBrandData ? (
                     <div className={styles.skeletonLogo} />
                   ) : brandData?.logoUrl ? (
@@ -561,7 +543,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                 <p className={styles.componentLabel}>Font</p>
                 <div
                   ref={fontBoxRef}
-                  className={`${styles.componentBox} ${styles.font}`}
+                  className={`${styles.componentBox} ${styles.cardBox} ${styles.font}`}
                   style={fontBoxHeight !== null ? { height: `${fontBoxHeight}px` } : undefined}
                 >
                   {isLoadingBrandData ? (
@@ -600,8 +582,9 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             <h2 className={styles.sectionTitle}>Customer insights</h2>
             <div className={styles.insightsGrid}>
               <div className={styles.insightBox}>
+                <p className={styles.insightEmoji} aria-hidden>😭</p>
                 <p className={styles.insightLabel}>Customer pain points</p>
-                <div className={styles.insightContent}>
+                <div className={`${styles.insightContent} ${styles.cardBox}`}>
                   {isLoadingBrandData ? (
                     <div className={styles.skeletonInsightList}>
                       <div className={styles.skeletonInsightItem} />
@@ -624,8 +607,9 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                 </div>
               </div>
               <div className={styles.insightBox}>
+                <p className={styles.insightEmoji} aria-hidden>🤩</p>
                 <p className={styles.insightLabel}>Customer groups</p>
-                <div className={styles.insightContent}>
+                <div className={`${styles.insightContent} ${styles.cardBox}`}>
                   {isLoadingBrandData ? (
                     <div className={styles.skeletonInsightList}>
                       <div className={styles.skeletonInsightItem} />
@@ -666,7 +650,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             <div className={styles.archetypesGrid}>
               {archetypes
                 .map((archetype) => (
-                  <div key={archetype.code} className={styles.archetypeCard}>
+                  <div key={archetype.code} className={`${styles.archetypeCard} ${styles.cardBox}`}>
                     {archetype.displayName}
                   </div>
                 ))}
@@ -675,37 +659,71 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
           <div className={styles.divider} />
 
-          {/* Ad Formats Section */}
+          {/* Ad Formats Section - Different ad formats first, then Language below */}
           <div className={styles.section}>
-            <div className={styles.formatsRow}>
+            <div className={styles.formatsColumn}>
               <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('ad-formats') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
                 <div className={styles.sectionHeader}>
                   {!isPaidUser && <PaidOnlyBadge />}
                   <h2 className={styles.sectionTitle}>Different ad formats</h2>
                 </div>
                 <div className={styles.formatBoxes}>
-                  <div className={styles.formatBox}>1:1</div>
-                  <div className={styles.formatBox}>9:16</div>
+                  <div className={styles.formatItem}>
+                    <div className={`${styles.formatBox} ${styles.formatBox1x1} ${styles.cardBox}`}>1:1</div>
+                    <p className={styles.formatCaption}>Perfect for posts</p>
+                    <div className={styles.formatSocialIcons}>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/facebook.png" alt="Facebook" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/x.png" alt="X" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/linkedin.png" alt="LinkedIn" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className={styles.formatItem}>
+                    <div className={`${styles.formatBox} ${styles.formatBox9x16} ${styles.cardBox}`}>9:16</div>
+                    <p className={styles.formatCaption}>Perfect for stories</p>
+                    <div className={styles.formatSocialIcons}>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/instagram.png" alt="Instagram" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/facebook.png" alt="Facebook" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                      <div className={styles.formatSocialIcon}>
+                        <Image src="/images/social_media_logo/tiktok.png" alt="TikTok" width={33} height={33} className={styles.formatSocialIconImg} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+              <div className={styles.divider} />
               <div className={styles.formatGroup} onClick={!isPaidUser ? () => handlePaidSectionClick('language') : undefined} style={!isPaidUser ? { cursor: 'pointer' } : undefined}>
                 <div className={styles.sectionHeader}>
                   {!isPaidUser && <PaidOnlyBadge />}
                   <h2 className={styles.sectionTitle}>Language</h2>
                 </div>
-                <div className={styles.languageBox}>
-                  {isLoadingBrandData ? (
-                    <div className={styles.skeletonLanguage} />
-                  ) : brandData?.language ? (
-                    <span>
-                      {brandData.language === 'en' || brandData.language === 'English' ? '🇬🇧 English'
-                        : brandData.language === 'pl' || brandData.language === 'Polish' ? '🇵🇱 Polish'
-                          : brandData.language === 'de' || brandData.language === 'German' ? '🇩🇪 German'
-                            : brandData.language === 'fr' || brandData.language === 'French' ? '🇫🇷 French'
-                              : brandData.language === 'es' || brandData.language === 'Spanish' ? '🇪🇸 Spanish'
-                                : `🌐 ${brandData.language.toUpperCase()}`}
-                    </span>
-                  ) : null}
+                <div className={styles.languageBlocks}>
+                  <div className={`${styles.languageBox} ${styles.cardBox}`}>
+                    {isLoadingBrandData ? (
+                      <div className={styles.skeletonLanguage} />
+                    ) : brandData?.language ? (
+                      <span>
+                        {brandData.language === 'en' || brandData.language === 'English' ? '🇬🇧 English'
+                          : brandData.language === 'pl' || brandData.language === 'Polish' ? '🇵🇱 Polish'
+                            : brandData.language === 'de' || brandData.language === 'German' ? '🇩🇪 German'
+                              : brandData.language === 'fr' || brandData.language === 'French' ? '🇫🇷 French'
+                                : brandData.language === 'es' || brandData.language === 'Spanish' ? '🇪🇸 Spanish'
+                                  : `🌐 ${brandData.language.toUpperCase()}`}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className={`${styles.languagesAvailableBox} ${styles.cardBox}`}>
+                    99+ languages available on the platform
+                  </div>
                 </div>
               </div>
             </div>
