@@ -64,7 +64,7 @@
 .imagesGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 80px 20px;
+  gap: 200px 20px;
   justify-content: space-between;
   align-items: flex-start;
   align-content: flex-start;
@@ -92,12 +92,21 @@
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+/* Allow animation overlay to extend outside card (only on cards with animation) */
+.imageCardAnimationOverflow {
+  overflow: visible;
+}
+
 .imageWrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
   background: #f3f4f6;
+}
+
+.imageWrapperAnimationOverflow {
+  overflow: visible;
 }
 
 .animationWrapper {
@@ -108,12 +117,21 @@
   background: #f3f4f6;
 }
 
-/* Overlay on top of image - animation video + optional bubble / ? */
+/* Overlay on top of image - animation higher, can extend outside card */
 .animationOverlay {
   position: absolute;
-  inset: 0;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 240px;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Lying chat blumpo – 20px higher */
+.animationOverlayLyingChat {
+  top: -210px;
 }
 
 .animationOverlay .animationVideo {
@@ -121,7 +139,8 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: bottom center;
   display: block;
 }
 

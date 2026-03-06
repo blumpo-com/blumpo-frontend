@@ -328,11 +328,12 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
 
           <div className={styles.imagesGrid}>
             {/* Display non-blurred images first */}
-            {displayImages.map((image) => {
+            {displayImages.map((image, index) => {
+              const isThirdCard = index === 2;
               return (
-                <div key={image.id} className={styles.imageCard}>
+                <div key={image.id} className={`${styles.imageCard} ${isThirdCard ? styles.imageCardAnimationOverflow : ''}`}>
                   <div
-                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable}`}
+                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable} ${isThirdCard ? styles.imageWrapperAnimationOverflow : ''}`}
                     role="button"
                     tabIndex={0}
                     onClick={() => setPreviewImage(image)}
@@ -348,6 +349,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                       alt={image.title || 'Generated ad'}
                       className={styles.image}
                     />
+                    {isThirdCard && (
+                      <div className={`${styles.animationOverlay} ${styles.animationOverlayLyingChat}`} aria-hidden>
+                        <video className={styles.animationVideo} autoPlay loop playsInline muted>
+                          <source src="/assets/animations/lying-chat-blumpo.webm" type="video/webm" />
+                        </video>
+                      </div>
+                    )}
                   </div>
                   <div className={styles.actionBar}>
                     <button
@@ -376,7 +384,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             {blurredImage && (
               <div
                 key={blurredImage.id + '-blurred'}
-                className={`${styles.imageCard} ${styles.blurredCard}`}
+                className={`${styles.imageCard} ${styles.blurredCard} ${styles.imageCardAnimationOverflow}`}
                 onClick={() => handlePaidSectionClick('blurred-ad-download')}
                 role="button"
                 tabIndex={0}
@@ -387,12 +395,17 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                   }
                 }}
               >
-                <div className={styles.imageWrapper}>
+                <div className={`${styles.imageWrapper} ${styles.imageWrapperAnimationOverflow}`}>
                   <img
                     src={blurredImage.publicUrl}
                     alt={blurredImage.title || 'Generated ad'}
                     className={styles.image}
                   />
+                  <div className={styles.animationOverlay} aria-hidden>
+                    <video className={styles.animationVideo} autoPlay loop playsInline muted>
+                      <source src="/assets/animations/pushing-blumpo.webm" type="video/webm" />
+                    </video>
+                  </div>
                   <div className={styles.blurredOverlay}>
                     <span className={styles.questionMark}>?</span>
                   </div>
@@ -416,7 +429,7 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
           </div>
 
 
-          <div className="flex justify-center w-full mt-[-20px]">
+          <div className="flex justify-center w-full mt-8">
             <Button
               asChild
               variant="black"
