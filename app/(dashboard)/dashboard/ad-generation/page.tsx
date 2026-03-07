@@ -15,6 +15,7 @@ function AdGenerationPageContent() {
   const jobId = searchParams.get('job_id');
   const formatParam = searchParams.get('format');
   const isQuickAds = searchParams.get('quick_ads') === 'true';
+  const isCloneAds = searchParams.get('clone_ads') === 'true';
 
   const [isProcessComplete, setIsProcessComplete] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -158,8 +159,8 @@ function AdGenerationPageContent() {
             }
           }
         } else {
-          // CUSTOMIZED ADS FLOW: Original logic (unchanged)
-          const generateEndpoint = '/api/generate/customized-ads';
+          // CUSTOMIZED ADS or CLONE ADS FLOW
+          const generateEndpoint = isCloneAds ? '/api/generate/clone-ads' : '/api/generate/customized-ads';
 
           // If job is QUEUED, trigger generation (API will wait for callback)
           if (job.status === 'QUEUED') {
@@ -255,7 +256,7 @@ function AdGenerationPageContent() {
     };
 
     checkJobAndGenerate();
-  }, [jobId, isGenerating, isProcessComplete, generationError, isQuickAds]);
+  }, [jobId, isGenerating, isProcessComplete, generationError, isQuickAds, isCloneAds]);
 
   // Check job status and handle quick ads
   useEffect(() => {

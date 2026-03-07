@@ -18,7 +18,11 @@ function SkeletonCard() {
   );
 }
 
-export function CloneAdsGrid() {
+interface CloneAdsGridProps {
+  onCloneAdClick?: (workflowId: string) => void;
+}
+
+export function CloneAdsGrid({ onCloneAdClick }: CloneAdsGridProps = {}) {
   const { data, error, isLoading } = useSWR<CloneAdsResponse>("/api/clone-ads", fetcher);
   const [columnsCount, setColumnsCount] = useState(4);
 
@@ -93,7 +97,9 @@ export function CloneAdsGrid() {
     );
   }
 
-  const cards = clones.map((clone) => <CloneAdCard key={clone.id} clone={clone} />);
+  const cards = clones.map((clone) => (
+    <CloneAdCard key={clone.id} clone={clone} onCloneAdClick={onCloneAdClick} />
+  ));
   const columns = distributeCardsIntoColumns(cards);
 
   return (

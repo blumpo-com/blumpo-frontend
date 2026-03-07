@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUser } from '@/lib/db/queries';
+import { getUser, getWorkflowById } from '@/lib/db/queries';
 import { updateGenerationJob, getGenerationJobById, deleteGenerationJob, hardDeleteGenerationJob } from '@/lib/db/queries/generation';
 import { db } from '@/lib/db/drizzle';
 import { generationJob } from '@/lib/db/schema';
@@ -25,7 +25,9 @@ export async function POST(req: Request) {
       selectedInsights,
       insightSource,
       promotionValueInsight,
-      archetypeInputs
+      archetypeInputs,
+      source,
+      workflowId,
     } = body;
 
     // If jobId provided, update existing job
@@ -50,8 +52,22 @@ export async function POST(req: Request) {
       return NextResponse.json(updated);
     }
 
-    // Create new job (without token deduction - we'll do that on final submission)
+    // Create new job (without token deduction - we'll do that on final submission / generate route)
     const newJobId = randomUUID();
+    const isCloneAd = source === 'clone_ad';
+    const params = isCloneAd && workflowId
+      ? { source: 'clone_ad' as const, workflow_id: workflowId as string }
+      : {};
+
+    // For clone-ad jobs, set archetype from the workflow
+    let jobArchetypeCode = archetypeCode || null;
+    if (isCloneAd && workflowId) {
+      const workflow = await getWorkflowById(workflowId);
+      if (workflow) {
+        jobArchetypeCode = workflow.archetypeCode;
+      }
+    }
+
     const job = await db
       .insert(generationJob)
       .values({
@@ -60,15 +76,15 @@ export async function POST(req: Request) {
         brandId: brandId || null,
         productPhotoUrls: productPhotoUrls || [],
         productPhotoMode: productPhotoMode || 'brand',
-        archetypeCode: archetypeCode || null,
+        archetypeCode: jobArchetypeCode,
         archetypeMode: archetypeMode || 'single',
         formats: formats || [],
         selectedInsights: selectedInsights || [],
         insightSource: insightSource || 'auto',
         promotionValueInsight: promotionValueInsight || {},
         archetypeInputs: archetypeInputs || {},
-        params: {},
-        tokensCost: 0, // Will be set on final submission
+        params,
+        tokensCost: 0, // Will be set on generate route
         status: 'QUEUED',
       })
       .returning();

@@ -86,16 +86,19 @@ const pendingCallbacks =
 
 // Function to wait for callback (called from generate route)
 // Uses Redis in production, falls back to in-memory storage for local development
+// initialPollDelayMs: delay before first poll (Redis only). Default 60s; use e.g. 10s for clone-ads.
 export async function waitForCallback(
   jobId: string,
-  maxWaitTime: number = 7 * 60 * 1000
+  maxWaitTime: number = 7 * 60 * 1000,
+  initialPollDelayMs?: number
 ): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
-  console.log('[CALLBACK-WAITER] waitForCallback called for job:', jobId, 'maxWaitTime:', maxWaitTime, 'ms');
+  const delay = initialPollDelayMs ?? INITIAL_POLL_DELAY;
+  console.log('[CALLBACK-WAITER] waitForCallback called for job:', jobId, 'maxWaitTime:', maxWaitTime, 'ms', 'initialPollDelayMs:', delay);
   console.log('[CALLBACK-WAITER] Redis available:', isRedisAvailable());
   
   // Use Redis if available (production/Vercel)
   if (isRedisAvailable()) {
-    return waitForCallbackRedis(jobId, maxWaitTime);
+    return waitForCallbackRedis(jobId, maxWaitTime, delay);
   }
   
   // Fallback to in-memory storage (local development)
@@ -122,7 +125,8 @@ export async function waitForExistingCallback(
 // Redis-based implementation
 async function waitForCallbackRedis(
   jobId: string,
-  maxWaitTime: number
+  maxWaitTime: number,
+  initialPollDelayMs: number = INITIAL_POLL_DELAY
 ): Promise<{ status: string; images: any[]; error_message?: string; error_code?: string }> {
   const redis = getRedisClient();
   if (!redis) {
@@ -193,9 +197,9 @@ async function waitForCallbackRedis(
       }
     };
 
-    // Start polling after initial delay (1 minute)
-    console.log('[CALLBACK-WAITER] Starting to poll after', INITIAL_POLL_DELAY, 'ms (1 minute) for job:', jobId);
-    setTimeout(poll, INITIAL_POLL_DELAY);
+    // Start polling after initial delay
+    console.log('[CALLBACK-WAITER] Starting to poll after', initialPollDelayMs, 'ms for job:', jobId);
+    setTimeout(poll, initialPollDelayMs);
   });
 }
 

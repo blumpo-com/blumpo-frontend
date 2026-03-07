@@ -9,9 +9,10 @@ import styles from "./clone-ad-card.module.css";
 
 interface CloneAdCardProps {
   clone: CloneAd;
+  onCloneAdClick?: (workflowId: string) => void;
 }
 
-export function CloneAdCard({ clone }: CloneAdCardProps) {
+export function CloneAdCard({ clone, onCloneAdClick }: CloneAdCardProps) {
   const router = useRouter();
   const [dimensions, setDimensions] = useState<{ w: number; h: number } | null>(null);
 
@@ -19,7 +20,11 @@ export function CloneAdCard({ clone }: CloneAdCardProps) {
   const cardClass = is9x16 ? `${styles.imageCard} ${styles.format9x16}` : styles.imageCard;
 
   const handleClick = () => {
-    router.push(`/dashboard/customized-ads?workflowId=${clone.workflowId}`);
+    if (onCloneAdClick) {
+      onCloneAdClick(clone.workflowId);
+    } else {
+      router.push(`/dashboard/customized-ads?workflowId=${clone.workflowId}`);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

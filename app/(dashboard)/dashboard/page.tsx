@@ -176,6 +176,7 @@ function FeatureCard({
 }
 
 const MIN_TOKENS_REQUIRED = 50;
+const MIN_TOKENS_REQUIRED_CLONE_AD = 10;
 
 export default function DashboardHomePage() {
   const router = useRouter();
@@ -198,6 +199,14 @@ export default function DashboardHomePage() {
       setIsLowCreditsDialogOpen(true);
     } else {
       router.push(path);
+    }
+  };
+
+  const handleCloneAdClick = (workflowId: string) => {
+    if (tokenBalance < MIN_TOKENS_REQUIRED_CLONE_AD) {
+      setIsLowCreditsDialogOpen(true);
+    } else {
+      router.push(`/dashboard/clone-ad?workflowId=${workflowId}`);
     }
   };
   // Ref to prevent double execution (React Strict Mode)
@@ -407,7 +416,7 @@ export default function DashboardHomePage() {
       <div className={styles.cloneAdsSection}>
         <div className={styles.cloneAdsDivider} />
         <h2 className={styles.cloneAdsHeading}>Template ads to clone 🏙️</h2>
-        <CloneAdsGrid />
+        <CloneAdsGrid onCloneAdClick={handleCloneAdClick} />
       </div>
 
       {planCode === 'FREE' ? (
