@@ -56,24 +56,43 @@
   padding: 16px;
 }
 
-.brandOverlay {
+/* Hover overlay: dark gradient + centered "Clone ad" pill (Figma 4329-8975, 4329-8958) */
+.hoverOverlay {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
+  inset: 0;
   background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0) 100%
+    to bottom,
+    rgba(10, 10, 10, 0.3) 0%,
+    rgba(10, 10, 10, 0.8) 100%
   );
   display: flex;
   align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
 }
 
-.brandName {
+.imageWrapper:hover .hoverOverlay {
+  opacity: 1;
+}
+
+.cloneButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: white;
+  color: #0a0a0a;
   font-size: 14px;
-  font-weight: 500;
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  border: none;
+  border-radius: 54px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+.cloneIcon {
+  flex-shrink: 0;
 }

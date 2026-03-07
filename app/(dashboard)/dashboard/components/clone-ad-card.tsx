@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Copy } from "lucide-react";
 import type { CloneAd } from "@/lib/types/clone-ads";
-import { getArchetypeName } from "@/app/(dashboard)/dashboard/content-library/types";
 import styles from "./clone-ad-card.module.css";
 
 interface CloneAdCardProps {
@@ -36,8 +36,6 @@ export function CloneAdCard({ clone }: CloneAdCardProps) {
     }
   };
 
-  const archetypeLabel = getArchetypeName(clone.archetypeCode as Parameters<typeof getArchetypeName>[0]);
-
   const wrapperStyle =
     dimensions != null
       ? { aspectRatio: `${dimensions.w} / ${dimensions.h}` }
@@ -50,7 +48,7 @@ export function CloneAdCard({ clone }: CloneAdCardProps) {
       tabIndex={0}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
-      aria-label={`Template ad: ${archetypeLabel}, variant ${clone.variantKey}. Click to customize.`}
+      aria-label="Clone this template ad"
     >
       <div className={styles.imageWrapper} style={wrapperStyle}>
         {clone.storageUrl ? (
@@ -65,8 +63,11 @@ export function CloneAdCard({ clone }: CloneAdCardProps) {
         ) : (
           <div className={styles.placeholder}>No preview</div>
         )}
-        <div className={styles.brandOverlay}>
-          <span className={styles.brandName}>{archetypeLabel}</span>
+        <div className={styles.hoverOverlay} aria-hidden>
+          <span className={styles.cloneButton}>
+            Clone ad
+            <Copy className={styles.cloneIcon} size={20} />
+          </span>
         </div>
       </div>
     </article>
