@@ -14,6 +14,7 @@ interface GenerationJob {
   completedAt: string | null;
   viewedAt: string | null;
   isNew: boolean;
+  isCloned?: boolean;
   adImageCount: number;
 }
 
