@@ -729,13 +729,12 @@
 }
 
 .languageBox {
-  padding: 12px 9px;
+  padding: 14px 9px;
   font-family: 'Roboto', sans-serif;
   font-size: 12px;
   color: black;
   text-align: center;
   width: 147px;
-  height: 31px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -750,14 +749,13 @@
 }
 
 .languagesAvailableBox {
-  padding: 12px 9px;
+  padding: 14px 9px;
   font-family: 'Roboto', sans-serif;
   font-size: 12px;
   color: black;
   text-align: center;
   width: 100%;
   max-width: 288px;
-  min-height: 31px;
   display: flex;
   align-items: center;
   justify-content: center;
