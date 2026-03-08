@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:network": "next dev --turbopack --hostname 0.0.0.0",
     "dev:webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
