@@ -25,16 +25,19 @@ export function HeroSection() {
         <div className="flex justify-between flex-col lg:flex-row  items-center lg:items-start">
           <div className="text-center md:max-w-2xl lg:col-span-6 lg:text-left relative z-10 lg:mr-10 flex flex-col items-center lg:items-start">
             {/* Mobile: Images above headline */}
-            <div className="lg:hidden relative w-full flex justify-center items-center mb-6">
+            <div className="lg:hidden relative w-full flex justify-center items-center mb-6 aspect-square max-w-[240px] mx-auto min-h-[240px]">
               <video
-                src="/assets/animations/ad-hero-blumpo.mp4"
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="relative z-10 max-w-[240px] w-full h-auto"
+                preload="auto"
+                className="relative z-10 w-full h-full object-contain"
                 aria-label="Blumpo painting"
-              />
+              >
+                <source src="/assets/animations/ad-hero-blumpo.mp4" type='video/quicktime; codecs="hvc1"' />
+                <source src="/assets/animations/ad-hero-blumpo.webm" type="video/webm" />
+              </video>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl xl:text-7xl text-center lg:text-left">
               Create AI B2B
@@ -90,7 +93,7 @@ export function HeroSection() {
           <HeroPhotoWall />
         </div>
       </div>
-    </section>
+    </section >
   );
 }
 
