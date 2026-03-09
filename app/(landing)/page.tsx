@@ -88,7 +88,7 @@ export default function HomePage() {
         </HeaderSection>
 
         <HeaderSection
-          title="How does our AI marketing solution works?"
+          title="How does our AI marketing solution work?"
           id="product">
           <HowItWorksSection />
         </HeaderSection>
@@ -110,6 +110,7 @@ export default function HomePage() {
             checkoutAction={checkoutAction}
             showEnterprise={true}
             allowCheckoutWithoutPriceId={true}
+            className="mt-12"
           />
         </HeaderSection>
 

@@ -26,7 +26,7 @@ interface PricingCardProps {
   allowCheckoutWithoutPriceId?: boolean;
   /** Original price to show crossed out (e.g. monthly before discount) */
   originalPrice?: number | null;
-  /** Suffix after price: "/month" or "/ for the first month" */
+  /** Suffix after price: "/month" or "/first month" */
   priceSuffix?: string;
   /** Path to use as Stripe cancel_url (e.g. /generating?job_id=xxx) so back button returns here */
   cancelUrlPath?: string | null;
@@ -78,7 +78,7 @@ function PricingCard({
   };
 
   const IconComponent = iconMap[icon as keyof typeof iconMap];
-  const cardHeight = isPopular ? "h-160 min-[1301px]:h-165" : "h-160 min-[1301px]:h-155";
+  const cardHeight = isPopular ? "h-160 min-[1301px]:h-175" : "h-160 min-[1301px]:h-165";
   const shadow = isPopular
     ? "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.15)]"
     : "shadow-[0px_0px_7px_3px_rgba(0,0,0,0.05)]";
@@ -119,20 +119,20 @@ function PricingCard({
         </h2>
       </div>
 
-      <p className="text-base font-normal text-[#888e98] leading-normal w-full h-16 mb-4">
+      <p className="text-base font-normal text-[#888e98] leading-normal w-full h-12">
         {description}
       </p>
-      <div className="h-17 min-h-[2.5rem]">
+      <div className={cn("min-h-[2.5rem]", originalPrice != null && "min-h-[3.5rem]")}>
         {animatedPrice !== null ? (
           <div
-            key={`price-${originalPrice ?? 'n'}-${priceSuffix}`}
+            key={`price-${originalPrice ?? "n"}-${priceSuffix}`}
             className={cn(
               "flex gap-[10px] items-center w-full flex-wrap animate-price-block-in",
               originalPrice != null && "text-[18px]"
             )}
           >
             {originalPrice != null && (
-              <span className="text-[22px] font-bold text-[#0a0a0a] line-through">
+              <span className="text-[22px] font-bold text-[#AFAFAF] line-through">
                 ${originalPrice}
               </span>
             )}
@@ -151,6 +151,18 @@ function PricingCard({
           </div>
         ) : (
           <div className="h-17" />
+        )}
+        {originalPrice != null && (
+          <p
+            className={cn(
+              "text-[14px] font-normal text-[#AFAFAF] leading-normal mt-0.5 transition-all duration-300 ease-out min-h-[1.25rem]",
+              priceSuffix === "/first month"
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 -translate-y-1 pointer-events-none"
+            )}
+          >
+            ${originalPrice}/month after first month
+          </p>
         )}
 
         {credits && (
@@ -247,12 +259,13 @@ const subscriptionPlans: Array<{
       name: "Starter",
       icon: "bolt",
       price: { monthly: 34, annual: 17 },
-      credits: "1000 credits (100 ads) per month",
+      credits: "100 ads per month",
       description: "For individual creators",
       features: [
         "Ads creation in 10+ archetypes",
         "Various sizes and formats\n(1:1, 9:16)",
         "1 Brand",
+        "Use of best-in-class Nano Banana and Claude models"
       ],
       planCode: "STARTER",
     },
@@ -261,13 +274,14 @@ const subscriptionPlans: Array<{
       name: "Growth",
       icon: "star",
       price: { monthly: 79, annual: 39 },
-      credits: "3000 credits (300 ads) per month",
+      credits: "300 ads per month",
       description: "For small businesses and marketers",
       features: [
         "Ads creation in 10+ archetypes",
         "Various sizes and formats\n(1:1, 9:16)",
         "Customer & competitor insight\naccess",
         "Up to 3 brands",
+        "Use of best-in-class Nano Banana and Claude models"
       ],
       planCode: "GROWTH",
     },
@@ -276,14 +290,14 @@ const subscriptionPlans: Array<{
       name: "Team Plan",
       icon: "team",
       price: { monthly: 399, annual: 199 },
-      credits: "30,000 credits (3000 ads) per month",
+      credits: "3000 ads per month",
       description: "Ideal for medium size agencies and marketing teams",
       features: [
         "Ads creation in 10+ archetypes",
         "Various sizes and formats\n(1:1, 9:16)",
         "Customer & competitor insight\naccess",
         "Unlimited number of brands",
-        "Up to 5 users",
+        "Use of best-in-class Nano Banana and Claude models"
       ],
       planCode: "TEAM",
     },
@@ -298,11 +312,13 @@ const subscriptionPlans: Array<{
         "Everything from Team plan",
         "10+ users",
         "Custom integrations",
+        'Use of best-in-class Nano Banana and Claude models',
       ],
     },
   ];
 
 interface PricingSectionProps {
+  className?: string;
   checkoutAction?: (formData: FormData) => Promise<void>;
   currentPlanCode?: string;
   showEnterprise?: boolean;
@@ -310,13 +326,14 @@ interface PricingSectionProps {
   allowCheckoutWithoutPriceId?: boolean;
   /** Default toggle to monthly (unchecked). If false, default is annual. */
   initialIsAnnual?: boolean;
-  /** Show crossed-out original price and "/ for the first month" for monthly. */
+  /** Show crossed-out original price and "/first month" for monthly. */
   showPromoPriceDisplay?: boolean;
   /** Override for Stripe cancel_url path (e.g. from dialog opener). When set, used instead of pathname+search. */
   cancelUrlPath?: string | null;
 }
 
 export function PricingSection({
+  className,
   checkoutAction,
   currentPlanCode,
   showEnterprise = false,
@@ -342,31 +359,39 @@ export function PricingSection({
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
 
   return (
-    <div className="mt-12 w-full max-w-3xl min-[1300px]:max-w-7xl mx-auto">
+    <div className={cn("w-full max-w-3xl min-[1300px]:max-w-7xl mx-auto", className)}>
       <div className="flex items-center justify-center gap-[30px] mb-8">
-        <button
-          onClick={() => setIsAnnual(!isAnnual)}
-          className="cursor-pointer"
-        >
-          <div
-            className={cn(
-              "flex items-center overflow-hidden relative transition-colors duration-200",
-              "p-1 rounded-[6px] w-[37px] h-[23px]",
-              isAnnual ? "bg-[#0a0a0a]" : "bg-gray-400"
-            )}
-          >
-            <div
-              className={cn(
-                "bg-[#f9fafb] transition-all duration-200 absolute",
-                "h-[15px] rounded-[4px] w-[17px]",
-                isAnnual ? "left-[17px]" : "left-1",
-              )}
-            />
-          </div>
-        </button>
         <span className="text-[16px] font-bold text-[#0a0a0a]">
           Save 50% on annual plan
         </span>
+        <div className="flex items-center justify-center gap-4">
+          <span className="text-[14px] font-semibold text-[#0a0a0a]">
+            Monthly billing
+          </span>
+          <button
+            onClick={() => setIsAnnual(!isAnnual)}
+            className="cursor-pointer shrink-0"
+          >
+            <div
+              className={cn(
+                "flex items-center overflow-hidden relative transition-colors duration-200",
+                "p-1.5 rounded-[8px] w-[60px] h-[30px]",
+                isAnnual ? "bg-[#0a0a0a]" : "bg-gray-400"
+              )}
+            >
+              <div
+                className={cn(
+                  "bg-[#f9fafb] transition-all duration-200 absolute top-1/2 -translate-y-1/2",
+                  "h-[21px] rounded-[5px] w-[23px]",
+                  isAnnual ? "left-[31px]" : "left-1.5",
+                )}
+              />
+            </div>
+          </button>
+          <span className="text-[14px] font-semibold text-[#0a0a0a]">
+            Annual billing
+          </span>
+        </div>
       </div>
 
       <div className="max-[1300px]:flex min-[1301px]:hidden gap-[7px] mb-5 px-0 py-[27px] justify-center overflow-clip">
@@ -407,7 +432,7 @@ export function PricingSection({
           isAnnual={isAnnual}
           allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
           originalPrice={showPromoPriceDisplay ? (currentPlan.price?.monthly ?? null) : null}
-          priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+          priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/first month") : "/month"}
           cancelUrlPath={cancelUrlPath}
         />
       </div>
@@ -439,7 +464,7 @@ export function PricingSection({
               isAnnual={isAnnual}
               allowCheckoutWithoutPriceId={allowCheckoutWithoutPriceId}
               originalPrice={showPromoPriceDisplay ? (plan?.price?.monthly ?? null) : null}
-              priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/ for the first month") : "/month"}
+              priceSuffix={showPromoPriceDisplay ? (isAnnual ? "/month" : "/first month") : "/month"}
               cancelUrlPath={cancelUrlPath}
             />
           );

@@ -72,14 +72,16 @@ function BlumpoAnimation({ className }: { className?: string }) {
         aria-label="Blumpo"
       >
         <video
-          src="/assets/animations/disco-blumpo2.mp4"
           autoPlay
           loop
           muted
           playsInline
           className={cn("object-cover", "w-full h-full")}
           aria-hidden
-        />
+        >
+          <source src="/assets/animations/disco-blumpo.mov" type="video/mp4; codecs=hvc1" />
+          <source src="/assets/animations/disco-blumpo.webm" type="video/webm" />
+        </video>
       </button>
       {isMusicPlaying && (
         <>

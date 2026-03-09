@@ -624,6 +624,7 @@ function YourCreditsPageContent() {
           </div>
 
           <PricingSection
+            className="mt-6"
             checkoutAction={checkoutAction}
             currentPlanCode={currentPlanCode}
             showEnterprise={false}

@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { HeroPhotoWall } from "@/components/hero-photo-wall";
-import { JetpackAdIllustrationMobile } from "@/components/jetpack-ad-illustration-mobile";
 import { UrlInputSection } from "./url-input-section";
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +19,7 @@ function BenefitRow({ text }: { text: string }) {
 
 export function HeroSection() {
   return (
-    <section className="py-10 md:pt-16 md:pb-14 relative z-10 scroll-mt-100">
+    <section className="py-10 md:pt-16 md:pb-14 relative z-10 scroll-mt-100 overflow-visible">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between flex-col lg:flex-row  items-center lg:items-start">
           <div className="text-center md:max-w-2xl lg:col-span-6 lg:text-left relative z-10 lg:mr-10 flex flex-col items-center lg:items-start">
@@ -54,16 +53,20 @@ export function HeroSection() {
             </p>
 
             {/* Desktop: URL input */}
-            <div className="hidden lg:block lg:relative w-160 my-6">
-              <Image
-                src="/assets/animations/pointing-blumpo.webp"
-                alt="Pointing Blumpo"
-                width={210}
-                height={140}
-                className="absolute -top-40 right-2 z-10"
+            <div className="hidden lg:block lg:relative w-160 my-6 overflow-visible">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-label="Pointing Blumpo"
+                className="absolute -top-40 right-2 z-10 w-[210px] h-[210px] object-contain"
                 style={{ clipPath: 'inset(0 40px 0 40px)' }}
-                unoptimized
-              />
+              >
+                <source src="/assets/animations/pointing-blumpo.mov" type="video/mp4; codecs=hvc1" />
+                <source src="/assets/animations/pointing-blumpo.webm" type="video/webm" />
+
+              </video>
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
                 <UrlInputSection />
               </Suspense>

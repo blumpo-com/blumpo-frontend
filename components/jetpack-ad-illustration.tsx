@@ -4,8 +4,10 @@ import Image from "next/image";
 import { useRef, useCallback, useState } from "react";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_ANIMATION_SRC = "/assets/animations/9-long.webm";
-const DEFAULT_ANIMATION_SECOND_SRC = "/assets/animations/9-b.webm";
+const DEFAULT_ANIMATION_SRC_WEBM = "/assets/animations/jetpack-a.webm";
+const DEFAULT_ANIMATION_SECOND_SRC_WEBM = "/assets/animations/jetpack-b.webm";
+const DEFAULT_ANIMATION_SRC_MOV = "/assets/animations/jetpack-a.mov";
+const DEFAULT_ANIMATION_SECOND_SRC_MOV = "/assets/animations/jetpack-b.mov";
 
 const DEFAULT_AD_IMAGES = [
   "/images/dashboard/animation-ads/1.png",
@@ -30,8 +32,8 @@ export interface JetpackAdIllustrationProps {
 
 export function JetpackAdIllustration({
   className,
-  animationSrc = DEFAULT_ANIMATION_SRC,
-  animationSecondSrc = DEFAULT_ANIMATION_SECOND_SRC,
+  animationSrc = DEFAULT_ANIMATION_SRC_WEBM,
+  animationSecondSrc = DEFAULT_ANIMATION_SECOND_SRC_WEBM,
   adImageSources = DEFAULT_AD_IMAGES,
   animationAlt = "Jetpack illustration",
   adImageAlt = "Ad template preview",
@@ -80,7 +82,6 @@ export function JetpackAdIllustration({
         />
         <video
           ref={video1Ref}
-          src={animationSrc}
           className={cn(videoClass, showSecond && "opacity-0 pointer-events-none")}
           autoPlay
           loop={false}
@@ -88,10 +89,13 @@ export function JetpackAdIllustration({
           playsInline
           aria-hidden={showSecond}
           onEnded={handleFirstEnded}
-        />
+        >
+          <source src={DEFAULT_ANIMATION_SRC_MOV} type="video/mp4; codecs=hvc1" />
+          <source src={animationSrc} type="video/webm" />
+
+        </video>
         <video
           ref={video2Ref}
-          src={animationSecondSrc}
           preload="auto"
           className={cn(videoClass, !showSecond && "opacity-0 pointer-events-none")}
           loop
@@ -100,7 +104,11 @@ export function JetpackAdIllustration({
           aria-label={animationAlt}
           aria-hidden={!showSecond}
           onTimeUpdate={handleSecondTimeUpdate}
-        />
+        >
+          <source src={DEFAULT_ANIMATION_SECOND_SRC_MOV} type="video/mp4; codecs=hvc1" />
+          <source src={animationSecondSrc} type="video/webm" />
+
+        </video>
       </div>
     </div>
   );
