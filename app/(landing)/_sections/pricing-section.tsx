@@ -342,7 +342,7 @@ export function PricingSection({
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
 
   return (
-    <div className="mt-12 w-full max-w-[1200px] mx-auto">
+    <div className="mt-12 w-full max-w-3xl min-[1300px]:max-w-7xl mx-auto">
       <div className="flex items-center justify-center gap-[30px] mb-8">
         <button
           onClick={() => setIsAnnual(!isAnnual)}

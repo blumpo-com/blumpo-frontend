@@ -35,19 +35,19 @@ const founders = [
 const founderParagraphs = [
   "We've spent years founding, scaling, and advising SaaS and D2C companies — from San Francisco through Rotterdam, Riyadh to Warsaw.",
   "Along the way, we learned something. Great ads don't start with a five-hour debate over button colors. They start with understanding your customer. And there's a real difference between creative that looks good and creative that actually performs.",
-  "We also learned that scaling marketing operations is still way harder than it should be.",
-  "So we built the solution we always wanted.",
-  "So we built Blumpo - AI ad generator that create ads based on customer insights from Reddit and social media.",
+  "We've also learned that scaling marketing operations is still way harder than it should be.",
+  "So we've built the solution we always wanted.",
+  "So we've built Blumpo - AI ad generator that create ads based on customer insights from Reddit and social media.",
   "Join us on the ride and try Blumpo 💪",
 ];
 
 export function FounderSection() {
   return (
     <section className="w-full bg-background py-14 md:py-20">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-10">
-          {/* Founders list: on mobile first, on desktop left */}
-          <div className="flex flex-col gap-6 lg:min-w-0 lg:flex-1">
+      <div className="mx-auto w-full sm:max-w-3xl lg:max-w-5xl xl:max-w-7xl  px-4 sm:px-6 lg:px-8">
+        <div className="flex w-full flex-col gap-8 xl:flex-row xl:items-stretch xl:gap-10">
+          {/* Founders: < md 1 col, md–xl 2 per row, xl+ 1 col left */}
+          <div className="flex flex-col gap-6 md:grid md:grid-cols-2 xl:flex xl:min-w-0 xl:flex-1">
             {founders.map((founder) => (
               <div
                 key={founder.name}
@@ -77,13 +77,15 @@ export function FounderSection() {
           </div>
 
           {/* From Founders to Founders box */}
-          <div className="flex flex-col gap-6 rounded-2xl bg-white px-6 py-9 shadow-[0_0_19px_rgba(0,0,0,0.1)] lg:min-w-0 lg:flex-1">
+          <div className="flex flex-col gap-6 rounded-2xl bg-white px-6 py-9 shadow-[0_0_19px_rgba(0,0,0,0.1)] xl:min-w-0 xl:flex-1">
             <h2 className="text-2xl font-bold tracking-tight md:text-[28px] bg-gradient-to-r from-brand-secondary to-brand-primary bg-clip-text text-transparent">
               From Founders to Founders
             </h2>
             <div className="flex flex-col gap-5 text-base text-foreground/80">
               {founderParagraphs.map((paragraph, i) => (
-                <p key={i}>{paragraph}</p>
+                <p key={i} className={i === 4 ? "font-bold" : undefined}>
+                  {paragraph}
+                </p>
               ))}
             </div>
           </div>
