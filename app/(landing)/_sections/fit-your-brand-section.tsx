@@ -4,7 +4,6 @@ import { useRef, useState, useEffect } from "react";
 import { DiscoBall } from "@/components/disco-ball";
 import { cn } from "@/lib/utils";
 import { BookOpen, Users, Search } from "lucide-react";
-import Image from "next/image";
 
 interface UnderstandCardProps {
   title: string;
@@ -72,13 +71,14 @@ function BlumpoAnimation({ className }: { className?: string }) {
         className="block cursor-pointer w-full h-full"
         aria-label="Blumpo"
       >
-        <Image
-          src="/assets/animations/disco-blumpo.webp"
-          alt="Disco Blumpo"
-          width={260}
-          height={260}
+        <video
+          src="/assets/animations/disco-blumpo2.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
           className={cn("object-cover", "w-full h-full")}
-          unoptimized
+          aria-hidden
         />
       </button>
       {isMusicPlaying && (
@@ -177,10 +177,10 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
       case "team":
         return (
           <div className="flex items-center gap-3 justify-center">
-            <FounderCardIcon src="dominik.png" />
-            <FounderCardIcon src="przemek.png" />
-            <FounderCardIcon src="franek.png" />
-            <FounderCardIcon src="kuba.png" />
+            <FounderCardIcon src="dominik.avif" />
+            <FounderCardIcon src="przemek.avif" />
+            <FounderCardIcon src="franek.avif" />
+            <FounderCardIcon src="kuba.avif" />
           </div>
         );
       default:
@@ -386,10 +386,10 @@ export function FitYourBrandSection() {
               {cards[4].description}
             </p>
             <div className="flex items-center gap-[34px] justify-center mt-auto">
-              <FounderCardIcon src="dominik.png" />
-              <FounderCardIcon src="przemek.png" />
-              <FounderCardIcon src="franek.png" />
-              <FounderCardIcon src="kuba.png" />
+              <FounderCardIcon src="dominik.avif" />
+              <FounderCardIcon src="przemek.avif" />
+              <FounderCardIcon src="franek.avif" />
+              <FounderCardIcon src="kuba.avif" />
             </div>
           </div>
         </div>
