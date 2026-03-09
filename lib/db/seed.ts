@@ -44,6 +44,11 @@ const AD_CLONE_MEME_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme24.webp', variantKey: 'meme_24', workflowUid: 'SUB/IMG/meme24' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/were-done-when-i-say-were-done-v0-5c80qq0r4ebg1.webp', variantKey: 'meme_25', workflowUid: 'SUB/IMG/meme25' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/its-the-eye-of-the-tiger-its-the-thrill-of-the-fight-v0-pa2frpndmfcg1.webp', variantKey: 'meme_26', workflowUid: 'SUB/IMG/meme26' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme27.webp', variantKey: 'meme_27', workflowUid: 'SUB/IMG/meme27' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme28.jpeg', variantKey: 'meme_28', workflowUid: 'SUB/IMG/meme28' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme29.jpeg', variantKey: 'meme_29', workflowUid: 'SUB/IMG/meme29' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme31.jpeg', variantKey: 'meme_30', workflowUid: 'SUB/IMG/meme30' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme33.jpeg', variantKey: 'meme_31', workflowUid: 'SUB/IMG/meme31' },
 ];
 
 // Problem-solution clone ads: storageUrl, variantKey, workflowUid (workflows created on seed; storage key derived from URL)
@@ -51,11 +56,9 @@ const AD_CLONE_PS_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/tes5.jpg', variantKey: 'ps_5', workflowUid: 'SUB/IMG/PS5' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/tes6', variantKey: 'ps_6', workflowUid: 'SUB/IMG/PS6' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ae83a6f3-d1bb-48e3-8787-910aca3abd95.webp', variantKey: 'ps_7', workflowUid: 'SUB/IMG/PS7' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/tes4.jpg', variantKey: 'ps_8', workflowUid: 'SUB/IMG/PS8' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps9.webp', variantKey: 'ps_9', workflowUid: 'SUB/IMG/PS9' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps10.png', variantKey: 'ps_10', workflowUid: 'SUB/IMG/PS10' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps11.webp', variantKey: 'ps_11', workflowUid: 'SUB/IMG/PS11' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps12.webp', variantKey: 'ps_12', workflowUid: 'SUB/IMG/PS12' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/b78b2c30-cb00-4e20-a36c-18f1767669b9.webp', variantKey: 'ps_13', workflowUid: 'SUB/IMG/PS13' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps14.webp', variantKey: 'ps_14', workflowUid: 'SUB/IMG/PS14' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps18.jpg', variantKey: 'ps_18', workflowUid: 'SUB/IMG/PS18' },
@@ -75,7 +78,6 @@ const AD_CLONE_PS_ENTRIES = [
 // Value proposition clone ads: storageUrl, variantKey, workflowUid
 const AD_CLONE_VALP_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp5.jpg', variantKey: 'valp_5', workflowUid: 'SUB/IMG/VALP5' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp26.webp', variantKey: 'valp_6', workflowUid: 'SUB/IMG/VALP6' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp7.jpg', variantKey: 'valp_7', workflowUid: 'SUB/IMG/VALP7' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp27.webp', variantKey: 'valp_8', workflowUid: 'SUB/IMG/VALP8' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp9.jpg', variantKey: 'valp_9', workflowUid: 'SUB/IMG/VALP9' },
@@ -93,19 +95,15 @@ const AD_CLONE_VALP_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp23.jpg', variantKey: 'valp_23', workflowUid: 'SUB/IMG/VALP23' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp25.webp', variantKey: 'valp_25', workflowUid: 'SUB/IMG/VALP25' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp26.webp', variantKey: 'valp_26', workflowUid: 'SUB/IMG/VALP26' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp27.webp', variantKey: 'valp_27', workflowUid: 'SUB/IMG/VALP27' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp28.webp', variantKey: 'valp_28', workflowUid: 'SUB/IMG/VALP28' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp29.webp', variantKey: 'valp_29', workflowUid: 'SUB/IMG/VALP29' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp30.webp', variantKey: 'valp_30', workflowUid: 'SUB/IMG/VALP30' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/3317.webp', variantKey: 'valp_31', workflowUid: 'SUB/IMG/VALP31' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp32.webp', variantKey: 'valp_32', workflowUid: 'SUB/IMG/VALP32' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp28.webp', variantKey: 'valp_27', workflowUid: 'SUB/IMG/VALP27' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp29.webp', variantKey: 'valp_28', workflowUid: 'SUB/IMG/VALP28' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp32.webp', variantKey: 'valp_30', workflowUid: 'SUB/IMG/VALP30' },
 ];
 
 // Testimonial clone ads: storageUrl, variantKey, workflowUid
 const AD_CLONE_TES_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes7.jpeg', variantKey: 'tes_7', workflowUid: 'SUB/IMG/TES/7' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes13.webp', variantKey: 'tes_8', workflowUid: 'SUB/IMG/TES/8' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes12.jpg', variantKey: 'tes_12', workflowUid: 'SUB/IMG/TES/12' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes13.1.webp', variantKey: 'tes_13', workflowUid: 'SUB/IMG/TES/13' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes16.webp', variantKey: 'tes_16', workflowUid: 'SUB/IMG/TES/16' },
 ];
@@ -116,7 +114,6 @@ const AD_CLONE_COMP_ENTRIES = [
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp5.png', variantKey: 'comp_5', workflowUid: 'SUB/COM/IMG5' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp6.png', variantKey: 'comp_6', workflowUid: 'SUB/COM/IMG6' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp7.webp', variantKey: 'comp_7', workflowUid: 'SUB/COM/IMG7' },
-  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp8.webp', variantKey: 'comp_8', workflowUid: 'SUB/COM/IMG8' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp10.webp', variantKey: 'comp_9', workflowUid: 'SUB/COM/IMG9' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp13.jpeg', variantKey: 'comp_10', workflowUid: 'SUB/COM/IMG10' },
   { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp11.webp', variantKey: 'comp_11', workflowUid: 'SUB/COM/IMG11' },
