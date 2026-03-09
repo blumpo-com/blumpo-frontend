@@ -18,6 +18,7 @@ import {
   getActiveWelcomePromotionForCheckout,
   markPromotionUsed,
 } from '@/lib/db/queries';
+import { syncPaidCustomerToBrevo, removeContactFromBrevoCustomers } from '@/lib/brevo';
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-04-30.basil'
@@ -250,13 +251,12 @@ export async function handleSubscriptionChange(
       cancellationTime,
     };
 
-    // Use activation function for active subscriptions to ensure proper token allocation
     if ((status === 'active' || status === 'trialing') && matchingPlan) {
       await activateSubscription(userId, subscriptionData, matchingPlan.monthlyTokens);
     } else {
-      // Just update subscription data for trial status
       await updateUserSubscription(userId, subscriptionData);
     }
+    syncPaidCustomerToBrevo(userWithAccount.user.email, { PLAN: planCode }).catch(() => {});
   } else if (status === 'canceled' || status === 'unpaid') {
     const cancellationTime = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : 
     new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
@@ -267,6 +267,7 @@ export async function handleSubscriptionChange(
       stripeProductId: null,
       stripePriceId: null,
     });
+    removeContactFromBrevoCustomers(userWithAccount.user.email).catch(() => {});
   }
 }
 

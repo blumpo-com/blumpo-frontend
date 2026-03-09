@@ -1,6 +1,7 @@
 import { pgTable, uuid, timestamp, text, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { brand } from './brand';
+import { businessTypeEnum } from './enums';
 
 // Brand insights table (1:1 with brand)
 export const brandInsights = pgTable('brand_insights', {
@@ -12,6 +13,7 @@ export const brandInsights = pgTable('brand_insights', {
   clientAdPreferences: jsonb('client_ad_preferences').notNull().default({}),
 
   // Brand & customer insights
+  businessType: businessTypeEnum('business_type').notNull().default('B2B SaaS'),
   industry: text('industry'),
   customerPainPoints: text('customer_pain_points').array().notNull().default([]),
   productDescription: text('product_description'),

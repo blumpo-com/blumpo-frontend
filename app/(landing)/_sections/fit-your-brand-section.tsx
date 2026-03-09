@@ -179,10 +179,10 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
       case "team":
         return (
           <div className="flex items-center gap-3 justify-center">
-            <FounderCardIcon src="dominik.png" />
-            <FounderCardIcon src="przemek.png" />
-            <FounderCardIcon src="franek.png" />
-            <FounderCardIcon src="kuba.png" />
+            <FounderCardIcon src="dominik.avif" />
+            <FounderCardIcon src="przemek.avif" />
+            <FounderCardIcon src="franek.avif" />
+            <FounderCardIcon src="kuba.avif" />
           </div>
         );
       default:
@@ -388,10 +388,10 @@ export function FitYourBrandSection() {
               {cards[4].description}
             </p>
             <div className="flex items-center gap-[34px] justify-center mt-auto">
-              <FounderCardIcon src="dominik.png" />
-              <FounderCardIcon src="przemek.png" />
-              <FounderCardIcon src="franek.png" />
-              <FounderCardIcon src="kuba.png" />
+              <FounderCardIcon src="dominik.avif" />
+              <FounderCardIcon src="przemek.avif" />
+              <FounderCardIcon src="franek.avif" />
+              <FounderCardIcon src="kuba.avif" />
             </div>
           </div>
         </div>

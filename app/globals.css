@@ -299,6 +299,21 @@
   animation: slideUpToTop 0.3s ease-in forwards;
 }
 
+@keyframes slideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-slide-in-from-bottom {
+  animation: slideInFromBottom 0.4s ease-out forwards;
+}
+.animate-slide-out-top {
+  animation: slideUpToTop 0.4s ease-out forwards;
+}
+
 /* Section scroll-in animation - lightweight alternative to framer-motion whileInView */
 .section-animate-in {
   opacity: 0;

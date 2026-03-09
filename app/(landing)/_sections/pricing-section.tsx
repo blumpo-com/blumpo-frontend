@@ -359,8 +359,8 @@ export function PricingSection({
   const currentPlan = displayPlans.find((p) => p.id === selectedPlan) || displayPlans[0];
 
   return (
-    <div className={cn("w-full max-w-[1300px] mx-auto", className)}>
-      <div className="flex flex-col items-center gap-5 mb-10">
+    <div className={cn("w-full max-w-3xl min-[1300px]:max-w-7xl mx-auto", className)}>
+      <div className="flex items-center justify-center gap-[30px] mb-8">
         <span className="text-[16px] font-bold text-[#0a0a0a]">
           Save 50% on annual plan
         </span>

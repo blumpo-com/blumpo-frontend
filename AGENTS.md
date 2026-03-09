@@ -4,6 +4,7 @@
 - `app/`: Next.js App Router routes and layouts. Route groups use parentheses (e.g., `app/(dashboard)`), API routes under `app/api`.
 - `components/`: Reusable React components. UI primitives live in `components/ui` (PascalCase filenames).
 - `lib/`: Domain logic and utilities (`lib/auth`, `lib/db`, `lib/payments`, `lib/utils.ts`).
+- `docs/`: Documentation, specs, and usage guides for the project.
 - Root config: `next.config.ts`, `tsconfig.json` (path alias `@/*`), `drizzle.config.ts`, `middleware.ts`.
 - Env files: `.env` (local), `.env.example` (template). Never commit secrets.
 
@@ -40,5 +41,5 @@
 - Store secrets in `.env`; mirror keys from `.env.example`. For deploys (e.g., Vercel), set env vars and Stripe webhook secrets per environment.
 
 ## Figma and Designs
-- Round px values eg. 23.453px becomes 23px
-- Ignore line-height properties and never add them to texts, when you base your design on figma layouts
+- Round px values to the nearest integer divisible by 2 (e.g. 23.453px → 24px). No decimals for font sizes, widths, heights, padding, margin, border radius, line-height, etc.
+- Ignore line-height properties from Figma and never add them to texts when basing design on Figma layouts.
