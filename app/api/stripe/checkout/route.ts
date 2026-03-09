@@ -5,6 +5,7 @@ import { setSession } from '@/lib/auth/session';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/payments/stripe';
 import { updateUserSubscription, activateSubscription, addTopupTokens, getTopupPlans, getSubscriptionPlanByStripeProductId, getUserWithTokenAccount, markPromotionUsed } from '@/lib/db/queries';
+import { syncPaidCustomerToBrevo } from '@/lib/brevo';
 import Stripe from 'stripe';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
 
@@ -97,7 +98,6 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Create or update the user's token account with Stripe information
       await activateSubscription(userId, {
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
@@ -108,6 +108,7 @@ export async function GET(request: NextRequest) {
         period: period,
       }, matchingPlan ? matchingPlan.monthlyTokens : 0);
 
+      syncPaidCustomerToBrevo(userRecord[0].email, { PLAN: planCode }).catch(() => {});
     } 
     // Handle one-time payment (topup)
     else if (session.mode === 'payment') {

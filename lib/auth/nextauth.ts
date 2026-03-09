@@ -4,6 +4,7 @@ import { db } from '@/lib/db/drizzle';
 import { user as userTable, tokenAccount } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { setSession } from '@/lib/auth/session';
+import { syncFreeUserToBrevo, brevoContactAttributesFromDisplayName } from '@/lib/brevo';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -48,13 +49,13 @@ export const authOptions: NextAuthOptions = {
 
           if (newUser.length > 0) {
             dbUser = newUser[0];
-            
-            // Create default token account (50 tokens for FREE plan)
             await db.insert(tokenAccount).values({
               userId: dbUser.id,
               balance: 50,
               planCode: 'FREE',
             });
+            const attrs = brevoContactAttributesFromDisplayName(user.name ?? null);
+            syncFreeUserToBrevo(dbUser.email, { ...attrs, SOURCE: 'google' }).catch(() => {});
           }
         } else {
           // Update last login
