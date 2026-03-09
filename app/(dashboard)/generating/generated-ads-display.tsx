@@ -330,10 +330,12 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
             {/* Display non-blurred images first */}
             {displayImages.map((image, index) => {
               const isThirdCard = index === 2;
+              const isLastCard = index === displayImages.length - 1;
+              const showPushingAnimation = isLastCard && isPaidUser;
               return (
-                <div key={image.id} className={`${styles.imageCard} ${isThirdCard ? styles.imageCardAnimationOverflow : ''}`}>
+                <div key={image.id} className={`${styles.imageCard} ${isThirdCard ? styles.imageCardAnimationOverflow : ''} ${isLastCard ? styles.imageCardAnimationOverflow : ''}`}>
                   <div
-                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable} ${isThirdCard ? styles.imageWrapperAnimationOverflow : ''}`}
+                    className={`${styles.imageWrapper} ${styles.imageWrapperClickable} ${isThirdCard ? styles.imageWrapperAnimationOverflow : ''} ${isLastCard ? styles.imageWrapperAnimationOverflow : ''}`}
                     role="button"
                     tabIndex={0}
                     onClick={() => setPreviewImage(image)}
@@ -353,6 +355,13 @@ export function GeneratedAdsDisplay({ images, jobId, isPaidUser = false }: Gener
                       <div className={`${styles.animationOverlay} ${styles.animationOverlayLyingChat}`} aria-hidden>
                         <video className={styles.animationVideo} autoPlay loop playsInline muted>
                           <source src="/assets/animations/lying-chat-blumpo.webm" type="video/webm" />
+                        </video>
+                      </div>
+                    )}
+                    {showPushingAnimation && (
+                      <div className={styles.animationOverlay} aria-hidden>
+                        <video className={styles.animationVideo} autoPlay loop playsInline muted>
+                          <source src="/assets/animations/pushing-blumpo.webm" type="video/webm" />
                         </video>
                       </div>
                     )}
