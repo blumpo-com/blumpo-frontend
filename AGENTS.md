@@ -40,5 +40,5 @@
 - Store secrets in `.env`; mirror keys from `.env.example`. For deploys (e.g., Vercel), set env vars and Stripe webhook secrets per environment.
 
 ## Figma and Designs
-- Round px values eg. 23.453px becomes 23px
-- Ignore line-height properties and never add them to texts, when you base your design on figma layouts
+- Round px values to the nearest integer divisible by 2 (e.g. 23.453px → 24px). No decimals for font sizes, widths, heights, padding, margin, border radius, line-height, etc.
+- Ignore line-height properties from Figma and never add them to texts when basing design on Figma layouts.
