@@ -4,6 +4,7 @@
 - `app/`: Next.js App Router routes and layouts. Route groups use parentheses (e.g., `app/(dashboard)`), API routes under `app/api`.
 - `components/`: Reusable React components. UI primitives live in `components/ui` (PascalCase filenames).
 - `lib/`: Domain logic and utilities (`lib/auth`, `lib/db`, `lib/payments`, `lib/utils.ts`).
+- `docs/`: Documentation, specs, and usage guides for the project.
 - Root config: `next.config.ts`, `tsconfig.json` (path alias `@/*`), `drizzle.config.ts`, `middleware.ts`.
 - Env files: `.env` (local), `.env.example` (template). Never commit secrets.
 
