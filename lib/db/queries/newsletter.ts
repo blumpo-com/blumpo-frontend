@@ -29,3 +29,9 @@ export async function addNewsletterSubscriber(email: string, userId?: string) {
 
   return result[0];
 }
+
+export async function removeNewsletterSubscriber(email: string) {
+  await db
+    .delete(newsletterSubscription)
+    .where(eq(newsletterSubscription.email, email.toLowerCase()));
+}

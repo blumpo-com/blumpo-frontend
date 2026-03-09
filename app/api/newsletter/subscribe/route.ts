@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isEmailSubscribed, addNewsletterSubscriber } from '@/lib/db/queries/newsletter';
 import { getUserByEmail } from '@/lib/db/queries/user';
+import { syncNewsletterSubscriberToBrevo } from '@/lib/brevo';
 import { resend } from '@/lib/auth/otp';
 import { signNewsletterToken } from '@/lib/auth/newsletter-token';
 import { renderNewsletterConfirmationEmailTemplate } from '@/lib/auth/templates/newsletterConfirmationEmailTemplate';
@@ -27,8 +28,8 @@ export async function POST(request: NextRequest) {
     const existingUser = await getUserByEmail(email);
 
     if (existingUser) {
-      // Known user — email already verified via their account, subscribe directly
       await addNewsletterSubscriber(email, existingUser.id);
+      syncNewsletterSubscriberToBrevo(email).catch(() => {});
       return NextResponse.json({ status: 'subscribed' });
     }
 

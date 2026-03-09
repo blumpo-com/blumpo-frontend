@@ -1,5 +1,6 @@
 import { verifyNewsletterToken } from '@/lib/auth/newsletter-token';
 import { isEmailSubscribed, addNewsletterSubscriber } from '@/lib/db/queries/newsletter';
+import { syncNewsletterSubscriberToBrevo } from '@/lib/brevo';
 import Link from 'next/link';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ export default async function NewsletterConfirmPage({ searchParams }: Props) {
 
   if (!alreadySubscribed) {
     await addNewsletterSubscriber(email);
+    syncNewsletterSubscriberToBrevo(email).catch(() => {});
   }
 
   return <ConfirmResult status={alreadySubscribed ? 'already-subscribed' : 'success'} email={email} />;
