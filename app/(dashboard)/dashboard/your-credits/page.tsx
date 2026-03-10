@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { checkoutAction as originalCheckoutAction, topupCheckoutAction } from '@/lib/payments/actions';
+import { checkoutAction as originalCheckoutAction } from '@/lib/payments/actions';
 import useSWR from 'swr';
 import { useUser } from '@/lib/contexts/user-context';
 import { gtmEvent } from '@/lib/gtm';
@@ -11,6 +11,7 @@ import { getGaClientId, hashEmailSha256 } from '@/lib/utils';
 import { Save50Dialog } from '@/components/Save50Dialog';
 import { EnterprisePlanCard } from '@/components/enterprise-plan-card';
 import { BuyCreditsDialog } from './buy-credits-dialog';
+import { useBuyCreditsDialog } from './use-buy-credits-dialog';
 import { ErrorDialog } from '@/components/error-dialog';
 import { GTMPurchaseTracker } from '@/components/gtm-purchase-tracker';
 import styles from './page.module.css';
@@ -52,15 +53,6 @@ interface SubscriptionPlan {
   sortOrder: number;
 }
 
-interface TopupPlan {
-  topupSku: string;
-  displayName: string;
-  tokensAmount: number;
-  stripeProductId: string | null;
-  isActive: boolean;
-  sortOrder: number;
-}
-
 interface UserWithTokenAccount {
   id: string;
   email: string;
@@ -80,9 +72,17 @@ function YourCreditsPageContent() {
   const router = useRouter();
   const { user, isLoading: isLoadingUser } = useUser();
   const { data: subscriptionPlans = [], isLoading: isLoadingPlans } = useSWR<SubscriptionPlan[]>('/api/subscription-plans', fetcher);
-  const { data: topupPlans = [], isLoading: isLoadingTopups } = useSWR<TopupPlan[]>('/api/topup-plans', fetcher);
   const { data: stripePrices = [], isLoading: isLoadingStripePrices } = useSWR<StripePrice[]>('/api/stripe-prices', fetcher);
-  const { data: stripeTopupPrices = [], isLoading: isLoadingTopupPrices } = useSWR<StripePrice[]>('/api/stripe-topup-prices', fetcher);
+
+  const buyCreditsDialog = useBuyCreditsDialog({
+    onClose: () => setBuyCreditsDialogOpen(false),
+    onUpgradePlan: () => {
+      const pricingSection = document.getElementById('pricing-section');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    },
+  });
 
   // Check if any critical data is still loading
   const isLoadingData = isLoadingUser || isLoadingPlans || isLoadingStripePrices;
@@ -155,20 +155,6 @@ function YourCreditsPageContent() {
     ? planPrices[currentPlanCode]
     : { monthly: null, annual: null };
   const annualPriceId = currentPlanPrices.annual;
-
-  // Get topup plans for "Buy more credits"
-  const validatedTopupPlans = topupPlans
-    .filter(topup => topup.isActive)
-    .map(topup => {
-      const stripePrice = topup.stripeProductId
-        ? stripeTopupPrices.find(sp => sp.productId === topup.stripeProductId)
-        : null;
-      return {
-        ...topup,
-        stripePrice
-      };
-    })
-    .sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Wrapper checkoutAction that checks if price is annual or monthly
   const checkoutAction = async (formData: FormData) => {
@@ -326,45 +312,6 @@ function YourCreditsPageContent() {
   const handleBuyMoreCreditsClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setBuyCreditsDialogOpen(true);
-  };
-
-  // Handle Buy Credits purchase
-  const handleBuyCredits = async (priceId: string) => {
-    const formData = new FormData();
-    formData.append('priceId', priceId);
-
-    // Fire begin_checkout event for topup
-    const topupPrice = stripeTopupPrices.find(p => p.id === priceId);
-    const matchingTopup = topupPrice ? topupPlans.find(t => t.stripeProductId === topupPrice.productId) : null;
-
-    const topupEmailHash = user?.email ? await hashEmailSha256(user.email) : undefined;
-    gtmEvent('begin_checkout', {
-      plan: matchingTopup?.displayName || 'topup',
-      price_id: priceId,
-      mode: 'payment',
-      currency: topupPrice?.currency || 'usd',
-      value: topupPrice?.unitAmount ? topupPrice.unitAmount / 100 : undefined,
-      user_id: user?.id ?? undefined,
-      ga_client_id: getGaClientId() ?? undefined,
-      email_sha256: topupEmailHash,
-    });
-
-    setBuyCreditsDialogOpen(false);
-    setIsLoading(true);
-    try {
-      await topupCheckoutAction(formData);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle Upgrade Plan from Buy Credits dialog
-  const handleUpgradePlanFromDialog = () => {
-    setBuyCreditsDialogOpen(false);
-    const pricingSection = document.getElementById('pricing-section');
-    if (pricingSection) {
-      pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   };
 
   // Check for error in URL params and display error dialog
@@ -581,7 +528,7 @@ function YourCreditsPageContent() {
 
             {/* Buy More Credits Button - Right */}
             <div className={styles.buyCreditsSection}>
-              {validatedTopupPlans.length > 0 && currentPlan?.planCode != 'FREE' ? (
+              {buyCreditsDialog.topupPlans.length > 0 && currentPlan?.planCode != 'FREE' ? (
                 <button
                   type="button"
                   onClick={handleBuyMoreCreditsClick}
@@ -677,6 +624,7 @@ function YourCreditsPageContent() {
           </div>
 
           <PricingSection
+            className="mt-6"
             checkoutAction={checkoutAction}
             currentPlanCode={currentPlanCode}
             showEnterprise={false}
@@ -730,9 +678,9 @@ function YourCreditsPageContent() {
       <BuyCreditsDialog
         open={buyCreditsDialogOpen}
         onClose={() => setBuyCreditsDialogOpen(false)}
-        onBuyCredits={handleBuyCredits}
-        onUpgradePlan={handleUpgradePlanFromDialog}
-        topupPlans={validatedTopupPlans}
+        onBuyCredits={buyCreditsDialog.onBuyCredits}
+        onUpgradePlan={buyCreditsDialog.onUpgradePlan}
+        topupPlans={buyCreditsDialog.topupPlans}
       />
 
       {/* Error Dialog */}

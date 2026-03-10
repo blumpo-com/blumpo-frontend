@@ -313,7 +313,7 @@ export function Login() {
           {/* Footer Links */}
           <div className="flex items-center justify-center gap-2">
             <Link
-              href="/privacy-policy"
+              href="/privacy"
               className="font-normal leading-[8.937px] text-[#040404] text-[14.894px] hover:text-[#00bfa6] transition-colors"
             >
               Privacy policy

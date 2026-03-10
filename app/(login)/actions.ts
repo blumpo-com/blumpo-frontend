@@ -13,6 +13,7 @@ import {
   validatedAction,
 } from '@/lib/auth/middleware';
 import { generateAndSendOtp, verifyAndConsumeOtp } from '@/lib/auth/otp';
+import { syncFreeUserToBrevo } from '@/lib/brevo';
 
 // Unified authentication flow: Step 1 - Request OTP code
 const requestOtpSchema = z.object({
@@ -90,6 +91,8 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       balance: 50,
       planCode: 'FREE',
     });
+
+    syncFreeUserToBrevo(createdUser.email, { SOURCE: 'otp' }).catch(() => {});
 
     foundUser = createdUser;
   } else {

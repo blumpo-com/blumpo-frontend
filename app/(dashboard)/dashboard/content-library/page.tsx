@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, X, Download } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import Image from "next/image";
 import { CreateNewCard } from "./components/create-new-card";
 import { ImageCard } from "./components/image-card";
@@ -20,7 +20,7 @@ import { SkeletonCard } from "./components/skeleton-card";
 import { WarningBox } from "./components/warning-box";
 import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
 import { ErrorDialog } from "@/components/error-dialog";
-import { createPortal } from "react-dom";
+import { PreviewImageDialog } from "@/components/PreviewImageDialog";
 import { AdImage, archetypes, ContentLibraryResponse, formats, getArchetypeName } from "./types";
 import styles from "./page.module.css";
 
@@ -150,33 +150,9 @@ export default function ContentLibraryPage() {
     message: string;
   }>({ open: false, title: "", message: "" });
   const [previewImage, setPreviewImage] = useState<AdImage | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [columnsCount, setColumnsCount] = useState(4);
   const [jobDisplayName, setJobDisplayName] = useState<string | null>(null);
   const hasAutoSetUnsaved = useRef(false);
-
-  // Preview open transition: mount with closed, then open
-  useEffect(() => {
-    if (previewImage) {
-      const t = requestAnimationFrame(() => setPreviewOpen(true));
-      return () => cancelAnimationFrame(t);
-    } else {
-      setPreviewOpen(false);
-    }
-  }, [previewImage]);
-
-  const closePreview = () => {
-    setPreviewOpen(false);
-    setTimeout(() => setPreviewImage(null), 220);
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && previewImage) closePreview();
-    };
-    if (previewImage) document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [previewImage]);
 
   // Fetch all images once on mount (including deleted for unsaved filter)
   const fetchImages = async () => {
@@ -657,53 +633,11 @@ export default function ContentLibraryPage() {
         </>
       )}
 
-      {/* Image preview overlay - fixed height, transition, Download icon */}
-      {previewImage !== null &&
-        typeof window !== "undefined" &&
-        createPortal(
-          <div
-            className={`${styles.imagePreviewOverlay} ${previewOpen ? styles.imagePreviewOverlayOpen : ""}`}
-            onClick={closePreview}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Image preview"
-          >
-            <div
-              className={styles.imagePreviewContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={closePreview}
-                className={styles.closeButton}
-                aria-label="Close"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </button>
-              <div className={styles.imagePreviewImageWrap}>
-                <img
-                  src={previewImage.publicUrl}
-                  alt={previewImage.title || "Ad image"}
-                  className={styles.imagePreviewImage}
-                />
-              </div>
-              <button
-                type="button"
-                className={styles.imagePreviewSaveButton}
-                onClick={() => {
-                  handleDownload(previewImage);
-                  closePreview();
-                }}
-                title="Save image"
-              >
-                <Download className={styles.tabIcon} size={16} />
-              </button>
-            </div>
-          </div>,
-          document.body
-        )}
+      <PreviewImageDialog<AdImage>
+        image={previewImage}
+        onClose={() => setPreviewImage(null)}
+        onDownload={handleDownload}
+      />
 
       {/* Delete confirmation dialog */}
       <DeleteConfirmDialog

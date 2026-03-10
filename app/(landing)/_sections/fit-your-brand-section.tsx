@@ -72,14 +72,16 @@ function BlumpoAnimation({ className }: { className?: string }) {
         aria-label="Blumpo"
       >
         <video
-          src="/assets/animations/disco-blumpo2.mp4"
           autoPlay
           loop
           muted
           playsInline
           className={cn("object-cover", "w-full h-full")}
           aria-hidden
-        />
+        >
+          <source src="/assets/animations/disco-blumpo.mov" type="video/mp4; codecs=hvc1" />
+          <source src="/assets/animations/disco-blumpo.webm" type="video/webm" />
+        </video>
       </button>
       {isMusicPlaying && (
         <>
@@ -177,10 +179,10 @@ function UnderstandCard({ title, description, type }: UnderstandCardProps) {
       case "team":
         return (
           <div className="flex items-center gap-3 justify-center">
-            <FounderCardIcon src="dominik.png" />
-            <FounderCardIcon src="przemek.png" />
-            <FounderCardIcon src="franek.png" />
-            <FounderCardIcon src="kuba.png" />
+            <FounderCardIcon src="dominik.avif" />
+            <FounderCardIcon src="przemek.avif" />
+            <FounderCardIcon src="franek.avif" />
+            <FounderCardIcon src="kuba.avif" />
           </div>
         );
       default:
@@ -386,10 +388,10 @@ export function FitYourBrandSection() {
               {cards[4].description}
             </p>
             <div className="flex items-center gap-[34px] justify-center mt-auto">
-              <FounderCardIcon src="dominik.png" />
-              <FounderCardIcon src="przemek.png" />
-              <FounderCardIcon src="franek.png" />
-              <FounderCardIcon src="kuba.png" />
+              <FounderCardIcon src="dominik.avif" />
+              <FounderCardIcon src="przemek.avif" />
+              <FounderCardIcon src="franek.avif" />
+              <FounderCardIcon src="kuba.avif" />
             </div>
           </div>
         </div>

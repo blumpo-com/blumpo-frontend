@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { HeroPhotoWall } from "@/components/hero-photo-wall";
-import { JetpackAdIllustrationMobile } from "@/components/jetpack-ad-illustration-mobile";
 import { UrlInputSection } from "./url-input-section";
 import { Button } from "@/components/ui/button";
 
@@ -20,21 +19,24 @@ function BenefitRow({ text }: { text: string }) {
 
 export function HeroSection() {
   return (
-    <section className="py-10 md:pt-16 md:pb-14 relative z-10 scroll-mt-100">
+    <section className="py-10 md:pt-16 md:pb-14 relative z-10 scroll-mt-100 overflow-visible">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between flex-col lg:flex-row  items-center lg:items-start">
           <div className="text-center md:max-w-2xl lg:col-span-6 lg:text-left relative z-10 lg:mr-10 flex flex-col items-center lg:items-start">
             {/* Mobile: Images above headline */}
-            <div className="lg:hidden relative w-full flex justify-center items-center mb-6">
+            <div className="lg:hidden relative w-full flex justify-center items-center mb-6 aspect-square max-w-[240px] mx-auto min-h-[240px]">
               <video
-                src="/assets/animations/ad-hero-blumpo.mp4"
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="relative z-10 max-w-[240px] w-full h-auto"
+                preload="auto"
+                className="relative z-10 w-full h-full object-contain"
                 aria-label="Blumpo painting"
-              />
+              >
+                <source src="/assets/animations/ad-hero-blumpo.mp4" type='video/quicktime; codecs="hvc1"' />
+                <source src="/assets/animations/ad-hero-blumpo.webm" type="video/webm" />
+              </video>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 tracking-tight sm:text-5xl md:text-6xl xl:text-7xl text-center lg:text-left">
               Create AI B2B
@@ -51,16 +53,20 @@ export function HeroSection() {
             </p>
 
             {/* Desktop: URL input */}
-            <div className="hidden lg:block lg:relative w-160 my-6">
-              <Image
-                src="/assets/animations/pointing-blumpo.webp"
-                alt="Pointing Blumpo"
-                width={210}
-                height={140}
-                className="absolute -top-40 right-2 z-10"
+            <div className="hidden lg:block lg:relative w-160 my-6 overflow-visible">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-label="Pointing Blumpo"
+                className="absolute -top-40 right-2 z-10 w-[210px] h-[210px] object-contain"
                 style={{ clipPath: 'inset(0 40px 0 40px)' }}
-                unoptimized
-              />
+              >
+                <source src="/assets/animations/pointing-blumpo.mov" type="video/mp4; codecs=hvc1" />
+                <source src="/assets/animations/pointing-blumpo.webm" type="video/webm" />
+
+              </video>
               <Suspense fallback={<div className="mt-5">Loading...</div>}>
                 <UrlInputSection />
               </Suspense>
@@ -90,7 +96,7 @@ export function HeroSection() {
           <HeroPhotoWall />
         </div>
       </div>
-    </section>
+    </section >
   );
 }
 

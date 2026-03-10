@@ -10,6 +10,7 @@ import { FitYourBrandSection } from "./_sections/fit-your-brand-section";
 import { ComparisonSection } from "./_sections/comparison-section";
 import { TestimonialSection } from "./_sections/testimonial-section";
 import { FaqSection } from "./_sections/faq-section";
+import { FounderSection } from "./_sections/founder-section";
 
 function HeaderSection({ title, children, id }: { title: React.ReactNode, children: React.ReactNode, id?: string }) {
   return (
@@ -87,7 +88,7 @@ export default function HomePage() {
         </HeaderSection>
 
         <HeaderSection
-          title="How does our AI marketing solution works?"
+          title="How does our AI marketing solution work?"
           id="product">
           <HowItWorksSection />
         </HeaderSection>
@@ -109,8 +110,11 @@ export default function HomePage() {
             checkoutAction={checkoutAction}
             showEnterprise={true}
             allowCheckoutWithoutPriceId={true}
+            className="mt-12"
           />
         </HeaderSection>
+
+        <FounderSection />
 
         <HeaderSection
           title="What our customers say.">

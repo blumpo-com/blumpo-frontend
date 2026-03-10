@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { VerticalToolCarousel } from "@/components/VerticalToolCarousel";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -33,6 +34,18 @@ const allImages = [
 
 // Images per section: 3, 4, 3, 4 = 14 total
 const imagesPerSection = [3, 3, 3, 3];
+
+const TOOLS_BASE = "/images/landing/content-proof/tools";
+const toolsCarousel1 = [
+  { src: `${TOOLS_BASE}/reddit-r.png`, alt: "Reddit" },
+  { src: `${TOOLS_BASE}/yt-r.png`, alt: "YouTube" },
+  { src: `${TOOLS_BASE}/google-r.png`, alt: "Google" },
+];
+const toolsCarousel2 = [
+  { src: `${TOOLS_BASE}/chat-gpt-r.png`, alt: "ChatGPT" },
+  { src: `${TOOLS_BASE}/nano-banana-r.png`, alt: "Nano Banana" },
+  { src: `${TOOLS_BASE}/claude-r.png`, alt: "Claude" },
+];
 
 export function ContentProofSection() {
   const [activeButton, setActiveButton] = useState(0);
@@ -116,7 +129,7 @@ export function ContentProofSection() {
       </div>
 
       {/* Desktop: All sections pre-rendered and stacked - only active visible (images load on mount for instant switching) */}
-      <div className="hidden md:flex mt-8 w-full h-100 md:h-146 rounded-2xl relative overflow-hidden items-center justify-center px-8">
+      <div className="hidden md:flex mt-8 w-full h-100 md:h-120 rounded-2xl relative overflow-hidden items-center justify-center px-8">
         {buttons.map((_, sectionIndex) => {
           const sectionImages = getImagesForSection(sectionIndex).slice(0, 3);
           const fixedDelays = ["0s", "0.5s", "1s"];
@@ -231,6 +244,19 @@ export function ContentProofSection() {
               />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Tools CTA: collect insights on [carousel] and turn into ads with [carousel] */}
+      <div className="mt-6 flex flex-col items-center gap-4 text-foreground text-[16px] md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-x-0 md:gap-y-4">
+        <div className="flex flex-col items-center gap-1 md:flex-row md:items-center md:gap-4">
+          <span>Collect customer insights on <span className="md:hidden">👇</span><span className="hidden md:inline">👉</span></span>
+          <VerticalToolCarousel images={toolsCarousel1} />
+        </div>
+
+        <div className="flex flex-col items-center gap-1 md:flex-row md:items-center md:gap-4">
+          <span>Turn them into winning ads with <span className="md:hidden">👇</span><span className="hidden md:inline">👉</span></span>
+          <VerticalToolCarousel images={toolsCarousel2} />
         </div>
       </div>
     </div>

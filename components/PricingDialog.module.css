@@ -47,31 +47,86 @@
   }
 }
 
-.header {
-  position: relative;
+/* Top row: [spacer] [title or promo – centered] [spacer + X] so title is truly centered */
+.headerRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
   width: 100%;
   max-width: 1200px;
-  margin-bottom: 8px;
   flex-shrink: 0;
+  margin-bottom: 16px;
+  gap: 16px;
 }
 
-.title {
+.headerRowSpacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerRowRight {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.headerTitle {
   font-family: 'Roboto', sans-serif;
   font-size: 32px;
   font-weight: 700;
   color: #0a0a0a;
   margin: 0;
   text-align: center;
+  flex-shrink: 0;
+}
+
+.promotionBannerContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.promotionCountdown {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 46px;
+  color: #0a0a0a;
+  text-align: center;
+  margin: 0;
+}
+
+.promotionMessage {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  color: #0a0a0a;
+  text-align: center;
+  margin: 0;
+  max-width: 717px;
+}
+
+.promotionBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.promotionBadgeText {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0a0a0a;
+  text-align: center;
 }
 
 .closeButton {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
