@@ -37,11 +37,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Only allow charge-on-display jobs (quick ads: tokensCost 0, no ledger yet).
-    // Reject customized-ads jobs where tokens were already reserved at generation start.
-    if (job.tokensCost > 0 && job.ledgerId) {
-      return NextResponse.json({ error: "Tokens already deducted for this job" }, { status: 400 });
-    }
+    // Charge-on-display (auto-generated quick ads): tokensCost 0, deduct when ads viewed.
+    // Already-charged (manual quick ads or customized): tokensCost > 0 and ledgerId set – skip deduction, still mark ads ready and cleanup.
 
     // Get all ads from this job
     const allAds = await getAdImagesByJobId(jobId);
