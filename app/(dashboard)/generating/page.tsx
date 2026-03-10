@@ -236,15 +236,21 @@ function GeneratingPageContent() {
               return;
             } else {
               const hasImages = hasValidImages(j?.images) && !!j?.job_id;
-              setErrorDialog({
-                open: true,
-                title: 'Generation Failed',
-                message: msg,
-                errorCode: errorCode || 'UNKNOWN',
-                canRegenerate: true,
-                canSeeValidImages: hasImages,
-              });
-              if (hasImages && j?.images) setImages(shuffle(j.images));
+              if (hasImages && j?.images) {
+                // Partial success: some ads generated – treat as success, no error dialog
+                setStatus('SUCCEEDED');
+                setImages(shuffle(j.images));
+                setShowReadyAds(true);
+                setError(null);
+              } else {
+                setErrorDialog({
+                  open: true,
+                  title: 'Generation Failed',
+                  message: msg,
+                  errorCode: errorCode || 'UNKNOWN',
+                  canRegenerate: true,
+                });
+              }
               setIsLoading(false);
               return;
             }
@@ -278,21 +284,24 @@ function GeneratingPageContent() {
             setShowReadyAds(true);
           }
         } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
-          const errorMessage = data.error_message || `Generation ${data.status.toLowerCase()}`;
-          setError(errorMessage);
-          const hasValidImages = data.images && data.images.length > 0;
-          if (hasValidImages) {
+          const hasImages = hasValidImages(data?.images);
+          if (hasImages && data.images) {
+            // Partial success: not all ads generated – treat as success, no error dialog
+            setStatus('SUCCEEDED');
             setImages(shuffle(data.images));
+            setShowReadyAds(true);
+            setError(null);
+          } else {
+            const errorMessage = data.error_message || `Generation ${data.status.toLowerCase()}`;
+            setError(errorMessage);
+            setErrorDialog({
+              open: true,
+              title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
+              message: errorMessage,
+              errorCode: data.error_code || null,
+              canRegenerate: true,
+            });
           }
-
-          setErrorDialog({
-            open: true,
-            title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
-            message: errorMessage,
-            errorCode: data.error_code || null,
-            canRegenerate: true,
-            canSeeValidImages: hasValidImages,
-          });
         }
       } catch (e: any) {
         console.error('Error generating ads:', e);
@@ -404,17 +413,22 @@ function GeneratingPageContent() {
         setShowReadyAds((data.images?.length ?? 0) > 0);
         if (!data.images?.length) setError('Generation completed but no images were created.');
       } else if (data.status === 'FAILED' || data.status === 'CANCELED') {
-        setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
-        const hasValidImages = (data.images?.length ?? 0) > 0;
-        if (hasValidImages) setImages(shuffle(data.images));
-        setErrorDialog({
-          open: true,
-          title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
-          message: data.error_message || `Generation ${data.status.toLowerCase()}`,
-          errorCode: data.error_code || null,
-          canRegenerate: true,
-          canSeeValidImages: hasValidImages,
-        });
+        const hasImages = hasValidImages(data?.images);
+        if (hasImages) {
+          setStatus('SUCCEEDED');
+          setImages(shuffle(data.images));
+          setShowReadyAds(true);
+          setError(null);
+        } else {
+          setError(data.error_message || `Generation ${data.status.toLowerCase()}`);
+          setErrorDialog({
+            open: true,
+            title: data.status === 'FAILED' ? 'Generation Failed' : 'Generation Canceled',
+            message: data.error_message || `Generation ${data.status.toLowerCase()}`,
+            errorCode: data.error_code || null,
+            canRegenerate: true,
+          });
+        }
       }
     } catch (e: any) {
       setError(e?.message || 'Regeneration failed');
