@@ -23,9 +23,9 @@ function Slot({
         alt={image.alt}
         width={40}
         height={24}
-        className="h-6 w-auto shrink-0 object-contain md:h-8"
+        className="h-6 w-auto shrink-0 object-contain md:h-7"
       />
-      <span className="shrink-0 text-sm font-medium text-foreground md:text-base">
+      <span className="text-sm font-medium text-foreground md:text-base">
         {image.alt}
       </span>
     </span>
@@ -88,7 +88,7 @@ export function VerticalToolCarousel({
       )}
       style={{ height: 34 }}
     >
-      <span className="relative block h-full w-[120px]">
+      <span className="relative block h-full w-[120px] md:w-[135px]">
         {isTransitioning ? (
           <>
             <Slot

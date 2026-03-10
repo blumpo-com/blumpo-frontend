@@ -248,7 +248,7 @@ export function ContentProofSection() {
       </div>
 
       {/* Tools CTA: collect insights on [carousel] and turn into ads with [carousel] */}
-      <div className="mt-6 flex flex-col items-center gap-4 text-foreground text-[16px] md:flex-row md:flex-wrap md:items-center md:justify-start md:gap-x-2 md:gap-y-0">
+      <div className="mt-6 flex flex-col items-center gap-4 text-foreground text-[16px] md:flex-row md:flex-wrap md:items-center md:justify-center md:gap-x-0 md:gap-y-4">
         <div className="flex flex-col items-center gap-1 md:flex-row md:items-center md:gap-4">
           <span>Collect customer insights on <span className="md:hidden">👇</span><span className="hidden md:inline">👉</span></span>
           <VerticalToolCarousel images={toolsCarousel1} />
