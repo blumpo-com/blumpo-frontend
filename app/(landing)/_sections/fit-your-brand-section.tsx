@@ -79,12 +79,13 @@ function BlumpoAnimation({ className }: { className?: string }) {
           className={cn("object-cover", "w-full h-full")}
           aria-hidden
         >
-          <source src="/assets/animations/disco-blumpo.mov" type="video/mp4; codecs=hvc1" />
-          <source src="/assets/animations/disco-blumpo.webm" type="video/webm" />
+          <source src="/assets/animations/02.mp4" />
+          {/* <source src="/assets/animations/disco-blumpo.webm" type="video/webm" /> */}
         </video>
       </button>
       {isMusicPlaying && (
         <>
+
           <DiscoBall className="absolute left-1/2 top-0" />
           {/* Trzy kolorowe światła od kuli disco */}
           <div
