@@ -4,6 +4,7 @@ export type BrevoListIds = {
   users: number;
   customers: number;
   newsletter: number;
+  resigning?: number;
 };
 
 export type BrevoConfig = {
@@ -25,13 +26,14 @@ export function getBrevoConfig(): BrevoConfig | null {
   const users = parseListId(process.env.BREVO_LIST_USERS);
   const customers = parseListId(process.env.BREVO_LIST_CUSTOMERS);
   const newsletter = parseListId(process.env.BREVO_LIST_NEWSLETTER);
+  const resigning = parseListId(process.env.BREVO_LIST_RESIGNING);
 
   if (users == null || customers == null || newsletter == null) return null;
 
   return {
     apiKey,
     baseUrl: BREVO_BASE_URL,
-    listIds: { users, customers, newsletter },
+    listIds: { users, customers, newsletter, ...(resigning != null && { resigning }) },
   };
 }
 
@@ -144,7 +146,11 @@ export async function syncPaidCustomerToBrevo(
     const config = getBrevoConfig();
     if (!config) return;
     await upsertBrevoContact(email, attributes);
-    await addContactToBrevoLists(email, [config.listIds.users, config.listIds.customers]);
+    await removeContactFromBrevoLists(email, [config.listIds.users]);
+    await addContactToBrevoLists(email, [config.listIds.customers]);
+    if (config.listIds.resigning != null) {
+      await removeContactFromBrevoLists(email, [config.listIds.resigning]);
+    }
   } catch (err) {
     console.error('[Brevo] syncPaidCustomerToBrevo failed:', err);
   }
@@ -179,6 +185,9 @@ export async function removeContactFromBrevoCustomers(email: string): Promise<vo
     const config = getBrevoConfig();
     if (!config) return;
     await removeContactFromBrevoLists(email, [config.listIds.customers]);
+    if (config.listIds.resigning != null) {
+      await addContactToBrevoLists(email, [config.listIds.resigning]);
+    }
   } catch (err) {
     console.error('[Brevo] removeContactFromBrevoCustomers failed:', err);
   }
