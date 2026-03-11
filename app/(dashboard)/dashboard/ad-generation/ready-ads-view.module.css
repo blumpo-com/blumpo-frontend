@@ -1,9 +1,8 @@
-/* Ready Ads View Container */
+/* Ready Ads View Container - aligned with tinder-view */
 .container {
   position: relative;
   width: 100%;
   height: 100%;
-  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,25 +14,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 92px;
-  padding: 60px 52px;
+  height: 100%;
+  gap: 0;
+  padding: 32px 52px;
   width: 100%;
   max-width: 1200px;
 }
 
-/* Header Section */
+/* Header Section - aligned with tinder-view */
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 10px;
   text-align: center;
   width: 100%;
+  margin-bottom: 25px;
 }
 
 .title {
   font-family: 'Roboto', sans-serif;
-  font-size: 52px;
+  font-size: 40px;
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
@@ -43,7 +44,7 @@
 }
 
 .titleText {
-  background: linear-gradient(107.52deg, #00bfa6 30.18%, #0d3b66 70.71%);
+  background: linear-gradient(112.28deg, #00bfa6 30.18%, #0d3b66 70.71%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -60,96 +61,23 @@
   max-width: 831px;
 }
 
-/* Test Buttons Row */
-.testButtonsRow {
-  position: absolute;
-  top: 330px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  z-index: 10;
-  width: auto;
-  max-width: 100%;
-  padding: 0 20px;
-}
-
-.testButton {
-  padding: 8px 16px;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.testButton:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-
-.testButton:active {
-  transform: translateY(0);
-}
-
-/* Bottom Section */
+/* Bottom Section: image first, then button (Figma order) - fills remaining space like tinder-view */
 .bottomSection {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 43px;
-  width: 100%;
-}
-
-/* See Ads Button */
-.seeAdsButton {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 27px;
-  padding: 15.455px 24.727px;
-  width: 495px;
-  height: 82px;
-  border-radius: 35.545px;
-  background: linear-gradient(121.61deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 30px;
+  width: 100%;
+  min-height: 0;
 }
 
-.seeAdsButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 191, 166, 0.3);
-}
-
-.seeAdsButton:active {
-  transform: translateY(0);
-}
-
-.buttonText {
-  font-family: 'Roboto', sans-serif;
-  font-size: 33.719px;
-  font-weight: 600;
-  line-height: 42.148px;
-  color: #f9fafb;
-  text-align: center;
-}
-
-.arrowIcon {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  color: #f9fafb;
-}
-
-/* Image Container */
+/* Image Container - 600px per Figma */
 .imageContainer {
   position: relative;
-  width: 687.068px;
-  height: 500.457px;
+  width: 600px;
+  height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,43 +90,83 @@
   object-position: center;
 }
 
-/* Responsive adjustments */
+/* See Ads Button - under Blumpo image, Figma specs */
+.seeAdsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 27px;
+  padding: 3px 25px;
+  width: 411px;
+  height: 67px;
+  border-radius: 36px;
+  background: linear-gradient(122deg, #00bfa6 5.13%, #58c7ff 51.38%, #0d3b66 97.62%);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.seeAdsButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 191, 166, 0.3);
+}
+
+.seeAdsButton:active {
+  transform: translateY(0);
+}
+
+.buttonText {
+  font-family: 'Roboto', sans-serif;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+  color: #f9fafb;
+  text-align: center;
+}
+
+.arrowIcon {
+  display: block;
+  width: 34px;
+  height: 42px;
+  flex-shrink: 0;
+  color: #f9fafb;
+}
+
+/* Responsive adjustments - aligned with tinder-view */
 @media (max-width: 768px) {
   .content {
-    gap: 60px;
-    padding: 40px 20px;
+    padding: 20px;
   }
 
   .title {
-    font-size: 36px;
+    font-size: 28px;
   }
 
   .subtitle {
-    font-size: 24px;
-  }
-
-  .seeAdsButton {
-    width: 100%;
-    max-width: 400px;
-    height: 70px;
-    padding: 12px 20px;
-  }
-
-  .buttonText {
-    font-size: 28px;
-    line-height: 36px;
-  }
-
-  .arrowIcon {
-    width: 28px;
-    height: 28px;
+    font-size: 20px;
   }
 
   .imageContainer {
     width: 100%;
     max-width: 500px;
     height: auto;
-    aspect-ratio: 687 / 500;
+    aspect-ratio: 1;
+  }
+
+  .seeAdsButton {
+    width: 100%;
+    max-width: 411px;
+    height: 60px;
+    padding: 3px 20px;
+  }
+
+  .buttonText {
+    font-size: 28px;
+  }
+
+  .arrowIcon {
+    width: 28px;
+    height: 28px;
   }
 }
 
