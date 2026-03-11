@@ -129,6 +129,7 @@ export async function syncFreeUserToBrevo(
   attributes?: BrevoContactAttributes
 ): Promise<void> {
   try {
+    console.log('Syncing free user to Brevo:', email);
     const config = getBrevoConfig();
     if (!config) return;
     await upsertBrevoContact(email, attributes);
@@ -143,6 +144,7 @@ export async function syncPaidCustomerToBrevo(
   attributes?: BrevoContactAttributes
 ): Promise<void> {
   try {
+    console.log('Syncing paid customer to Brevo:', email);
     const config = getBrevoConfig();
     if (!config) return;
     await upsertBrevoContact(email, attributes);
@@ -161,6 +163,7 @@ export async function syncNewsletterSubscriberToBrevo(
   attributes?: BrevoContactAttributes
 ): Promise<void> {
   try {
+    console.log('Syncing newsletter subscriber to Brevo:', email);
     const config = getBrevoConfig();
     if (!config) return;
     await upsertBrevoContact(email, { ...attributes, NEWSLETTER_OPT_IN: 'true' });
@@ -182,6 +185,7 @@ export async function unsubscribeNewsletterInBrevo(email: string): Promise<void>
 
 export async function removeContactFromBrevoCustomers(email: string): Promise<void> {
   try {
+    console.log('Removing contact from Brevo customers:', email);
     const config = getBrevoConfig();
     if (!config) return;
     await removeContactFromBrevoLists(email, [config.listIds.customers]);
