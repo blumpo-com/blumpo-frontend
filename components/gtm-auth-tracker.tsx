@@ -81,30 +81,40 @@ export function GTMAuthTracker() {
       }
     }
     
-    // Create a unique key for this auth event to prevent duplicates
-    const eventKey = `${authSuccess || 'detected'}-${detectedMethod}-${isNewUser}-${pathname}-${currentUserId}`;
-    
-    // Check sessionStorage to prevent firing on page refresh
-    // Use a more specific key that includes pathname to allow events on different pages
+    // Event-type-specific key: only one sign_up and one login per user per session (across all instances/pages)
+    const eventType = isNewUser ? 'sign_up' : 'login';
+    const eventClaimKey = typeof window !== 'undefined' && currentUserId
+      ? `gtm_auth_${currentUserId}_${eventType}`
+      : null;
+
+    // Check sessionStorage to prevent firing on page refresh or duplicate instances
+    const hasFiredThisEvent = eventClaimKey !== null && sessionStorage.getItem(eventClaimKey) === 'true';
+
+    // Path-scoped key for "any auth event on this path" (legacy guard)
     const sessionKey = `gtm_auth_${currentUserId}_${pathname}`;
-    const hasFiredInSession = typeof window !== 'undefined' && currentUserId 
+    const hasFiredInSession = typeof window !== 'undefined' && currentUserId
       ? sessionStorage.getItem(sessionKey) === 'true'
       : false;
-    
+
     // Fire event if:
-    // 1. URL has auth=success params (always fire if params present, but check sessionStorage to prevent duplicates), OR
+    // 1. URL has auth=success params (and we haven't fired this event type yet), OR
     // 2. We detected a Google login (just logged in + has photoUrl + (wasn't already logged in OR has recent login))
-    const shouldFire = (authSuccess === 'success' && detectedMethod && !hasFiredInSession) || 
-                      (justLoggedIn && detectedMethod === 'google' && !hasFiredInSession);
-    
-    if (shouldFire && detectedMethod && hasFiredRef.current !== eventKey) {
-      hasFiredRef.current = eventKey;
-      
-      // Store in sessionStorage to prevent firing on refresh
+    const shouldFire = !hasFiredThisEvent &&
+      (((authSuccess === 'success' && detectedMethod && !hasFiredInSession) ||
+        (justLoggedIn && detectedMethod === 'google' && !hasFiredInSession)));
+
+    if (shouldFire && detectedMethod) {
+      // Claim this event type immediately so other instances (or double effect runs) skip
+      if (eventClaimKey) {
+        if (sessionStorage.getItem(eventClaimKey) === 'true') return;
+        sessionStorage.setItem(eventClaimKey, 'true');
+      }
       if (typeof window !== 'undefined' && currentUserId) {
         sessionStorage.setItem(sessionKey, 'true');
       }
-      
+
+      hasFiredRef.current = `${eventType}-${detectedMethod}-${currentUserId}`;
+
       // Collect additional tracking data
       const ga_client_id = getGaClientId() ?? undefined;
       const emailHash = user?.email
