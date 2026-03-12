@@ -448,9 +448,6 @@ function GeneratingPageContent() {
   if (isLoading || status === null || status === 'RUNNING' || status === 'QUEUED') {
     return (
       <>
-        <Suspense fallback={null}>
-          <GTMAuthTracker />
-        </Suspense>
         <CreatingProcess stepTimings={STEP_TIMINGS} restartTrigger={animationRestartKey} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -490,9 +487,6 @@ function GeneratingPageContent() {
     const errorMessage = error || 'Generation failed. Please try again.';
     return (
       <>
-        <Suspense fallback={null}>
-          <GTMAuthTracker />
-        </Suspense>
         <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
             <h2 className="text-2xl font-bold text-red-600 mb-4">
@@ -567,9 +561,6 @@ function GeneratingPageContent() {
   if (status === 'SUCCEEDED' && showReadyAds && !showGeneratedAds) {
     return (
       <>
-        <Suspense fallback={null}>
-          <GTMAuthTracker />
-        </Suspense>
         <ReadyAdsView onSeeAds={handleSeeAds} jobId={actualJobId || jobId || undefined} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -593,9 +584,6 @@ function GeneratingPageContent() {
   if (status === 'SUCCEEDED' && images.length > 0 && showGeneratedAds) {
     return (
       <>
-        <Suspense fallback={null}>
-          <GTMAuthTracker />
-        </Suspense>
         <GeneratedAdsDisplay images={images} jobId={actualJobId || jobId || ''} isPaidUser={isPaidUser} />
         <LoggedInDialog
           open={showLoggedInDialog}
@@ -618,9 +606,6 @@ function GeneratingPageContent() {
   // Default: still loading
   return (
     <>
-      <Suspense fallback={null}>
-        <GTMAuthTracker />
-      </Suspense>
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
         <div className="spinner"></div>
       </div>
@@ -649,6 +634,7 @@ export default function GeneratingPage() {
         <div className="spinner"></div>
       </div>
     }>
+      <GTMAuthTracker />
       <GeneratingPageContent />
     </Suspense>
   );
