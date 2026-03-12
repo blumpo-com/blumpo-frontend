@@ -3,7 +3,7 @@
 ## Overview
 
 This application uses a **hybrid authentication system** that supports both:
-1. **Passwordless OTP Authentication** - Email-based one-time codes via Resend
+1. **Passwordless OTP Authentication** - Email-based one-time codes via Brevo
 2. **Google OAuth Sign-In** - Single sign-on with Google accounts via NextAuth
 
 Users can choose either method to sign in. Both integrate seamlessly with the same user database.
@@ -33,7 +33,7 @@ Users can choose either method to sign in. Both integrate seamlessly with the sa
 
 ### Prerequisites
 
-- **Resend Account**: For sending OTP emails - [resend.com](https://resend.com)
+- **Brevo Account**: For sending OTP emails - [brevo.com](https://www.brevo.com)
 - **Google Cloud Console**: For OAuth credentials - [console.cloud.google.com](https://console.cloud.google.com)
 - **PostgreSQL Database**: Configured and running
 
@@ -75,7 +75,7 @@ POSTGRES_URL=postgres://postgres:postgres@localhost:54322/postgres
 STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 BASE_URL=http://localhost:3000
-RESEND_API_KEY=re_...
+BREVO_API_KEY=your_brevo_api_key
 AUTH_SECRET=your_auth_secret_here
 
 # Google OAuth (add these)
@@ -178,7 +178,7 @@ types/
 2. System checks if email already exists
 3. If new user, generates a 6-digit OTP code
 4. Hashes the code with Argon2id and stores it in the `auth_otp` table
-5. Sends the code to the user's email via Resend
+5. Sends the code to the user's email via Brevo
 6. User enters the code from their email
 7. System verifies the code and creates the user account
 8. Creates a default token account with 10,000 free tokens
@@ -190,7 +190,7 @@ types/
 2. System checks if user exists
 3. If user exists, generates a 6-digit OTP code
 4. Hashes the code with Argon2id and stores it in the `auth_otp` table
-5. Sends the code to the user's email via Resend
+5. Sends the code to the user's email via Brevo
 6. User enters the code from their email
 7. System verifies the code and creates a session
 8. Updates `lastLoginAt` timestamp
@@ -427,11 +427,11 @@ const result = await verifyAndConsumeOtp(email, code, 'LOGIN');
 
 #### "Email not received" (OTP)
 
-**Cause**: Resend configuration or delivery issue
+**Cause**: Brevo configuration or delivery issue
 
 **Fix**:
 - Verify `RESEND_API_KEY` is correct
-- Check Resend dashboard for delivery status
+- Check Brevo dashboard for delivery status
 - Verify sender domain is configured
 - Check spam/junk folders
 
@@ -470,7 +470,7 @@ Current implementation includes basic attempt limiting. For production, add:
 
 - **NextAuth Documentation**: [next-auth.js.org](https://next-auth.js.org/)
 - **Google OAuth Guide**: [developers.google.com/identity/protocols/oauth2](https://developers.google.com/identity/protocols/oauth2)
-- **Resend Documentation**: [resend.com/docs](https://resend.com/docs)
+- **Brevo Documentation**: [developers.brevo.com](https://developers.brevo.com/docs/send-a-transactional-email)
 - **Argon2 Info**: [github.com/P-H-C/phc-winner-argon2](https://github.com/P-H-C/phc-winner-argon2)
 
 ---
@@ -522,7 +522,7 @@ Then add the button to `login.tsx` and configure environment variables.
 
 **Problem**: Email not received
 - **Solution**: Verify `RESEND_API_KEY` is correct
-- Check Resend dashboard for delivery status
+- Check Brevo dashboard for delivery status
 - Check spam/junk folders
 - Verify sender domain is configured
 
