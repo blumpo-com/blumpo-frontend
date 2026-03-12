@@ -195,7 +195,7 @@ export async function POST(req: Request) {
     // Get ad images for this job
     const adImages = await getAdImagesByJobId(job_id);
     let validImages = adImages.filter(
-      (img) => !img.isDeleted && !img.errorFlag && img.publicUrl
+      (img) => !img.errorFlag && img.publicUrl
     );
 
     // If 0 valid images set job status to FAILED
