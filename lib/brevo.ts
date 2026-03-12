@@ -21,6 +21,7 @@ function parseListId(value: string | undefined): number | null {
 
 export function getBrevoConfig(): BrevoConfig | null {
   const apiKey = process.env.BREVO_API_KEY?.trim();
+  console.log('Brevo API key:', apiKey);
   if (!apiKey) return null;
 
   const users = parseListId(process.env.BREVO_LIST_USERS);
@@ -28,6 +29,7 @@ export function getBrevoConfig(): BrevoConfig | null {
   const newsletter = parseListId(process.env.BREVO_LIST_NEWSLETTER);
   const resigning = parseListId(process.env.BREVO_LIST_RESIGNING);
 
+  console.log('Brevo config:', { users, customers, newsletter, resigning });
   if (users == null || customers == null || newsletter == null) return null;
 
   return {
