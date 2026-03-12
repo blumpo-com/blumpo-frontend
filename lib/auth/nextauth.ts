@@ -54,6 +54,7 @@ export const authOptions: NextAuthOptions = {
               balance: 50,
               planCode: 'FREE',
             });
+            console.log('Syncing free user to Brevo:', dbUser.email);
             const attrs = brevoContactAttributesFromDisplayName(user.name ?? null);
             syncFreeUserToBrevo(dbUser.email, { ...attrs, SOURCE: 'google' }).catch(() => {});
           }

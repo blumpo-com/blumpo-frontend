@@ -6,6 +6,7 @@ import {
 } from '@/lib/db/queries/subscription';
 import { stripe } from '@/lib/payments/stripe';
 import { SubscriptionPeriod } from '@/lib/db/schema/enums';
+import { syncPaidCustomerToBrevo, removeContactFromBrevoCustomers } from '@/lib/brevo';
 
 /** Full sync from Stripe: status, cancellation, period, planCode, stripePriceId. Call after return from Customer Portal when webhook may not have fired. */
 export async function POST() {
@@ -58,6 +59,15 @@ export async function POST() {
     }
 
     await updateUserSubscription(user.id, subscriptionData);
+
+    if (subscriptionStatus === 'active' || subscriptionStatus === 'trialing') {
+      const planCode = subscriptionData.planCode ?? tokenAccount?.planCode ?? 'FREE';
+      if (planCode !== 'FREE') {
+        syncPaidCustomerToBrevo(user.email, { PLAN: planCode }).catch(() => {});
+      }
+    } else if (subscriptionStatus === 'canceled' || subscriptionStatus === 'unpaid' || subscriptionStatus === 'cancel_at_period_end') {
+      removeContactFromBrevoCustomers(user.email).catch(() => {});
+    }
 
     return NextResponse.json({
       ok: true,
