@@ -87,7 +87,6 @@ export async function upsertBrevoContact(
 ): Promise<void> {
   const config = getBrevoConfig();
   if (!config) return;
-  console.log('Upserting contact to Brevo:', email);
 
   const body: Record<string, unknown> = {
     email: email.toLowerCase().trim(),
@@ -104,14 +103,12 @@ export async function addContactToBrevoLists(email: string, listIds: number[]): 
   const config = getBrevoConfig();
   if (!config) return;
 
-  console.log('Adding contact to Brevo lists:', listIds);
   const normalized = email.toLowerCase().trim();
   for (const listId of listIds) {
     const { ok } = await brevoFetch(config, `/contacts/lists/${listId}/contacts/add`, {
       method: 'POST',
       body: { emails: [normalized] },
     });
-    console.log('Added contact to Brevo lists:', listId);
     if (!ok) break;
   }
 }
@@ -136,12 +133,9 @@ export async function syncFreeUserToBrevo(
   try {
     console.log('Syncing free user to Brevo:', email);
     const config = getBrevoConfig();
-    console.log('Brevo config:', config);
     if (!config) return;
     await upsertBrevoContact(email, attributes);
-    console.log('Added contact to Brevo lists:', config.listIds.users);
     await addContactToBrevoLists(email, [config.listIds.users]);
-    console.log('Added contact to Brevo lists:', config.listIds.users);
   } catch (err) {
     console.error('[Brevo] syncFreeUserToBrevo failed:', err);
   }
