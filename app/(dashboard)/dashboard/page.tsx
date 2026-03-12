@@ -11,6 +11,7 @@ import { GameDialog } from '@/components/GameDialog';
 import { PricingDialog } from '@/components/PricingDialog';
 import { BuyCreditsDialog } from './your-credits/buy-credits-dialog';
 import { useBuyCreditsDialog } from './your-credits/use-buy-credits-dialog';
+import { CloneAdsGrid } from './components/clone-ads-grid';
 import styles from './page.module.css';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -175,6 +176,7 @@ function FeatureCard({
 }
 
 const MIN_TOKENS_REQUIRED = 50;
+const MIN_TOKENS_REQUIRED_CLONE_AD = 10;
 
 export default function DashboardHomePage() {
   const router = useRouter();
@@ -197,6 +199,14 @@ export default function DashboardHomePage() {
       setIsLowCreditsDialogOpen(true);
     } else {
       router.push(path);
+    }
+  };
+
+  const handleCloneAdClick = (workflowId: string) => {
+    if (tokenBalance < MIN_TOKENS_REQUIRED_CLONE_AD) {
+      setIsLowCreditsDialogOpen(true);
+    } else {
+      router.push(`/dashboard/clone-ad?workflowId=${workflowId}`);
     }
   };
   // Ref to prevent double execution (React Strict Mode)
@@ -401,6 +411,12 @@ export default function DashboardHomePage() {
             inactive
           />
         </div>
+      </div>
+
+      <div className={styles.cloneAdsSection}>
+        <div className={styles.cloneAdsDivider} />
+        <h2 className={styles.cloneAdsHeading}>Template ads to clone 🏙️</h2>
+        <CloneAdsGrid onCloneAdClick={handleCloneAdClick} />
       </div>
 
       {planCode === 'FREE' ? (

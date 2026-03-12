@@ -100,11 +100,20 @@ function FormatCard({
 interface FormatSelectionContentProps {
   selectedFormat: string;
   onSelectedFormatChange: (format: string) => void;
+  /** Override credits for single format (1:1 and 9:16). Default 50. */
+  creditsForSingle?: number;
+  /** Override credits for both formats (1:1 & 9:16). Default 80. */
+  creditsForBoth?: number;
 }
+
+const DEFAULT_CREDITS_SINGLE = 50;
+const DEFAULT_CREDITS_BOTH = 80;
 
 export function FormatSelectionContent({
   selectedFormat,
   onSelectedFormatChange,
+  creditsForSingle = DEFAULT_CREDITS_SINGLE,
+  creditsForBoth = DEFAULT_CREDITS_BOTH,
 }: FormatSelectionContentProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -118,7 +127,7 @@ export function FormatSelectionContent({
       id: '1:1',
       format: '1:1',
       description: 'Perfect for posts',
-      credits: 50,
+      credits: creditsForSingle,
       socialIcons: [
         '/images/social_media_logo/facebook.png',
         '/images/social_media_logo/instagram.png',
@@ -131,7 +140,7 @@ export function FormatSelectionContent({
       id: '9:16',
       format: '9:16',
       description: 'Perfect for stories',
-      credits: 50,
+      credits: creditsForSingle,
       socialIcons: [
         '/images/social_media_logo/instagram.png',
         '/images/social_media_logo/facebook.png',
@@ -142,7 +151,7 @@ export function FormatSelectionContent({
       id: '1:1-9:16',
       format: '1:1 & 9:16',
       description: 'Full package',
-      credits: 80,
+      credits: creditsForBoth,
       formatBoxes: [
         { label: '1:1', width: '107.11px', height: '107.11px' },
         { label: '9:16', width: '73.947px', height: '107.455px' }

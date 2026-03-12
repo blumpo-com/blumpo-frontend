@@ -3,6 +3,7 @@ import { user, tokenAccount, tokenLedger, generationJob, adImage, subscriptionPl
 import { JobStatus } from './schema/enums';
 import { eq } from 'drizzle-orm';
 import crypto from 'crypto';
+import { getStorageKeyFromBlobUrl } from '@/lib/utils';
 
 // Ad archetypes from ad_archetype.json (code, displayName, description)
 const AD_ARCHETYPE_SEED = [
@@ -15,65 +16,109 @@ const AD_ARCHETYPE_SEED = [
   { code: 'value_proposition', displayName: 'Value Proposition', description: 'Highlight the core benefit and what sets the product apart' },
 ] as const;
 
-// Ad workflows for meme archetype referenced by AD_CLONE_SEED (id, archetypeCode, workflowUid, variantKey, format, isActive) – from ad_workflow.json
-const AD_WORKFLOW_SEED = [
-  { id: 'bc27ada6-d6c9-469e-9cb2-028583354351', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme14', variantKey: 'meme_14', format: null, isActive: true },
-  { id: '5fedcd7b-4e88-411e-8fe9-5f31110c7b36', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme24', variantKey: 'meme_24', format: null, isActive: true },
-  { id: 'c1f07673-d7a1-4e79-bcb2-e9452a88a842', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme26', variantKey: 'meme_26', format: null, isActive: true },
-  { id: '11cafaa3-8628-4222-b5d7-05d5071ba5ba', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme15', variantKey: 'meme_15', format: null, isActive: true },
-  { id: '14338e60-dbaf-4fca-a49a-81e1700ef72c', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme2', variantKey: 'meme_2', format: null, isActive: true },
-  { id: 'addb38f3-36f6-4bd9-a5dd-051d477591c7', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme9', variantKey: 'meme_9', format: null, isActive: true },
-  { id: '3a1db067-1193-4659-8f22-098e703df424', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme19', variantKey: 'meme_19', format: null, isActive: true },
-  { id: 'c2df829d-d371-4ac5-a22e-b82ce5173287', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme11', variantKey: 'meme_11', format: null, isActive: true },
-  { id: '1209e019-b515-44c8-ac7c-a12e48b93c5a', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme6', variantKey: 'meme_6', format: '1:1', isActive: true },
-  { id: 'd0097679-b0e7-42bb-80b5-253acfac436d', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme18', variantKey: 'meme_18', format: null, isActive: true },
-  { id: 'c56ff495-0030-49c2-abaf-b8737e33f878', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme22', variantKey: 'meme_22', format: null, isActive: true },
-  { id: '62498a70-7ba6-419c-b548-a9f0e03e987e', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme12', variantKey: 'meme_12', format: null, isActive: true },
-  { id: '411b0d63-a2ac-46ad-aa51-5de68509b791', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme4', variantKey: 'meme_4', format: null, isActive: true },
-  { id: 'dcb16816-3187-410d-a9b5-eec1382ba564', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme25', variantKey: 'meme_25', format: null, isActive: true },
-  { id: '14e6e11d-1735-4f2f-8280-624dc2ce8d99', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme21', variantKey: 'meme_21', format: null, isActive: true },
-  { id: '675e8d39-57a1-47f9-8229-b7d1dd86c2e6', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme1', variantKey: 'meme_1', format: '1:1', isActive: true },
-  { id: 'fa35b7da-a7b6-46b3-bc71-d81c982e2490', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme3', variantKey: 'meme_3', format: null, isActive: true },
-  { id: '82c81e5f-3683-4e60-916e-171ced7720da', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme10', variantKey: 'meme_10', format: null, isActive: true },
-  { id: 'fe1dbf33-3227-42dc-90fa-9ce38ff16c1e', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme5', variantKey: 'meme_5', format: '1:1', isActive: true },
-  { id: 'd4dcc6f3-7ac2-4dc8-988e-a6c9ab888e03', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme16', variantKey: 'meme_16', format: null, isActive: true },
-  { id: 'debe9d83-be31-413a-aab8-7ab033cb9579', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme13', variantKey: 'meme_13', format: null, isActive: true },
-  { id: '5db32658-17e1-4b7f-9bba-9ea8622e2434', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme8', variantKey: 'meme_8', format: null, isActive: true },
-  { id: 'd47afc67-97cd-475a-a6f4-929306092704', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme7', variantKey: 'meme_7', format: '1:1', isActive: true },
-  { id: 'aa55b5cf-f852-40d5-825b-a63f80f86f63', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme20', variantKey: 'meme_20', format: null, isActive: true },
-  { id: '21be6e19-b291-40dc-995e-130211bb3195', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme23', variantKey: 'meme_23', format: null, isActive: true },
-  { id: '34a44f20-bab8-4ed4-8742-5ee5f3107fbc', archetypeCode: 'meme' as const, workflowUid: 'SUB/IMG/meme17', variantKey: 'meme_17', format: null, isActive: true },
-] as const;
+// Meme clone ads: storageUrl, variantKey, workflowUid (workflows created on seed; storage key derived from URL)
+const AD_CLONE_MEME_ENTRIES = [
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme1.jpg', variantKey: 'meme_1', workflowUid: 'SUB/IMG/meme1' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme28.webp', variantKey: 'meme_2', workflowUid: 'SUB/IMG/meme2' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme3.jpg', variantKey: 'meme_3', workflowUid: 'SUB/IMG/meme3' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme4.jpg', variantKey: 'meme_4', workflowUid: 'SUB/IMG/meme4' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme4.webp', variantKey: 'meme_5', workflowUid: 'SUB/IMG/meme5' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme6.jpg', variantKey: 'meme_6', workflowUid: 'SUB/IMG/meme6' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme7.jpg', variantKey: 'meme_7', workflowUid: 'SUB/IMG/meme7' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme8.jpg', variantKey: 'meme_8', workflowUid: 'SUB/IMG/meme8' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme9.webp', variantKey: 'meme_9', workflowUid: 'SUB/IMG/meme9' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme10.webp', variantKey: 'meme_10', workflowUid: 'SUB/IMG/meme10' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme11.webp', variantKey: 'meme_11', workflowUid: 'SUB/IMG/meme11' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme12.webp', variantKey: 'meme_12', workflowUid: 'SUB/IMG/meme12' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme13.webp', variantKey: 'meme_13', workflowUid: 'SUB/IMG/meme13' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/today-was-a-good-day-v0-vmi4zvceog8g1.webp', variantKey: 'meme_14', workflowUid: 'SUB/IMG/meme14' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme15.webp', variantKey: 'meme_15', workflowUid: 'SUB/IMG/meme15' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme27.webp', variantKey: 'meme_16', workflowUid: 'SUB/IMG/meme16' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme17.webp', variantKey: 'meme_17', workflowUid: 'SUB/IMG/meme17' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme18.webp', variantKey: 'meme_18', workflowUid: 'SUB/IMG/meme18' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/if-a-person-wrongly-harms-another-in-anyway-possible-that-v0-uzbw6mw2uicg1.webp', variantKey: 'meme_19', workflowUid: 'SUB/IMG/meme19' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme20.webp', variantKey: 'meme_20', workflowUid: 'SUB/IMG/meme20' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme21.webp', variantKey: 'meme_21', workflowUid: 'SUB/IMG/meme21' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme22.webp', variantKey: 'meme_22', workflowUid: 'SUB/IMG/meme22' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme23.webp', variantKey: 'meme_23', workflowUid: 'SUB/IMG/meme23' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme24.webp', variantKey: 'meme_24', workflowUid: 'SUB/IMG/meme24' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/were-done-when-i-say-were-done-v0-5c80qq0r4ebg1.webp', variantKey: 'meme_25', workflowUid: 'SUB/IMG/meme25' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/its-the-eye-of-the-tiger-its-the-thrill-of-the-fight-v0-pa2frpndmfcg1.webp', variantKey: 'meme_26', workflowUid: 'SUB/IMG/meme26' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme27.webp', variantKey: 'meme_27', workflowUid: 'SUB/IMG/meme27' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme28.jpeg', variantKey: 'meme_28', workflowUid: 'SUB/IMG/meme28' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme29.jpeg', variantKey: 'meme_29', workflowUid: 'SUB/IMG/meme29' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme31.jpeg', variantKey: 'meme_30', workflowUid: 'SUB/IMG/meme30' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme33.jpeg', variantKey: 'meme_31', workflowUid: 'SUB/IMG/meme31' },
+];
 
-// Ad clone seed data (meme clones) – workflow_id must exist in ad_workflow
-const AD_CLONE_SEED = [
-  { id: '030d2305-eb53-489c-a1e5-1598816e2ae6', workflowId: 'bc27ada6-d6c9-469e-9cb2-028583354351', storageKey: 'clone/meme/today-was-a-good-day-v0-vmi4zvceog8g1.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/today-was-a-good-day-v0-vmi4zvceog8g1.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '031a339c-0866-4043-aadc-269ee6b989b6', workflowId: '5fedcd7b-4e88-411e-8fe9-5f31110c7b36', storageKey: 'clone/meme/meme24.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme24.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '24881b1d-151c-41ac-be94-90a1559db46a', workflowId: 'c1f07673-d7a1-4e79-bcb2-e9452a88a842', storageKey: 'clone/meme/its-the-eye-of-the-tiger-its-the-thrill-of-the-fight-v0-pa2frpndmfcg1.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/its-the-eye-of-the-tiger-its-the-thrill-of-the-fight-v0-pa2frpndmfcg1.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '24f99dd3-4f0f-40ca-b8e2-b350624a0184', workflowId: '11cafaa3-8628-4222-b5d7-05d5071ba5ba', storageKey: 'clone/meme/meme15.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme15.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '3ec30d53-57a3-48fc-a361-9a30e3a241ca', workflowId: '14338e60-dbaf-4fca-a49a-81e1700ef72c', storageKey: 'clone/meme/meme28.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme28.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '4803e471-a8db-4a89-a6f6-cc0ecc5d0771', workflowId: 'addb38f3-36f6-4bd9-a5dd-051d477591c7', storageKey: 'clone/meme/meme9.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme9.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '4ef40003-5f11-4d76-9330-9ce0aa7ba588', workflowId: '3a1db067-1193-4659-8f22-098e703df424', storageKey: 'clone/meme/if-a-person-wrongly-harms-another-in-anyway-possible-that-v0-uzbw6mw2uicg1.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/if-a-person-wrongly-harms-another-in-anyway-possible-that-v0-uzbw6mw2uicg1.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '519af415-cb2a-425a-9b40-f9118ef7527a', workflowId: 'c2df829d-d371-4ac5-a22e-b82ce5173287', storageKey: 'clone/meme/meme11.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme11.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '545553e4-4836-4a2d-9bed-05618fc6fed4', workflowId: '1209e019-b515-44c8-ac7c-a12e48b93c5a', storageKey: 'clone/meme/meme6.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme6.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '5c5c29c2-b99d-45c2-8de4-c8b7fda0bc05', workflowId: 'd0097679-b0e7-42bb-80b5-253acfac436d', storageKey: 'clone/meme/meme18.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme18.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '5e732c4b-90a8-4450-81ec-2fbb1ec2c72c', workflowId: 'c56ff495-0030-49c2-abaf-b8737e33f878', storageKey: 'clone/meme/meme22.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme22.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '70132999-4af8-4f10-ac0d-ff1bb5f45bc7', workflowId: '62498a70-7ba6-419c-b548-a9f0e03e987e', storageKey: 'clone/meme/meme12.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme12.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '7ff20bac-c7d0-420c-9935-6226a8667558', workflowId: '411b0d63-a2ac-46ad-aa51-5de68509b791', storageKey: 'clone/meme/meme4.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme4.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '86062026-2e89-45fa-94c7-fa93588c86ef', workflowId: 'dcb16816-3187-410d-a9b5-eec1382ba564', storageKey: 'clone/meme/were-done-when-i-say-were-done-v0-5c80qq0r4ebg1.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/were-done-when-i-say-were-done-v0-5c80qq0r4ebg1.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: '9f774f11-84e7-4b32-876e-315cd1204d7e', workflowId: '14e6e11d-1735-4f2f-8280-624dc2ce8d99', storageKey: 'clone/meme/meme21.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme21.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'a5cf5737-9b64-437c-9eb8-889ccc7b1662', workflowId: '675e8d39-57a1-47f9-8229-b7d1dd86c2e6', storageKey: 'clone/meme/meme1.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme1.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'c61434cb-3557-4424-8201-1c78a3ab0a78', workflowId: 'fa35b7da-a7b6-46b3-bc71-d81c982e2490', storageKey: 'clone/meme/meme3.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme3.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'cb6905b8-9091-4a0d-bedc-98159e425f86', workflowId: '82c81e5f-3683-4e60-916e-171ced7720da', storageKey: 'clone/meme/meme10.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme10.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'd0d58736-a330-4c78-910d-1fe99ba5c817', workflowId: 'fe1dbf33-3227-42dc-90fa-9ce38ff16c1e', storageKey: 'clone/meme/meme4.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme4.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'd381005c-d385-42f4-9be2-c39bd02e5438', workflowId: 'd4dcc6f3-7ac2-4dc8-988e-a6c9ab888e03', storageKey: 'clone/meme/meme27.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme27.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'd8353399-c6e4-4abf-a240-8daaafb55ba2', workflowId: 'debe9d83-be31-413a-aab8-7ab033cb9579', storageKey: 'clone/meme/meme13.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme13.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'ded9786a-9263-4966-8608-8000a5ed4916', workflowId: '5db32658-17e1-4b7f-9bba-9ea8622e2434', storageKey: 'clone/meme/meme8.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme8.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'ea0bd5c0-70d8-43b3-80d5-d16268f2edfb', workflowId: 'd47afc67-97cd-475a-a6f4-929306092704', storageKey: 'clone/meme/meme7.jpg', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme7.jpg', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'ebc47727-9214-4ad3-b3cb-c325fc1ab515', workflowId: 'aa55b5cf-f852-40d5-825b-a63f80f86f63', storageKey: 'clone/meme/meme20.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme20.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'f1a3eee9-281e-42bc-af80-bb8ace0d09cc', workflowId: '21be6e19-b291-40dc-995e-130211bb3195', storageKey: 'clone/meme/meme23.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme23.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-  { id: 'fb315a67-9e1a-4ec1-b91d-edfbef126c6f', workflowId: '34a44f20-bab8-4ed4-8742-5ee5f3107fbc', storageKey: 'clone/meme/meme17.webp', storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/meme/meme17.webp', createdAt: '2026-02-03 14:54:43.486334+00' },
-] as const;
+// Problem-solution clone ads: storageUrl, variantKey, workflowUid (workflows created on seed; storage key derived from URL)
+const AD_CLONE_PS_ENTRIES = [
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/tes5.jpg', variantKey: 'ps_5', workflowUid: 'SUB/IMG/PS5' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/tes6', variantKey: 'ps_6', workflowUid: 'SUB/IMG/PS6' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ae83a6f3-d1bb-48e3-8787-910aca3abd95.webp', variantKey: 'ps_7', workflowUid: 'SUB/IMG/PS7' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps9.webp', variantKey: 'ps_9', workflowUid: 'SUB/IMG/PS9' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps10.png', variantKey: 'ps_10', workflowUid: 'SUB/IMG/PS10' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps11.webp', variantKey: 'ps_11', workflowUid: 'SUB/IMG/PS11' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/b78b2c30-cb00-4e20-a36c-18f1767669b9.webp', variantKey: 'ps_13', workflowUid: 'SUB/IMG/PS13' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps14.webp', variantKey: 'ps_14', workflowUid: 'SUB/IMG/PS14' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps18.jpg', variantKey: 'ps_18', workflowUid: 'SUB/IMG/PS18' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps19.jpg', variantKey: 'ps_19', workflowUid: 'SUB/IMG/PS19' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps20.jpg', variantKey: 'ps_20', workflowUid: 'SUB/IMG/PS20' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps21.jpg', variantKey: 'ps_21', workflowUid: 'SUB/IMG/PS21' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps22.webp', variantKey: 'ps_22', workflowUid: 'SUB/IMG/PS22' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps23.jpg', variantKey: 'ps_23', workflowUid: 'SUB/IMG/PS23' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/ps24.webp', variantKey: 'ps_24', workflowUid: 'SUB/IMG/PS24' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/problem%20solution/ps27.webp', variantKey: 'ps_27', workflowUid: 'SUB/IMG/PS27' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/problem%20solution/ps29.webp', variantKey: 'ps_29', workflowUid: 'SUB/IMG/PS29' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/problem%20solution/ps30.webp', variantKey: 'ps_30', workflowUid: 'SUB/IMG/PS30' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/problem%20solution/ps31.webp', variantKey: 'ps_31', workflowUid: 'SUB/IMG/PS31' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/problem%20solution/ps32.webp', variantKey: 'ps_32', workflowUid: 'SUB/IMG/PS32' },
+];
+
+// Value proposition clone ads: storageUrl, variantKey, workflowUid
+const AD_CLONE_VALP_ENTRIES = [
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp5.jpg', variantKey: 'valp_5', workflowUid: 'SUB/IMG/VALP5' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp7.jpg', variantKey: 'valp_7', workflowUid: 'SUB/IMG/VALP7' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp27.webp', variantKey: 'valp_8', workflowUid: 'SUB/IMG/VALP8' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp9.jpg', variantKey: 'valp_9', workflowUid: 'SUB/IMG/VALP9' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp11.jpg', variantKey: 'valp_11', workflowUid: 'SUB/IMG/VALP11' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp12.webp', variantKey: 'valp_12', workflowUid: 'SUB/IMG/VALP12' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp13.jpg', variantKey: 'valp_13', workflowUid: 'SUB/IMG/VALP13' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp14.webp', variantKey: 'valp_14', workflowUid: 'SUB/IMG/VALP14' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp15.webp', variantKey: 'valp_15', workflowUid: 'SUB/IMG/VALP15' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp17.webp', variantKey: 'valp_17', workflowUid: 'SUB/IMG/VALP17' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp18.webp', variantKey: 'valp_18', workflowUid: 'SUB/IMG/VALP18' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp24.webp', variantKey: 'valp_19', workflowUid: 'SUB/IMG/VALP19' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp20.jpg', variantKey: 'valp_20', workflowUid: 'SUB/IMG/VALP20' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp21.webp', variantKey: 'valp_21', workflowUid: 'SUB/IMG/VALP21' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp22.webp', variantKey: 'valp_22', workflowUid: 'SUB/IMG/VALP22' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp23.jpg', variantKey: 'valp_23', workflowUid: 'SUB/IMG/VALP23' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp25.webp', variantKey: 'valp_25', workflowUid: 'SUB/IMG/VALP25' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp26.webp', variantKey: 'valp_26', workflowUid: 'SUB/IMG/VALP26' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp28.webp', variantKey: 'valp_27', workflowUid: 'SUB/IMG/VALP27' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp29.webp', variantKey: 'valp_28', workflowUid: 'SUB/IMG/VALP28' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/value%20proposition/valp32.webp', variantKey: 'valp_30', workflowUid: 'SUB/IMG/VALP30' },
+];
+
+// Testimonial clone ads: storageUrl, variantKey, workflowUid
+const AD_CLONE_TES_ENTRIES = [
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes7.jpeg', variantKey: 'tes_7', workflowUid: 'SUB/IMG/TES/7' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes13.webp', variantKey: 'tes_8', workflowUid: 'SUB/IMG/TES/8' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes13.1.webp', variantKey: 'tes_13', workflowUid: 'SUB/IMG/TES/13' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/testimonial/tes16.webp', variantKey: 'tes_16', workflowUid: 'SUB/IMG/TES/16' },
+];
+
+// Competitor comparison clone ads: storageUrl, variantKey, workflowUid
+const AD_CLONE_COMP_ENTRIES = [
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp4.jpeg', variantKey: 'comp_4', workflowUid: 'SUB/COM/IMG4' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp5.png', variantKey: 'comp_5', workflowUid: 'SUB/COM/IMG5' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp6.png', variantKey: 'comp_6', workflowUid: 'SUB/COM/IMG6' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp7.webp', variantKey: 'comp_7', workflowUid: 'SUB/COM/IMG7' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp10.webp', variantKey: 'comp_9', workflowUid: 'SUB/COM/IMG9' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp13.jpeg', variantKey: 'comp_10', workflowUid: 'SUB/COM/IMG10' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp11.webp', variantKey: 'comp_11', workflowUid: 'SUB/COM/IMG11' },
+  { storageUrl: 'https://e5f16v1stcwotrmh.public.blob.vercel-storage.com/clone/competition/comp12.webp', variantKey: 'comp_12', workflowUid: 'SUB/COM/IMG12' },
+];
 
 const TEST_USER_EMAIL = 'test@blumpo.com';
 
@@ -370,37 +415,131 @@ async function seedAdArchetypes() {
   console.log('Ad archetypes seeded:', AD_ARCHETYPE_SEED.length);
 }
 
+async function getOrCreateWorkflowId(workflowUid: string, variantKey: string, archetypeCode: string): Promise<string> {
+  const existing = await db.select().from(adWorkflow).where(eq(adWorkflow.workflowUid, workflowUid)).limit(1);
+  if (existing.length > 0) return existing[0].id;
+  const id = crypto.randomUUID();
+  await db
+    .insert(adWorkflow)
+    .values({
+      id,
+      archetypeCode,
+      workflowUid,
+      variantKey,
+      format: null,
+      isActive: true,
+    })
+    .onConflictDoNothing({ target: adWorkflow.workflowUid });
+  const after = await db.select().from(adWorkflow).where(eq(adWorkflow.workflowUid, workflowUid)).limit(1);
+  return after[0]!.id;
+}
+
 async function seedAdCloneWorkflowsAndClones() {
-  console.log('Seeding ad_workflow rows for ad_clone and ad_clone...');
+  console.log('Seeding ad_workflow and ad_clone (clone ads)...');
 
-  for (const row of AD_WORKFLOW_SEED) {
-    await db
-      .insert(adWorkflow)
-      .values({
-        id: row.id,
-        archetypeCode: row.archetypeCode,
-        workflowUid: row.workflowUid,
-        variantKey: row.variantKey,
-        format: row.format,
-        isActive: row.isActive,
-      })
-      .onConflictDoNothing({ target: adWorkflow.id });
-  }
-
-  for (const row of AD_CLONE_SEED) {
+  // Meme clone ads
+  for (const entry of AD_CLONE_MEME_ENTRIES) {
+    const storageKey = getStorageKeyFromBlobUrl(entry.storageUrl);
+    if (!storageKey) {
+      console.warn('Skipping clone (invalid URL):', entry.storageUrl);
+      continue;
+    }
+    const workflowId = await getOrCreateWorkflowId(entry.workflowUid, entry.variantKey, 'meme');
     await db
       .insert(adClone)
       .values({
-        id: row.id,
-        workflowId: row.workflowId,
-        storageKey: row.storageKey,
-        storageUrl: row.storageUrl,
-        createdAt: new Date(row.createdAt),
+        workflowId,
+        storageKey,
+        storageUrl: entry.storageUrl,
       })
-      .onConflictDoNothing({ target: adClone.id });
+      .onConflictDoNothing({ target: [adClone.workflowId] });
   }
 
-  console.log('Ad workflow and ad_clone seed completed:', AD_WORKFLOW_SEED.length, 'workflows,', AD_CLONE_SEED.length, 'clones.');
+  // Problem-solution clone ads ensure workflow by workflowUid, then insert clone with storage key from URL
+  for (const entry of AD_CLONE_PS_ENTRIES) {
+    const storageKey = getStorageKeyFromBlobUrl(entry.storageUrl);
+    if (!storageKey) {
+      console.warn('Skipping clone (invalid URL):', entry.storageUrl);
+      continue;
+    }
+    const workflowId = await getOrCreateWorkflowId(entry.workflowUid, entry.variantKey, 'problem_solution');
+    await db
+      .insert(adClone)
+      .values({
+        workflowId,
+        storageKey,
+        storageUrl: entry.storageUrl,
+      })
+      .onConflictDoNothing({ target: [adClone.workflowId] });
+  }
+
+  // Value proposition clone ads
+  for (const entry of AD_CLONE_VALP_ENTRIES) {
+    const storageKey = getStorageKeyFromBlobUrl(entry.storageUrl);
+    if (!storageKey) {
+      console.warn('Skipping clone (invalid URL):', entry.storageUrl);
+      continue;
+    }
+    const workflowId = await getOrCreateWorkflowId(entry.workflowUid, entry.variantKey, 'value_proposition');
+    await db
+      .insert(adClone)
+      .values({
+        workflowId,
+        storageKey,
+        storageUrl: entry.storageUrl,
+      })
+      .onConflictDoNothing({ target: [adClone.workflowId] });
+  }
+
+  // Testimonial clone ads
+  for (const entry of AD_CLONE_TES_ENTRIES) {
+    const storageKey = getStorageKeyFromBlobUrl(entry.storageUrl);
+    if (!storageKey) {
+      console.warn('Skipping clone (invalid URL):', entry.storageUrl);
+      continue;
+    }
+    const workflowId = await getOrCreateWorkflowId(entry.workflowUid, entry.variantKey, 'testimonial');
+    await db
+      .insert(adClone)
+      .values({
+        workflowId,
+        storageKey,
+        storageUrl: entry.storageUrl,
+      })
+      .onConflictDoNothing({ target: [adClone.workflowId] });
+  }
+
+  // Competitor comparison clone ads
+  for (const entry of AD_CLONE_COMP_ENTRIES) {
+    const storageKey = getStorageKeyFromBlobUrl(entry.storageUrl);
+    if (!storageKey) {
+      console.warn('Skipping clone (invalid URL):', entry.storageUrl);
+      continue;
+    }
+    const workflowId = await getOrCreateWorkflowId(entry.workflowUid, entry.variantKey, 'competitor_comparison');
+    await db
+      .insert(adClone)
+      .values({
+        workflowId,
+        storageKey,
+        storageUrl: entry.storageUrl,
+      })
+      .onConflictDoNothing({ target: [adClone.workflowId] });
+  }
+
+  console.log(
+    'Ad workflow and ad_clone seed completed:',
+    AD_CLONE_MEME_ENTRIES.length,
+    'meme clones,',
+    AD_CLONE_PS_ENTRIES.length,
+    'problem-solution clones,',
+    AD_CLONE_VALP_ENTRIES.length,
+    'value-proposition clones,',
+    AD_CLONE_TES_ENTRIES.length,
+    'testimonial clones,',
+    AD_CLONE_COMP_ENTRIES.length,
+    'competitor-comparison clones.'
+  );
 }
 
 async function seed() {
@@ -411,7 +550,7 @@ async function seed() {
     await seedSubscriptionPlans();
     await seedTopupPlans();
 
-    // Seed ad_archetype, then ad_workflow + ad_clone (meme clones)
+    // Seed ad_archetype, then ad_workflow + ad_clone (all clone ads)
     await seedAdArchetypes();
     await seedAdCloneWorkflowsAndClones();
 
