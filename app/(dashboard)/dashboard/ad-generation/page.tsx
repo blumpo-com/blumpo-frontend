@@ -279,13 +279,13 @@ function AdGenerationPageContent() {
   const handleSeeAds = async () => {
     if (!jobId) return;
 
-    // For quick ads, use the format from URL parameter
+    // For quick ads, use the format from URL parameter and pass quick_ads so review view can call mark-displayed
     if (isQuickAds && formatParam) {
       // Convert comma-separated formats to 'mixed' for the review view
       const reviewFormat = formatParam.includes(',') || formatParam === '1:1-9:16'
         ? 'mixed'
         : formatParam;
-      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${reviewFormat}`);
+      router.push(`/dashboard/ad-generation/ad-review-view?job_id=${jobId}&format=${reviewFormat}&quick_ads=true`);
       return;
     }
 
