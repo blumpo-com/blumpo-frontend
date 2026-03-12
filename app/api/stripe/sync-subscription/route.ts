@@ -63,10 +63,10 @@ export async function POST() {
     if (subscriptionStatus === 'active' || subscriptionStatus === 'trialing') {
       const planCode = subscriptionData.planCode ?? tokenAccount?.planCode ?? 'FREE';
       if (planCode !== 'FREE') {
-        syncPaidCustomerToBrevo(user.email, { PLAN: planCode }).catch(() => {});
+        await syncPaidCustomerToBrevo(user.email, { PLAN: planCode }).catch(() => {});
       }
     } else if (subscriptionStatus === 'canceled' || subscriptionStatus === 'unpaid' || subscriptionStatus === 'cancel_at_period_end') {
-      removeContactFromBrevoCustomers(user.email).catch(() => {});
+      await removeContactFromBrevoCustomers(user.email).catch(() => {});
     }
 
     return NextResponse.json({

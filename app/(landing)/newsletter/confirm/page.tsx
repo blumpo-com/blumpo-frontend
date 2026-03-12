@@ -26,7 +26,7 @@ export default async function NewsletterConfirmPage({ searchParams }: Props) {
 
   if (!alreadySubscribed) {
     await addNewsletterSubscriber(email);
-    syncNewsletterSubscriberToBrevo(email).catch(() => {});
+    await syncNewsletterSubscriberToBrevo(email).catch(() => {});
   }
 
   return <ConfirmResult status={alreadySubscribed ? 'already-subscribed' : 'success'} email={email} />;

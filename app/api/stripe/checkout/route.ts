@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
         period: period,
       }, matchingPlan ? matchingPlan.monthlyTokens : 0);
 
-      syncPaidCustomerToBrevo(userRecord[0].email, { PLAN: planCode }).catch(() => {});
+      await syncPaidCustomerToBrevo(userRecord[0].email, { PLAN: planCode }).catch(() => {});
     } 
     // Handle one-time payment (topup)
     else if (session.mode === 'payment') {

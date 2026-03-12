@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       await addNewsletterSubscriber(email, existingUser.id);
-      syncNewsletterSubscriberToBrevo(email).catch(() => {});
+      await syncNewsletterSubscriberToBrevo(email).catch(() => {});
       return NextResponse.json({ status: 'subscribed' });
     }
 
