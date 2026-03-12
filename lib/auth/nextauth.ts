@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
             });
             console.log('Syncing free user to Brevo:', dbUser.email);
             const attrs = brevoContactAttributesFromDisplayName(user.name ?? null);
-            await syncFreeUserToBrevo(dbUser.email, { ...attrs, SOURCE: 'google' }).catch(() => {});
+            syncFreeUserToBrevo(dbUser.email, { ...attrs, SOURCE: 'google' }).catch(() => {});
           }
         } else {
           // Update last login

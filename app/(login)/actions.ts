@@ -92,7 +92,7 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       planCode: 'FREE',
     });
 
-    await syncFreeUserToBrevo(createdUser.email, { SOURCE: 'otp' }).catch(() => {});
+    syncFreeUserToBrevo(createdUser.email, { SOURCE: 'otp' }).catch(() => {});
 
     foundUser = createdUser;
   } else {
