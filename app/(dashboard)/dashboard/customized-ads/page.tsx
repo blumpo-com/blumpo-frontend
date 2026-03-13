@@ -133,9 +133,6 @@ function CustomizedAdsPageContent() {
   const [headlinesError, setHeadlinesError] = useState<string | null>(null);
   const prevArchetypeRef = useRef<string | null>(null);
 
-  // Testimonial-specific state (name1 and cta1)
-  const [testimonialName, setTestimonialName] = useState<string>('');
-  const [testimonialCta, setTestimonialCta] = useState<string>('');
 
   // Brand insights state (cached for reuse across archetypes)
   const [brandInsights, setBrandInsights] = useState<any>(null);
@@ -201,10 +198,10 @@ function CustomizedAdsPageContent() {
     prevBrandIdRef.current = currentBrand?.id || null;
   }, [currentBrand?.id, router]);
 
-  // Function to fetch headlines (only for testimonial)
+  // Function to fetch headlines (not used for testimonial - testimonial uses customer groups from brand insights)
   const fetchHeadlines = useCallback(async () => {
-    // Only fetch headlines for testimonial archetype
-    if (selectedArchetype !== 'testimonial') {
+    // Testimonial uses customer groups from brand insights; do not fetch headlines
+    if (selectedArchetype === 'testimonial') {
       setHeadlines([]);
       prevArchetypeRef.current = selectedArchetype;
       return;
@@ -215,23 +212,13 @@ function CustomizedAdsPageContent() {
       return;
     }
 
-    // Don't fetch if already loading or if headlines are already loaded for this archetype
     if (isLoadingHeadlines) return;
-    if (headlines.length > 0 && prevArchetypeRef.current === 'testimonial' && testimonialName) {
-      // Headlines already loaded for testimonial
-      return;
-    }
-
-    // Don't fetch if there's already an error - require manual retry
-    if (headlinesError) {
-      return;
-    }
+    if (headlinesError) return;
 
     setIsLoadingHeadlines(true);
     setHeadlinesError(null);
 
     try {
-      console.log('fetching headlines');
       const response = await fetch('/api/headlines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -249,22 +236,16 @@ function CustomizedAdsPageContent() {
 
       const data = await response.json();
       setHeadlines(data.headlines || []);
-      // Store testimonial-specific data
-      setTestimonialName(data.name1 || '');
-      setTestimonialCta(data.cta1 || '');
       prevArchetypeRef.current = selectedArchetype;
-      console.log('headlines', data.headlines);
-      console.log('testimonial name/cta', data.name1, data.cta1);
     } catch (err) {
       console.error('Error fetching headlines:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch headlines';
       setHeadlinesError(errorMessage);
-      // Clear headlines on error
       setHeadlines([]);
     } finally {
       setIsLoadingHeadlines(false);
     }
-  }, [selectedArchetype, currentBrand?.id, isLoadingHeadlines, headlines.length, testimonialName, headlinesError]);
+  }, [selectedArchetype, currentBrand?.id, isLoadingHeadlines, headlinesError]);
 
   // Function to fetch brand insights (cached for reuse across archetypes)
   const fetchBrandInsights = useCallback(async () => {
@@ -363,6 +344,27 @@ function CustomizedAdsPageContent() {
         const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 4);
       }
+      case 'testimonial': {
+        // Use customer groups (target customers) like other archetypes
+        const targetCustomers = brandInsights.targetCustomers || [];
+        let customerGroupArray: string[] = [];
+
+        if (Array.isArray(targetCustomers)) {
+          customerGroupArray = targetCustomers.map((item: any) => {
+            if (typeof item === 'string') {
+              return item;
+            } else if (item && typeof item === 'object' && item.text) {
+              return item.text;
+            } else if (item && typeof item === 'object' && item.painPoint) {
+              return item.painPoint;
+            }
+            return String(item);
+          }).filter(Boolean);
+        }
+
+        const shuffled = [...customerGroupArray].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 4);
+      }
       // Add other archetypes here as needed
       default:
         return [];
@@ -413,48 +415,35 @@ function CustomizedAdsPageContent() {
 
     // Load data when archetype changes or when navigating to step 3
     if (prevArchetypeRef.current !== selectedArchetype || prevStepRef.current < 3) {
-      // Clear testimonial-specific data when switching away from testimonial
       if (prevArchetypeRef.current === 'testimonial' && selectedArchetype !== 'testimonial') {
-        setTestimonialName('');
-        setTestimonialCta('');
-        setHeadlinesError(null); // Clear error when switching archetypes
+        setHeadlinesError(null);
       }
 
-      if (selectedArchetype === 'testimonial') {
-        // Fetch headlines for testimonial (only if not already loaded and no error)
-        if (!headlines.length || prevArchetypeRef.current !== 'testimonial' || !testimonialName) {
-          // Only fetch if not currently loading and no error
-          if (!isLoadingHeadlines && !headlinesError) {
-            fetchHeadlines();
-          }
-        }
-      } else if (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') {
-        // Extract insights from stored brand insights
+      // Testimonial uses customer groups from brand insights (same as problem_solution / value_proposition)
+      if (selectedArchetype === 'testimonial' || selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') {
         if (brandInsights) {
           const extractedInsights = extractInsightsForArchetype(selectedArchetype);
           setHeadlines(extractedInsights);
           setIsLoadingHeadlines(false);
-          setHeadlinesError(null); // Clear any previous errors
+          setHeadlinesError(null);
           prevArchetypeRef.current = selectedArchetype;
         } else {
-          // Wait for brand insights to load
           setIsLoadingHeadlines(true);
         }
       } else {
-        // Clear headlines for other archetypes
         setHeadlines([]);
         setIsLoadingHeadlines(false);
-        setHeadlinesError(null); // Clear any previous errors
+        setHeadlinesError(null);
         prevArchetypeRef.current = selectedArchetype;
       }
       prevStepRef.current = currentStep;
     }
-  }, [selectedArchetype, currentStep, brandInsights, fetchHeadlines, extractInsightsForArchetype, headlines.length, testimonialName, headlinesError, isLoadingHeadlines]);
-  // Extract insights once brand insights are loaded for problem_solution/value_proposition (on step 3 or later)
+  }, [selectedArchetype, currentStep, brandInsights, extractInsightsForArchetype, headlinesError, isLoadingHeadlines]);
+  // Extract insights once brand insights are loaded for problem_solution / value_proposition / testimonial (on step 3 or later)
   useEffect(() => {
     if (
       currentStep >= 3 &&
-      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition') &&
+      (selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'testimonial') &&
       brandInsights &&
       brandInsightsBrandIdRef.current === currentBrand?.id &&
       !isLoadingBrandInsights &&
@@ -476,8 +465,8 @@ function CustomizedAdsPageContent() {
         subtitle: "Customer segments you want to target with your ad"
       },
       testimonial: {
-        title: "Select testimonials",
-        subtitle: "Customer testimonial to feature in the ad"
+        title: "Select target group",
+        subtitle: "Customer segments you want to target with your ad"
       },
       competitor_comparison: {
         title: "Competitor insight",
@@ -561,14 +550,14 @@ function CustomizedAdsPageContent() {
           error={headlinesError}
           onRetry={() => {
             setHeadlinesError(null);
-            fetchHeadlines();
+            selectedArchetype === 'testimonial' ? fetchBrandInsights() : fetchHeadlines();
           }}
           selectedInsights={selectedInsights}
           onSelectedInsightsChange={setSelectedInsights}
         />
       )
     }
-  }), [previewPhoto, previewFile, selectedSection, selectedArchetype, selectedFormat, selectedInsights, insightConfig, headlines, isLoadingHeadlines, headlinesError]);
+  }), [previewPhoto, previewFile, selectedSection, selectedArchetype, selectedFormat, selectedInsights, insightConfig, headlines, isLoadingHeadlines, headlinesError, fetchBrandInsights, fetchHeadlines]);
 
   const currentConfig = stepConfig[currentStep as keyof typeof stepConfig];
 
@@ -661,10 +650,8 @@ function CustomizedAdsPageContent() {
           randomArchetypes: shuffled.slice(0, 2),
         };
       } else if (selectedArchetype === 'testimonial') {
-        archetypeInputs = {
-          name1: testimonialName,
-          cta1: testimonialCta,
-        };
+        // Testimonial uses customer groups (selectedInsights) like other archetypes; no name1/cta1
+        archetypeInputs = {};
       }
 
       // For meme + "Choose random", send empty selected_insights so n8n uses get_random_workflows_ids
