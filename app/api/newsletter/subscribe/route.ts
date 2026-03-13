@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isEmailSubscribed, addNewsletterSubscriber } from '@/lib/db/queries/newsletter';
 import { getUserByEmail } from '@/lib/db/queries/user';
-import { syncNewsletterSubscriberToBrevo } from '@/lib/brevo';
-import { resend } from '@/lib/auth/otp';
+import { sendBrevoEmail, getDefaultTransactionalSender, syncNewsletterSubscriberToBrevo } from '@/lib/brevo';
 import { signNewsletterToken } from '@/lib/auth/newsletter-token';
 import { renderNewsletterConfirmationEmailTemplate } from '@/lib/auth/templates/newsletterConfirmationEmailTemplate';
 
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     if (existingUser) {
       await addNewsletterSubscriber(email, existingUser.id);
-      syncNewsletterSubscriberToBrevo(email).catch(() => {});
+      await syncNewsletterSubscriberToBrevo(email).catch(() => {});
       return NextResponse.json({ status: 'subscribed' });
     }
 
@@ -39,15 +38,16 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.BASE_URL ?? 'http://localhost:3000';
     const confirmationUrl = `${baseUrl}/newsletter/confirm?token=${encodeURIComponent(token)}`;
 
-    const { error } = await resend.emails.send({
-      from: 'Blumpo <no-reply@blumpo.com>',
-      to: email,
+    const sender = getDefaultTransactionalSender();
+    const { success } = await sendBrevoEmail({
+      sender,
+      to: [{ email }],
       subject: 'Confirm your Blumpo newsletter subscription',
-      html: renderNewsletterConfirmationEmailTemplate(confirmationUrl),
+      htmlContent: renderNewsletterConfirmationEmailTemplate(confirmationUrl),
     });
 
-    if (error) {
-      console.error('Failed to send newsletter confirmation email:', error);
+    if (!success) {
+      console.error('Failed to send newsletter confirmation email');
       return NextResponse.json({ error: 'Failed to send confirmation email' }, { status: 500 });
     }
 

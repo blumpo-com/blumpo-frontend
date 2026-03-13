@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useState, memo } from 'react';
+import { useActionState, useState, memo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { JetpackAdIllustration } from '@/components/jetpack-ad-illustration';
 import { Button } from '@/components/ui/button';
@@ -36,16 +36,23 @@ export function Login() {
   const websiteUrl = searchParams.get('website_url');
   const [awaitingOtp, setAwaitingOtp] = useState(false);
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+  const [deliveryWarning, setDeliveryWarning] = useState<string | null>(null);
 
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     awaitingOtp ? verifyOtp : requestOtp,
     { error: '' }
   );
 
-  // Check if we received a success message indicating OTP was sent
-  if (state.success && state.awaitingOtp && !awaitingOtp) {
-    setAwaitingOtp(true);
-  }
+  // When requestOtp returns success + awaitingOtp, switch to OTP screen and preserve deliveryWarning in effect
+  // (state is updated asynchronously; capturing in render can miss it when action later switches to verifyOtp)
+  useEffect(() => {
+    if (state?.success && state?.awaitingOtp && !awaitingOtp) {
+      setAwaitingOtp(true);
+      if (typeof state.deliveryWarning === 'string' && state.deliveryWarning) {
+        setDeliveryWarning(state.deliveryWarning);
+      }
+    }
+  }, [state?.success, state?.awaitingOtp, state?.deliveryWarning, awaitingOtp]);
 
   // Handle OTP input changes
   const handleOtpChange = (index: number, value: string) => {
@@ -153,6 +160,12 @@ export function Login() {
                   <span className="font-normal">. It will expire soon. Please enter it below.</span>
                 </p>
 
+                {(deliveryWarning ?? state?.deliveryWarning) && (
+                  <div className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-[16px] text-amber-800">
+                    {deliveryWarning ?? state?.deliveryWarning}
+                  </div>
+                )}
+
                 <form id="otp-form" className="w-full flex flex-col gap-[36px] items-center" action={formAction}>
                   <input type="hidden" name="redirect" value={redirect || ''} />
                   <input type="hidden" name="website_url" value={websiteUrl || ''} />
@@ -207,7 +220,10 @@ export function Login() {
                     <span className="font-normal">Didn't receive email? </span>
                     <button
                       type="button"
-                      onClick={() => setAwaitingOtp(false)}
+                      onClick={() => {
+                        setAwaitingOtp(false);
+                        setDeliveryWarning(null);
+                      }}
                       className="text-[#00bfa6] hover:underline font-normal"
                     >
                       Resend it now

@@ -256,7 +256,7 @@ export async function handleSubscriptionChange(
     } else {
       await updateUserSubscription(userId, subscriptionData);
     }
-    syncPaidCustomerToBrevo(userWithAccount.user.email, { PLAN: planCode }).catch(() => {});
+    await syncPaidCustomerToBrevo(userWithAccount.user.email, { PLAN: planCode }).catch(() => {});
   } else if (status === 'canceled' || status === 'unpaid') {
     const cancellationTime = subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : 
     new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
@@ -267,7 +267,7 @@ export async function handleSubscriptionChange(
       stripeProductId: null,
       stripePriceId: null,
     });
-    removeContactFromBrevoCustomers(userWithAccount.user.email).catch(() => {});
+    await removeContactFromBrevoCustomers(userWithAccount.user.email).catch(() => {});
   }
 }
 

@@ -1,10 +1,7 @@
 import { hash, verify } from '@node-rs/argon2';
-import { Resend } from 'resend';
+import { sendBrevoEmail, getDefaultTransactionalSender } from '@/lib/brevo';
 import { renderOtpEmailTemplate } from './templates/otpEmailTemplate';
 import { createAuthOtp, findValidOtp, consumeOtp, incrementOtpAttempts } from '@/lib/db/queries';
-
-// Initialize Resend client
-export const resend = new Resend(process.env.RESEND_API_KEY!);
 
 // Argon2 configuration for OTP hashing
 const ARGON2_OPTIONS = {
@@ -58,17 +55,17 @@ export async function generateAndSendOtp(
     
     // Store OTP in database
     await createAuthOtp(email, codeHash, purpose, expiresAt, userId);
-    
-    // Send email via Resend
-    const { error } = await resend.emails.send({
-      from: 'Blumpo <no-reply@blumpo.com>',
-      to: email,
+
+    const sender = getDefaultTransactionalSender();
+    const { success } = await sendBrevoEmail({
+      sender,
+      to: [{ email }],
       subject: 'Your login code',
-      html: renderOtpEmailTemplate(code),
+      htmlContent: renderOtpEmailTemplate(code),
     });
-    
-    if (error) {
-      console.error('Failed to send OTP email:', error);
+
+    if (!success) {
+      console.error('Failed to send OTP email');
       return { success: false, error: 'Failed to send verification email' };
     }
     

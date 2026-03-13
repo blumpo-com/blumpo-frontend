@@ -123,7 +123,7 @@ export async function POST(req: Request) {
       console.log('[GENERATE] Existing job in progress, waiting for existing callback...');
       try {
         const callbackResult = await waitForExistingCallback(existingJob.id, MAX_WAIT_TIME);
-        
+
         // If no Redis entry exists, the job might have been started but callback not set up yet
         // In this case, return early with current status
         if (!callbackResult) {
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
             message: 'Generation in progress - no callback available yet',
           });
         }
-        
+
         if (callbackResult.status === 'SUCCEEDED') {
           return NextResponse.json({
             job_id: existingJob.id,
@@ -143,9 +143,9 @@ export async function POST(req: Request) {
             tokens_used: TOKENS_COST_PER_GENERATION,
           });
         }
-        else{
-           // Refund tokens for failed/canceled jobs
-           try {
+        else {
+          // Refund tokens for failed/canceled jobs
+          try {
             await refundTokens(user.id, TOKENS_COST_PER_GENERATION, existingJob.id);
             console.log('[GENERATE] Tokens refunded for', callbackResult.status, 'job:', existingJob.id);
           } catch (refundError) {
@@ -320,13 +320,15 @@ export async function POST(req: Request) {
           // FAILED or CANCELED - refund tokens
           console.log('[GENERATE] Returning', callbackResult.status, 'response - refunding tokens');
 
-          // Refund tokens for failed/canceled jobs
-          try {
-            await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
-            console.log('[GENERATE] Tokens refunded for', callbackResult.status, 'job:', jobId);
-          } catch (refundError) {
-            console.error('[GENERATE] Error refunding tokens:', refundError);
-            // Continue even if refund fails - we still want to return the error to the user
+          // Refund tokens for failed/canceled jobs only when there is less then 4 valid images
+          if (callbackResult.images.length < 4) {
+            try {
+              await refundTokens(user.id, TOKENS_COST_PER_GENERATION, jobId);
+              console.log('[GENERATE] Tokens refunded for', callbackResult.status, 'job:', jobId);
+            } catch (refundError) {
+              console.error('[GENERATE] Error refunding tokens:', refundError);
+              // Continue even if refund fails - we still want to return the error to the user
+            }
           }
 
           return NextResponse.json({

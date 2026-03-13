@@ -33,7 +33,7 @@ Footer form → POST /api/newsletter/subscribe
 Footer form → POST /api/newsletter/subscribe
   → getUserByEmail() finds no match
   → signNewsletterToken(email) — signed JWT, 24h expiry
-  → Resend sends confirmation email with link:
+  → Brevo sends confirmation email with link:
       {BASE_URL}/newsletter/confirm?token=<JWT>
   → returns { status: "email-sent" }
   → footer shows "Check your email" dialog
@@ -113,7 +113,7 @@ Accepts an email from the footer form and decides which path to take.
 |------|------|-------|
 | `400` | `{ "error": "Email is required" }` | Missing or non-string email |
 | `400` | `{ "error": "Invalid email address" }` | Fails basic format check |
-| `500` | `{ "error": "Failed to send confirmation email" }` | Resend API error |
+| `500` | `{ "error": "Failed to send confirmation email" }` | Brevo API error |
 | `500` | `{ "error": "Internal server error" }` | Unexpected exception |
 
 ---
@@ -190,7 +190,7 @@ Key properties:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `AUTH_SECRET` | Yes | HMAC secret used to sign newsletter tokens |
-| `RESEND_API_KEY` | Yes | Resend API key for sending confirmation emails |
+| `BREVO_API_KEY` | Yes | Brevo API key for sending confirmation emails (and contact/list sync) |
 | `BASE_URL` | Yes | Base URL used to build the confirmation link (e.g. `https://blumpo.com`) |
 
 ---
@@ -209,5 +209,5 @@ Key properties:
 ## Related Documentation
 
 - `docs/database_schema.md` — Full database schema reference
-- `lib/auth/otp.ts` — OTP email flow (uses the same Resend client)
+- `lib/auth/otp.ts` — OTP email flow (uses the same Brevo transactional email)
 - `lib/auth/session.ts` — Session JWT implementation (same `jose` pattern)
