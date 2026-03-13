@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Resend } from 'resend';
+import { sendBrevoEmail } from '@/lib/brevo';
 import { SupportCategory, isSalesCategory } from '@/lib/constants/support-categories';
 import { renderSupportRequestEmail, renderSupportConfirmationEmail } from '@/lib/email-templates/support-templates';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const supportSchema = z.object({
   title: z.nativeEnum(SupportCategory, {
@@ -115,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     const supportEmail = getSupportEmail(title);
     const domain = process.env.SUPPORT_EMAIL_DOMAIN || 'blumpo.com';
-    const fromEmail = `Support <support@${domain}>`;
+    const sender = { name: 'Support', email: `support@${domain}` };
 
     const supportEmailBody = renderSupportRequestEmail(
       title,
@@ -124,24 +122,15 @@ export async function POST(request: NextRequest) {
       ipAddress
     );
 
-    // Send email to support/sales team
-    const supportEmailData: any = {
-      from: fromEmail,
-      to: supportEmail,
+    const supportResult = await sendBrevoEmail({
+      sender,
+      to: [{ email: supportEmail }],
       subject: `[Support] ${title}`,
-      html: supportEmailBody,
-    };
+      htmlContent: supportEmailBody,
+      ...(email && { replyTo: { email } }),
+    });
 
-    if (email) {
-      supportEmailData.replyTo = email;
-    }
-
-    const supportResult = await resend.emails.send(supportEmailData);
-    console.log('Support email sent:', supportResult);
-    console.log('Support email error:', supportResult.error);
-    console.log('Support email data:', supportResult.data);
-
-    if (supportResult.error) {
+    if (!supportResult.success) {
       console.error('Failed to send support email:', supportResult.error);
       return NextResponse.json(
         { error: 'Failed to send message. Please try again later.' },
@@ -149,23 +138,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send confirmation email to user if email is provided
     if (email) {
       const confirmationEmailBody = renderSupportConfirmationEmail(title, message);
-      
-      const confirmationEmailData = {
-        from: fromEmail,
-        to: email,
+      const confirmationResult = await sendBrevoEmail({
+        sender,
+        to: [{ email }],
         subject: `Re: [Support] ${title}`,
-        html: confirmationEmailBody,
-        replyTo: supportEmail,
-      };
-
-      const confirmationResult = await resend.emails.send(confirmationEmailData);
-
-      if (confirmationResult.error) {
+        htmlContent: confirmationEmailBody,
+        replyTo: { email: supportEmail },
+      });
+      if (!confirmationResult.success) {
         console.error('Failed to send confirmation email:', confirmationResult.error);
-        // Don't fail the request if confirmation email fails, just log it
       }
     }
 

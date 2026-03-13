@@ -14,6 +14,11 @@ import {
 } from '@/lib/auth/middleware';
 import { generateAndSendOtp, verifyAndConsumeOtp } from '@/lib/auth/otp';
 import { syncFreeUserToBrevo } from '@/lib/brevo';
+import {
+  getBrevoDeliveryFailure,
+  clearBrevoDeliveryFailure,
+  deliveryFailureMessage,
+} from '@/lib/brevo-delivery-failures';
 
 // Unified authentication flow: Step 1 - Request OTP code
 const requestOtpSchema = z.object({
@@ -36,10 +41,18 @@ export const requestOtp = validatedAction(requestOtpSchema, async (data, formDat
     };
   }
 
+  let deliveryWarning: string | undefined;
+  const previousFailure = await getBrevoDeliveryFailure(email);
+  if (previousFailure) {
+    deliveryWarning = deliveryFailureMessage(previousFailure);
+    await clearBrevoDeliveryFailure(email);
+  }
+
   return {
     success: 'Verification code sent! Please check your email.',
     email,
-    awaitingOtp: true
+    awaitingOtp: true,
+    ...(deliveryWarning && { deliveryWarning }),
   };
 });
 
@@ -92,7 +105,7 @@ export const verifyOtp = validatedAction(verifyOtpSchema, async (data, formData)
       planCode: 'FREE',
     });
 
-    syncFreeUserToBrevo(createdUser.email, { SOURCE: 'otp' }).catch(() => {});
+    await syncFreeUserToBrevo(createdUser.email, { SOURCE: 'otp' }).catch(() => {});
 
     foundUser = createdUser;
   } else {

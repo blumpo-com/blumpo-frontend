@@ -206,3 +206,72 @@ export function brevoContactAttributesFromDisplayName(displayName: string | null
     LASTNAME: parts.slice(1).join(' '),
   };
 }
+
+export type SendBrevoEmailOptions = {
+  sender: { name: string; email: string };
+  to: Array<{ email: string; name?: string }>;
+  subject: string;
+  htmlContent: string;
+  replyTo?: { email: string };
+  params?: Record<string, string>;
+};
+
+/**
+ * Default sender for transactional emails (OTP, newsletter). Uses BREVO_SENDER_NAME and BREVO_SENDER_EMAIL.
+ */
+export function getDefaultTransactionalSender(): { name: string; email: string } {
+  const domain = process.env.SUPPORT_EMAIL_DOMAIN || 'blumpo.com';
+  return {
+    name: process.env.BREVO_SENDER_NAME?.trim() || 'Blumpo',
+    email: process.env.BREVO_SENDER_EMAIL?.trim() || `no-reply@${domain}`,
+  };
+}
+
+/**
+ * Send a transactional email via Brevo SMTP API. Uses BREVO_API_KEY (no list config required).
+ */
+export async function sendBrevoEmail(options: SendBrevoEmailOptions): Promise<{ success: boolean; error?: unknown }> {
+  const apiKey = process.env.BREVO_API_KEY?.trim();
+  if (!apiKey) {
+    console.error('[Brevo] sendBrevoEmail: BREVO_API_KEY is not set');
+    return { success: false, error: 'BREVO_API_KEY is not set' };
+  }
+
+  const url = `${BREVO_BASE_URL}/smtp/email`;
+  const body: Record<string, unknown> = {
+    sender: options.sender,
+    to: options.to.map((r) => (r.name != null ? { email: r.email, name: r.name } : { email: r.email })),
+    subject: options.subject,
+    htmlContent: options.htmlContent,
+  };
+  if (options.replyTo) body.replyTo = options.replyTo;
+  if (options.params && Object.keys(options.params).length > 0) body.params = options.params;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    let responseBody: unknown;
+    const ct = res.headers.get('content-type');
+    if (ct?.includes('application/json')) {
+      try {
+        responseBody = await res.json();
+      } catch {
+        responseBody = await res.text();
+      }
+    } else {
+      responseBody = await res.text();
+    }
+    console.error('[Brevo] sendBrevoEmail', res.status, responseBody);
+    return { success: false, error: responseBody };
+  }
+
+  return { success: true };
+}

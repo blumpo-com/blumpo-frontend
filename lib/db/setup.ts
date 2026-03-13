@@ -166,12 +166,12 @@ async function getStripeSecretKey(): Promise<string> {
   return await question('Enter your Stripe Secret Key: ');
 }
 
-async function getResendApiKey(): Promise<string> {
-  console.log('Step 3: Getting Resend API Key');
+async function getBrevoApiKey(): Promise<string> {
+  console.log('Step 3: Getting Brevo API Key');
   console.log(
-    'You can find your Resend API key at: https://resend.com/onboarding'
+    'You can find your Brevo API key at: https://app.brevo.com/settings/keys/api'
   );
-  return await question('Enter your Resend API Key: ');
+  return await question('Enter your Brevo API Key: ');
 }
 
 async function getGoogleOAuthCredentials(): Promise<{
@@ -274,7 +274,7 @@ async function main() {
   const BASE_URL = 'http://localhost:3000';
   const AUTH_SECRET = generateAuthSecret();
   const CRON_SECRET = generateCronSecret();
-  const RESEND_API_KEY = await getResendApiKey();
+  const BREVO_API_KEY = await getBrevoApiKey();
   const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } =
     await getGoogleOAuthCredentials();
   const NEXTAUTH_SECRET = await getNextAuthSecret();
@@ -287,7 +287,7 @@ async function main() {
     BASE_URL,
     AUTH_SECRET,
   CRON_SECRET,
-    RESEND_API_KEY,
+    BREVO_API_KEY,
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
     NEXTAUTH_SECRET,
