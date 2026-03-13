@@ -148,9 +148,9 @@ export function InsightSelectionContent({
     );
   }
 
-  // Determine which layout to use and which mascot image
-  const useMascotLayout = selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition';
-  const mascotImage = selectedArchetype === 'value_proposition' 
+  // Determine which layout to use and which mascot image (testimonial uses customer group like problem_solution / value_proposition)
+  const useMascotLayout = selectedArchetype === 'problem_solution' || selectedArchetype === 'value_proposition' || selectedArchetype === 'testimonial';
+  const mascotImage = selectedArchetype === 'value_proposition' || selectedArchetype === 'testimonial' 
     ? '/images/blumpo/blumpo-reading.png'
     : '/images/blumpo/blumpo-macho.png';
 

@@ -124,7 +124,8 @@ export async function POST(req: Request) {
     await updateGenerationJobStatus(jobId, 'RUNNING');
     console.log('[GENERATE-QUICK-ADS] Job status updated to RUNNING');
 
-    // Send job_id to n8n webhook
+    // Send job_id to n8n webhook. N8n fetches brand data from /api/generate/brand-data which includes
+    // customerGroups (targetCustomers); testimonial and other archetypes use these customer groups.
     try {
       console.log('[GENERATE-QUICK-ADS] Sending webhook request to:', webhookUrl);
       const webhookStartTime = Date.now();
